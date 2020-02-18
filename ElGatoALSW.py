@@ -13,6 +13,9 @@ FolderRecursos = os.path.join(os.path.dirname(__file__), "Recursos")
 # Variables Globass
 Carpeta = ["Arduino","Blender"]
 
+def ActualizarImagen(deck, key, state):
+    print("Deck {} Key {} = {}".format(deck.id(), key, state), flush=True)
+
 def ObtenerImagen(deck, key, state):
     name = "{}".format(Carpeta[key])
     icon = "{}{}.png".format(Carpeta[key],"P" if state else "R")
@@ -80,8 +83,11 @@ if __name__ == "__main__":
         # Cambiar Brillo
         deck.set_brightness(50)
 
+        # Activando Imagen Defecto
         for key in range(len(Carpeta)):
             CambiarImagen(deck, key, False)
+
+        deck.set_key_callback()
 
         # Sistema de Coalbask
         for t in threading.enumerate():
