@@ -27,7 +27,7 @@ def PrecionarTecla(deck, key, state):
             Estado = key
             for key in range(len(Comandos[key][1])):
                 CambiarImagen(deck, key, False)
-            CambiarImagen(deck, deck.key_count() - 1  , False)
+            CambiarImagen(deck, deck.key_count() - 1  , False, False)
         else:
             print("Teclado no programada")
     else:
@@ -75,33 +75,37 @@ def ObtenerImagen(deck, key, state):
     }
 
 #
-def CargarImagen(deck, icon_filename, font_filename, label_text):
+def CargarImagen(deck, icon_filename, font_filename, label_text, titulo = True):
     # Create new key image of the correct dimensions, black background.
     image = PILHelper.create_image(deck)
     # Resize the source image asset to best-fit the dimensions of a single key,
-    # and paste it onto our blank frame centered as closely as possible.
+    # and paste it onto our bCargarImagenlank frame centered as closely as possible.
     icon = Image.open(icon_filename).convert("RGBA")
-    icon.thumbnail((image.width, image.height - 20), Image.LANCZOS)
+    if titulo:
+        icon.thumbnail((image.width, image.height - 20), Image.LANCZOS)
+    else:
+        icon.thumbnail((image.width, image.height), Image.LANCZOS)
     icon_pos = ((image.width - icon.width) // 2, 0)
     image.paste(icon, icon_pos, icon)
 
     # Load a custom TrueType font and Comandosuse it to overlay the key index, draw key
     # label onto the image.
-    draw = ImageDraw.Draw(image)
-    font = ImageFont.truetype(font_filename, 14)
-    label_w, label_h = draw.textsize(label_text, font=font)
-    label_pos = ((image.width - label_w) // 2, image.height - 20)
-    draw.text(label_pos, text=label_text, font=font, fill="white")
+    if titulo:
+        draw = ImageDraw.Draw(image)
+        font = ImageFont.truetype(font_filename, 14)
+        label_w, label_h = draw.textsize(label_text, font=font)
+        label_pos = ((image.width - label_w) // 2, image.height - 20)
+        draw.text(label_pos, text=label_text, font=font, fill="white")
     return PILHelper.to_native_format(deck, image)
 
 
 # Actualizar
-def CambiarImagen(deck, key, state):
+def CambiarImagen(deck, key, state, titulo = True):
 
     # Obtener Imagen
     ImagenEstilo = ObtenerImagen(deck, key, state)
     #
-    Imagen = CargarImagen(deck, ImagenEstilo["icon"], ImagenEstilo["font"], ImagenEstilo["label"])
+    Imagen = CargarImagen(deck, ImagenEstilo["icon"], ImagenEstilo["font"], ImagenEstilo["label"],titulo)
 
     deck.set_key_image(key, Imagen)
 
