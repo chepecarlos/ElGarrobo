@@ -7,29 +7,65 @@ from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.ImageHelpers import PILHelper
 from pynput.keyboard import Key, Controller
-
+import time
 
 keyboard = Controller()
 
 # Recusos para sistema
 FolderRecursos = os.path.join(os.path.dirname(__file__), "Recursos")
 
-Estado = 0
+Estado = -1
 
-Comandos = [["Arduino", [["Verificar", [Key.ctrl, "r"]], ["Salvar", [Key.ctrl, "s"]]]]]
-
-
+Comandos = [["Arduino", [["Verificar", [Key.ctrl, "r"]], ["Salvar", [Key.ctrl, "s"]]]],["Blender"]]
 
 def PrecionarTecla(deck, key, state):
-    print("Boton {} = {}".format(Comandos[key][0], state), flush=True)
+    global Estado
+    if Estado == -1:
+        if key < len(Comandos):
+            print("Boton {} = {}".format(Comandos[key][0], state), flush=True)
+            CambiarImagen(deck, key, state)
+            Estado = key
+            for key in range(len(Comandos[key][1])):
+                CambiarImagen(deck, key, False)
+            CambiarImagen(deck, deck.key_count() - 1  , False)
+        else:
+            print("Teclado no programada")
+    else:
+        if key == deck.key_count() -1:
+            deck.reset()
+            Estado = -1;
+            for key in range(len(Comandos)):
+                CambiarImagen(deck, key, False)
+            print("Regresar")
+        elif key < len(Comandos[Estado][1]):
+            print("Boton {} = {}".format(Comandos[Estado][1][key][0], state), flush=True)
+            CambiarImagen(deck, key, state)
+            if state:
+                ComandoTeclas(Comandos[Estado][1][key][1])
+        else:
+            print("Teclado no programada")
+    if state:
+        time.sleep(0.25)
 
-    CambiarImagen(deck, key, state)
 
 def ObtenerImagen(deck, key, state):
-    name = "{}".format(Comandos[key][0])
-    icon = "{}{}.png".format(Comandos[key][0],"P" if state else "R")
-    font = "Roboto-Regular.ttf"
-    label = "{}".format(Comandos[key][0])
+
+    if Estado == -1:
+        name = "{}".format(Comandos[key][0])
+        icon = "{}{}.png".format(Comandos[key][0],"P" if state else "R")
+        font = "Roboto-Regular.ttf"
+        label = "{}".format(Comandos[key][0])
+    else:
+        if key == deck.key_count() -1:
+            name = "Salir"
+            icon = "Salir.png"
+            font = "Roboto-Regular.ttf"
+            label = "Salir"
+        else:
+            name = "{}".format(Comandos[Estado][1][key][0])
+            icon = "{}{}{}.png".format(Comandos[Estado][0], Comandos[Estado][1][key][0], "P" if state else "R")
+            font = "Roboto-Regular.ttf"
+            label = "{}".format(Comandos[Estado][1][key][0])
 
     return {
         "name": name,
@@ -64,7 +100,6 @@ def CambiarImagen(deck, key, state):
 
     # Obtener Imagen
     ImagenEstilo = ObtenerImagen(deck, key, state)
-
     #
     Imagen = CargarImagen(deck, ImagenEstilo["icon"], ImagenEstilo["font"], ImagenEstilo["label"])
 

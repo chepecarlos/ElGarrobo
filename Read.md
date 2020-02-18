@@ -1,3 +1,10 @@
+# El Gato ALSW
+
+
+# TODO
+
+* Multi-Clip
+
 # Principal
 
 Las opciones disponibles para menu principal
