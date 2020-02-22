@@ -16,7 +16,7 @@ FolderRecursos = os.path.join(os.path.dirname(__file__), "Recursos")
 
 Estado = -1
 
-Comandos = [["Arduino", [["Verificar", [Key.ctrl, "r"]], ["Salvar", [Key.ctrl, "s"]]]],["Blender"]]
+Comandos = [["Arduino", [["Verificar", [Key.ctrl, "r"]], ["Salvar", [Key.ctrl, "s"]]]],["Blender"],["Gromit"]]
 
 def PrecionarTecla(deck, key, state):
     global Estado
@@ -63,7 +63,7 @@ def ObtenerImagen(deck, key, state):
             label = "Salir"
         else:
             name = "{}".format(Comandos[Estado][1][key][0])
-            icon = "{}{}{}.png".format(Comandos[Estado][0], Comandos[Estado][1][key][0], "P" if state else "R")
+            icon = "{}/{}{}.png".format(Comandos[Estado][0], Comandos[Estado][1][key][0], "P" if state else "R")
             font = "Roboto-Regular.ttf"
             label = "{}".format(Comandos[Estado][1][key][0])
 
@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
         # Activando Imagen Defecto
         for key in range(len(Comandos)):
-            CambiarImagen(deck, key, False)
+            CambiarImagen(deck, key, False, False)
 
         deck.set_key_callback(PrecionarTecla)
         # Sistema de Coalbask
