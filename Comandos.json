@@ -1,0 +1,28 @@
+{
+  "Brillo": 50,
+  "Fuente": "Roboto-Regular.ttf",
+  "Comando": [{
+    "Nombre": "Arduino",
+    "ico": "Arduino.png",
+    "Folder": "Recursos/Arduino",
+    "Titulo": "Arduino",
+    "key": [{
+        "Nombre": "Nuevo",
+        "Titulo": "New",
+        "tecla": ["ctrl", "n"]
+      },
+      {
+        "Nombre": "Abir",
+        "tecla": ["ctrl", "o"]
+      },
+      {
+        "Nombre": "Guardar",
+        "tecla": ["ctrl", "s"]
+      },
+      {
+        "ico": "Verifica.png",
+        "tecla": ["ctrl", "r"]
+      }
+    ]
+  }]
+}
