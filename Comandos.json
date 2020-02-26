@@ -1,27 +1,40 @@
 {
   "Brillo": 50,
-  "Fuente": "Recursos/Roboto-Regular.ttf",
+  "Fuente": "Recursos/KomikaTitle.ttf",
   "ico_defecto": "Recursos/Defecto.png",
+  "ico_Regresar": "Recursos/Regresar.png",
   "Comando": [{
     "Nombre": "Arduino",
     "ico": "Recursos/Arduino/Arduino.png",
     "Titulo": "Arduino",
     "Key": [{
-      "Nombre": "Nuevo",
-      "Titulo": "Nuevo",
-      "ico": "Recursos/Arduino/Nuevo.png",
-      "tecla": ["ctrl", "n"]
+      "Nombre": "Verificar",
+      "Titulo": "Verificar",
+      "tecla": ["ctrl", "r"]
     }, {
-      "Nombre": "Abir",
-      "Titulo": "Abir",
-      "tecla": ["ctrl", "o"]
+      "Nombre": "Subir",
+      "Titulo": "Subir",
+      "tecla": ["ctrl", "r"]
     }, {
-      "Nombre": "Guardar",
-      "Titulo": "Guardar",
+      "Nombre": "Salvar",
+      "Titulo": "Salvar",
       "tecla": ["ctrl", "s"]
     }, {
-      "Nombre": "Verifica",
-      "tecla": ["ctrl", "r"]
+      "Nombre": "MonitorSerial",
+      "Titulo": "M. Serial",
+      "tecla": ["ctrl", "shift", "m"]
+    }, {
+      "Nombre": "SerialPlotter",
+      "Titulo": "S. Plotter",
+      "tecla": ["ctrl", "shift", "l"]
+    }, {
+      "Nombre": "AutoFormato",
+      "Titulo": "A. Formato",
+      "tecla": ["ctrl", "t"]
+    }, {
+      "Nombre": "Preferencia",
+      "Titulo": "Preferencia",
+      "tecla": ["ctrl", ","]
     }, {
       "Nombre": "Regresar",
       "Regresar": "True",
@@ -29,7 +42,6 @@
     }]
   }, {
     "Nombre": "Blender",
-    "Folder": "Recursos/Blender",
     "ico": "Recursos/Blender/Blender.png",
     "Titulo": "Blender",
     "Key": [{
@@ -45,9 +57,145 @@
       "Nombre": "Verifica",
       "tecla": ["ctrl", "r"]
     }, {
+      "Nombre": "Verifica",
+      "tecla": ["ctrl", "r"]
+    }, {
       "Nombre": "Regresar",
-      "Regresar": "True",
-      "Titulo": "Regresar"
+      "Regresar": "True"
+    }]
+  }, {
+    "Nombre": "Gromit",
+    "ico": "Recursos/Gromit/Gromit.png",
+    "Titulo": "Gromit",
+    "Key": [{
+      "Nombre": "Activar",
+      "Titulo": "Activar",
+      "tecla": ["f9"]
+    }, {
+      "Nombre": "Limpiar",
+      "Titulo": "Limpiar",
+      "tecla": ["shift", "f9"]
+    }, {
+      "Nombre": "Ocultar",
+      "Titulo": "Ocultar",
+      "tecla": ["ctrl", "f9"]
+    }, {
+      "Nombre": "Desacer",
+      "Titulo": "Desacer",
+      "tecla": ["f10"]
+    }, {
+      "Nombre": "Reacer",
+      "Titulo": "Reacer",
+      "tecla": ["shift", "f10"]
+    }, {
+      "Nombre": "Regresar",
+      "Regresar": "True"
+    }]
+  }, {
+    "Nombre": "Atom",
+    "ico": "Recursos/Atom/Atom.png",
+    "Titulo": "Atom",
+    "Key": [{
+      "Nombre": "Regresar",
+      "Regresar": "True"
+    }]
+  }, {
+    "Nombre": "OBS",
+    "ico": "Recursos/OBS/OBS.png",
+    "Titulo": "OBS",
+    "Key": [{
+      "Nombre": "Regresar",
+      "Regresar": "True"
+    }]
+  }, {
+    "Nombre": "Processing",
+    "ico": "Recursos/Processing/Processing.png",
+    "Titulo": "Processing",
+    "Key": [{
+      "Nombre": "Regresar",
+      "Regresar": "True"
+    }]
+  }, {
+    "Nombre": "Gimp",
+    "ico": "Recursos/Gimp/Gimp.png",
+    "Titulo": "Gimp",
+    "Key": [{
+      "Nombre": "Regresar",
+      "Regresar": "True"
+    }]
+  }, {
+    "Nombre": "Inskcape",
+    "ico": "Recursos/Inskcape/Inskcape.png",
+    "Titulo": "Inskcape",
+    "Key": [{
+      "Nombre": "Regresar",
+      "Regresar": "True"
+    }]
+  }, {
+    "Nombre": "Krita",
+    "ico": "Recursos/Krita/Krita.png",
+    "Titulo": "Krita",
+    "Key": [{
+      "Nombre": "Regresar",
+      "Regresar": "True"
+    }]
+  }, {
+    "Nombre": "Audacity",
+    "ico": "Recursos/Audacity/Audacity.png",
+    "Titulo": "Audacity",
+    "Key": [{
+      "Nombre": "Regresar",
+      "Regresar": "True"
+    }]
+  }, {
+    "Nombre": "KiCad",
+    "ico": "Recursos/KiCad/KiCad.png",
+    "Titulo": "KiCad",
+    "Key": [{
+      "Nombre": "Regresar",
+      "Regresar": "True"
+    }]
+  }, {
+    "Nombre": "Fritzing",
+    "ico": "Recursos/Fritzing/Fritzing.png",
+    "Titulo": "Fritzing",
+    "Key": [{
+      "Nombre": "Regresar",
+      "Regresar": "True"
+    }]
+  }, {
+    "Nombre": "Folder",
+    "Titulo": "Folder",
+    "Key": [{
+      "Nombre": "Recursos",
+      "Titulo": "Recursos",
+      "OS": "nemo . &",
+      "tecla": ["ctrl", "."]
+    }, {
+      "Nombre": "Regresar",
+      "Regresar": "True"
+    }]
+  }, {
+    "Nombre": "Extra",
+    "Titulo": "Extra",
+    "Key": [{
+      "Nombre": "ZoonIn",
+      "Titulo": "ZoonIn",
+      "tecla": ["alt", "super", "="]
+    }, {
+      "Nombre": "ZoonOut",
+      "Titulo": "ZoonOut",
+      "tecla": ["alt", "super", "-"]
+    }, {
+      "Nombre": "Regresar",
+      "Regresar": "True"
+    }]
+  }, {
+    "Nombre": "IOT",
+    "Titulo": "IOT",
+    "Key": [{
+      "Nombre": "Regresar",
+      "Regresar": "True"
     }]
   }]
 }

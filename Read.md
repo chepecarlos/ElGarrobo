@@ -4,6 +4,7 @@
 # TODO
 
 * Multi-Clip
+* Comandos de linux 
 
 # Principal
 
@@ -46,3 +47,5 @@ Las opciones disponibles para menu principal
 1. Guardas
 
 ## Inskcape
+
+# Folder IMAGena y utilines

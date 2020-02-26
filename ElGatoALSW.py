@@ -15,63 +15,47 @@ keyboard = Controller()
 
 teclas = "nada"
 folder = ""
-fuente = "."
+fuente = ""
 
 # Recusos para sistema
 FolderRecursos = os.path.join(os.path.dirname(__file__), "Recusos")
 
-Estado = -1
-
 with open('Comandos.json') as f:
     data = json.load(f)
 
-def PrecionarTecla(deck, key, state):
-    global Estado
-    if Estado == -1:
-        if key < len(Comandos):
-            print("Boton {} = {}".format(Comandos[key][0], state), flush=True)
-            CambiarImagen(deck, key, state)
-            Estado = key
-            for key in range(len(Comandos[key][1])):
-                CambiarImagen(deck, key, False)
-            CambiarImagen(deck, deck.key_count() - 1  , False, False)
-        else:
-            print("Teclado no programada")
-    else:
-        if key == deck.key_count() -1:
-            deck.reset()
-            Estado = -1;
-            for key in range(len(Comandos)):
-                CambiarImagen(deck, key, False)
-            print("Regresar")
-        elif key < len(Comandos[Estado][1]):
-            print("Boton {} = {}".format(Comandos[Estado][1][key][0], state), flush=True)
-            CambiarImagen(deck, key, state)
-            if state:
-                ComandoTeclas(Comandos[Estado][1][key][1])
-        else:
-            print("Teclado no programada")
-    if state:
-        time.sleep(0.25)
-
-
-
 def ComandoTeclas(Teclas):
-    for tecla in Teclas:
-        if tecla == 'ctrl':
-            keyboard.press(Key.ctrl)
-        elif tecla == 'alt':
-            keyboard.press(Key.alt)
-        else:
-            keyboard.press(tecla)
 
     for tecla in Teclas:
         if tecla == 'ctrl':
             keyboard.press(Key.ctrl)
         elif tecla == 'alt':
             keyboard.press(Key.alt)
+        elif tecla == 'shift':
+            keyboard.press(Key.shift)
+        elif tecla == 'super':
+            keyboard.press(Key.cmd)
+        elif tecla == 'f9':
+            keyboard.press(Key.f9)
+        elif tecla == 'f10':
+            keyboard.press(Key.f10)
         else:
             keyboard.press(tecla)
+
+    for tecla in Teclas:
+        if tecla == 'ctrl':
+            keyboard.release(Key.ctrl)
+        elif tecla == 'alt':
+            keyboard.release(Key.alt)
+        elif tecla == 'shift':
+            keyboard.release(Key.shift)
+        elif tecla == 'super':
+            keyboard.release(Key.cmd)
+        elif tecla == 'f9':
+            keyboard.release(Key.f9)
+        elif tecla == 'f10':
+            keyboard.release(Key.f10)
+        else:
+            keyboard.release(tecla)
 
 def ActualizarImagen(deck, teclas, tecla, limpiar = False):
     global folder
@@ -81,7 +65,12 @@ def ActualizarImagen(deck, teclas, tecla, limpiar = False):
     if not limpiar:
         nombre = "{}".format(teclas[tecla]['Nombre'])
 
-        if 'ico' in teclas[tecla]:
+        if 'Regresar' in teclas[tecla]:
+            if 'ico_Regresar' in data :
+                NombreIcon = data['ico_Regresar']
+            else:
+                NombreIcon = "imagen.png"
+        elif 'ico' in teclas[tecla]:
             NombreIcon = "{}".format(teclas[tecla]['ico'])
         else:
             if 'ico_defecto' in data:
@@ -118,6 +107,8 @@ def ActualizarTeclas(deck, tecla, estado):
                     ActualizarImagen(deck, teclas, key, True)
                 for tecla in range(len(teclas)):
                     ActualizarImagen(deck, teclas, tecla)
+            elif 'OS' in teclas[tecla]:
+                os.system(teclas[tecla]['OS'])
             elif 'tecla' in teclas[tecla]:
                 print("comando {}".format(teclas[tecla]['tecla']))
                 ComandoTeclas(teclas[tecla]['tecla'])
@@ -165,7 +156,6 @@ if __name__ == "__main__":
             ActualizarImagen(deck, teclas, tecla)
 
         # Sistema de Coalbask
-        # deck.set_key_callback(PrecionarTecla)
         deck.set_key_callback(ActualizarTeclas)
 
         for t in threading.enumerate():
