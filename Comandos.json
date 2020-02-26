@@ -1,28 +1,53 @@
 {
   "Brillo": 50,
-  "Fuente": "Roboto-Regular.ttf",
+  "Fuente": "Recursos/Roboto-Regular.ttf",
+  "ico_defecto": "Recursos/Defecto.png",
   "Comando": [{
     "Nombre": "Arduino",
-    "ico": "Arduino.png",
-    "Folder": "Recursos/Arduino",
+    "ico": "Recursos/Arduino/Arduino.png",
     "Titulo": "Arduino",
-    "key": [{
-        "Nombre": "Nuevo",
-        "Titulo": "New",
-        "tecla": ["ctrl", "n"]
-      },
-      {
-        "Nombre": "Abir",
-        "tecla": ["ctrl", "o"]
-      },
-      {
-        "Nombre": "Guardar",
-        "tecla": ["ctrl", "s"]
-      },
-      {
-        "ico": "Verifica.png",
-        "tecla": ["ctrl", "r"]
-      }
-    ]
+    "Key": [{
+      "Nombre": "Nuevo",
+      "Titulo": "Nuevo",
+      "ico": "Recursos/Arduino/Nuevo.png",
+      "tecla": ["ctrl", "n"]
+    }, {
+      "Nombre": "Abir",
+      "Titulo": "Abir",
+      "tecla": ["ctrl", "o"]
+    }, {
+      "Nombre": "Guardar",
+      "Titulo": "Guardar",
+      "tecla": ["ctrl", "s"]
+    }, {
+      "Nombre": "Verifica",
+      "tecla": ["ctrl", "r"]
+    }, {
+      "Nombre": "Regresar",
+      "Regresar": "True",
+      "Titulo": "Regresar"
+    }]
+  }, {
+    "Nombre": "Blender",
+    "Folder": "Recursos/Blender",
+    "ico": "Recursos/Blender/Blender.png",
+    "Titulo": "Blender",
+    "Key": [{
+      "Nombre": "Nuevo",
+      "tecla": ["ctrl", "n"]
+    }, {
+      "Nombre": "Abir",
+      "tecla": ["ctrl", "o"]
+    }, {
+      "Nombre": "Guardar",
+      "tecla": ["ctrl", "s"]
+    }, {
+      "Nombre": "Verifica",
+      "tecla": ["ctrl", "r"]
+    }, {
+      "Nombre": "Regresar",
+      "Regresar": "True",
+      "Titulo": "Regresar"
+    }]
   }]
 }
