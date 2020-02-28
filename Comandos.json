@@ -104,6 +104,34 @@
     "ico": "Recursos/OBS/OBS.png",
     "Titulo": "OBS",
     "Key": [{
+      "Nombre": "StreamI",
+      "Titulo": "Stream I",
+      "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js striming empezar"
+    }, {
+      "Nombre": "StreamT",
+      "Titulo": "Stream T",
+      "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js striming parar"
+    }, {
+      "Nombre": "GrabaI",
+      "Titulo": "Graba I",
+      "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js grabar empezar"
+    }, {
+      "Nombre": "GrabaT",
+      "Titulo": "Graba T",
+      "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js grabar parar"
+    }, {
+      "Nombre": "Mute",
+      "Titulo": "Mute",
+      "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js mute MicrofonoUSB"
+    }, {
+      "Nombre": "Principal",
+      "Titulo": "Principal",
+      "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js esena Principal"
+    }, {
+      "Nombre": "Camara",
+      "Titulo": "Camara",
+      "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js esena CamaraGrande"
+    }, {
       "Nombre": "Regresar",
       "Regresar": "True"
     }]
@@ -169,8 +197,7 @@
     "Key": [{
       "Nombre": "Recursos",
       "Titulo": "Recursos",
-      "OS": "nemo . &",
-      "tecla": ["ctrl", "."]
+      "OS": "nemo . &"
     }, {
       "Nombre": "Regresar",
       "Regresar": "True"
@@ -194,6 +221,9 @@
     "Nombre": "IOT",
     "Titulo": "IOT",
     "Key": [{
+      "Nombre": "Encender",
+      "Titulo": "Encender"
+    }, {
       "Nombre": "Regresar",
       "Regresar": "True"
     }]
