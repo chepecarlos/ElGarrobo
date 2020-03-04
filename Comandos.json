@@ -132,6 +132,14 @@
       "Titulo": "Camara",
       "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js esena CamaraGrande"
     }, {
+      "Nombre": "Si Verde",
+      "Titulo": "Si Verde",
+      "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js Verde Encender"
+    }, {
+      "Nombre": "No Verde",
+      "Titulo": "No Verde",
+      "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js Verde Apagar"
+    }, {
       "Nombre": "Regresar",
       "Regresar": "True"
     }]
@@ -197,7 +205,7 @@
     "Key": [{
       "Nombre": "Recursos",
       "Titulo": "Recursos",
-      "OS": "nemo . &"
+      "websocket": "nemo ."
     }, {
       "Nombre": "Regresar",
       "Regresar": "True"

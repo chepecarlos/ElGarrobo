@@ -9,6 +9,7 @@ from StreamDeck.ImageHelpers import PILHelper
 from pynput.keyboard import Key, Controller
 import time
 import json
+import websocket
 
 # Cargar Teclado
 keyboard = Controller()
@@ -109,6 +110,9 @@ def ActualizarTeclas(deck, tecla, estado):
                     ActualizarImagen(deck, teclas, tecla)
             elif 'OS' in teclas[tecla]:
                 os.system(teclas[tecla]['OS'])
+            elif 'websocket' in teclas[tecla]:
+                print("comando WebSocket {}".teclas[tecla]['websocket'])
+                ComandoWebSocket(teclas[tecla]['websocket']})
             elif 'tecla' in teclas[tecla]:
                 print("comando {}".format(teclas[tecla]['tecla']))
                 ComandoTeclas(teclas[tecla]['tecla'])
@@ -121,6 +125,15 @@ def ActualizarTeclas(deck, tecla, estado):
                     ActualizarImagen(deck, teclas, indice)
         else:
             print("Tecla no programada")
+
+def ComandoWebSocket(comando):
+    ws = websocket.WebSocket()
+    ws.connect("ws://umaru.local:8765")
+    ws.send(comando)
+    print ("Reeiving...")
+    result = ws.recv()
+    print (result)
+    ws.close()
 
 # Principal
 if __name__ == "__main__":
