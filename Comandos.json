@@ -45,8 +45,9 @@
     "ico": "Recursos/Blender/Blender.png",
     "Titulo": "Blender",
     "Key": [{
-      "Nombre": "Nuevo",
-      "tecla": ["ctrl", "n"]
+      "Nombre": "Guardar",
+      "Titulo": "Guardar",
+      "websocket": "Key ctrl s"
     }, {
       "Nombre": "Abir",
       "tecla": ["ctrl", "o"]
@@ -104,21 +105,63 @@
     "ico": "Recursos/OBS/OBS.png",
     "Titulo": "OBS",
     "Key": [{
-      "Nombre": "StreamI",
-      "Titulo": "Stream I",
-      "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js striming empezar"
+      "Nombre": "Rec",
+      "Titulo": "Rec",
+      "EstadoActual": true,
+      "Estado": [{
+        "Nombre": "RecEmpezar",
+        "Titulo": "Empezar",
+        "ico": "Recursos/OBS/RecOff.png",
+        "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js grabar parar"
+      }, {
+        "Nombre": "RecTerminar",
+        "Titulo": "Terminar",
+        "ico": "Recursos/OBS/RecOn.png",
+        "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js grabar empezar"
+      }]
     }, {
-      "Nombre": "StreamT",
-      "Titulo": "Stream T",
-      "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js striming parar"
+      "Nombre": "Live",
+      "Titulo": "Live",
+      "EstadoActual": true,
+      "Estado": [{
+        "Nombre": "LiveEmpezar",
+        "Titulo": "Empezar",
+        "ico": "Recursos/OBS/LiveOff.png",
+        "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js striming parar"
+      }, {
+        "Nombre": "LiveTerminar",
+        "Titulo": "Terminar",
+        "ico": "Recursos/OBS/LiveOn.png",
+        "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js striming empezar"
+      }]
     }, {
-      "Nombre": "GrabaI",
-      "Titulo": "Graba I",
-      "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js grabar empezar"
+      "Nombre": "Verde",
+      "Titulo": "Verde",
+      "EstadoActual": false,
+      "Estado": [{
+        "Nombre": "VerdeActivar",
+        "Titulo": "Verde",
+        "ico": "Recursos/OBS/VerdeOn.png",
+        "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js Verde Apagar"
+      }, {
+        "Nombre": "VerdeApagar",
+        "Titulo": "No Verde",
+        "ico": "Recursos/OBS/VerdeOff.png",
+        "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js Verde Encender"
+      }]
     }, {
-      "Nombre": "GrabaT",
-      "Titulo": "Graba T",
-      "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js grabar parar"
+      "Nombre": "Camara",
+      "Titulo": "Camara",
+      "EstadoActual": true,
+      "Estado": [{
+        "Nombre": "CamaraActiva",
+        "Titulo": "Camara",
+        "ico": "Recursos/OBS/CamaraOn.png"
+      }, {
+        "Nombre": "CamaraDesactiva",
+        "Titulo": "No Camara",
+        "ico": "Recursos/OBS/CamaraOff.png"
+      }]
     }, {
       "Nombre": "Mute",
       "Titulo": "Mute",
@@ -132,13 +175,8 @@
       "Titulo": "Camara",
       "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js esena CamaraGrande"
     }, {
-      "Nombre": "Si Verde",
-      "Titulo": "Si Verde",
-      "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js Verde Encender"
-    }, {
-      "Nombre": "No Verde",
-      "Titulo": "No Verde",
-      "OS": "node /home/chepecarlos/Programa/OBSCambiadorNode/CambiadorOBS.js Verde Apagar"
+      "Nombre": "Espera",
+      "Titulo": "Espera"
     }, {
       "Nombre": "Regresar",
       "Regresar": "True"
@@ -218,7 +256,7 @@
       "Nombre": "Guion",
       "Titulo": "Guion",
       "websocket": "nemo /home/chepecarlos/ProyectoActual/Guion"
-    },{
+    }, {
       "Nombre": "Recursos",
       "Titulo": "Recursos",
       "websocket": "nemo /home/Data/Server/ProduccionALSW/Recursos"
