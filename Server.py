@@ -44,18 +44,18 @@ def ComandoTeclas(Teclas):
         else:
             keyboard.release(tecla)
 
-
 async def comandoOS(websocket, path):
     comando = await websocket.recv()
     print(f"< {comando}")
     Separar = comando.split()
+    Respuesta = ''
     if(Separar[0] == 'Key'):
         Separar.remove('Key')
+        Respuesta = f"Teclas {Separar}"
         ComandoTeclas(Separar)
     else:
+        Respuesta = f"Ejacutando {comando}!"
         os.system(comando)
-
-    Respuesta = f"Ejacutando {comando}!"
 
     await websocket.send(Respuesta)
     print(f"> {Respuesta}")
