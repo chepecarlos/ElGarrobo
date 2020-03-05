@@ -203,9 +203,41 @@
     "Nombre": "Folder",
     "Titulo": "Folder",
     "Key": [{
+      "Nombre": "Proyecto",
+      "Titulo": "Proyecto",
+      "websocket": "nemo /home/chepecarlos/ProyectoActual"
+    }, {
+      "Nombre": "PistaA",
+      "Titulo": "Pista A",
+      "websocket": "nemo /home/chepecarlos/ProyectoActual/PistaA"
+    }, {
+      "Nombre": "PistaB",
+      "Titulo": "Pista B",
+      "websocket": "nemo /home/chepecarlos/ProyectoActual/PistaB"
+    }, {
+      "Nombre": "Guion",
+      "Titulo": "Guion",
+      "websocket": "nemo /home/chepecarlos/ProyectoActual/Guion"
+    },{
       "Nombre": "Recursos",
       "Titulo": "Recursos",
-      "websocket": "nemo ."
+      "websocket": "nemo /home/Data/Server/ProduccionALSW/Recursos"
+    }, {
+      "Nombre": "Intro",
+      "Titulo": "Intro",
+      "websocket": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/1.Intros"
+    }, {
+      "Nombre": "Sonido",
+      "Titulo": "Sonido",
+      "websocket": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/2.EfectoSonido"
+    }, {
+      "Nombre": "Musica",
+      "Titulo": "Musica",
+      "websocket": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/5.Musica"
+    }, {
+      "Nombre": "Clip",
+      "Titulo": "Clip",
+      "websocket": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/3.ClipVideo"
     }, {
       "Nombre": "Regresar",
       "Regresar": "True"

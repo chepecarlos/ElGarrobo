@@ -111,8 +111,8 @@ def ActualizarTeclas(deck, tecla, estado):
             elif 'OS' in teclas[tecla]:
                 os.system(teclas[tecla]['OS'])
             elif 'websocket' in teclas[tecla]:
-                print("comando WebSocket {}".teclas[tecla]['websocket'])
-                ComandoWebSocket(teclas[tecla]['websocket']})
+                print(teclas[tecla]['websocket'])
+                ComandoWebSocket(teclas[tecla]['websocket'])
             elif 'tecla' in teclas[tecla]:
                 print("comando {}".format(teclas[tecla]['tecla']))
                 ComandoTeclas(teclas[tecla]['tecla'])
@@ -128,7 +128,7 @@ def ActualizarTeclas(deck, tecla, estado):
 
 def ComandoWebSocket(comando):
     ws = websocket.WebSocket()
-    ws.connect("ws://umaru.local:8765")
+    ws.connect("ws://ryuk.local:8765")
     ws.send(comando)
     print ("Reeiving...")
     result = ws.recv()
