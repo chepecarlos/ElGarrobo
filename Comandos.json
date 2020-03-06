@@ -112,12 +112,12 @@
         "Nombre": "RecEmpezar",
         "Titulo": "Empezar",
         "ico": "Recursos/OBS/RecOff.png",
-        "OS": "node OBSNode/OBSNode.js grabar parar"
+        "OS": "node OBSNode/OBSNode.js Grabar Desactivar"
       }, {
         "Nombre": "RecTerminar",
         "Titulo": "Terminar",
         "ico": "Recursos/OBS/RecOn.png",
-        "OS": "node OBSNode/OBSNode.js grabar empezar"
+        "OS": "node OBSNode/OBSNode.js Grabar Activar"
       }]
     }, {
       "Nombre": "Live",
@@ -127,12 +127,12 @@
         "Nombre": "LiveEmpezar",
         "Titulo": "Empezar",
         "ico": "Recursos/OBS/LiveOff.png",
-        "OS": "node OBSNode/OBSNode.js striming parar"
+        "OS": "node OBSNode/OBSNode.js Striming Desactivar"
       }, {
         "Nombre": "LiveTerminar",
         "Titulo": "Terminar",
         "ico": "Recursos/OBS/LiveOn.png",
-        "OS": "node OBSNode/OBSNode.js striming empezar"
+        "OS": "node OBSNode/OBSNode.js Striming Activar"
       }]
     }, {
       "Nombre": "Verde",
@@ -142,12 +142,12 @@
         "Nombre": "VerdeActivar",
         "Titulo": "Verde",
         "ico": "Recursos/OBS/VerdeOn.png",
-        "OS": "node OBSNode/OBSNode.js Verde Apagar"
+        "OS": "node OBSNode/OBSNode.js Verde Desactivar"
       }, {
         "Nombre": "VerdeApagar",
         "Titulo": "No Verde",
         "ico": "Recursos/OBS/VerdeOff.png",
-        "OS": "node OBSNode/OBSNode.js Verde Encender"
+        "OS": "node OBSNode/OBSNode.js Verde Activar"
       }]
     }, {
       "Nombre": "Camara",
@@ -157,41 +157,45 @@
         "Nombre": "CamaraActiva",
         "Titulo": "Camara",
         "ico": "Recursos/OBS/CamaraOn.png",
-        "OS": "node OBSNode/OBSNode.js Camara Encender"
+        "OS": "node OBSNode/OBSNode.js Camara Activar"
       }, {
         "Nombre": "CamaraDesactiva",
         "Titulo": "No Camara",
         "ico": "Recursos/OBS/CamaraOff.png",
-        "OS": "node OBSNode/OBSNode.js Camara Apagar"
+        "OS": "node OBSNode/OBSNode.js Camara Desactivar"
       }]
-    },{
+    }, {
       "Nombre": "Mic",
       "Titulo": "Mic",
       "EstadoActual": true,
       "Estado": [{
         "Nombre": "MicActivar",
         "Titulo": "Mic",
-        "ico": "Recursos/OBS/MicOn.png"
+        "ico": "Recursos/OBS/MicOn.png",
+        "OS": "node OBSNode/OBSNode.js Mute Activar MicrofonoUSB"
       }, {
         "Nombre": "MicDesactiva",
         "Titulo": "No Mic",
-        "ico": "Recursos/OBS/MicOff.png"
+        "ico": "Recursos/OBS/MicOff.png",
+        "OS": "node OBSNode/OBSNode.js Mute Desactivar MicrofonoUSB"
       }]
     }, {
-      "Nombre": "Mute",
-      "Titulo": "Mute",
-      "OS": "node OBSNode/OBSNode.js mute MicrofonoUSB"
-    }, {
-      "Nombre": "Principal",
-      "Titulo": "Principal",
-      "OS": "node OBSNode/OBSNode.js esena Principal"
+      "Nombre": "Codigo",
+      "Titulo": "Codigo",
+      "OS": "node OBSNode/OBSNode.js Esena Codigo"
     }, {
       "Nombre": "Camara",
       "Titulo": "Camara",
-      "OS": "node OBSNode/OBSNode.js esena CamaraGrande"
+      "OS": "node OBSNode/OBSNode.js Esena CamaraGrande"
     }, {
       "Nombre": "Espera",
       "Titulo": "Espera"
+    }, {
+      "Nombre": "Empezar",
+      "Titulo": "Empezar"
+    }, {
+      "Nombre": "Terminar",
+      "Titulo": "Terminar"
     }, {
       "Nombre": "Regresar",
       "Regresar": "True"
