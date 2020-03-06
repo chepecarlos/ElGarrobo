@@ -1,0 +1,22 @@
+{
+  "name": "obscambiadornode",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chepecarlos/OBSCambiadorNode.git"
+  },
+  "author": "ChepeCarlos",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chepecarlos/OBSCambiadorNode/issues"
+  },
+  "homepage": "https://github.com/chepecarlos/OBSCambiadorNode#readme",
+  "dependencies": {
+    "obs-websocket-js": "^4.0.1"
+  }
+}

@@ -71,6 +71,11 @@ def ActualizarImagen(deck, teclas, tecla, limpiar = False):
                 NombreIcon = data['ico_Regresar']
             else:
                 NombreIcon = "imagen.png"
+        elif 'Estado' in teclas[tecla]:
+            if teclas[tecla]['EstadoActual'] and 'ico' in teclas[tecla]['Estado'][0]:
+                NombreIcon = teclas[tecla]['Estado'][0]['ico']
+            elif not teclas[tecla]['EstadoActual'] and 'ico' in teclas[tecla]['Estado'][1]:
+                NombreIcon = teclas[tecla]['Estado'][1]['ico']
         elif 'ico' in teclas[tecla]:
             NombreIcon = "{}".format(teclas[tecla]['ico'])
         else:
@@ -84,8 +89,18 @@ def ActualizarImagen(deck, teclas, tecla, limpiar = False):
         icon_posicion = ((image.width - icon.width) // 2, 0)
         image.paste(icon, icon_posicion, icon)
 
-        if 'Titulo' in teclas[tecla]:
+        titulo = ''
+
+        if 'Estado' in teclas[tecla]:
+            if teclas[tecla]['EstadoActual'] and 'Titulo' in teclas[tecla]['Estado'][0]:
+                titulo = "{}".format(teclas[tecla]['Estado'][0]['Titulo'])
+            elif not teclas[tecla]['EstadoActual'] and 'Titulo' in teclas[tecla]['Estado'][1]:
+                titulo = "{}".format(teclas[tecla]['Estado'][1]['Titulo'])
+        elif 'Titulo' in teclas[tecla]:
             titulo = "{}".format(teclas[tecla]['Titulo'])
+
+
+        if not titulo == '':
             dibujo = ImageDraw.Draw(image)
             font = ImageFont.truetype(fuente, 14)
             label_w, label_h = dibujo.textsize(titulo, font=font)
@@ -111,18 +126,28 @@ def ActualizarTeclas(deck, tecla, estado):
             elif 'OS' in teclas[tecla]:
                 os.system(teclas[tecla]['OS'])
             elif 'websocket' in teclas[tecla]:
-                print(teclas[tecla]['websocket'])
                 ComandoWebSocket(teclas[tecla]['websocket'])
+            elif 'EstadoActual' in teclas[tecla]:
+                teclas[tecla]['EstadoActual'] = not teclas[tecla]['EstadoActual']
+                print(teclas[tecla]['EstadoActual'])
+                ActualizarImagen(deck, teclas, tecla)
+                teclasGuardar = teclas
+                teclas = teclas[tecla]['Estado']
+                if teclasGuardar[tecla]['EstadoActual']:
+                    ActualizarTeclas(deck,  0, True)
+                else:
+                    ActualizarTeclas(deck,  1, True)
+                teclas = teclasGuardar
             elif 'tecla' in teclas[tecla]:
-                print("comando {}".format(teclas[tecla]['tecla']))
                 ComandoTeclas(teclas[tecla]['tecla'])
-            else:
-                print("Entando a folder")
+            elif 'Key' in teclas[tecla]:
                 teclas = teclas[tecla]['Key']
                 for key in range(deck.key_count()):
                     ActualizarImagen(deck, teclas, key, True)
                 for indice in range(len(teclas)):
                     ActualizarImagen(deck, teclas, indice)
+            else:
+                print("Tecla no definida")
         else:
             print("Tecla no programada")
 

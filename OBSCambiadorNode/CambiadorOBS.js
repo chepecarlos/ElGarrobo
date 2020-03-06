@@ -1,7 +1,5 @@
 var OBSWebSocket = require('obs-websocket-js');
 
-// npm install node-telegram-bot-api
-
 console.log(process.argv[2]);
 
 const obs = new OBSWebSocket();
@@ -18,26 +16,30 @@ obs.connect({
     console.log("Cambiar Estado Striming")
     if (process.argv[3] == "empezar") {
       obs.sendCallback('StartStreaming', (error) => {
-        console.log(error);
-        // Code here...
+        if (error) {
+          console.log(error);
+        }
       });
     } else if (process.argv[3] == "parar") {
       obs.sendCallback('StopStreaming', (error) => {
-        console.log(error);
-        // Code here...
+        if (error) {
+          console.log(error);
+        }
       });
     }
   } else if (process.argv[2] == "grabar") {
     console.log("Cambiar Estado Grabacion")
     if (process.argv[3] == "empezar") {
       obs.sendCallback('StartRecording', (error) => {
-        console.log(error);
-        // Code here...
+        if (error) {
+          console.log(error);
+        }
       });
     } else if (process.argv[3] == "parar") {
       obs.sendCallback('StopRecording', (error) => {
-        console.log(error);
-        // Code here...
+        if (error) {
+          console.log(error);
+        }
       });
     }
   } else if (process.argv[2] == "mute") {
@@ -70,38 +72,36 @@ obs.connect({
         console.log(data)
       });
     }
-    // obs.sendCallback('GetSourceSettings',{
-    //   'sourceName' : 'CamaraHDMI'
-    // } ,(error, data) => {
-    //   if (error) {
-    //     console.log(error);
-    //   }
-    //   console.log(data)
-    // });
-
-    // obs.sendCallback('GetSourceFilters', {
-    //   'sourceName': 'CamaraHDMI'
-    // }, (error, data) => {
-    //   if (error) {
-    //     console.log(error);
-    //   }
-    //   console.log(data)
-    // });
-
-
+  } else if (process.argv[2] == "Camara") {
+    console.log("Camara Activando")
+    if (process.argv[3] == "Encender") {
+      console.log("Camara Encender")
+      obs.sendCallback('SetSceneItemProperties', {
+        'item': 'CamaraHDMI',
+        'visible': true
+      }, (error, data) => {
+        if (error) {
+          console.log(error);
+        }
+        console.log(data)
+      });
+    } else if (process.argv[3] == "Apagar") {
+      console.log("Camara Encender")
+      obs.sendCallback('SetSceneItemProperties', {
+        'item': 'CamaraHDMI',
+        'visible': false
+      }, (error, data) => {
+        if (error) {
+          console.log(error);
+        }
+        console.log(data)
+      });
+    }
   }
 
   obs.disconnect();
 }).catch(err => {
   console.log(err);
-});
-
-obs.on('SwitchScenes', data => {
-  console.log(`New Active Scene: ${data.sceneName}`);
-});
-
-obs.on('GetSourceFilters', (data) => {
-  console.log(data);
 });
 
 obs.on('error', err => {
