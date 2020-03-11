@@ -1,8 +1,9 @@
 {
-  "Brillo": 50,
+  "Brillo": 100,
   "Fuente": "Recursos/KomikaTitle.ttf",
   "ico_defecto": "Recursos/Defecto.png",
   "ico_Regresar": "Recursos/Regresar.png",
+  "Servidor": "ryuk.local",
   "Comando": [{
     "Nombre": "Arduino",
     "ico": "Recursos/Arduino/Arduino.png",
@@ -49,17 +50,14 @@
       "Titulo": "Guardar",
       "websocket": "Key ctrl s"
     }, {
-      "Nombre": "Abir",
-      "tecla": ["ctrl", "o"]
+      "Nombre": "Add",
+      "Titulo": "Add"
     }, {
-      "Nombre": "Guardar",
-      "tecla": ["ctrl", "s"]
+      "Nombre": "Page up",
+      "Titulo": "Page up"
     }, {
-      "Nombre": "Verifica",
-      "tecla": ["ctrl", "r"]
-    }, {
-      "Nombre": "Verifica",
-      "tecla": ["ctrl", "r"]
+      "Nombre": "Page Don",
+      "Titulo": "Page Don"
     }, {
       "Nombre": "Regresar",
       "Regresar": "True"
@@ -157,12 +155,12 @@
         "Nombre": "CamaraActiva",
         "Titulo": "Camara",
         "ico": "Recursos/OBS/CamaraOn.png",
-        "OS": "node OBSNode/OBSNode.js Camara Activar"
+        "OS": "node OBSNode/OBSNode.js Visible Activar Camara"
       }, {
         "Nombre": "CamaraDesactiva",
         "Titulo": "No Camara",
         "ico": "Recursos/OBS/CamaraOff.png",
-        "OS": "node OBSNode/OBSNode.js Camara Desactivar"
+        "OS": "node OBSNode/OBSNode.js Visible Desactivar Camara"
       }]
     }, {
       "Nombre": "Mic",
@@ -196,6 +194,19 @@
     }, {
       "Nombre": "Terminar",
       "Titulo": "Terminar"
+    }, {
+      "Nombre": "NDI",
+      "Titulo": "NDI",
+      "EstadoActual": true,
+      "Estado": [{
+        "Nombre": "NDIActivar",
+        "Titulo": "NDI",
+        "OS": "node OBSNode/OBSNode.js Visible Activar PC"
+      }, {
+        "Nombre": "NDIDesactiva",
+        "Titulo": "No NDI",
+        "OS": "node OBSNode/OBSNode.js Visible Desactivar PCHMDO"
+      }]
     }, {
       "Nombre": "Regresar",
       "Regresar": "True"

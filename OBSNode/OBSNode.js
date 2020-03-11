@@ -4,7 +4,7 @@ console.log(process.argv[2]);
 
 const obs = new OBSWebSocket();
 obs.connect({
-  address: 'Ryuk.local:4444'
+  address: 'ryuk.local:4444'
 }).then(() => {
   console.log(`Conectado CambiadorOBS`);
   if (process.argv[2] == "Esena") {
@@ -93,12 +93,11 @@ obs.connect({
         console.log(data)
       });
     }
-  } else if (process.argv[2] == "Camara") {
-    console.log("Camara Activando")
+  } else if (process.argv[2] == "Visible") {
     if (process.argv[3] == "Activar") {
-      console.log("Camara Encender")
+      console.log(process.argv[4] + " Encender")
       obs.sendCallback('SetSceneItemProperties', {
-        'item': 'CamaraHDMI',
+        'item': process.argv[4],
         'visible': true
       }, (error, data) => {
         if (error) {
@@ -107,9 +106,9 @@ obs.connect({
         console.log(data)
       });
     } else if (process.argv[3] == "Desactivar") {
-      console.log("Camara Encender")
+      console.log(process.argv[4] + " Encender")
       obs.sendCallback('SetSceneItemProperties', {
-        'item': 'CamaraHDMI',
+        'item': process.argv[4],
         'visible': false
       }, (error, data) => {
         if (error) {

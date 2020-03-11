@@ -11,6 +11,7 @@ Configuraciones para ElGato stream-deck de ALSW escrito en Python
 
 # TODO
 
+* Lista de key para mas de 15 key
 * Inocos para submenos
 * Instalador
 * Documentacion

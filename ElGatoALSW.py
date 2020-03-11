@@ -76,6 +76,10 @@ def ActualizarImagen(deck, teclas, tecla, limpiar = False):
                 NombreIcon = teclas[tecla]['Estado'][0]['ico']
             elif not teclas[tecla]['EstadoActual'] and 'ico' in teclas[tecla]['Estado'][1]:
                 NombreIcon = teclas[tecla]['Estado'][1]['ico']
+            elif 'ico_defecto' in data:
+                NombreIcon = data['ico_defecto']
+            else:
+                NombreIcon = "imagen.png"
         elif 'ico' in teclas[tecla]:
             NombreIcon = "{}".format(teclas[tecla]['ico'])
         else:
@@ -117,7 +121,6 @@ def ActualizarTeclas(deck, tecla, estado):
             print("Boton {} - {}".format(tecla, teclas[tecla]['Nombre']), flush=True)
 
             if 'Regresar' in teclas[tecla]:
-                print("Regresar")
                 teclas = data['Comando']
                 for key in range(deck.key_count()):
                     ActualizarImagen(deck, teclas, key, True)
@@ -129,7 +132,6 @@ def ActualizarTeclas(deck, tecla, estado):
                 ComandoWebSocket(teclas[tecla]['websocket'])
             elif 'EstadoActual' in teclas[tecla]:
                 teclas[tecla]['EstadoActual'] = not teclas[tecla]['EstadoActual']
-                print(teclas[tecla]['EstadoActual'])
                 ActualizarImagen(deck, teclas, tecla)
                 teclasGuardar = teclas
                 teclas = teclas[tecla]['Estado']
@@ -152,13 +154,16 @@ def ActualizarTeclas(deck, tecla, estado):
             print("Tecla no programada")
 
 def ComandoWebSocket(comando):
-    ws = websocket.WebSocket()
-    ws.connect("ws://ryuk.local:8765")
-    ws.send(comando)
-    print ("Reeiving...")
-    result = ws.recv()
-    print (result)
-    ws.close()
+    if 'Servidor' in data:
+        ws = websocket.WebSocket()
+        Servidor = "ws://{}:8765".format(data['Servidor'])
+        print(Servidor)
+        ws.connect(Servidor)
+        ws.send(comando)
+        print ("Reciviendo...")
+        result = ws.recv()
+        print (result)
+        ws.close()
 
 # Principal
 if __name__ == "__main__":
