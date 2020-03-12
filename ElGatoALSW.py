@@ -6,13 +6,9 @@ import threading
 from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.ImageHelpers import PILHelper
-from pynput.keyboard import Key, Controller
-import time
+import pyautogui
 import json
 import websocket
-
-# Cargar Teclado
-keyboard = Controller()
 
 teclas = "nada"
 folder = ""
@@ -27,36 +23,10 @@ with open('Comandos.json') as f:
 def ComandoTeclas(Teclas):
 
     for tecla in Teclas:
-        if tecla == 'ctrl':
-            keyboard.press(Key.ctrl)
-        elif tecla == 'alt':
-            keyboard.press(Key.alt)
-        elif tecla == 'shift':
-            keyboard.press(Key.shift)
-        elif tecla == 'super':
-            keyboard.press(Key.cmd)
-        elif tecla == 'f9':
-            keyboard.press(Key.f9)
-        elif tecla == 'f10':
-            keyboard.press(Key.f10)
-        else:
-            keyboard.press(tecla)
+        pyautogui.keyDown(tecla)
 
-    for tecla in Teclas:
-        if tecla == 'ctrl':
-            keyboard.release(Key.ctrl)
-        elif tecla == 'alt':
-            keyboard.release(Key.alt)
-        elif tecla == 'shift':
-            keyboard.release(Key.shift)
-        elif tecla == 'super':
-            keyboard.release(Key.cmd)
-        elif tecla == 'f9':
-            keyboard.release(Key.f9)
-        elif tecla == 'f10':
-            keyboard.release(Key.f10)
-        else:
-            keyboard.release(tecla)
+    for tecla in reversed(Teclas):
+        pyautogui.keyUp(tecla)
 
 def ActualizarImagen(deck, teclas, tecla, limpiar = False):
     global folder
@@ -160,9 +130,9 @@ def ComandoWebSocket(comando):
         print(Servidor)
         ws.connect(Servidor)
         ws.send(comando)
-        print ("Reciviendo...")
-        result = ws.recv()
-        print (result)
+        # print ("Reciviendo...")
+        # result = ws.recv()
+        print ("comando enviado")
         ws.close()
 
 # Principal

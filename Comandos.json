@@ -50,14 +50,25 @@
       "Titulo": "Guardar",
       "websocket": "Key ctrl s"
     }, {
-      "Nombre": "Add",
-      "Titulo": "Add"
+      "Nombre": "Guardar2",
+      "Titulo": "Guardar 2",
+      "tecla": ["ctrl", "s"]
     }, {
-      "Nombre": "Page up",
-      "Titulo": "Page up"
+      "Nombre": "Cortar",
+      "Titulo": "Cortar",
+      "websocket": "Key k"
     }, {
-      "Nombre": "Page Don",
-      "Titulo": "Page Don"
+      "Nombre": "Cortar2",
+      "Titulo": "t",
+      "tecla": ["t"]
+    }, {
+      "Nombre": "test",
+      "Titulo": "sh t",
+      "tecla": ["shift", "t"]
+    }, {
+      "Nombre": "Ter",
+      "Titulo": "Ter",
+      "websocket": "Key f12"
     }, {
       "Nombre": "Regresar",
       "Regresar": "True"
@@ -314,13 +325,13 @@
     "Nombre": "Extra",
     "Titulo": "Extra",
     "Key": [{
-      "Nombre": "ZoonIn",
-      "Titulo": "ZoonIn",
-      "tecla": ["alt", "super", "="]
+      "Nombre": "Izquierda",
+      "Titulo": "Izquierda",
+      "tecla": ["ctrl", "alt", "left"]
     }, {
-      "Nombre": "ZoonOut",
-      "Titulo": "ZoonOut",
-      "tecla": ["alt", "super", "-"]
+      "Nombre": "Derecha",
+      "Titulo": "Derecha",
+      "tecla": ["ctrl", "alt", "right"]
     }, {
       "Nombre": "Regresar",
       "Regresar": "True"
