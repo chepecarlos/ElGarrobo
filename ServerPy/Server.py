@@ -5,9 +5,6 @@ import websockets
 import os
 import pyautogui
 
-# Cargar Teclado
-keyboard = Controller()
-
 print("Activando Servidor")
 
 def ComandoTeclas(Teclas):
@@ -28,7 +25,7 @@ async def comandoOS(websocket, path):
     else:
         os.system(comando)
     # await websocket.send(Respuesta)
-    print(f"> {Respuesta}")
+    # print(f"> {Respuesta}")
 
 start_server = websockets.serve(comandoOS, "ryuk.local", 8765)
 
