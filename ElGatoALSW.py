@@ -37,7 +37,9 @@ def ActualizarImagen(deck, teclas, tecla, limpiar = False):
         nombre = "{}".format(teclas[tecla]['Nombre'])
 
         if 'Regresar' in teclas[tecla]:
-            if 'ico_Regresar' in data :
+            if 'ico' in teclas[tecla]:
+                NombreIcon = "{}".format(teclas[tecla]['ico'])
+            elif 'ico_Regresar' in data :
                 NombreIcon = data['ico_Regresar']
             else:
                 NombreIcon = "imagen.png"
