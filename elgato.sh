@@ -3,6 +3,8 @@
 # TODO: Agregar mas opciones al lanzdor
 # TODO: Repara eror de lanzar de otro lado k
 
+# Agregar a ~/.bashrc
+# alias elgato='bash $HOME/Programa/ElGatoALSW/elgato.sh'
 
 while [ -n "$1" ]; do
 	case "$1" in
