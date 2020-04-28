@@ -6,9 +6,11 @@ import threading
 from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.ImageHelpers import PILHelper
-import pyautogui
 import json
 import websocket
+
+from EmularTeclado import *
+from OBSWebSocketPropio import *
 
 teclas = "nada"
 folder = ""
@@ -19,14 +21,6 @@ FolderRecursos = os.path.join(os.path.dirname(__file__), "Recusos")
 
 with open('Comandos.json') as f:
     data = json.load(f)
-
-def ComandoTeclas(Teclas):
-
-    for tecla in Teclas:
-        pyautogui.keyDown(tecla)
-
-    for tecla in reversed(Teclas):
-        pyautogui.keyUp(tecla)
 
 def ActualizarImagen(deck, teclas, tecla, limpiar = False):
     global folder
@@ -98,6 +92,9 @@ def ActualizarTeclas(deck, tecla, estado):
                     ActualizarImagen(deck, teclas, key, True)
                 for tecla in range(len(teclas)):
                     ActualizarImagen(deck, teclas, tecla)
+            elif 'CambiarEsena' in teclas[tecla]:
+                print(teclas[tecla]['CambiarEsena'])
+                CambiarEsena(teclas[tecla]['CambiarEsena'])
             elif 'OS' in teclas[tecla]:
                 os.system(teclas[tecla]['OS'])
             elif 'websocket' in teclas[tecla]:
@@ -165,6 +162,13 @@ if __name__ == "__main__":
             print("Fuente no asignada")
             deck.close()
 
+        if 'Servidor' in data:
+            CambiarHost(data['Servidor'])
+
+        # TODO: Cuando en correcto conectarse al servidor?
+        ConectarseWebSocket()
+
+        # CambiarEsena('Juan')
 
         teclas = data['Comando']
         for tecla in range(len(teclas)):

@@ -20,3 +20,13 @@ Configuraciones para ElGato stream-deck de ALSW escrito en Python
 # Problemas
 
 * Precionar tecla Super
+
+
+# Opciones de comando
+
+* tecla
+  * preciona una combinacion de teclasGuardar
+* websocket
+  * Ejecuta comando en otra pc
+* OS
+  * Ejecuta un comando en terminal

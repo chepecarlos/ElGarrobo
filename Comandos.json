@@ -153,6 +153,10 @@
     "ico": "Recursos/Atom/Atom.png",
     "Titulo": "Atom",
     "Key": [{
+      "Nombre": "TODO",
+      "Titulo": "TODO",
+      "tecla": ["ctrl", "k", "T"]
+    }, {
       "Nombre": "Regresar",
       "Regresar": "True"
     }]
@@ -236,22 +240,33 @@
         "OS": "node OBSNode/OBSNode.js Mute Desactivar MicrofonoUSB"
       }]
     }, {
+      "Nombre": "Inicio",
+      "Titulo": "Inicio",
+      "CambiarEsena": "Inicio"
+    }, {
+      "Nombre": "Empezando",
+      "Titulo": "Empezando",
+      "CambiarEsena": "Empezando"
+    }, {
+      "Nombre": "ChepeCarlos",
+      "Titulo": "ChepeCarlos",
+      "CambiarEsena": "ChepeCarlos"
+    }, {
       "Nombre": "Codigo",
       "Titulo": "Codigo",
-      "OS": "node OBSNode/OBSNode.js Esena Codigo"
+      "CambiarEsena": "Codigo"
     }, {
-      "Nombre": "Camara",
-      "Titulo": "Camara",
-      "OS": "node OBSNode/OBSNode.js Esena CamaraGrande"
+      "Nombre": "Preguntas",
+      "Titulo": "Preguntas",
+      "CambiarEsena": "Preguntas"
     }, {
-      "Nombre": "Espera",
-      "Titulo": "Espera"
+      "Nombre": "Terminando",
+      "Titulo": "Terminando",
+      "CambiarEsena": "Terminando"
     }, {
-      "Nombre": "Empezar",
-      "Titulo": "Empezar"
-    }, {
-      "Nombre": "Terminar",
-      "Titulo": "Terminar"
+      "Titulo": "Regresamos",
+      "Nombre": "Regresamos",
+      "CambiarEsena": "Regresamos"
     }, {
       "Nombre": "NDI",
       "Titulo": "NDI",
