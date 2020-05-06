@@ -2,25 +2,32 @@
 
 # Librerias
 import os
+import sys
 import threading
 from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.ImageHelpers import PILHelper
 import json
-import websocket
 
 from EmularTeclado import *
 from OBSWebSocketPropio import *
+from MiWebSoket import *
 
 teclas = "nada"
 folder = ""
 fuente = ""
 
+MiOBS = MiObsWS()
+MiSoket = MiWebSoket()
 # Recusos para sistema
 FolderRecursos = os.path.join(os.path.dirname(__file__), "Recusos")
 
-with open('Comandos.json') as f:
-    data = json.load(f)
+if os.path.exists('Comandos.json'):
+    with open('Comandos.json') as f:
+        data = json.load(f)
+else:
+    print("No se Encontro el Archivo Comandos.json")
+    sys.exit()
 
 def ActualizarImagen(deck, teclas, tecla, limpiar = False):
     global folder
@@ -38,14 +45,24 @@ def ActualizarImagen(deck, teclas, tecla, limpiar = False):
             else:
                 NombreIcon = "imagen.png"
         elif 'Estado' in teclas[tecla]:
-            if teclas[tecla]['EstadoActual'] and 'ico' in teclas[tecla]['Estado'][0]:
-                NombreIcon = teclas[tecla]['Estado'][0]['ico']
-            elif not teclas[tecla]['EstadoActual'] and 'ico' in teclas[tecla]['Estado'][1]:
-                NombreIcon = teclas[tecla]['Estado'][1]['ico']
+            print("Hay estado {}".format(teclas[tecla]['Estado']))
+            if teclas[tecla]['Estado'] and 'icon_true' in teclas[tecla]:
+                NombreIcon = teclas[tecla]['icon_true']
+            elif not teclas[tecla]['Estado'] and 'icon_false' in teclas[tecla]:
+                NombreIcon = teclas[tecla]['icon_false']
             elif 'ico_defecto' in data:
                 NombreIcon = data['ico_defecto']
             else:
                 NombreIcon = "imagen.png"
+
+            # if teclas[tecla]['EstadoActual'] and 'ico' in teclas[tecla]['Estado'][0]:
+            #     NombreIcon = teclas[tecla]['Estado'][0]['ico']
+            # elif not teclas[tecla]['EstadoActual'] and 'ico' in teclas[tecla]['Estado'][1]:
+            #     NombreIcon = teclas[tecla]['Estado'][1]['ico']
+            # elif 'ico_defecto' in data:
+            #     NombreIcon = data['ico_defecto']
+            # else:
+            #     NombreIcon = "imagen.png"
         elif 'ico' in teclas[tecla]:
             NombreIcon = "{}".format(teclas[tecla]['ico'])
         else:
@@ -61,14 +78,13 @@ def ActualizarImagen(deck, teclas, tecla, limpiar = False):
 
         titulo = ''
 
-        if 'Estado' in teclas[tecla]:
-            if teclas[tecla]['EstadoActual'] and 'Titulo' in teclas[tecla]['Estado'][0]:
-                titulo = "{}".format(teclas[tecla]['Estado'][0]['Titulo'])
-            elif not teclas[tecla]['EstadoActual'] and 'Titulo' in teclas[tecla]['Estado'][1]:
-                titulo = "{}".format(teclas[tecla]['Estado'][1]['Titulo'])
-        elif 'Titulo' in teclas[tecla]:
+        # if 'Estado' in teclas[tecla]:
+        #     if teclas[tecla]['EstadoActual'] and 'Titulo' in teclas[tecla]['Estado'][0]:
+        #         titulo = "{}".format(teclas[tecla]['Estado'][0]['Titulo'])
+        #     elif not teclas[tecla]['EstadoActual'] and 'Titulo' in teclas[tecla]['Estado'][1]:
+        #         titulo = "{}".format(teclas[tecla]['Estado'][1]['Titulo'])
+        if 'Titulo' in teclas[tecla]:
             titulo = "{}".format(teclas[tecla]['Titulo'])
-
 
         if not titulo == '':
             dibujo = ImageDraw.Draw(image)
@@ -84,7 +100,7 @@ def ActualizarTeclas(deck, tecla, estado):
 
     if estado:
         if tecla < len(teclas):
-            print("Boton {} - {}".format(tecla, teclas[tecla]['Nombre']), flush=True)
+            print(f"Boton {tecla} - {teclas[tecla]['Nombre']}")
 
             if 'Regresar' in teclas[tecla]:
                 teclas = data['Comando']
@@ -92,13 +108,21 @@ def ActualizarTeclas(deck, tecla, estado):
                     ActualizarImagen(deck, teclas, key, True)
                 for tecla in range(len(teclas)):
                     ActualizarImagen(deck, teclas, tecla)
+            elif 'Filtro' in teclas[tecla] and 'Fuente' in teclas[tecla] :
+                MiOBS.CambiarFiltro(teclas[tecla]['Fuente'], teclas[tecla]['Filtro'], not teclas[tecla]['Estado'])
+            # elif 'Fuente' in tecla[tecla]:
+            #     MiOBS.CambiarFuente(tecla[tecla]['Fuente'])
             elif 'CambiarEsena' in teclas[tecla]:
-                print(teclas[tecla]['CambiarEsena'])
-                CambiarEsena(teclas[tecla]['CambiarEsena'])
+                MiOBS.CambiarEsena(teclas[tecla]['CambiarEsena'])
+            elif 'Grabar' in teclas[tecla]:
+                MiOBS.CambiarGrabacion()
+            elif 'Live' in teclas[tecla]:
+                MiOBS.CambiarStriming()
             elif 'OS' in teclas[tecla]:
                 os.system(teclas[tecla]['OS'])
             elif 'websocket' in teclas[tecla]:
-                ComandoWebSocket(teclas[tecla]['websocket'])
+                print("Comando WebSocket")
+                # ComandoWebSocket(teclas[tecla]['websocket'])
             elif 'EstadoActual' in teclas[tecla]:
                 teclas[tecla]['EstadoActual'] = not teclas[tecla]['EstadoActual']
                 ActualizarImagen(deck, teclas, tecla)
@@ -111,6 +135,28 @@ def ActualizarTeclas(deck, tecla, estado):
                 teclas = teclasGuardar
             elif 'tecla' in teclas[tecla]:
                 ComandoTeclas(teclas[tecla]['tecla'])
+            elif 'Opcion' in teclas[tecla]:
+                if teclas[tecla]['Opcion'] == "OBS_Local" and 'OBS_Local' in data:
+                    print("Conectando con Sevidor local OBS")
+                    MiOBS.CambiarHost(data['OBS_Local'])
+                    MiOBS.Conectar()
+                elif teclas[tecla]['Opcion'] == "OBS_Remoto" and 'OBS_Remoto' in data:
+                    print("Conectando con Sevidor Remoto OBS")
+                    MiOBS.CambiarHost(data['OBS_Remoto'])
+                    MiOBS.Conectar()
+                elif teclas[tecla]['Opcion'] == "WebSocket" and 'WebSocket' in data:
+                    print("Conectando WebSocket")
+                    MiSoket.CambiarHost(data['WebSocket'])
+                    MiSoket.Conectar()
+                elif teclas[tecla]['Opcion'] == "Exit":
+                    print("Saliendo ElGato ALSW - Adios :) ")
+                    MiSoket.Cerrar()
+                    MiOBS.Cerrar()
+                    deck.reset()
+                    deck.close()
+                else:
+                    print(f"Opcion: {teclas[tecla]['Opcion']}")
+                    # TODO: Desconectar OBS y WebSocket
             elif 'Key' in teclas[tecla]:
                 teclas = teclas[tecla]['Key']
                 for key in range(deck.key_count()):
@@ -122,17 +168,20 @@ def ActualizarTeclas(deck, tecla, estado):
         else:
             print("Tecla no programada")
 
-def ComandoWebSocket(comando):
-    if 'Servidor' in data:
-        ws = websocket.WebSocket()
-        Servidor = "ws://{}:8765".format(data['Servidor'])
-        print(Servidor)
-        ws.connect(Servidor)
-        ws.send(comando)
-        # print ("Reciviendo...")
-        # result = ws.recv()
-        print ("comando enviado")
-        ws.close()
+# def ComandoWebSocket(comando):
+#     if 'Servidor' in data:
+#         ws = websocket.WebSocket()
+#         Servidor = "ws://{}:8765".format(data['Servidor'])
+#         print(Servidor)
+#         ws.connect(Servidor)
+#         ws.send(comando)
+#         # print ("Reciviendo...")
+#         # result = ws.recv()
+#         print (f"comando enviado")
+#         ws.close()
+
+def CambiarEstadoRec(Estado):
+    teclas[0]['Estado'] = Estado
 
 # Principal
 if __name__ == "__main__":
@@ -140,7 +189,22 @@ if __name__ == "__main__":
     # Buscando Dispisitovos
     streamdecks = DeviceManager().enumerate()
 
-    print("Programa El Gato ALSW - {}".format("Encontrado" if len(streamdecks) > 0 else "No Conectado"));
+    print(f"Programa El Gato ALSW - {'Encontrado' if len(streamdecks) > 0 else 'No Conectado'}");
+
+
+    # TODO: Cuando en correcto conectarse al servidor?
+    # print("Cargando OBS Web Socket")
+    # OBS.Conectar()
+    # OBS.CambiarGrabacion()
+    # print(data['Comando'][4]['Key'][0]['Estado'])
+    # # OBS.CambiarGrabacion()
+    # OBS.CambiarVolumen('Mic/Aux')
+    # OBS.CambiarFiltro('Camara', 'Verde', False)
+    # OBS.CambiarFuente('Camara', False)
+    # print(data['Comando'][4]['Key'][0]['Estado'])
+
+    # ConectarseWebSocket()
+
 
     for index, deck in enumerate(streamdecks):
 
@@ -148,7 +212,7 @@ if __name__ == "__main__":
         deck.open()
         deck.reset()
 
-        print("Abriendo '{}' dispositivo (Numero Serial: '{}')".format(deck.deck_type(), deck.get_serial_number()))
+        print(f"Abriendo '{deck.deck_type()}' dispositivo (Numero Serial: '{deck.get_serial_number()}')")
 
         # Cambiar Brillo
         if 'Brillo' in data:
@@ -157,18 +221,10 @@ if __name__ == "__main__":
             deck.set_brightness(50)
 
         if 'Fuente' in data:
-            fuente = "{}".format(data['Fuente'])
+            fuente = f"{data['Fuente']}"
         else:
             print("Fuente no asignada")
             deck.close()
-
-        if 'Servidor' in data:
-            CambiarHost(data['Servidor'])
-
-        # TODO: Cuando en correcto conectarse al servidor?
-        ConectarseWebSocket()
-
-        # CambiarEsena('Juan')
 
         teclas = data['Comando']
         for tecla in range(len(teclas)):

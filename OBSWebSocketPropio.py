@@ -87,3 +87,8 @@ class MiObsWS:
         # pollo = self.ConeccionOBS.call(requests.GetSourceSettings(Fuente))
         # print("polo es {}".format(pollo)).getSourcesettings()
         self.ConeccionOBS.call(requests.SetSourceSettings(Fuente, {'item-id': 7, 'item-name': 'Camara', 'item-visible': False, 'scene-name': 'Ozmaro'}))
+
+    def Cerrar(self):
+        if self.OBSConectado:
+            print("Cerrando OBS")
+            self.ConeccionOBS.disconnect()

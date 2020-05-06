@@ -3,7 +3,9 @@
   "Fuente": "Recursos/KomikaTitle.ttf",
   "ico_defecto": "Recursos/Defecto.png",
   "ico_Regresar": "Recursos/Regresar.png",
-  "Servidor": "ryuk.local",
+  "WebSocket": "ryuk.local",
+  "OBS_Remoto": "ryuk.local",
+  "OBS_Local": "localhost",
   "Comando": [{
     "Nombre": "Arduino",
     "ico": "Recursos/Arduino/Arduino.png",
@@ -167,78 +169,39 @@
     "Key": [{
       "Nombre": "Rec",
       "Titulo": "Rec",
-      "EstadoActual": true,
-      "Estado": [{
-        "Nombre": "RecEmpezar",
-        "Titulo": "Empezar",
-        "ico": "Recursos/OBS/RecOff.png",
-        "OS": "node OBSNode/OBSNode.js Grabar Desactivar"
-      }, {
-        "Nombre": "RecTerminar",
-        "Titulo": "Terminar",
-        "ico": "Recursos/OBS/RecOn.png",
-        "OS": "node OBSNode/OBSNode.js Grabar Activar"
-      }]
+      "Grabar": "Cambiar",
+      "Estado": false,
+      "icon_true": "Recursos/OBS/RecOn.png",
+      "icon_false": "Recursos/OBS/RecOff.png"
     }, {
       "Nombre": "Live",
       "Titulo": "Live",
-      "EstadoActual": true,
-      "Estado": [{
-        "Nombre": "LiveEmpezar",
-        "Titulo": "Empezar",
-        "ico": "Recursos/OBS/LiveOff.png",
-        "OS": "node OBSNode/OBSNode.js Striming Desactivar"
-      }, {
-        "Nombre": "LiveTerminar",
-        "Titulo": "Terminar",
-        "ico": "Recursos/OBS/LiveOn.png",
-        "OS": "node OBSNode/OBSNode.js Striming Activar"
-      }]
+      "Live": "Cambiar",
+      "Estado": false,
+      "icon_true": "Recursos/OBS/LiveOn.png",
+      "icon_false": "Recursos/OBS/LiveOff.png"
+    }, {
+      "Nombre": "Mic",
+      "Titulo": "Mic USB",
+      "Fuente": "MicrofonoUSB",
+      "Estado": true,
+      "icon_true": "Recursos/OBS/MicOn.png",
+      "icon_false": "Recursos/OBS/MicOff.png"
     }, {
       "Nombre": "Verde",
       "Titulo": "Verde",
-      "EstadoActual": false,
-      "Estado": [{
-        "Nombre": "VerdeActivar",
-        "Titulo": "Verde",
-        "ico": "Recursos/OBS/VerdeOn.png",
-        "OS": "node OBSNode/OBSNode.js Filtro Desactivar Camara Verde"
-      }, {
-        "Nombre": "VerdeApagar",
-        "Titulo": "No Verde",
-        "ico": "Recursos/OBS/VerdeOff.png",
-        "OS": "node OBSNode/OBSNode.js Filtro Activar Camara Verde"
-      }]
+      "Fuente": "Camara",
+      "Filtro": "Cambiar",
+      "Estado": false,
+      "icon_true": "Recursos/OBS/VerdeOn.png",
+      "icon_false": "Recursos/OBS/VerdeOff.png"
     }, {
       "Nombre": "Camara",
       "Titulo": "Camara",
-      "EstadoActual": true,
-      "Estado": [{
-        "Nombre": "CamaraActiva",
-        "Titulo": "Camara",
-        "ico": "Recursos/OBS/CamaraOn.png",
-        "OS": "node OBSNode/OBSNode.js Visible Activar Camara"
-      }, {
-        "Nombre": "CamaraDesactiva",
-        "Titulo": "No Camara",
-        "ico": "Recursos/OBS/CamaraOff.png",
-        "OS": "node OBSNode/OBSNode.js Visible Desactivar Camara"
-      }]
-    }, {
-      "Nombre": "Mic",
-      "Titulo": "Mic",
-      "EstadoActual": true,
-      "Estado": [{
-        "Nombre": "MicActivar",
-        "Titulo": "Mic",
-        "ico": "Recursos/OBS/MicOn.png",
-        "OS": "node OBSNode/OBSNode.js Mute Activar MicrofonoUSB"
-      }, {
-        "Nombre": "MicDesactiva",
-        "Titulo": "No Mic",
-        "ico": "Recursos/OBS/MicOff.png",
-        "OS": "node OBSNode/OBSNode.js Mute Desactivar MicrofonoUSB"
-      }]
+      "Fuente": "Camara",
+      "Estado": true,
+      "icon_true": "Recursos/OBS/CamaraOn.png",
+      "icon_false": "Recursos/OBS/CamaraOff.png"
     }, {
       "Nombre": "Inicio",
       "Titulo": "Inicio",
@@ -267,19 +230,6 @@
       "Titulo": "Regresamos",
       "Nombre": "Regresamos",
       "CambiarEsena": "Regresamos"
-    }, {
-      "Nombre": "NDI",
-      "Titulo": "NDI",
-      "EstadoActual": true,
-      "Estado": [{
-        "Nombre": "NDIActivar",
-        "Titulo": "NDI",
-        "OS": "node OBSNode/OBSNode.js Visible Activar PC"
-      }, {
-        "Nombre": "NDIDesactiva",
-        "Titulo": "No NDI",
-        "OS": "node OBSNode/OBSNode.js Visible Desactivar PCHMDO"
-      }]
     }, {
       "Nombre": "Regresar",
       "Regresar": "True"
@@ -388,6 +338,18 @@
     "Nombre": "Extra",
     "Titulo": "Extra",
     "Key": [{
+      "Nombre": "OBSRemoto",
+      "Titulo": "OBSRemoto",
+      "Opcion": "OBS_Remoto"
+    }, {
+      "Nombre": "OBSLocal",
+      "Titulo": "OBSLocal",
+      "Opcion": "OBS_Local"
+    }, {
+      "Nombre": "WebSocket",
+      "Titulo": "WebSocket",
+      "Opcion": "WebSocket"
+    }, {
       "Nombre": "Izquierda",
       "Titulo": "Izquierda",
       "tecla": ["ctrl", "alt", "left"]
@@ -403,6 +365,10 @@
       "Nombre": "Derecha 2",
       "Titulo": "Derecha",
       "websocket": "Key ctrl alt right"
+    }, {
+      "Nombre": "Exit",
+      "Titulo": "Exit",
+      "Opcion": "Exit"
     }, {
       "Nombre": "Regresar",
       "Regresar": "True"
