@@ -30,3 +30,8 @@ Configuraciones para ElGato stream-deck de ALSW escrito en Python
   * Ejecuta comando en otra pc
 * OS
   * Ejecuta un comando en terminal
+
+## Funciones especial de OBS
+
+* CambiarEsena
+  * seleciona que Esena de OBS cambiar con WebSocket
