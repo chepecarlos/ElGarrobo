@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-import asyncio
-import websockets
 import os
 import pyautogui
+import paho.mqtt.client as mqtt
 
-print("Activando Servidor")
+print("Activando Servidor MQTT")
 
 def ComandoTeclas(Teclas):
 
@@ -16,18 +15,46 @@ def ComandoTeclas(Teclas):
         pyautogui.keyUp(tecla)
 
 async def comandoOS(websocket, path):
-    comando = await websocket.recv()
-    print(f"< {comando}")
+print(f"< {comando}")
     Separar = comando.split()
     if(Separar[0] == 'Key'):
         Separar.remove('Key')
         ComandoTeclas(Separar)
     else:
         os.system(comando)
-    # await websocket.send(Respuesta)
-    # print(f"> {Respuesta}")
 
-start_server = websockets.serve(comandoOS, "ryuk.local", 8765)
+def ConectarMQTT(client, userdata, flags, rc):
+    print("Conencando al Servidor - "+str(rc))
+    MiMQTT.subscribe("Pollo")
 
-asyncio.get_event_loop().run_until_complete(start_server)
-asyncio.get_event_loop().run_forever()
+def MensajeMQTT(client, userdata, msg):
+    print(f"Mensaje secreto: {msg.topic} - {str(msg.payload)}")
+    comando = msg.payload
+    comando = comando.decode('utf-8')
+    Separar = comando.split()
+    if(Separar[0] == 'Key'):
+        Separar.remove('Key')
+        ComandoTeclas(Separar)
+    else:
+        os.system(comando)
+
+def EnviandoMQTT(client, obj, mid):
+    print("Mesaje: " + str(mid))
+
+def SubcribiendoMQTT(client, obj, mid, granted_qos):
+    print("Subscribed: " + str(mid) + " " + str(granted_qos))
+
+def LogMQTT(client, obj, level, string):
+    print(f"Log: {string}")
+
+MiMQTT = mqtt.Client()
+MiMQTT.on_connect = ConectarMQTT
+MiMQTT.on_publish = EnviandoMQTT
+MiMQTT.on_message = MensajeMQTT
+MiMQTT.on_subscribe = SubcribiendoMQTT
+MiMQTT.on_log = LogMQTT
+
+MiMQTT.username_pw_set("ALSWSexy", "SubcribanseAALSWenYoutube")
+MiMQTT.connect("broker.shiftr.io", 1883)
+
+MiMQTT.loop_forever()
