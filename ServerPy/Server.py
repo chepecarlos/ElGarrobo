@@ -15,7 +15,7 @@ def ComandoTeclas(Teclas):
         pyautogui.keyUp(tecla)
 
 async def comandoOS(websocket, path):
-print(f"< {comando}")
+    print(f"< {comando}")
     Separar = comando.split()
     if(Separar[0] == 'Key'):
         Separar.remove('Key')
@@ -25,7 +25,7 @@ print(f"< {comando}")
 
 def ConectarMQTT(client, userdata, flags, rc):
     print("Conencando al Servidor - "+str(rc))
-    MiMQTT.subscribe("Pollo")
+    MiMQTT.subscribe("ElGato")
 
 def MensajeMQTT(client, userdata, msg):
     print(f"Mensaje secreto: {msg.topic} - {str(msg.payload)}")
@@ -54,7 +54,7 @@ MiMQTT.on_message = MensajeMQTT
 MiMQTT.on_subscribe = SubcribiendoMQTT
 MiMQTT.on_log = LogMQTT
 
-MiMQTT.username_pw_set("ALSWSexy", "SubcribanseAALSWenYoutube")
-MiMQTT.connect("broker.shiftr.io", 1883)
+# MiMQTT.username_pw_set("ALSWSexy", "SubcribanseAALSWenYoutube")
+MiMQTT.connect("ryuk.local", 1883)
 
 MiMQTT.loop_forever()
