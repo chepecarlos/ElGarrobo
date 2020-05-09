@@ -3,6 +3,7 @@
 # TODO: Agregar mas opciones al lanzdor
 # TODO: Repara eror de lanzar de otro lado k
 
+# TODO: Crear instalador
 # Agregar a ~/.bashrc
 # alias elgato='bash $HOME/Programa/ElGatoALSW/elgato.sh'
 
