@@ -3,7 +3,7 @@
   "Fuente": "Recursos/KomikaTitle.ttf",
   "ico_defecto": "Recursos/Defecto.png",
   "ico_Regresar": "Recursos/Regresar.png",
-  "WebSocket": "ryuk.local",
+  "MQTT_Remoto": "ryuk.local",
   "OBS_Remoto": "ryuk.local",
   "OBS_Local": "localhost",
   "Comando": [{
@@ -51,72 +51,72 @@
       "Nombre": "Guardar",
       "Titulo": "Guardar",
       "ico": "Recursos/Blender/Guardar.png",
-      "websocket": "Key ctrl s"
+      "mqtt": "Key ctrl s"
     }, {
       "Nombre": "Trim",
       "Titulo": "Trim",
       "ico": "Recursos/Blender/Trim.png",
-      "websocket": "Key t"
+      "mqtt": "Key t"
     }, {
       "Nombre": "TrimAll",
       "Titulo": "Trim All",
       "ico": "Recursos/Blender/TrimAll.png",
-      "websocket": "Key shift t"
+      "mqtt": "Key shift t"
     }, {
       "Nombre": "TrimI",
       "Titulo": "Trim I",
       "ico": "Recursos/Blender/TrimI.png",
-      "websocket": "Key i"
+      "mqtt": "Key i"
     }, {
       "Nombre": "TrimD",
       "Titulo": "Trim D",
       "ico": "Recursos/Blender/TrimD.png",
-      "websocket": "Key o"
+      "mqtt": "Key o"
     }, {
       "Nombre": "Concatenar",
       "Titulo": "Concatenar",
       "ico": "Recursos/Blender/Concatenar.png",
-      "websocket": "Key c"
+      "mqtt": "Key c"
     }, {
       "Nombre": "ExpandirPista",
       "Titulo": "Exp Pista",
       "ico": "Recursos/Blender/ExpandirPista.png",
-      "websocket": "Key ctrl e"
+      "mqtt": "Key ctrl e"
     }, {
       "Nombre": "FadeIn",
       "Titulo": "Fade In",
       "ico": "Recursos/Blender/FadeIn.png",
-      "websocket": "Key ctrl f"
+      "mqtt": "Key ctrl f"
     }, {
       "Nombre": "FadeOut",
       "Titulo": "Fade Out",
       "ico": "Recursos/Blender/FadeOut.png",
-      "websocket": "Key alt f"
+      "mqtt": "Key alt f"
     }, {
       "Nombre": "LimpiarFade",
       "Titulo": "Clear Fade",
       "ico": "Recursos/Blender/LimpiarFade.png",
-      "websocket": "Key ctrl alt f"
+      "mqtt": "Key ctrl alt f"
     }, {
       "Nombre": "Mover",
       "Titulo": "Mover",
       "ico": "Recursos/Blender/Mover.png",
-      "websocket": "Key g"
+      "mqtt": "Key g"
     }, {
       "Nombre": "Duplicar",
       "Titulo": "Duplicar",
       "ico": "Recursos/Blender/Duplicar.png",
-      "websocket": "Key d "
+      "mqtt": "Key d "
     }, {
       "Nombre": "AjusTime",
       "Titulo": "Ajus Time",
       "ico": "Recursos/Blender/AjusTime.png",
-      "websocket": "Key ctrl alt p"
+      "mqtt": "Key ctrl alt p"
     }, {
       "Nombre": "MostarAudio",
       "Titulo": "Most Audio",
       "ico": "Recursos/Blender/MostarAudio.png",
-      "websocket": "Key alt w"
+      "mqtt": "Key alt w"
     }, {
       "Nombre": "Regresar",
       "ico": "Recursos/Blender/Regresar.png",
@@ -297,39 +297,39 @@
     "Key": [{
       "Nombre": "Proyecto",
       "Titulo": "Proyecto",
-      "websocket": "nemo /home/chepecarlos/ProyectoActual"
+      "mqtt": "nemo /home/chepecarlos/ProyectoActual"
     }, {
       "Nombre": "PistaA",
       "Titulo": "Pista A",
-      "websocket": "nemo /home/chepecarlos/ProyectoActual/PistaA"
+      "mqtt": "nemo /home/chepecarlos/ProyectoActual/PistaA"
     }, {
       "Nombre": "PistaB",
       "Titulo": "Pista B",
-      "websocket": "nemo /home/chepecarlos/ProyectoActual/PistaB"
+      "mqtt": "nemo /home/chepecarlos/ProyectoActual/PistaB"
     }, {
       "Nombre": "Guion",
       "Titulo": "Guion",
-      "websocket": "nemo /home/chepecarlos/ProyectoActual/Guion"
+      "mqtt": "nemo /home/chepecarlos/ProyectoActual/Guion"
     }, {
       "Nombre": "Recursos",
       "Titulo": "Recursos",
-      "websocket": "nemo /home/Data/Server/ProduccionALSW/Recursos"
+      "mqtt": "nemo /home/Data/Server/ProduccionALSW/Recursos"
     }, {
       "Nombre": "Intro",
       "Titulo": "Intro",
-      "websocket": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/1.Intros"
+      "mqtt": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/1.Intros"
     }, {
       "Nombre": "Sonido",
       "Titulo": "Sonido",
-      "websocket": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/2.EfectoSonido"
+      "mqtt": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/2.EfectoSonido"
     }, {
       "Nombre": "Musica",
       "Titulo": "Musica",
-      "websocket": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/5.Musica"
+      "mqtt": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/5.Musica"
     }, {
       "Nombre": "Clip",
       "Titulo": "Clip",
-      "websocket": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/3.ClipVideo"
+      "mqtt": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/3.ClipVideo"
     }, {
       "Nombre": "Regresar",
       "Regresar": "True"
@@ -346,9 +346,9 @@
       "Titulo": "OBSLocal",
       "Opcion": "OBS_Local"
     }, {
-      "Nombre": "WebSocket",
-      "Titulo": "WebSocket",
-      "Opcion": "WebSocket"
+      "Nombre": "MQTT",
+      "Titulo": "MQTT",
+      "Opcion": "MQTT_Remoto"
     }, {
       "Nombre": "Izquierda",
       "Titulo": "Izquierda",
@@ -360,11 +360,11 @@
     }, {
       "Nombre": "Izquierda 2",
       "Titulo": "Izquierda",
-      "websocket": "Key ctrl alt left"
+      "mqtt": "Key ctrl alt left"
     }, {
       "Nombre": "Derecha 2",
       "Titulo": "Derecha",
-      "websocket": "Key ctrl alt right"
+      "mqtt": "Key ctrl alt right"
     }, {
       "Nombre": "Exit",
       "Titulo": "Exit",
