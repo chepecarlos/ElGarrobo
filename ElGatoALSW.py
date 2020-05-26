@@ -133,10 +133,12 @@ def ActualizarTeclas(deck, tecla, estado):
                     print("Conectando con Sevidor local OBS")
                     MiOBS.CambiarHost(data['OBS_Local'])
                     MiOBS.Conectar()
+                    MiOBS.RegistarCambioEsena(CambiandoEsena)
                 elif teclas[tecla]['Opcion'] == "OBS_Remoto" and 'OBS_Remoto' in data:
                     print("Conectando con Sevidor Remoto OBS")
                     MiOBS.CambiarHost(data['OBS_Remoto'])
                     MiOBS.Conectar()
+                    MiOBS.RegistarCambioEsena(CambiandoEsena)
                 elif teclas[tecla]['Opcion'] == "MQTT_Remoto" and 'MQTT_Remoto' in data:
                     print(f"Intentando MQTT_Remoto {data['MQTT_Remoto']}")
                     MiMQTT.CambiarHost(data['MQTT_Remoto'])
@@ -160,6 +162,11 @@ def ActualizarTeclas(deck, tecla, estado):
                 print("Tecla no definida")
         else:
             print("Tecla no programada")
+
+def CambiandoEsena(message):
+    #TODO Usar info de esena para mostar en ElGato
+    print(f"Cambio secreto a - {message.getSceneName()}")
+
 
 # Principal
 if __name__ == "__main__":

@@ -27,12 +27,15 @@ class MiObsWS:
     def CambiarHost(self, host_):
         self.host = host_;
 
+    def RegistarCambioEsena(self, LaFuncion):
+        self.ConeccionOBS.register(LaFuncion, events.SwitchScenes)
+
     def Conectar(self):
         try:
             print(f"Intentando Conectar con {self.host}")
             self.ConeccionOBS = obsws(self.host, self.port)
             self.ConeccionOBS.register(on_event)
-            self.ConeccionOBS.register(on_switch, events.SwitchScenes)
+            # self.ConeccionOBS.register(on_switch, events.SwitchScenes)
             self.ConeccionOBS.connect()
             self.OBSConectado = True
         except :
