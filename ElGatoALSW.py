@@ -14,6 +14,8 @@ from OBSWebSocketPropio import *
 # from MiWebSoket import *
 from MiMQTT import *
 
+# TODO: ordenar para no usar variable globales
+MiDeck = "nada"
 teclas = "nada"
 folder = ""
 fuente = ""
@@ -51,7 +53,7 @@ def ActualizarImagen(deck, teclas, tecla, limpiar = False):
             else:
                 NombreIcon = "imagen.png"
         elif 'Estado' in teclas[tecla]:
-            print("Hay estado {}".format(teclas[tecla]['Estado']))
+            # print("Hay estado {}".format(teclas[tecla]['Estado']))
             if teclas[tecla]['Estado'] and 'icon_true' in teclas[tecla]:
                 NombreIcon = teclas[tecla]['icon_true']
             elif not teclas[tecla]['Estado'] and 'icon_false' in teclas[tecla]:
@@ -103,8 +105,8 @@ def ActualizarTeclas(deck, tecla, estado):
                     ActualizarImagen(deck, teclas, tecla)
             elif 'Filtro' in teclas[tecla] and 'Fuente' in teclas[tecla]:
                 MiOBS.CambiarFiltro(teclas[tecla]['Fuente'], teclas[tecla]['Filtro'], not teclas[tecla]['Estado'])
-            # elif 'Fuente' in tecla[tecla]:
-            #     MiOBS.CambiarFuente(tecla[tecla]['Fuente'])
+            elif 'Fuente' in teclas[tecla]:
+                MiOBS.CambiarFuente(teclas[tecla]['Fuente'], not teclas[tecla]['Estado'])
             elif 'CambiarEsena' in teclas[tecla]:
                 MiOBS.CambiarEsena(teclas[tecla]['CambiarEsena'])
             elif 'Grabar' in teclas[tecla]:
@@ -133,12 +135,14 @@ def ActualizarTeclas(deck, tecla, estado):
                     print("Conectando con Sevidor local OBS")
                     MiOBS.CambiarHost(data['OBS_Local'])
                     MiOBS.Conectar()
-                    MiOBS.RegistarCambioEsena(CambiandoEsena)
+                    # MiOBS.RegistarCambioEsena(CambiandoEsena)
+                    MiOBS.RegistarEvento(EventoOBS)
                 elif teclas[tecla]['Opcion'] == "OBS_Remoto" and 'OBS_Remoto' in data:
                     print("Conectando con Sevidor Remoto OBS")
                     MiOBS.CambiarHost(data['OBS_Remoto'])
                     MiOBS.Conectar()
-                    MiOBS.RegistarCambioEsena(CambiandoEsena)
+                    # MiOBS.RegistarCambioEsena(CambiandoEsena)
+                    MiOBS.RegistarEvento(EventoOBS)
                 elif teclas[tecla]['Opcion'] == "MQTT_Remoto" and 'MQTT_Remoto' in data:
                     print(f"Intentando MQTT_Remoto {data['MQTT_Remoto']}")
                     MiMQTT.CambiarHost(data['MQTT_Remoto'])
@@ -163,10 +167,53 @@ def ActualizarTeclas(deck, tecla, estado):
         else:
             print("Tecla no programada")
 
+def ActualizarImagenes():
+    for indice in range(len(teclas)):
+        ActualizarImagen(deck, teclas, indice)
+
 def CambiandoEsena(message):
     #TODO Usar info de esena para mostar en ElGato
     print(f"Cambio secreto a - {message.getSceneName()}")
 
+def EventoOBS(mensaje):
+    # Buscar el atributo no usar hardcode
+    print()
+    if(mensaje.name == 'RecordingStopped'):
+        print('Se paro la grabacion')
+        data['Comando'][4]['Key'][0]['Estado'] = False
+        ActualizarImagenes()
+    elif(mensaje.name == 'RecordingStarted'):
+        print('Se Inicio la grabacion')
+        data['Comando'][4]['Key'][0]['Estado'] = True
+        ActualizarImagenes()
+    elif(mensaje.name == 'StreamStopped'):
+        print("Parando trasmicion")
+        data['Comando'][4]['Key'][1]['Estado'] = False
+        ActualizarImagenes()
+    elif(mensaje.name == 'StreamStarted'):
+        print("Empezando la trasmicion")
+        data['Comando'][4]['Key'][1]['Estado'] = True
+        ActualizarImagenes()
+    elif(mensaje.name == 'SwitchScenes'):
+        print(f"Cambia a Esena {mensaje.datain['scene-name']}")
+        # TODO limpiar este for
+        for i in range(5, 12):
+            if(data['Comando'][4]['Key'][i]['Nombre'] == mensaje.datain['scene-name']):
+                data['Comando'][4]['Key'][i]['Estado'] = True
+            else:
+                data['Comando'][4]['Key'][i]['Estado'] = False
+        ActualizarImagenes()
+    elif(mensaje.name == 'SceneItemVisibilityChanged'):
+        NombreIten =  mensaje.datain['item-name']
+        print(f"Se cambio fuente {NombreIten} - {mensaje.datain['item-visible']}")
+        if(NombreIten == 'Camara'):
+            data['Comando'][4]['Key'][4]['Estado'] = mensaje.datain['item-visible']
+        elif(NombreIten == 'MicUSB'):
+            data['Comando'][4]['Key'][2]['Estado'] = mensaje.datain['item-visible']
+        ActualizarImagenes()
+    else:
+        print(f"Evento OBS: {mensaje}\n")
+    print(f"Evento OBS: {mensaje}")
 
 # Principal
 if __name__ == "__main__":
@@ -178,6 +225,7 @@ if __name__ == "__main__":
 
     for index, deck in enumerate(streamdecks):
 
+        MiDeck = deck
         # Abriendo puerto
         deck.open()
         deck.reset()

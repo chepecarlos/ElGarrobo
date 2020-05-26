@@ -1,6 +1,7 @@
 from obswebsocket import obsws, requests, events
 
 def on_event(message):
+    # Evento interesante SceneItemVisibilityChanged
     print()
     if(message.name == 'RecordingStopped'):
         print('Se paro la grabacion')
@@ -30,11 +31,14 @@ class MiObsWS:
     def RegistarCambioEsena(self, LaFuncion):
         self.ConeccionOBS.register(LaFuncion, events.SwitchScenes)
 
+    def RegistarEvento(self, LaFuncion):
+        self.ConeccionOBS.register(LaFuncion)
+
     def Conectar(self):
         try:
             print(f"Intentando Conectar con {self.host}")
             self.ConeccionOBS = obsws(self.host, self.port)
-            self.ConeccionOBS.register(on_event)
+            # self.ConeccionOBS.register(on_event)
             # self.ConeccionOBS.register(on_switch, events.SwitchScenes)
             self.ConeccionOBS.connect()
             self.OBSConectado = True
@@ -81,15 +85,8 @@ class MiObsWS:
             print("No se encontro OBS")
 
     def CambiarFuente(self, Fuente, Estado):
-        print("Cambiando Fuente {Fuente} - {Estado}")
-        # pollo = Baserequests()
-        # pollo.datain['item-visible'] = Estado
-        # pollo = {'item-visible': Estado}
-        # print(pollo)
-        # GetSourceSettings
-        # pollo = self.ConeccionOBS.call(requests.GetSourceSettings(Fuente))
-        # print("polo es {}".format(pollo)).getSourcesettings()
-        self.ConeccionOBS.call(requests.SetSourceSettings(Fuente, {'item-id': 7, 'item-name': 'Camara', 'item-visible': False, 'scene-name': 'Ozmaro'}))
+        print(f"Cambiando Fuente {Fuente} - {Estado}")
+        self.ConeccionOBS.call(requests.SetSceneItemProperties(Fuente, visible = Estado))
 
     def Cerrar(self):
         if self.OBSConectado:
