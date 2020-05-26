@@ -19,7 +19,7 @@ class MiWebSoket:
         self.WebSocketConectado = False
 
     def CambiarHost(self, host_):
-        self.host = host_;
+        self.host = host_
 
     def Conectar(self):
         try:
@@ -34,14 +34,14 @@ class MiWebSoket:
             print("No se pudo conectar a WebSocket")
             self.WebSocketConectado = False
 
-    def Enviar(self, EnviarValor):
+    async def Enviar(self, EnviarValor):
         if self.WebSocketConectado:
             print("Enviando datos")
-            self.ws.send(EnviarValor)
+            await self.ws.send(EnviarValor)
         else:
             print("No conectado a WebSocket")
 
     def Cerrar(self):
         if self.WebSocketConectado:
             print("Cerrando WebSocket")
-            ws.close()
+            self.ws.close()

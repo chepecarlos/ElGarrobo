@@ -104,7 +104,7 @@ def ActualizarTeclas(deck, tecla, estado):
                 for tecla in range(len(teclas)):
                     ActualizarImagen(deck, teclas, tecla)
             elif 'Filtro' in teclas[tecla] and 'Fuente' in teclas[tecla]:
-                MiOBS.CambiarFiltro(teclas[tecla]['Fuente'], teclas[tecla]['Filtro'], not teclas[tecla]['Estado'])
+                MiOBS.CambiarFiltro(teclas[tecla]['Fuente'], teclas[tecla]['Filtro'], teclas[tecla]['Estado'])
             elif 'Fuente' in teclas[tecla]:
                 MiOBS.CambiarFuente(teclas[tecla]['Fuente'], not teclas[tecla]['Estado'])
             elif 'CambiarEsena' in teclas[tecla]:
@@ -118,16 +118,16 @@ def ActualizarTeclas(deck, tecla, estado):
             elif 'mqtt' in teclas[tecla]:
                 print(f"Comando MQTT {teclas[tecla]['mqtt']}")
                 MiMQTT.Enviando(teclas[tecla]['mqtt'])
-            elif 'EstadoActual' in teclas[tecla]:
-                teclas[tecla]['EstadoActual'] = not teclas[tecla]['EstadoActual']
-                ActualizarImagen(deck, teclas, tecla)
-                teclasGuardar = teclas
-                teclas = teclas[tecla]['Estado']
-                if teclasGuardar[tecla]['EstadoActual']:
-                    ActualizarTeclas(deck,  0, True)
-                else:
-                    ActualizarTeclas(deck,  1, True)
-                teclas = teclasGuardar
+            # elif 'EstadoActual' in teclas[tecla]:
+            #     teclas[tecla]['EstadoActual'] = not teclas[tecla]['EstadoActual']
+            #     ActualizarImagen(deck, teclas, tecla)
+            #     teclasGuardar = teclas
+            #     teclas = teclas[tecla]['Estado']
+            #     if teclasGuardar[tecla]['EstadoActual']:
+            #         ActualizarTeclas(deck,  0, True)
+            #     else:
+            #         ActualizarTeclas(deck,  1, True)
+            #     teclas = teclasGuardar
             elif 'tecla' in teclas[tecla]:
                 ComandoTeclas(teclas[tecla]['tecla'])
             elif 'Opcion' in teclas[tecla]:
@@ -179,15 +179,15 @@ def EventoOBS(mensaje):
     # Buscar el atributo no usar hardcode
     print()
     if(mensaje.name == 'RecordingStopped'):
-        print('Se paro la grabacion')
+        print('Parado la grabacion')
         data['Comando'][4]['Key'][0]['Estado'] = False
         ActualizarImagenes()
     elif(mensaje.name == 'RecordingStarted'):
-        print('Se Inicio la grabacion')
+        print('Iniciado la grabacion')
         data['Comando'][4]['Key'][0]['Estado'] = True
         ActualizarImagenes()
     elif(mensaje.name == 'StreamStopped'):
-        print("Parando trasmicion")
+        print("Parando la trasmicion")
         data['Comando'][4]['Key'][1]['Estado'] = False
         ActualizarImagenes()
     elif(mensaje.name == 'StreamStarted'):
@@ -204,16 +204,25 @@ def EventoOBS(mensaje):
                 data['Comando'][4]['Key'][i]['Estado'] = False
         ActualizarImagenes()
     elif(mensaje.name == 'SceneItemVisibilityChanged'):
-        NombreIten =  mensaje.datain['item-name']
-        print(f"Se cambio fuente {NombreIten} - {mensaje.datain['item-visible']}")
+        NombreIten = mensaje.datain['item-name']
+        EstadoItem = mensaje.datain['item-visible']
+        print(f"Se cambio fuente {NombreIten} - {EstadoItem}")
         if(NombreIten == 'Camara'):
-            data['Comando'][4]['Key'][4]['Estado'] = mensaje.datain['item-visible']
+            data['Comando'][4]['Key'][4]['Estado'] = EstadoItem
         elif(NombreIten == 'MicUSB'):
-            data['Comando'][4]['Key'][2]['Estado'] = mensaje.datain['item-visible']
+            data['Comando'][4]['Key'][2]['Estado'] = EstadoItem
+        ActualizarImagenes()
+    elif(mensaje.name == 'SourceFilterVisibilityChanged'):
+        NombreFiltro = mensaje.datain['filterName']
+        NombreFuente = mensaje.datain['sourceName']
+        EstadoFiltro = mensaje.datain['filterEnabled']
+        print(f"Se cambio el filtro {NombreFiltro} de {NombreFuente} a {EstadoFiltro}")
+        if(NombreFiltro == 'Verde' and NombreFuente == 'Camara'):
+            data['Comando'][4]['Key'][3]['Estado'] =  EstadoFiltro
         ActualizarImagenes()
     else:
-        print(f"Evento OBS: {mensaje}\n")
-    print(f"Evento OBS: {mensaje}")
+        print(f"Evento no procesado de OBS: {mensaje}")
+    # print(f"Evento OBS: {mensaje}")
 
 # Principal
 if __name__ == "__main__":

@@ -191,8 +191,8 @@
       "Nombre": "Verde",
       "Titulo": "Verde",
       "Fuente": "Camara",
-      "Filtro": "Cambiar",
-      "Estado": false,
+      "Filtro": "Verde",
+      "Estado": true,
       "icon_true": "Recursos/OBS/VerdeOn.png",
       "icon_false": "Recursos/OBS/VerdeOff.png"
     }, {

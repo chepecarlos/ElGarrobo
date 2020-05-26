@@ -79,8 +79,8 @@ class MiObsWS:
 
     def CambiarFiltro(self, Fuente, Filtro, Estado):
         if self.OBSConectado:
-            print("Cambiando del Filtro {} de {} a {}".format(Filtro, Fuente, Estado))
-            self.ConeccionOBS.call(requests.SetSourceFilterVisibility(Fuente, Filtro, Estado))
+            print(f"Cambiando del Filtro {Filtro} de {Fuente} a {not Estado}")
+            self.ConeccionOBS.call(requests.SetSourceFilterVisibility(Fuente, Filtro, not Estado))
         else:
             print("No se encontro OBS")
 
