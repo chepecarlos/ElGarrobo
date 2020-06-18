@@ -7,15 +7,16 @@
 # Agregar a ~/.bashrc
 # alias elgato='bash $HOME/Programa/ElGatoALSW/elgato.sh'
 
+# TODO: pedirle ayuda al gato para como haces un if
 while [ -n "$1" ]; do
 	case "$1" in
 	-c)
       echo "Cargando El Gato"
-      cd $HOME/Programa/ElGatoALSW
+      cd $HOME/5.Programas/3.App/2.Heramientas/1.ElGatoALSW
       python3 ElGatoALSW.py;;
 	-s)
       echo "Cargando Servidor"
-      cd $HOME/Programa/ElGatoALSW/ServerPy
+      cd $HOME/5.Programas/3.App/2.Heramientas/1.ElGatoALSW/ServerPy
       python3 Server.py;;
 	*) echo "No hay opcion para $1" ;; #
   ":")

@@ -143,6 +143,7 @@ def ActualizarTeclas(deck, tecla, estado):
                     MiOBS.Conectar()
                     # MiOBS.RegistarCambioEsena(CambiandoEsena)
                     MiOBS.RegistarEvento(EventoOBS)
+                # TODO; hacer configuraciones base de obs
                 elif teclas[tecla]['Opcion'] == "MQTT_Remoto" and 'MQTT_Remoto' in data:
                     print(f"Intentando MQTT_Remoto {data['MQTT_Remoto']}")
                     MiMQTT.CambiarHost(data['MQTT_Remoto'])
@@ -178,6 +179,7 @@ def CambiandoEsena(message):
 def EventoOBS(mensaje):
     # Buscar el atributo no usar hardcode
     print()
+    #  TODO: Cambiar hardcoding 
     if(mensaje.name == 'RecordingStopped'):
         print('Parado la grabacion')
         data['Comando'][4]['Key'][0]['Estado'] = False

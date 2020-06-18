@@ -238,6 +238,13 @@
       "icon_true": "Recursos/OBS/CircuitoOn.png",
       "icon_false": "Recursos/OBS/CircuitoOff.png"
     }, {
+      "Nombre": "EndCard",
+      "Titulo": "EndCard",
+      "CambiarEsena": "EndCard",
+      "Estado": false,
+      "icon_true": "Recursos/OBS/EndCardOn.png",
+      "icon_false": "Recursos/OBS/EndCardOff.png"
+    }, {
       "Nombre": "Preguntas",
       "Titulo": "Preguntas",
       "CambiarEsena": "Preguntas",
