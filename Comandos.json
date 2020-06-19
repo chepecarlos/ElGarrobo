@@ -76,7 +76,7 @@
       "Nombre": "Concatenar",
       "Titulo": "Concatenar",
       "ico": "Recursos/Blender/Concatenar.png",
-      "mqtt": "Key c"
+      "mqtt": "Key shift c"
     }, {
       "Nombre": "ExpandirPista",
       "Titulo": "Exp Pista",
