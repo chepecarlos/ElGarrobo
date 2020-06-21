@@ -24,9 +24,11 @@ async def comandoOS(websocket, path):
     else:
         os.system(comando)
 
+
 def ConectarMQTT(client, userdata, flags, rc):
-    print("Conencando al Servidor - "+str(rc))
+    print("Conencando al Servidor - " + str(rc))
     MiMQTT.subscribe("ElGato")
+
 
 def MensajeMQTT(client, userdata, msg):
     print(f"Mensaje secreto: {msg.topic} - {str(msg.payload)}")
@@ -39,17 +41,22 @@ def MensajeMQTT(client, userdata, msg):
     else:
         os.system(comando)
 
+
 def EnviandoMQTT(client, obj, mid):
     print("Mesaje: " + str(mid))
+
 
 def SubcribiendoMQTT(client, obj, mid, granted_qos):
     print("Subscribed: " + str(mid) + " " + str(granted_qos))
 
+
 def LogMQTT(client, obj, level, string):
     print(f"Log: {string}")
 
+
 def MensajeMQTT(client, userdata, msg):
     print(f"Mensaje secreto: {msg.topic} - {str(msg.payload)}")
+
 
 class MiMQTT(object):
     """docstring for MiMQTT."""
@@ -81,3 +88,8 @@ class MiMQTT(object):
             self.MiMQTT.publish("ElGato", Mensaje)
         else:
             print("No conectado con MQTT")
+
+    def Cerrar(self):
+        if self.ConectadoMQTT:
+            print("Cerrando MQTT")
+            self.MiMQTT.loop_stop(force=False)

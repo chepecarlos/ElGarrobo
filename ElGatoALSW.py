@@ -23,7 +23,6 @@ fuente = ""
 DefaceBotones = 0
 
 MiOBS = MiObsWS()
-# MiSoket = MiWebSoket()
 MiMQTT = MiMQTT()
 
 # Recusos para sistema
@@ -150,8 +149,8 @@ def ActualizarTeclas(deck, tecla, estado):
                     MiMQTT.Conectar()
                 elif teclas[tecla]['Opcion'] == "Exit":
                     # TODO: ver si esta habierto antes de cerrar
-                    MiSoket.Cerrar()
                     MiOBS.Cerrar()
+                    MiMQTT.Cerrar()
                     deck.reset()
                     deck.close()
                     print("Saliendo ElGato ALSW - Adios :) ")
