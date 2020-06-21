@@ -1,0 +1,36 @@
+[{
+  "Nombre": "OBSRemoto",
+  "Titulo": "OBSRemoto",
+  "Opcion": "OBS_Remoto"
+}, {
+  "Nombre": "OBSLocal",
+  "Titulo": "OBSLocal",
+  "Opcion": "OBS_Local"
+}, {
+  "Nombre": "MQTT",
+  "Titulo": "MQTT",
+  "Opcion": "MQTT_Remoto"
+}, {
+  "Nombre": "Izquierda",
+  "Titulo": "Izquierda",
+  "tecla": ["ctrl", "alt", "left"]
+}, {
+  "Nombre": "Derecha",
+  "Titulo": "Derecha",
+  "tecla": ["ctrl", "alt", "right"]
+}, {
+  "Nombre": "Izquierda 2",
+  "Titulo": "Izquierda",
+  "mqtt": "Key ctrl alt left"
+}, {
+  "Nombre": "Derecha 2",
+  "Titulo": "Derecha",
+  "mqtt": "Key ctrl alt right"
+}, {
+  "Nombre": "Exit",
+  "Titulo": "Exit",
+  "Opcion": "Exit"
+}, {
+  "Nombre": "Regresar",
+  "Regresar": "True"
+}]

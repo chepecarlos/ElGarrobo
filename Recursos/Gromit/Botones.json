@@ -1,0 +1,24 @@
+[{
+  "Nombre": "Activar",
+  "Titulo": "Activar",
+  "tecla": ["f9"]
+}, {
+  "Nombre": "Limpiar",
+  "Titulo": "Limpiar",
+  "tecla": ["shift", "f9"]
+}, {
+  "Nombre": "Ocultar",
+  "Titulo": "Ocultar",
+  "tecla": ["ctrl", "f9"]
+}, {
+  "Nombre": "Desacer",
+  "Titulo": "Desacer",
+  "tecla": ["f10"]
+}, {
+  "Nombre": "Reacer",
+  "Titulo": "Reacer",
+  "tecla": ["shift", "f10"]
+}, {
+  "Nombre": "Regresar",
+  "Regresar": "True"
+}]

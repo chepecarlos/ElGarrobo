@@ -10,307 +10,32 @@
     "Nombre": "OBS",
     "ico": "Recursos/OBS/OBS.png",
     "Titulo": "OBS",
-    "Key": [{
-      "Nombre": "Rec",
-      "Titulo": "Rec",
-      "Grabar": "Cambiar",
-      "Estado": false,
-      "icon_true": "Recursos/OBS/RecOn.png",
-      "icon_false": "Recursos/OBS/RecOff.png"
-    }, {
-      "Nombre": "Live",
-      "Titulo": "Live",
-      "Live": "Cambiar",
-      "Estado": false,
-      "icon_true": "Recursos/OBS/LiveOn.png",
-      "icon_false": "Recursos/OBS/LiveOff.png"
-    }, {
-      "Nombre": "Mic",
-      "Titulo": "Mic USB",
-      "Fuente": "MicUSB",
-      "Estado": true,
-      "icon_true": "Recursos/OBS/MicOn.png",
-      "icon_false": "Recursos/OBS/MicOff.png"
-    }, {
-      "Nombre": "Verde",
-      "Titulo": "Verde",
-      "Fuente": "Camara",
-      "Filtro": "Verde",
-      "Estado": true,
-      "icon_true": "Recursos/OBS/VerdeOn.png",
-      "icon_false": "Recursos/OBS/VerdeOff.png"
-    }, {
-      "Nombre": "Camara",
-      "Titulo": "Camara",
-      "Fuente": "Camara",
-      "Estado": true,
-      "icon_true": "Recursos/OBS/CamaraOn.png",
-      "icon_false": "Recursos/OBS/CamaraOff.png"
-    }, {
-      "Nombre": "Zoon In",
-      "Titulo": "Zoon In",
-      "ico": "Recursos/OBS/ZoomIn.png",
-      "tecla": ["f8"]
-    }, {
-      "Nombre": "Inicio",
-      "Titulo": "Inicio",
-      "CambiarEsena": "Inicio",
-      "Estado": false,
-      "icon_true": "Recursos/OBS/InicioOn.png",
-      "icon_false": "Recursos/OBS/InicioOff.png"
-    }, {
-      "Nombre": "Empezando",
-      "Titulo": "Empezando",
-      "CambiarEsena": "Empezando",
-      "Estado": false,
-      "icon_true": "Recursos/OBS/EmpezandoOn.png",
-      "icon_false": "Recursos/OBS/EmpezandoOff.png"
-    }, {
-      "Nombre": "ChepeCarlos",
-      "Titulo": "ChepeCarlos",
-      "CambiarEsena": "ChepeCarlos",
-      "Estado": false,
-      "icon_true": "Recursos/OBS/ChepeCarlosOn.png",
-      "icon_false": "Recursos/OBS/ChepeCarlosOff.png"
-    }, {
-      "Nombre": "Codigo",
-      "Titulo": "Codigo",
-      "CambiarEsena": "Codigo",
-      "Estado": false,
-      "icon_true": "Recursos/OBS/CodigoOn.png",
-      "icon_false": "Recursos/OBS/CodigoOff.png"
-    }, {
-      "Nombre": "Zoon Out",
-      "Titulo": "Zoon Out",
-      "ico": "Recursos/OBS/ZoomOut.png",
-      "tecla": ["f7"]
-    }, {
-      "Nombre": "Circuito",
-      "Titulo": "Circuito",
-      "CambiarEsena": "Circuito",
-      "Estado": false,
-      "icon_true": "Recursos/OBS/CircuitoOn.png",
-      "icon_false": "Recursos/OBS/CircuitoOff.png"
-    }, {
-      "Nombre": "EndCard",
-      "Titulo": "EndCard",
-      "CambiarEsena": "EndCard",
-      "Estado": false,
-      "icon_true": "Recursos/OBS/EndCardOn.png",
-      "icon_false": "Recursos/OBS/EndCardOff.png"
-    }, {
-      "Titulo": "Siquiente",
-      "Nombre": "Siquiente",
-      "ico": "Recursos/OBS/Siquiente.png",
-      "Siquiente": true
-    }, {
-      "Nombre": "Regresar",
-      "Regresar": true
-    }, {
-      "Nombre": "Preguntas",
-      "Titulo": "Preguntas",
-      "CambiarEsena": "Preguntas",
-      "Estado": false,
-      "icon_true": "Recursos/OBS/PreguntasOn.png",
-      "icon_false": "Recursos/OBS/PreguntasOff.png"
-    }, {
-      "Nombre": "Terminando",
-      "Titulo": "Terminando",
-      "CambiarEsena": "Terminando",
-      "Estado": false,
-      "icon_true": "Recursos/OBS/TerminandoOn.png",
-      "icon_false": "Recursos/OBS/TerminandoOff.png"
-    }, {
-      "Titulo": "Anterior",
-      "Nombre": "Anterior",
-      "ico": "Recursos/OBS/Anterior.png",
-      "Anterior": true
-    }, {
-      "Nombre": "Regresar",
-      "Regresar": true
-    }]
+    "Cargar": "Recursos/OBS/Botones.json",
+    "Key": []
   }, {
     "Nombre": "Blender",
     "ico": "Recursos/Blender/Blender.png",
     "Titulo": "Blender",
-    "Key": [{
-      "Nombre": "Guardar",
-      "Titulo": "Guardar",
-      "ico": "Recursos/Blender/Guardar.png",
-      "mqtt": "Key ctrl s"
-    }, {
-      "Nombre": "Trim",
-      "Titulo": "Trim",
-      "ico": "Recursos/Blender/Trim.png",
-      "mqtt": "Key t"
-    }, {
-      "Nombre": "TrimAll",
-      "Titulo": "Trim All",
-      "ico": "Recursos/Blender/TrimAll.png",
-      "mqtt": "Key shift t"
-    }, {
-      "Nombre": "TrimI",
-      "Titulo": "Trim I",
-      "ico": "Recursos/Blender/TrimI.png",
-      "mqtt": "Key i"
-    }, {
-      "Nombre": "TrimD",
-      "Titulo": "Trim D",
-      "ico": "Recursos/Blender/TrimD.png",
-      "mqtt": "Key o"
-    }, {
-      "Nombre": "Concatenar",
-      "Titulo": "Concatenar",
-      "ico": "Recursos/Blender/Concatenar.png",
-      "mqtt": "Key shift c"
-    }, {
-      "Nombre": "ExpandirPista",
-      "Titulo": "Exp Pista",
-      "ico": "Recursos/Blender/ExpandirPista.png",
-      "mqtt": "Key ctrl e"
-    }, {
-      "Nombre": "FadeIn",
-      "Titulo": "Fade In",
-      "ico": "Recursos/Blender/FadeIn.png",
-      "mqtt": "Key ctrl f"
-    }, {
-      "Nombre": "FadeOut",
-      "Titulo": "Fade Out",
-      "ico": "Recursos/Blender/FadeOut.png",
-      "mqtt": "Key alt f"
-    }, {
-      "Nombre": "LimpiarFade",
-      "Titulo": "Clear Fade",
-      "ico": "Recursos/Blender/LimpiarFade.png",
-      "mqtt": "Key ctrl alt f"
-    }, {
-      "Nombre": "Mover",
-      "Titulo": "Mover",
-      "ico": "Recursos/Blender/Mover.png",
-      "mqtt": "Key g"
-    }, {
-      "Nombre": "Duplicar",
-      "Titulo": "Duplicar",
-      "ico": "Recursos/Blender/Duplicar.png",
-      "mqtt": "Key d "
-    }, {
-      "Nombre": "AjusTime",
-      "Titulo": "Ajus Time",
-      "ico": "Recursos/Blender/AjusTime.png",
-      "mqtt": "Key ctrl alt p"
-    }, {
-      "Titulo": "Siquiente",
-      "Nombre": "Siquiente",
-      "ico": "Recursos/OBS/Siquiente.png",
-      "Siquiente": true
-    }, {
-      "Nombre": "Regresar",
-      "ico": "Recursos/Blender/Regresar.png",
-      "Regresar": "True"
-    }, {
-      "Nombre": "MostarAudio",
-      "Titulo": "Most Audio",
-      "ico": "Recursos/Blender/MostarAudio.png",
-      "mqtt": "Key alt w"
-    }, {
-      "Titulo": "Mute",
-      "Nombre": "Mute",
-      "mqtt": "Key H"
-    }, {
-      "Titulo": "Maker",
-      "Nombre": "Maker",
-      "mqtt": "Key m"
-    }, {
-      "Titulo": "Edit Maker",
-      "Nombre": "Edit Maker",
-      "mqtt": "Key ctrl m"
-    }, {
-      "Titulo": "Anterior",
-      "Nombre": "Anterior",
-      "ico": "Recursos/OBS/Anterior.png",
-      "Anterior": true
-    }, {
-      "Nombre": "Regresar",
-      "ico": "Recursos/Blender/Regresar.png",
-      "Regresar": "True"
-    }]
+    "Cargar": "Recursos/Blender/Botones.json",
+    "Key": []
   }, {
     "Nombre": "Gromit",
     "ico": "Recursos/Gromit/Gromit.png",
     "Titulo": "Gromit",
-    "Key": [{
-      "Nombre": "Activar",
-      "Titulo": "Activar",
-      "tecla": ["f9"]
-    }, {
-      "Nombre": "Limpiar",
-      "Titulo": "Limpiar",
-      "tecla": ["shift", "f9"]
-    }, {
-      "Nombre": "Ocultar",
-      "Titulo": "Ocultar",
-      "tecla": ["ctrl", "f9"]
-    }, {
-      "Nombre": "Desacer",
-      "Titulo": "Desacer",
-      "tecla": ["f10"]
-    }, {
-      "Nombre": "Reacer",
-      "Titulo": "Reacer",
-      "tecla": ["shift", "f10"]
-    }, {
-      "Nombre": "Regresar",
-      "Regresar": "True"
-    }]
+    "Cargar": "Recursos/Gromit/Botones.json",
+    "Key": []
   }, {
     "Nombre": "Atom",
     "ico": "Recursos/Atom/Atom.png",
     "Titulo": "Atom",
-    "Key": [{
-      "Nombre": "TODO",
-      "Titulo": "TODO",
-      "tecla": ["ctrl", "k", "T"]
-    }, {
-      "Nombre": "Regresar",
-      "Regresar": "True"
-    }]
+    "Cargar": "Recursos/Atom/Botones.json",
+    "Key": []
   }, {
     "Nombre": "Arduino",
     "ico": "Recursos/Arduino/Arduino.png",
     "Titulo": "Arduino",
-    "Key": [{
-      "Nombre": "Verificar",
-      "Titulo": "Verificar",
-      "tecla": ["ctrl", "r"]
-    }, {
-      "Nombre": "Subir",
-      "Titulo": "Subir",
-      "tecla": ["ctrl", "r"]
-    }, {
-      "Nombre": "Salvar",
-      "Titulo": "Salvar",
-      "tecla": ["ctrl", "s"]
-    }, {
-      "Nombre": "MonitorSerial",
-      "Titulo": "M. Serial",
-      "tecla": ["ctrl", "shift", "m"]
-    }, {
-      "Nombre": "SerialPlotter",
-      "Titulo": "S. Plotter",
-      "tecla": ["ctrl", "shift", "l"]
-    }, {
-      "Nombre": "AutoFormato",
-      "Titulo": "A. Formato",
-      "tecla": ["ctrl", "t"]
-    }, {
-      "Nombre": "Preferencia",
-      "Titulo": "Preferencia",
-      "tecla": ["ctrl", ","]
-    }, {
-      "Nombre": "Regresar",
-      "Regresar": "True",
-      "Titulo": "Regresar"
-    }]
+    "Cargar": "Recursos/Arduino/Botones.json",
+    "Key": []
   }, {
     "Nombre": "Processing",
     "ico": "Recursos/Processing/Processing.png",
@@ -323,10 +48,8 @@
     "Nombre": "Gimp",
     "ico": "Recursos/Gimp/Gimp.png",
     "Titulo": "Gimp",
-    "Key": [{
-      "Nombre": "Regresar",
-      "Regresar": "True"
-    }]
+    "Cargar": "Recursos/Gimp/Botones.json",
+    "Key": []
   }, {
     "Nombre": "Inskcape",
     "ico": "Recursos/Inskcape/Inskcape.png",
@@ -371,85 +94,13 @@
     "Nombre": "Folder",
     "Titulo": "Folder",
     "ico": "Recursos/Folder/Folder.png",
-    "Key": [{
-      "Nombre": "Proyecto",
-      "Titulo": "Proyecto",
-      "mqtt": "nemo /home/chepecarlos/ProyectoActual"
-    }, {
-      "Nombre": "PistaA",
-      "Titulo": "Pista A",
-      "mqtt": "nemo /home/chepecarlos/ProyectoActual/PistaA"
-    }, {
-      "Nombre": "PistaB",
-      "Titulo": "Pista B",
-      "mqtt": "nemo /home/chepecarlos/ProyectoActual/PistaB"
-    }, {
-      "Nombre": "Guion",
-      "Titulo": "Guion",
-      "mqtt": "nemo /home/chepecarlos/ProyectoActual/Guion"
-    }, {
-      "Nombre": "Recursos",
-      "Titulo": "Recursos",
-      "mqtt": "nemo /home/Data/Server/ProduccionALSW/Recursos"
-    }, {
-      "Nombre": "Intro",
-      "Titulo": "Intro",
-      "mqtt": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/1.Intros"
-    }, {
-      "Nombre": "Sonido",
-      "Titulo": "Sonido",
-      "mqtt": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/2.EfectoSonido"
-    }, {
-      "Nombre": "Musica",
-      "Titulo": "Musica",
-      "mqtt": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/5.Musica"
-    }, {
-      "Nombre": "Clip",
-      "Titulo": "Clip",
-      "mqtt": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/3.ClipVideo"
-    }, {
-      "Nombre": "Regresar",
-      "Regresar": "True"
-    }]
+    "Cargar": "Recursos/Folder/Botones.json",
+    "Key": []
   }, {
     "Nombre": "Extra",
     "Titulo": "Extra",
-    "Key": [{
-      "Nombre": "OBSRemoto",
-      "Titulo": "OBSRemoto",
-      "Opcion": "OBS_Remoto"
-    }, {
-      "Nombre": "OBSLocal",
-      "Titulo": "OBSLocal",
-      "Opcion": "OBS_Local"
-    }, {
-      "Nombre": "MQTT",
-      "Titulo": "MQTT",
-      "Opcion": "MQTT_Remoto"
-    }, {
-      "Nombre": "Izquierda",
-      "Titulo": "Izquierda",
-      "tecla": ["ctrl", "alt", "left"]
-    }, {
-      "Nombre": "Derecha",
-      "Titulo": "Derecha",
-      "tecla": ["ctrl", "alt", "right"]
-    }, {
-      "Nombre": "Izquierda 2",
-      "Titulo": "Izquierda",
-      "mqtt": "Key ctrl alt left"
-    }, {
-      "Nombre": "Derecha 2",
-      "Titulo": "Derecha",
-      "mqtt": "Key ctrl alt right"
-    }, {
-      "Nombre": "Exit",
-      "Titulo": "Exit",
-      "Opcion": "Exit"
-    }, {
-      "Nombre": "Regresar",
-      "Regresar": "True"
-    }]
+    "Cargar": "Recursos/Folder/Botones.json",
+    "Key": []
   }, {
     "Nombre": "IOT",
     "Titulo": "IOT",

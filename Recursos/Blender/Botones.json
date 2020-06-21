@@ -1,0 +1,101 @@
+[{
+  "Nombre": "Guardar",
+  "Titulo": "Guardar",
+  "ico": "Recursos/Blender/Guardar.png",
+  "mqtt": "Key ctrl s"
+}, {
+  "Nombre": "Trim",
+  "Titulo": "Trim",
+  "ico": "Recursos/Blender/Trim.png",
+  "mqtt": "Key t"
+}, {
+  "Nombre": "TrimAll",
+  "Titulo": "Trim All",
+  "ico": "Recursos/Blender/TrimAll.png",
+  "mqtt": "Key shift t"
+}, {
+  "Nombre": "TrimI",
+  "Titulo": "Trim I",
+  "ico": "Recursos/Blender/TrimI.png",
+  "mqtt": "Key i"
+}, {
+  "Nombre": "TrimD",
+  "Titulo": "Trim D",
+  "ico": "Recursos/Blender/TrimD.png",
+  "mqtt": "Key o"
+}, {
+  "Nombre": "Concatenar",
+  "Titulo": "Concatenar",
+  "ico": "Recursos/Blender/Concatenar.png",
+  "mqtt": "Key shift c"
+}, {
+  "Nombre": "ExpandirPista",
+  "Titulo": "Exp Pista",
+  "ico": "Recursos/Blender/ExpandirPista.png",
+  "mqtt": "Key ctrl e"
+}, {
+  "Nombre": "FadeIn",
+  "Titulo": "Fade In",
+  "ico": "Recursos/Blender/FadeIn.png",
+  "mqtt": "Key ctrl f"
+}, {
+  "Nombre": "FadeOut",
+  "Titulo": "Fade Out",
+  "ico": "Recursos/Blender/FadeOut.png",
+  "mqtt": "Key alt f"
+}, {
+  "Nombre": "LimpiarFade",
+  "Titulo": "Clear Fade",
+  "ico": "Recursos/Blender/LimpiarFade.png",
+  "mqtt": "Key ctrl alt f"
+}, {
+  "Nombre": "Mover",
+  "Titulo": "Mover",
+  "ico": "Recursos/Blender/Mover.png",
+  "mqtt": "Key g"
+}, {
+  "Nombre": "Duplicar",
+  "Titulo": "Duplicar",
+  "ico": "Recursos/Blender/Duplicar.png",
+  "mqtt": "Key d "
+}, {
+  "Nombre": "AjusTime",
+  "Titulo": "Ajus Time",
+  "ico": "Recursos/Blender/AjusTime.png",
+  "mqtt": "Key ctrl alt p"
+}, {
+  "Titulo": "Siquiente",
+  "Nombre": "Siquiente",
+  "ico": "Recursos/OBS/Siquiente.png",
+  "Siquiente": true
+}, {
+  "Nombre": "Regresar",
+  "ico": "Recursos/Blender/Regresar.png",
+  "Regresar": "True"
+}, {
+  "Nombre": "MostarAudio",
+  "Titulo": "Most Audio",
+  "ico": "Recursos/Blender/MostarAudio.png",
+  "mqtt": "Key alt w"
+}, {
+  "Titulo": "Mute",
+  "Nombre": "Mute",
+  "mqtt": "Key H"
+}, {
+  "Titulo": "Maker",
+  "Nombre": "Maker",
+  "mqtt": "Key m"
+}, {
+  "Titulo": "Edit Maker",
+  "Nombre": "Edit Maker",
+  "mqtt": "Key ctrl m"
+}, {
+  "Titulo": "Anterior",
+  "Nombre": "Anterior",
+  "ico": "Recursos/OBS/Anterior.png",
+  "Anterior": true
+}, {
+  "Nombre": "Regresar",
+  "ico": "Recursos/Blender/Regresar.png",
+  "Regresar": "True"
+}]

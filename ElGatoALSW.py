@@ -30,16 +30,38 @@ FolderRecursos = os.path.join(os.path.dirname(__file__), "Recusos")
 
 # print(os.listdir())
 
-if os.path.exists('Comandos.json'):
-    # Todo: Cambiaf carga de un solo archivo
-    with open('Comandos.json') as f:
-        data = json.load(f)
-else:
-    print("No se Encontro el Archivo Comandos.json")
-    sys.exit()
+
+def CargarComandos():
+    global data
+    if os.path.exists('Comandos.json'):
+        # Todo: Cambiaf carga de un solo archivo
+        with open('Comandos.json') as f:
+            data = json.load(f)
+    else:
+        print("No se Encontro el Archivo Comandos.json")
+        sys.exit()
 
 
-def ActualizarImagen(deck, teclas, tecla, limpiar = False):
+def CargarBotones():
+    global data
+    # for comando in range(len(data['Comando'])):
+    #     data['Comando'][comando]['Titulo'] = "OBS"
+    #     # print("-")
+    #     print(data['Comando'][comando]['Titulo'])
+    for comando in data['Comando']:
+        if 'Cargar' in comando:
+            URL_Carga = comando['Cargar']
+            if os.path.exists(URL_Carga):
+                # Todo: Cambiaf carga de un solo archivo
+                with open(URL_Carga) as f:
+                    comando['Key'] = json.load(f)
+            else:
+                print(f"{comando['Titulo']} - No se Encontro el Archivo {URL_Carga}")
+                sys.exit()
+        # comando['Titulo'] = "pollo"
+
+
+def ActualizarImagen(deck, teclas, tecla, limpiar=False):
     global folder
     global DefaceBotones
 
@@ -90,7 +112,8 @@ def ActualizarImagen(deck, teclas, tecla, limpiar = False):
     # TODO: Mejor logica de deface
     if(tecla + DefaceBotones < 0 or tecla + DefaceBotones > deck.key_count()):
         return
-    deck.set_key_image(tecla + DefaceBotones, PILHelper.to_native_format(deck, image))
+    deck.set_key_image(tecla + DefaceBotones,
+                       PILHelper.to_native_format(deck, image))
 
 
 def ActualizarTeclas(deck, tecla, estado):
@@ -115,9 +138,11 @@ def ActualizarTeclas(deck, tecla, estado):
                 DefaceBotones += deck.key_count()
                 BorrarActualizarImagenes()
             elif 'Filtro' in teclas[tecla] and 'Fuente' in teclas[tecla]:
-                MiOBS.CambiarFiltro(teclas[tecla]['Fuente'], teclas[tecla]['Filtro'], teclas[tecla]['Estado'])
+                MiOBS.CambiarFiltro(
+                    teclas[tecla]['Fuente'], teclas[tecla]['Filtro'], teclas[tecla]['Estado'])
             elif 'Fuente' in teclas[tecla]:
-                MiOBS.CambiarFuente(teclas[tecla]['Fuente'], not teclas[tecla]['Estado'])
+                MiOBS.CambiarFuente(
+                    teclas[tecla]['Fuente'], not teclas[tecla]['Estado'])
             elif 'CambiarEsena' in teclas[tecla]:
                 MiOBS.CambiarEsena(teclas[tecla]['CambiarEsena'])
             elif 'Grabar' in teclas[tecla]:
@@ -228,7 +253,8 @@ def EventoOBS(mensaje):
         NombreFiltro = mensaje.datain['filterName']
         NombreFuente = mensaje.datain['sourceName']
         EstadoFiltro = mensaje.datain['filterEnabled']
-        print(f"Se cambio el filtro {NombreFiltro} de {NombreFuente} a {EstadoFiltro}")
+        print(
+            f"Se cambio el filtro {NombreFiltro} de {NombreFuente} a {EstadoFiltro}")
         IdItem = BuscarBoton(IdOBS, NombreFiltro)
         data['Comando'][IdOBS]['Key'][IdItem]['Estado'] = EstadoFiltro
         ActualizarImagenes()
@@ -266,10 +292,14 @@ def BuscandoBoton(NombreFolder, NombreBoton):
 # Principal
 if __name__ == "__main__":
 
+    # Cargando comandos
+    CargarComandos()
+    CargarBotones()
     # Buscando Dispisitovos
     streamdecks = DeviceManager().enumerate()
 
-    print(f"Programa El Gato ALSW - {'Encontrado' if len(streamdecks) > 0 else 'No Conectado'}")
+    print(
+        f"Programa El Gato ALSW - {'Encontrado' if len(streamdecks) > 0 else 'No Conectado'}")
 
     for index, deck in enumerate(streamdecks):
 
@@ -278,7 +308,8 @@ if __name__ == "__main__":
         deck.open()
         deck.reset()
 
-        print(f"Abriendo '{deck.deck_type()}' dispositivo (Numero Serial: '{deck.get_serial_number()}')")
+        print(
+            f"Abriendo '{deck.deck_type()}' dispositivo (Numero Serial: '{deck.get_serial_number()}')")
 
         # Cambiar Brillo
         if 'Brillo' in data:

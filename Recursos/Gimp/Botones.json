@@ -1,0 +1,12 @@
+[{
+  "Nombre": "Salvar",
+  "Titulo": "Salvar",
+  "tecla": ["ctrl", "s"]
+}, {
+  "Nombre": "Salvar2",
+  "Titulo": "Salvar2",
+  "tecla": ["ctrl", "s"]
+}, {
+  "Nombre": "Regresar",
+  "Regresar": "True"
+}]

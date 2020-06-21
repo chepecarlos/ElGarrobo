@@ -1,0 +1,40 @@
+[{
+  "Nombre": "Proyecto",
+  "Titulo": "Proyecto",
+  "mqtt": "nemo /home/chepecarlos/ProyectoActual"
+}, {
+  "Nombre": "PistaA",
+  "Titulo": "Pista A",
+  "mqtt": "nemo /home/chepecarlos/ProyectoActual/PistaA"
+}, {
+  "Nombre": "PistaB",
+  "Titulo": "Pista B",
+  "mqtt": "nemo /home/chepecarlos/ProyectoActual/PistaB"
+}, {
+  "Nombre": "Guion",
+  "Titulo": "Guion",
+  "mqtt": "nemo /home/chepecarlos/ProyectoActual/Guion"
+}, {
+  "Nombre": "Recursos",
+  "Titulo": "Recursos",
+  "mqtt": "nemo /home/Data/Server/ProduccionALSW/Recursos"
+}, {
+  "Nombre": "Intro",
+  "Titulo": "Intro",
+  "mqtt": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/1.Intros"
+}, {
+  "Nombre": "Sonido",
+  "Titulo": "Sonido",
+  "mqtt": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/2.EfectoSonido"
+}, {
+  "Nombre": "Musica",
+  "Titulo": "Musica",
+  "mqtt": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/5.Musica"
+}, {
+  "Nombre": "Clip",
+  "Titulo": "Clip",
+  "mqtt": "nemo /home/Data/Server/ProduccionALSW/2.Contenido/1.BibliotecaVideo/3.ClipVideo"
+}, {
+  "Nombre": "Regresar",
+  "Regresar": "True"
+}]
