@@ -37,6 +37,7 @@ else:
     print("No se Encontro el Archivo Comandos.json")
     sys.exit()
 
+
 def ActualizarImagen(deck, teclas, tecla, limpiar = False):
     global folder
 
@@ -48,7 +49,7 @@ def ActualizarImagen(deck, teclas, tecla, limpiar = False):
         if 'Regresar' in teclas[tecla]:
             if 'ico' in teclas[tecla]:
                 NombreIcon = "{}".format(teclas[tecla]['ico'])
-            elif 'ico_Regresar' in data :
+            elif 'ico_Regresar' in data:
                 NombreIcon = data['ico_Regresar']
             else:
                 NombreIcon = "imagen.png"
@@ -89,6 +90,7 @@ def ActualizarImagen(deck, teclas, tecla, limpiar = False):
 
     deck.set_key_image(tecla, PILHelper.to_native_format(deck, image))
 
+
 def ActualizarTeclas(deck, tecla, estado):
 
     global teclas
@@ -99,10 +101,7 @@ def ActualizarTeclas(deck, tecla, estado):
 
             if 'Regresar' in teclas[tecla]:
                 teclas = data['Comando']
-                for key in range(deck.key_count()):
-                    ActualizarImagen(deck, teclas, key, True)
-                for tecla in range(len(teclas)):
-                    ActualizarImagen(deck, teclas, tecla)
+                BorrarActualizarImagenes()
             elif 'Filtro' in teclas[tecla] and 'Fuente' in teclas[tecla]:
                 MiOBS.CambiarFiltro(teclas[tecla]['Fuente'], teclas[tecla]['Filtro'], teclas[tecla]['Estado'])
             elif 'Fuente' in teclas[tecla]:
@@ -118,16 +117,6 @@ def ActualizarTeclas(deck, tecla, estado):
             elif 'mqtt' in teclas[tecla]:
                 print(f"Comando MQTT {teclas[tecla]['mqtt']}")
                 MiMQTT.Enviando(teclas[tecla]['mqtt'])
-            # elif 'EstadoActual' in teclas[tecla]:
-            #     teclas[tecla]['EstadoActual'] = not teclas[tecla]['EstadoActual']
-            #     ActualizarImagen(deck, teclas, tecla)
-            #     teclasGuardar = teclas
-            #     teclas = teclas[tecla]['Estado']
-            #     if teclasGuardar[tecla]['EstadoActual']:
-            #         ActualizarTeclas(deck,  0, True)
-            #     else:
-            #         ActualizarTeclas(deck,  1, True)
-            #     teclas = teclasGuardar
             elif 'tecla' in teclas[tecla]:
                 ComandoTeclas(teclas[tecla]['tecla'])
             elif 'Opcion' in teclas[tecla]:
@@ -159,72 +148,111 @@ def ActualizarTeclas(deck, tecla, estado):
                     # TODO: Desconectar OBS y WebSocket
             elif 'Key' in teclas[tecla]:
                 teclas = teclas[tecla]['Key']
-                for key in range(deck.key_count()):
-                    ActualizarImagen(deck, teclas, key, True)
-                for indice in range(len(teclas)):
-                    ActualizarImagen(deck, teclas, indice)
+                BorrarActualizarImagenes()
             else:
                 print("Tecla no definida")
         else:
             print("Tecla no programada")
 
+
 def ActualizarImagenes():
     for indice in range(len(teclas)):
         ActualizarImagen(deck, teclas, indice)
+
+
+def BorrarActualizarImagenes():
+    for key in range(deck.key_count()):
+        ActualizarImagen(deck, teclas, key, True)
+    ActualizarImagenes()
+
+
+
 
 def CambiandoEsena(message):
     #TODO Usar info de esena para mostar en ElGato
     print(f"Cambio secreto a - {message.getSceneName()}")
 
+
 def EventoOBS(mensaje):
-    # Buscar el atributo no usar hardcode
-    print()
-    #  TODO: Cambiar hardcoding 
+    IdOBS = BuscarCarpeta('OBS')
+    if IdOBS == -1:
+        print("Error no encontado Botones")
+        return
     if(mensaje.name == 'RecordingStopped'):
         print('Parado la grabacion')
-        data['Comando'][4]['Key'][0]['Estado'] = False
+        IdGrabar = BuscarBoton(IdOBS, 'Rec')
+        data['Comando'][IdOBS]['Key'][IdGrabar]['Estado'] = False
         ActualizarImagenes()
     elif(mensaje.name == 'RecordingStarted'):
         print('Iniciado la grabacion')
-        data['Comando'][4]['Key'][0]['Estado'] = True
+        IdGrabar = BuscarBoton(IdOBS, 'Rec')
+        data['Comando'][IdOBS]['Key'][IdGrabar]['Estado'] = True
         ActualizarImagenes()
     elif(mensaje.name == 'StreamStopped'):
         print("Parando la trasmicion")
-        data['Comando'][4]['Key'][1]['Estado'] = False
+        IdLive = BuscarBoton(IdOBS, 'Live')
+        data['Comando'][IdOBS]['Key'][IdLive]['Estado'] = False
         ActualizarImagenes()
     elif(mensaje.name == 'StreamStarted'):
         print("Empezando la trasmicion")
-        data['Comando'][4]['Key'][1]['Estado'] = True
+        IdLive = BuscarBoton(IdOBS, 'Live')
+        data['Comando'][IdOBS]['Key'][IdLive]['Estado'] = True
         ActualizarImagenes()
     elif(mensaje.name == 'SwitchScenes'):
         print(f"Cambia a Esena {mensaje.datain['scene-name']}")
-        # TODO limpiar este for
-        for i in range(5, 12):
-            if(data['Comando'][4]['Key'][i]['Nombre'] == mensaje.datain['scene-name']):
-                data['Comando'][4]['Key'][i]['Estado'] = True
-            else:
-                data['Comando'][4]['Key'][i]['Estado'] = False
+        EsenaActiva = BuscarBoton(IdOBS, mensaje.datain['scene-name'])
+        for tecla in range(len(data['Comando'][IdOBS]['Key'])):
+            if EsEsena(IdOBS, tecla):
+                if(EsenaActiva == tecla):
+                    data['Comando'][IdOBS]['Key'][tecla]['Estado'] = True
+                else:
+                    data['Comando'][IdOBS]['Key'][tecla]['Estado'] = False
         ActualizarImagenes()
     elif(mensaje.name == 'SceneItemVisibilityChanged'):
         NombreIten = mensaje.datain['item-name']
         EstadoItem = mensaje.datain['item-visible']
+        IdItem = BuscarBoton(IdOBS, NombreIten)
         print(f"Se cambio fuente {NombreIten} - {EstadoItem}")
-        if(NombreIten == 'Camara'):
-            data['Comando'][4]['Key'][4]['Estado'] = EstadoItem
-        elif(NombreIten == 'MicUSB'):
-            data['Comando'][4]['Key'][2]['Estado'] = EstadoItem
+        data['Comando'][IdOBS]['Key'][IdItem]['Estado'] = EstadoItem
         ActualizarImagenes()
     elif(mensaje.name == 'SourceFilterVisibilityChanged'):
         NombreFiltro = mensaje.datain['filterName']
         NombreFuente = mensaje.datain['sourceName']
         EstadoFiltro = mensaje.datain['filterEnabled']
         print(f"Se cambio el filtro {NombreFiltro} de {NombreFuente} a {EstadoFiltro}")
-        if(NombreFiltro == 'Verde' and NombreFuente == 'Camara'):
-            data['Comando'][4]['Key'][3]['Estado'] =  EstadoFiltro
+        IdItem = BuscarBoton(IdOBS, NombreFiltro)
+        data['Comando'][IdOBS]['Key'][IdItem]['Estado'] = EstadoFiltro
         ActualizarImagenes()
     else:
         print(f"Evento no procesado de OBS: {mensaje}")
-    # print(f"Evento OBS: {mensaje}")
+
+
+def BuscarCarpeta(nombre):
+    for tecla in range(len(data['Comando'])):
+        if(data['Comando'][tecla]['Nombre'] == nombre):
+            return tecla
+    return -1
+
+
+def BuscarBoton(IdFolder, nombre):
+    if(IdFolder == -1):
+        return -1
+    for tecla in range(len(data['Comando'][IdFolder]['Key'])):
+        if(data['Comando'][IdFolder]['Key'][tecla]['Nombre'] == nombre):
+            return tecla
+    return -1
+
+
+def EsEsena(IdFolder, IdEsena):
+    if('CambiarEsena' in data['Comando'][IdFolder]['Key'][IdEsena]):
+        return True
+    return False
+
+
+def BuscandoBoton(NombreFolder, NombreBoton):
+    IdFolder = BuscarCarpeta(NombreFolder)
+    return BuscarBoton(IdFolder, NombreBoton)
+
 
 # Principal
 if __name__ == "__main__":
@@ -232,7 +260,7 @@ if __name__ == "__main__":
     # Buscando Dispisitovos
     streamdecks = DeviceManager().enumerate()
 
-    print(f"Programa El Gato ALSW - {'Encontrado' if len(streamdecks) > 0 else 'No Conectado'}");
+    print(f"Programa El Gato ALSW - {'Encontrado' if len(streamdecks) > 0 else 'No Conectado'}")
 
     for index, deck in enumerate(streamdecks):
 

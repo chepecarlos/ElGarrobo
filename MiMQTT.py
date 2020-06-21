@@ -5,7 +5,6 @@ import os
 import pyautogui
 import paho.mqtt.client as mqtt
 
-print("Activando Servidor MQTT")
 
 def ComandoTeclas(Teclas):
 
@@ -14,6 +13,7 @@ def ComandoTeclas(Teclas):
 
     for tecla in reversed(Teclas):
         pyautogui.keyUp(tecla)
+
 
 async def comandoOS(websocket, path):
     print(f"< {comando}")
