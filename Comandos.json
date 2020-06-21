@@ -205,7 +205,8 @@
     }, {
       "Nombre": "Zoon In",
       "Titulo": "Zoon In",
-      "ico": "Recursos/OBS/ZoomIn.png"
+      "ico": "Recursos/OBS/ZoomIn.png",
+      "tecla": ["f8"]
     }, {
       "Nombre": "Inicio",
       "Titulo": "Inicio",
@@ -237,7 +238,8 @@
     }, {
       "Nombre": "Zoon Out",
       "Titulo": "Zoon Out",
-      "ico": "Recursos/OBS/ZoomOut.png"
+      "ico": "Recursos/OBS/ZoomOut.png",
+      "tecla": ["f7"]
     }, {
       "Nombre": "Circuito",
       "Titulo": "Circuito",
