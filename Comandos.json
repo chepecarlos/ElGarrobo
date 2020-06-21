@@ -203,6 +203,10 @@
       "icon_true": "Recursos/OBS/CamaraOn.png",
       "icon_false": "Recursos/OBS/CamaraOff.png"
     }, {
+      "Nombre": "Zoon In",
+      "Titulo": "Zoon In",
+      "ico": "Recursos/OBS/ZoomIn.png"
+    }, {
       "Nombre": "Inicio",
       "Titulo": "Inicio",
       "CambiarEsena": "Inicio",
@@ -231,6 +235,10 @@
       "icon_true": "Recursos/OBS/CodigoOn.png",
       "icon_false": "Recursos/OBS/CodigoOff.png"
     }, {
+      "Nombre": "Zoon Out",
+      "Titulo": "Zoon Out",
+      "ico": "Recursos/OBS/ZoomOut.png"
+    }, {
       "Nombre": "Circuito",
       "Titulo": "Circuito",
       "CambiarEsena": "Circuito",
@@ -244,6 +252,14 @@
       "Estado": false,
       "icon_true": "Recursos/OBS/EndCardOn.png",
       "icon_false": "Recursos/OBS/EndCardOff.png"
+    }, {
+      "Titulo": "Siquiente",
+      "Nombre": "Siquiente",
+      "ico": "Recursos/OBS/Siquiente.png",
+      "Siquiente": true
+    }, {
+      "Nombre": "Regresar",
+      "Regresar": true
     }, {
       "Nombre": "Preguntas",
       "Titulo": "Preguntas",
@@ -259,30 +275,13 @@
       "icon_true": "Recursos/OBS/TerminandoOn.png",
       "icon_false": "Recursos/OBS/TerminandoOff.png"
     }, {
-      "Titulo": "Siquiente",
-      "Nombre": "Siquiente",
-      "Siquiente": true
+      "Titulo": "Anterior",
+      "Nombre": "Anterior",
+      "ico": "Recursos/OBS/Anterior.png",
+      "Anterior": true
     }, {
       "Nombre": "Regresar",
       "Regresar": true
-    },{
-      "Titulo": "Anterior",
-      "Nombre": "Anterior",
-      "Anterior": true
-    },{
-      "Nombre": "R1",
-      "Titulo": "R1",
-      "CambiarEsena": "Terminando",
-      "Estado": false,
-      "icon_true": "Recursos/OBS/TerminandoOn.png",
-      "icon_false": "Recursos/OBS/TerminandoOff.png"
-    }, {
-      "Titulo": "R2",
-      "Nombre": "R2",
-      "CambiarEsena": "Regresamos",
-      "Estado": false,
-      "icon_true": "Recursos/OBS/RegresamosOn.png",
-      "icon_false": "Recursos/OBS/RegresamosOff.png"
     }]
   }, {
     "Nombre": "Processing",

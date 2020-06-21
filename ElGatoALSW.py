@@ -47,7 +47,6 @@ def ActualizarImagen(deck, teclas, tecla, limpiar = False):
     image = PILHelper.create_image(deck)
     if not limpiar:
         nombre = "{}".format(teclas[tecla]['Nombre'])
-
         if 'Regresar' in teclas[tecla]:
             if 'ico' in teclas[tecla]:
                 NombreIcon = "{}".format(teclas[tecla]['ico'])
@@ -138,13 +137,11 @@ def ActualizarTeclas(deck, tecla, estado):
                     print("Conectando con Sevidor local OBS")
                     MiOBS.CambiarHost(data['OBS_Local'])
                     MiOBS.Conectar()
-                    # MiOBS.RegistarCambioEsena(CambiandoEsena)
                     MiOBS.RegistarEvento(EventoOBS)
                 elif teclas[tecla]['Opcion'] == "OBS_Remoto" and 'OBS_Remoto' in data:
                     print("Conectando con Sevidor Remoto OBS")
                     MiOBS.CambiarHost(data['OBS_Remoto'])
                     MiOBS.Conectar()
-                    # MiOBS.RegistarCambioEsena(CambiandoEsena)
                     MiOBS.RegistarEvento(EventoOBS)
                 # TODO; hacer configuraciones base de obs
                 elif teclas[tecla]['Opcion'] == "MQTT_Remoto" and 'MQTT_Remoto' in data:
@@ -184,12 +181,6 @@ def BorrarActualizarImagenes():
         ActualizarImagen(deck, teclas, key, True)
     DefaceBotones = Tmp
     ActualizarImagenes()
-
-
-
-def CambiandoEsena(message):
-    # TODO Usar info de esena para mostar en ElGato
-    print(f"Cambio secreto a - {message.getSceneName()}")
 
 
 def EventoOBS(mensaje):
