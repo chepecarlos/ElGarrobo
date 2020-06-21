@@ -67,9 +67,6 @@ class MiObsWS:
         else:
             print("No se encontro OBS")
 
-    # def Prueva(self, dato):
-    #     dato['Comando'][4]['Key'][0]['Estado'] = True
-
     def CambiarVolumen(self, Fuente):
         if self.OBSConectado:
             print("Cambiando estado Volumen {}".format(Fuente))
@@ -85,8 +82,11 @@ class MiObsWS:
             print("No se encontro OBS")
 
     def CambiarFuente(self, Fuente, Estado):
-        print(f"Cambiando Fuente {Fuente} - {Estado}")
-        self.ConeccionOBS.call(requests.SetSceneItemProperties(Fuente, visible = Estado))
+        if self.OBSConectado:
+            print(f"Cambiando Fuente {Fuente} - {Estado}")
+            self.ConeccionOBS.call(requests.SetSceneItemProperties(Fuente, visible = Estado))
+        else:
+            print("No se encontro OBS")
 
     def Cerrar(self):
         if self.OBSConectado:
