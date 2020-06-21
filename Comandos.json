@@ -7,162 +7,6 @@
   "OBS_Remoto": "ryuk.local",
   "OBS_Local": "localhost",
   "Comando": [{
-    "Nombre": "Arduino",
-    "ico": "Recursos/Arduino/Arduino.png",
-    "Titulo": "Arduino",
-    "Key": [{
-      "Nombre": "Verificar",
-      "Titulo": "Verificar",
-      "tecla": ["ctrl", "r"]
-    }, {
-      "Nombre": "Subir",
-      "Titulo": "Subir",
-      "tecla": ["ctrl", "r"]
-    }, {
-      "Nombre": "Salvar",
-      "Titulo": "Salvar",
-      "tecla": ["ctrl", "s"]
-    }, {
-      "Nombre": "MonitorSerial",
-      "Titulo": "M. Serial",
-      "tecla": ["ctrl", "shift", "m"]
-    }, {
-      "Nombre": "SerialPlotter",
-      "Titulo": "S. Plotter",
-      "tecla": ["ctrl", "shift", "l"]
-    }, {
-      "Nombre": "AutoFormato",
-      "Titulo": "A. Formato",
-      "tecla": ["ctrl", "t"]
-    }, {
-      "Nombre": "Preferencia",
-      "Titulo": "Preferencia",
-      "tecla": ["ctrl", ","]
-    }, {
-      "Nombre": "Regresar",
-      "Regresar": "True",
-      "Titulo": "Regresar"
-    }]
-  }, {
-    "Nombre": "Blender",
-    "ico": "Recursos/Blender/Blender.png",
-    "Titulo": "Blender",
-    "Key": [{
-      "Nombre": "Guardar",
-      "Titulo": "Guardar",
-      "ico": "Recursos/Blender/Guardar.png",
-      "mqtt": "Key ctrl s"
-    }, {
-      "Nombre": "Trim",
-      "Titulo": "Trim",
-      "ico": "Recursos/Blender/Trim.png",
-      "mqtt": "Key t"
-    }, {
-      "Nombre": "TrimAll",
-      "Titulo": "Trim All",
-      "ico": "Recursos/Blender/TrimAll.png",
-      "mqtt": "Key shift t"
-    }, {
-      "Nombre": "TrimI",
-      "Titulo": "Trim I",
-      "ico": "Recursos/Blender/TrimI.png",
-      "mqtt": "Key i"
-    }, {
-      "Nombre": "TrimD",
-      "Titulo": "Trim D",
-      "ico": "Recursos/Blender/TrimD.png",
-      "mqtt": "Key o"
-    }, {
-      "Nombre": "Concatenar",
-      "Titulo": "Concatenar",
-      "ico": "Recursos/Blender/Concatenar.png",
-      "mqtt": "Key shift c"
-    }, {
-      "Nombre": "ExpandirPista",
-      "Titulo": "Exp Pista",
-      "ico": "Recursos/Blender/ExpandirPista.png",
-      "mqtt": "Key ctrl e"
-    }, {
-      "Nombre": "FadeIn",
-      "Titulo": "Fade In",
-      "ico": "Recursos/Blender/FadeIn.png",
-      "mqtt": "Key ctrl f"
-    }, {
-      "Nombre": "FadeOut",
-      "Titulo": "Fade Out",
-      "ico": "Recursos/Blender/FadeOut.png",
-      "mqtt": "Key alt f"
-    }, {
-      "Nombre": "LimpiarFade",
-      "Titulo": "Clear Fade",
-      "ico": "Recursos/Blender/LimpiarFade.png",
-      "mqtt": "Key ctrl alt f"
-    }, {
-      "Nombre": "Mover",
-      "Titulo": "Mover",
-      "ico": "Recursos/Blender/Mover.png",
-      "mqtt": "Key g"
-    }, {
-      "Nombre": "Duplicar",
-      "Titulo": "Duplicar",
-      "ico": "Recursos/Blender/Duplicar.png",
-      "mqtt": "Key d "
-    }, {
-      "Nombre": "AjusTime",
-      "Titulo": "Ajus Time",
-      "ico": "Recursos/Blender/AjusTime.png",
-      "mqtt": "Key ctrl alt p"
-    }, {
-      "Nombre": "MostarAudio",
-      "Titulo": "Most Audio",
-      "ico": "Recursos/Blender/MostarAudio.png",
-      "mqtt": "Key alt w"
-    }, {
-      "Nombre": "Regresar",
-      "ico": "Recursos/Blender/Regresar.png",
-      "Regresar": "True"
-    }]
-  }, {
-    "Nombre": "Gromit",
-    "ico": "Recursos/Gromit/Gromit.png",
-    "Titulo": "Gromit",
-    "Key": [{
-      "Nombre": "Activar",
-      "Titulo": "Activar",
-      "tecla": ["f9"]
-    }, {
-      "Nombre": "Limpiar",
-      "Titulo": "Limpiar",
-      "tecla": ["shift", "f9"]
-    }, {
-      "Nombre": "Ocultar",
-      "Titulo": "Ocultar",
-      "tecla": ["ctrl", "f9"]
-    }, {
-      "Nombre": "Desacer",
-      "Titulo": "Desacer",
-      "tecla": ["f10"]
-    }, {
-      "Nombre": "Reacer",
-      "Titulo": "Reacer",
-      "tecla": ["shift", "f10"]
-    }, {
-      "Nombre": "Regresar",
-      "Regresar": "True"
-    }]
-  }, {
-    "Nombre": "Atom",
-    "ico": "Recursos/Atom/Atom.png",
-    "Titulo": "Atom",
-    "Key": [{
-      "Nombre": "TODO",
-      "Titulo": "TODO",
-      "tecla": ["ctrl", "k", "T"]
-    }, {
-      "Nombre": "Regresar",
-      "Regresar": "True"
-    }]
-  }, {
     "Nombre": "OBS",
     "ico": "Recursos/OBS/OBS.png",
     "Titulo": "OBS",
@@ -284,6 +128,188 @@
     }, {
       "Nombre": "Regresar",
       "Regresar": true
+    }]
+  }, {
+    "Nombre": "Blender",
+    "ico": "Recursos/Blender/Blender.png",
+    "Titulo": "Blender",
+    "Key": [{
+      "Nombre": "Guardar",
+      "Titulo": "Guardar",
+      "ico": "Recursos/Blender/Guardar.png",
+      "mqtt": "Key ctrl s"
+    }, {
+      "Nombre": "Trim",
+      "Titulo": "Trim",
+      "ico": "Recursos/Blender/Trim.png",
+      "mqtt": "Key t"
+    }, {
+      "Nombre": "TrimAll",
+      "Titulo": "Trim All",
+      "ico": "Recursos/Blender/TrimAll.png",
+      "mqtt": "Key shift t"
+    }, {
+      "Nombre": "TrimI",
+      "Titulo": "Trim I",
+      "ico": "Recursos/Blender/TrimI.png",
+      "mqtt": "Key i"
+    }, {
+      "Nombre": "TrimD",
+      "Titulo": "Trim D",
+      "ico": "Recursos/Blender/TrimD.png",
+      "mqtt": "Key o"
+    }, {
+      "Nombre": "Concatenar",
+      "Titulo": "Concatenar",
+      "ico": "Recursos/Blender/Concatenar.png",
+      "mqtt": "Key shift c"
+    }, {
+      "Nombre": "ExpandirPista",
+      "Titulo": "Exp Pista",
+      "ico": "Recursos/Blender/ExpandirPista.png",
+      "mqtt": "Key ctrl e"
+    }, {
+      "Nombre": "FadeIn",
+      "Titulo": "Fade In",
+      "ico": "Recursos/Blender/FadeIn.png",
+      "mqtt": "Key ctrl f"
+    }, {
+      "Nombre": "FadeOut",
+      "Titulo": "Fade Out",
+      "ico": "Recursos/Blender/FadeOut.png",
+      "mqtt": "Key alt f"
+    }, {
+      "Nombre": "LimpiarFade",
+      "Titulo": "Clear Fade",
+      "ico": "Recursos/Blender/LimpiarFade.png",
+      "mqtt": "Key ctrl alt f"
+    }, {
+      "Nombre": "Mover",
+      "Titulo": "Mover",
+      "ico": "Recursos/Blender/Mover.png",
+      "mqtt": "Key g"
+    }, {
+      "Nombre": "Duplicar",
+      "Titulo": "Duplicar",
+      "ico": "Recursos/Blender/Duplicar.png",
+      "mqtt": "Key d "
+    }, {
+      "Nombre": "AjusTime",
+      "Titulo": "Ajus Time",
+      "ico": "Recursos/Blender/AjusTime.png",
+      "mqtt": "Key ctrl alt p"
+    }, {
+      "Titulo": "Siquiente",
+      "Nombre": "Siquiente",
+      "ico": "Recursos/OBS/Siquiente.png",
+      "Siquiente": true
+    }, {
+      "Nombre": "Regresar",
+      "ico": "Recursos/Blender/Regresar.png",
+      "Regresar": "True"
+    }, {
+      "Nombre": "MostarAudio",
+      "Titulo": "Most Audio",
+      "ico": "Recursos/Blender/MostarAudio.png",
+      "mqtt": "Key alt w"
+    }, {
+      "Titulo": "Mute",
+      "Nombre": "Mute",
+      "mqtt": "Key H"
+    }, {
+      "Titulo": "Maker",
+      "Nombre": "Maker",
+      "mqtt": "Key m"
+    }, {
+      "Titulo": "Edit Maker",
+      "Nombre": "Edit Maker",
+      "mqtt": "Key ctrl m"
+    }, {
+      "Titulo": "Anterior",
+      "Nombre": "Anterior",
+      "ico": "Recursos/OBS/Anterior.png",
+      "Anterior": true
+    }, {
+      "Nombre": "Regresar",
+      "ico": "Recursos/Blender/Regresar.png",
+      "Regresar": "True"
+    }]
+  }, {
+    "Nombre": "Gromit",
+    "ico": "Recursos/Gromit/Gromit.png",
+    "Titulo": "Gromit",
+    "Key": [{
+      "Nombre": "Activar",
+      "Titulo": "Activar",
+      "tecla": ["f9"]
+    }, {
+      "Nombre": "Limpiar",
+      "Titulo": "Limpiar",
+      "tecla": ["shift", "f9"]
+    }, {
+      "Nombre": "Ocultar",
+      "Titulo": "Ocultar",
+      "tecla": ["ctrl", "f9"]
+    }, {
+      "Nombre": "Desacer",
+      "Titulo": "Desacer",
+      "tecla": ["f10"]
+    }, {
+      "Nombre": "Reacer",
+      "Titulo": "Reacer",
+      "tecla": ["shift", "f10"]
+    }, {
+      "Nombre": "Regresar",
+      "Regresar": "True"
+    }]
+  }, {
+    "Nombre": "Atom",
+    "ico": "Recursos/Atom/Atom.png",
+    "Titulo": "Atom",
+    "Key": [{
+      "Nombre": "TODO",
+      "Titulo": "TODO",
+      "tecla": ["ctrl", "k", "T"]
+    }, {
+      "Nombre": "Regresar",
+      "Regresar": "True"
+    }]
+  }, {
+    "Nombre": "Arduino",
+    "ico": "Recursos/Arduino/Arduino.png",
+    "Titulo": "Arduino",
+    "Key": [{
+      "Nombre": "Verificar",
+      "Titulo": "Verificar",
+      "tecla": ["ctrl", "r"]
+    }, {
+      "Nombre": "Subir",
+      "Titulo": "Subir",
+      "tecla": ["ctrl", "r"]
+    }, {
+      "Nombre": "Salvar",
+      "Titulo": "Salvar",
+      "tecla": ["ctrl", "s"]
+    }, {
+      "Nombre": "MonitorSerial",
+      "Titulo": "M. Serial",
+      "tecla": ["ctrl", "shift", "m"]
+    }, {
+      "Nombre": "SerialPlotter",
+      "Titulo": "S. Plotter",
+      "tecla": ["ctrl", "shift", "l"]
+    }, {
+      "Nombre": "AutoFormato",
+      "Titulo": "A. Formato",
+      "tecla": ["ctrl", "t"]
+    }, {
+      "Nombre": "Preferencia",
+      "Titulo": "Preferencia",
+      "tecla": ["ctrl", ","]
+    }, {
+      "Nombre": "Regresar",
+      "Regresar": "True",
+      "Titulo": "Regresar"
     }]
   }, {
     "Nombre": "Processing",
