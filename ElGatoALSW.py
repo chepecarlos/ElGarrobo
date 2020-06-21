@@ -20,6 +20,8 @@ teclas = "nada"
 folder = ""
 fuente = ""
 
+DefaceBotones = 0
+
 MiOBS = MiObsWS()
 # MiSoket = MiWebSoket()
 MiMQTT = MiMQTT()
@@ -40,9 +42,9 @@ else:
 
 def ActualizarImagen(deck, teclas, tecla, limpiar = False):
     global folder
+    global DefaceBotones
 
     image = PILHelper.create_image(deck)
-
     if not limpiar:
         nombre = "{}".format(teclas[tecla]['Nombre'])
 
@@ -87,20 +89,32 @@ def ActualizarImagen(deck, teclas, tecla, limpiar = False):
             label_w, label_h = dibujo.textsize(titulo, font=font)
             label_pos = ((image.width - label_w) // 2, image.height - 20)
             dibujo.text(label_pos, text=titulo, font=font, fill="white")
-
-    deck.set_key_image(tecla, PILHelper.to_native_format(deck, image))
+    # TODO: Mejor logica de deface
+    if(tecla + DefaceBotones < 0 or tecla + DefaceBotones > deck.key_count()):
+        return
+    deck.set_key_image(tecla + DefaceBotones, PILHelper.to_native_format(deck, image))
 
 
 def ActualizarTeclas(deck, tecla, estado):
 
     global teclas
-
+    global DefaceBotones
+    tecla = tecla - DefaceBotones
     if estado:
         if tecla < len(teclas):
             print(f"Boton {tecla} - {teclas[tecla]['Nombre']}")
 
             if 'Regresar' in teclas[tecla]:
                 teclas = data['Comando']
+                DefaceBotones = 0
+                BorrarActualizarImagenes()
+            elif 'Siquiente' in teclas[tecla]:
+                print("Se preciono next")
+                DefaceBotones -= deck.key_count()
+                BorrarActualizarImagenes()
+            elif 'Anterior' in teclas[tecla]:
+                print("Se preciono next")
+                DefaceBotones += deck.key_count()
                 BorrarActualizarImagenes()
             elif 'Filtro' in teclas[tecla] and 'Fuente' in teclas[tecla]:
                 MiOBS.CambiarFiltro(teclas[tecla]['Fuente'], teclas[tecla]['Filtro'], teclas[tecla]['Estado'])
@@ -138,6 +152,7 @@ def ActualizarTeclas(deck, tecla, estado):
                     MiMQTT.CambiarHost(data['MQTT_Remoto'])
                     MiMQTT.Conectar()
                 elif teclas[tecla]['Opcion'] == "Exit":
+                    # TODO: ver si esta habierto antes de cerrar
                     MiSoket.Cerrar()
                     MiOBS.Cerrar()
                     deck.reset()
@@ -161,15 +176,19 @@ def ActualizarImagenes():
 
 
 def BorrarActualizarImagenes():
+    # TODO: Mejorar la logica de guardad en tiemporal
+    global DefaceBotones
+    Tmp = DefaceBotones
+    DefaceBotones = 0
     for key in range(deck.key_count()):
         ActualizarImagen(deck, teclas, key, True)
+    DefaceBotones = Tmp
     ActualizarImagenes()
 
 
 
-
 def CambiandoEsena(message):
-    #TODO Usar info de esena para mostar en ElGato
+    # TODO Usar info de esena para mostar en ElGato
     print(f"Cambio secreto a - {message.getSceneName()}")
 
 

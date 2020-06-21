@@ -259,15 +259,30 @@
       "icon_true": "Recursos/OBS/TerminandoOn.png",
       "icon_false": "Recursos/OBS/TerminandoOff.png"
     }, {
-      "Titulo": "Regresamos",
-      "Nombre": "Regresamos",
+      "Titulo": "Siquiente",
+      "Nombre": "Siquiente",
+      "Siquiente": true
+    }, {
+      "Nombre": "Regresar",
+      "Regresar": true
+    },{
+      "Titulo": "Anterior",
+      "Nombre": "Anterior",
+      "Anterior": true
+    },{
+      "Nombre": "R1",
+      "Titulo": "R1",
+      "CambiarEsena": "Terminando",
+      "Estado": false,
+      "icon_true": "Recursos/OBS/TerminandoOn.png",
+      "icon_false": "Recursos/OBS/TerminandoOff.png"
+    }, {
+      "Titulo": "R2",
+      "Nombre": "R2",
       "CambiarEsena": "Regresamos",
       "Estado": false,
       "icon_true": "Recursos/OBS/RegresamosOn.png",
       "icon_false": "Recursos/OBS/RegresamosOff.png"
-    }, {
-      "Nombre": "Regresar",
-      "Regresar": "True"
     }]
   }, {
     "Nombre": "Processing",
