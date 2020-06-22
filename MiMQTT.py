@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 
 import os
@@ -15,18 +14,8 @@ def ComandoTeclas(Teclas):
         pyautogui.keyUp(tecla)
 
 
-async def comandoOS(websocket, path):
-    print(f"< {comando}")
-    Separar = comando.split()
-    if(Separar[0] == 'Key'):
-        Separar.remove('Key')
-        ComandoTeclas(Separar)
-    else:
-        os.system(comando)
-
-
 def ConectarMQTT(client, userdata, flags, rc):
-    print("Conencando al Servidor - " + str(rc))
+    print(f"Conencando al Servidor - {str(rc)}")
     MiMQTT.subscribe("ElGato")
 
 
@@ -78,9 +67,10 @@ class MiMQTT(object):
             self.MiMQTT.on_subscribe = SubcribiendoMQTT
             self.MiMQTT.connect(self.host, self.port, 60)
             self.MiMQTT.loop_start()
-            print("Termino ll")
             self.ConectadoMQTT = True
-        except:
+        except Exception as e:
+            print(e)
+            print("No se pudo conectar a MQTT")
             self.ConectadoMQTT = False
 
     def Enviando(self, Mensaje):

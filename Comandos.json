@@ -99,7 +99,7 @@
   }, {
     "Nombre": "Extra",
     "Titulo": "Extra",
-    "Cargar": "Recursos/Folder/Botones.json",
+    "Cargar": "Recursos/Extra/Botones.json",
     "Key": []
   }, {
     "Nombre": "IOT",

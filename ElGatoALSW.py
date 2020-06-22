@@ -11,7 +11,6 @@ import json
 
 from EmularTeclado import *
 from OBSWebSocketPropio import *
-# from MiWebSoket import *
 from MiMQTT import *
 
 # TODO: ordenar para no usar variable globales
@@ -28,13 +27,10 @@ MiMQTT = MiMQTT()
 # Recusos para sistema
 FolderRecursos = os.path.join(os.path.dirname(__file__), "Recusos")
 
-# print(os.listdir())
-
 
 def CargarComandos():
     global data
     if os.path.exists('Comandos.json'):
-        # Todo: Cambiaf carga de un solo archivo
         with open('Comandos.json') as f:
             data = json.load(f)
     else:
@@ -44,21 +40,15 @@ def CargarComandos():
 
 def CargarBotones():
     global data
-    # for comando in range(len(data['Comando'])):
-    #     data['Comando'][comando]['Titulo'] = "OBS"
-    #     # print("-")
-    #     print(data['Comando'][comando]['Titulo'])
     for comando in data['Comando']:
         if 'Cargar' in comando:
             URL_Carga = comando['Cargar']
             if os.path.exists(URL_Carga):
-                # Todo: Cambiaf carga de un solo archivo
                 with open(URL_Carga) as f:
                     comando['Key'] = json.load(f)
             else:
                 print(f"{comando['Titulo']} - No se Encontro el Archivo {URL_Carga}")
                 sys.exit()
-        # comando['Titulo'] = "pollo"
 
 
 def ActualizarImagen(deck, teclas, tecla, limpiar=False):
@@ -67,7 +57,6 @@ def ActualizarImagen(deck, teclas, tecla, limpiar=False):
 
     image = PILHelper.create_image(deck)
     if not limpiar:
-        nombre = "{}".format(teclas[tecla]['Nombre'])
         if 'Regresar' in teclas[tecla]:
             if 'ico' in teclas[tecla]:
                 NombreIcon = "{}".format(teclas[tecla]['ico'])
@@ -76,7 +65,6 @@ def ActualizarImagen(deck, teclas, tecla, limpiar=False):
             else:
                 NombreIcon = "imagen.png"
         elif 'Estado' in teclas[tecla]:
-            # print("Hay estado {}".format(teclas[tecla]['Estado']))
             if teclas[tecla]['Estado'] and 'icon_true' in teclas[tecla]:
                 NombreIcon = teclas[tecla]['icon_true']
             elif not teclas[tecla]['Estado'] and 'icon_false' in teclas[tecla]:
@@ -92,14 +80,11 @@ def ActualizarImagen(deck, teclas, tecla, limpiar=False):
                 NombreIcon = data['ico_defecto']
             else:
                 NombreIcon = "imagen.png"
-
         icon = Image.open(NombreIcon).convert("RGBA")
         icon.thumbnail((image.width, image.height - 20), Image.LANCZOS)
         icon_posicion = ((image.width - icon.width) // 2, 0)
         image.paste(icon, icon_posicion, icon)
-
         titulo = ''
-
         if 'Titulo' in teclas[tecla]:
             titulo = "{}".format(teclas[tecla]['Titulo'])
 
@@ -181,7 +166,6 @@ def ActualizarTeclas(deck, tecla, estado):
                     print("Saliendo ElGato ALSW - Adios :) ")
                 else:
                     print(f"Opcion: {teclas[tecla]['Opcion']}")
-                    # TODO: Desconectar OBS y WebSocket
             elif 'Key' in teclas[tecla]:
                 teclas = teclas[tecla]['Key']
                 BorrarActualizarImagenes()
@@ -291,7 +275,6 @@ def BuscandoBoton(NombreFolder, NombreBoton):
 
 # Principal
 if __name__ == "__main__":
-
     # Cargando comandos
     CargarComandos()
     CargarBotones()
@@ -318,7 +301,7 @@ if __name__ == "__main__":
             deck.set_brightness(50)
 
         if 'Fuente' in data:
-            fuente = f"{data['Fuente']}"
+            fuente = data['Fuente']
         else:
             print("Fuente no asignada")
             deck.close()

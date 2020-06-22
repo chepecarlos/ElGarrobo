@@ -1,23 +1,5 @@
 from obswebsocket import obsws, requests, events
 
-def on_event(message):
-    # Evento interesante SceneItemVisibilityChanged
-    print()
-    if(message.name == 'RecordingStopped'):
-        print('Se paro la grabacion')
-    elif(message.name == 'RecordingStarted'):
-        print('Se Inicio la grabacion')
-    elif(message.name == 'SourceMuteStateChanged'):
-        print(f"[Evento] - Sonido de {message.datain['sourceName']} - {message.datain['muted']}")
-    elif(message.name == 'SourceFilterVisibilityChanged'):
-        print(f"[Evento] Filtro {message.datain['filterName']} de {message.datain['sourceName']} - {message.datain['filterEnabled']}")
-    else:
-        print(f"Mensaje OBS-WebSocket: {message}")
-
-
-def on_switch(message):
-    #TODO Usar info de esena para mostar en ElGato
-    print(f"Cambiante de pantalla {message.getSceneName()}")
 
 class MiObsWS:
     def __init__(self):
@@ -26,7 +8,7 @@ class MiObsWS:
         self.OBSConectado = False
 
     def CambiarHost(self, host_):
-        self.host = host_;
+        self.host = host_
 
     def RegistarCambioEsena(self, LaFuncion):
         self.ConeccionOBS.register(LaFuncion, events.SwitchScenes)
@@ -38,11 +20,10 @@ class MiObsWS:
         try:
             print(f"Intentando Conectar con {self.host}")
             self.ConeccionOBS = obsws(self.host, self.port)
-            # self.ConeccionOBS.register(on_event)
-            # self.ConeccionOBS.register(on_switch, events.SwitchScenes)
             self.ConeccionOBS.connect()
             self.OBSConectado = True
-        except :
+        except Exception as e:
+            print(e)
             print("No se pudo conectar a OBS")
             self.OBSConectado = False
 
@@ -84,7 +65,7 @@ class MiObsWS:
     def CambiarFuente(self, Fuente, Estado):
         if self.OBSConectado:
             print(f"Cambiando Fuente {Fuente} - {Estado}")
-            self.ConeccionOBS.call(requests.SetSceneItemProperties(Fuente, visible = Estado))
+            self.ConeccionOBS.call(requests.SetSceneItemProperties(Fuente, visible=Estado))
         else:
             print("No se encontro OBS")
 
