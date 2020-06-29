@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# TODO: agregar git https://python-elgato-streamdeck.readthedocs.io/en/stable/examples/animated.html
+
 # Librerias
 import os
 import sys
@@ -29,6 +31,7 @@ FolderRecursos = os.path.join(os.path.dirname(__file__), "Recusos")
 
 
 def CargarComandos():
+    """Carga Archivo de comandos"""
     global data
     if os.path.exists('Comandos.json'):
         with open('Comandos.json') as f:

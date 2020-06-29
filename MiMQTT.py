@@ -6,7 +6,7 @@ import paho.mqtt.client as mqtt
 
 
 def ComandoTeclas(Teclas):
-
+    """Emula precionar teclas en teclado"""
     for tecla in Teclas:
         pyautogui.keyDown(tecla)
 
