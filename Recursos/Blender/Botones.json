@@ -1,18 +1,91 @@
 [{
-  "Nombre": "Guardar",
-  "Titulo": "Guardar",
-  "ico": "Recursos/Blender/Guardar.png",
-  "mqtt": "Key ctrl s"
+  "Nombre": "Corta Duro",
+  "Titulo": "Corta Duro",
+  "ico": "Recursos/Blender/CortaDuro.png",
+  "mqtt": "Key shift k"
 }, {
-  "Nombre": "Trim",
-  "Titulo": "Trim",
-  "ico": "Recursos/Blender/Trim.png",
-  "mqtt": "Key t"
+  "Nombre": "Borrar",
+  "Titulo": "Borrar",
+  "ico": "Recursos/Blender/Borrar.png",
+  "mqtt": "Key x"
 }, {
   "Nombre": "TrimAll",
   "Titulo": "Trim All",
   "ico": "Recursos/Blender/TrimAll.png",
   "mqtt": "Key shift t"
+}, {
+  "Nombre": "Mover",
+  "Titulo": "Mover",
+  "ico": "Recursos/Blender/Mover.png",
+  "mqtt": "Key g"
+}, {
+  "Nombre": "Menu",
+  "Titulo": "Menu",
+  "ico": "Recursos/Blender/Menu.png",
+  "mqtt": "Key shift space"
+}, {
+  "Nombre": "Concatenar",
+  "Titulo": "Concatenar",
+  "ico": "Recursos/Blender/Concatenar.png",
+  "mqtt": "Key shift c"
+}, {
+  "Nombre": "Mute",
+  "Titulo": "Mute",
+  "ico": "Recursos/Blender/Ocultar.png",
+  "mqtt": "Key h"
+}, {
+  "Nombre": "Play",
+  "Titulo": "Play",
+  "ico": "Recursos/Blender/Play.png",
+  "mqtt": "Key space"
+}, {
+  "Nombre": "Guardar",
+  "Titulo": "Guardar",
+  "ico": "Recursos/Blender/Guardar.png",
+  "mqtt": "Key ctrl s"
+}, {
+  "Nombre": "Panel",
+  "Titulo": "Panel",
+  "ico": "Recursos/Blender/Panel.png",
+  "mqtt": "Key n"
+}, {
+  "Nombre": "Expandir",
+  "Titulo": "Expandir",
+  "ico": "Recursos/Blender/Expandir.png",
+  "mqtt": "Key ctrl e"
+}, {
+  "Nombre": "AjusTime",
+  "Titulo": "Ajus Time",
+  "ico": "Recursos/Blender/AjusTime.png",
+  "mqtt": "Key ctrl alt p"
+}, {
+  "Nombre": "MostarAudio",
+  "Titulo": "Most Audio",
+  "ico": "Recursos/Blender/MostarAudio.png",
+  "mqtt": "Key alt w"
+}, {
+  "Nombre": "Añadir",
+  "Titulo": "Añadir",
+  "ico": "Recursos/Blender/Añadir.png",
+  "mqtt": "Key shift a"
+}, {
+  "Titulo": "Siquiente",
+  "Nombre": "Siquiente",
+  "ico": "Recursos/OBS/Siquiente.png",
+  "Siquiente": true
+}, {
+  "Nombre": "Duplicar",
+  "Titulo": "Duplicar",
+  "ico": "Recursos/Blender/Duplicar.png",
+  "mqtt": "Key d "
+}, {
+  "Titulo": "Maker",
+  "Nombre": "Maker",
+  "mqtt": "Key m"
+}, {
+  "Titulo": "Edit Maker",
+  "Nombre": "Edit Maker",
+  "mqtt": "Key ctrl m"
 }, {
   "Nombre": "TrimI",
   "Titulo": "Trim I",
@@ -23,16 +96,6 @@
   "Titulo": "Trim D",
   "ico": "Recursos/Blender/TrimD.png",
   "mqtt": "Key o"
-}, {
-  "Nombre": "Concatenar",
-  "Titulo": "Concatenar",
-  "ico": "Recursos/Blender/Concatenar.png",
-  "mqtt": "Key shift c"
-}, {
-  "Nombre": "ExpandirPista",
-  "Titulo": "Exp Pista",
-  "ico": "Recursos/Blender/ExpandirPista.png",
-  "mqtt": "Key ctrl e"
 }, {
   "Nombre": "FadeIn",
   "Titulo": "Fade In",
@@ -49,46 +112,9 @@
   "ico": "Recursos/Blender/LimpiarFade.png",
   "mqtt": "Key ctrl alt f"
 }, {
-  "Nombre": "Mover",
-  "Titulo": "Mover",
-  "ico": "Recursos/Blender/Mover.png",
-  "mqtt": "Key g"
-}, {
-  "Nombre": "Duplicar",
-  "Titulo": "Duplicar",
-  "ico": "Recursos/Blender/Duplicar.png",
-  "mqtt": "Key d "
-}, {
-  "Nombre": "AjusTime",
-  "Titulo": "Ajus Time",
-  "ico": "Recursos/Blender/AjusTime.png",
-  "mqtt": "Key ctrl alt p"
-}, {
-  "Titulo": "Siquiente",
-  "Nombre": "Siquiente",
-  "ico": "Recursos/OBS/Siquiente.png",
-  "Siquiente": true
-}, {
-  "Nombre": "Regresar",
-  "ico": "Recursos/Blender/Regresar.png",
-  "Regresar": "True"
-}, {
-  "Nombre": "MostarAudio",
-  "Titulo": "Most Audio",
-  "ico": "Recursos/Blender/MostarAudio.png",
-  "mqtt": "Key alt w"
-}, {
-  "Titulo": "Mute",
-  "Nombre": "Mute",
-  "mqtt": "Key H"
-}, {
-  "Titulo": "Maker",
-  "Nombre": "Maker",
-  "mqtt": "Key m"
-}, {
-  "Titulo": "Edit Maker",
-  "Nombre": "Edit Maker",
-  "mqtt": "Key ctrl m"
+  "Nombre": "Import",
+  "Titulo": "Import",
+  "mqtt": "Key ctrl shift i"
 }, {
   "Titulo": "Anterior",
   "Nombre": "Anterior",
