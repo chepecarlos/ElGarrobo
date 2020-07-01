@@ -1,7 +1,10 @@
 # ElGatoALSW
-Configuraciones para ElGato stream-deck de ALSW escrito en Python
 
-# Instuciiones
+Configuraciones para ElGato stream-deck de ALSW escrito en Python, MQTT y OBS_WebSoket
+
+# Instalacion
+
+TODO: Competar instucciones de instalacio
 
 * sudo apt update
 * sudo apt upgrade
@@ -13,18 +16,15 @@ Configuraciones para ElGato stream-deck de ALSW escrito en Python
 
 # TODO
 
-* Lista de key para mas de 15 key
-* Inocos para submenos
 * Instalador
 * Documentacion
+* Gif
 
 # Problemas
 
 * Precionar tecla Super
 
-
 # Opciones de comando
-
 
 ## key
 
