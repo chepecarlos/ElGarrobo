@@ -14,6 +14,15 @@ TODO: Competar instucciones de instalacio
 * pip3 install websockets
 * pip3 install pyautogui
 
+# Carpetas listas
+
+### OBS
+
+Control del editor de video
+
+![Iconosl Blender](/Recursos/Blender/Pagina01.png)
+
+
 # TODO
 
 * Instalador
