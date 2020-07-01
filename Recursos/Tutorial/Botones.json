@@ -1,0 +1,94 @@
+[{
+  "Nombre": "Activar",
+  "Titulo": "Activar",
+  "ico": "Recursos/Tutorial/Gromit.png",
+  "tecla": ["f9"]
+}, {
+  "Nombre": "Limpiar",
+  "Titulo": "Limpiar",
+  "ico": "Recursos/Tutorial/Limpiar.png",
+  "tecla": ["shift", "f9"]
+}, {
+  "Nombre": "Ocultar",
+  "Titulo": "Ocultar",
+  "ico": "Recursos/Tutorial/Ocultar.png",
+  "tecla": ["ctrl", "f9"]
+}, {
+  "Nombre": "Desacer",
+  "Titulo": "Desacer",
+  "ico": "Recursos/Tutorial/Desacer.png",
+  "tecla": ["f10"]
+}, {
+  "Nombre": "Reacer",
+  "Titulo": "Reacer",
+  "ico": "Recursos/Tutorial/Reacer.png",
+  "tecla": ["shift", "f10"]
+}, {
+  "Nombre": "Zoon In",
+  "Titulo": "Zoon In",
+  "ico": "Recursos/OBS/ZoomIn.png",
+  "tecla": ["f8"]
+}, {
+  "Nombre": "left PC",
+  "Titulo": "left PC",
+  "ico": "Recursos/Tutorial/Izquierda.png",
+  "tecla": ["ctrl", "alt", "left"]
+}, {
+  "Nombre": "right PC",
+  "Titulo": "right PC",
+  "ico": "Recursos/Tutorial/Derecha.png",
+  "tecla": ["ctrl", "alt", "right"]
+}, {
+  "Nombre": "left MQTT",
+  "Titulo": "left MQTT",
+  "ico": "Recursos/Tutorial/LeftMQTT.png",
+  "mqtt": "Key ctrl alt left"
+}, {
+  "Nombre": "right MQTT",
+  "Titulo": "rigth MQTT",
+  "ico": "Recursos/Tutorial/RigthMQTT.png",
+  "mqtt": "Key ctrl alt right"
+}, {
+  "Nombre": "Zoon Out",
+  "Titulo": "Zoon Out",
+  "ico": "Recursos/OBS/ZoomOut.png",
+  "tecla": ["f7"]
+}, {
+  "Nombre": "left tab",
+  "Titulo": "left tab",
+  "ico": "Recursos/Tutorial/LeftTab.png",
+  "tecla": ["ctrl", "pageup"]
+}, {
+  "Nombre": "right tab",
+  "Titulo": "right tab",
+  "ico": "Recursos/Tutorial/RightTab.png",
+  "tecla": ["ctrl", "pagedown"]
+}, {
+  "Nombre": "Cerrar tab",
+  "Titulo": "Cerrar tab",
+  "ico": "Recursos/Tutorial/CerrarTab.png",
+  "tecla": ["ctrl", "w"]
+}, {
+  "Titulo": "Siquiente",
+  "Nombre": "Siquiente",
+  "ico": "Recursos/OBS/Siquiente.png",
+  "Siquiente": true
+}, {
+  "Nombre": "Terminal",
+  "Titulo": "Terminal",
+  "ico": "Recursos/Tutorial/Terminal.png",
+  "tecla": ["f12"]
+}, {
+  "Nombre": "Discord",
+  "Titulo": "Discord",
+  "ico": "Recursos/Tutorial/Discord.png",
+  "texto": "https://discord.gg/ReRapub"
+}, {
+  "Titulo": "Anterior",
+  "Nombre": "Anterior",
+  "ico": "Recursos/OBS/Anterior.png",
+  "Anterior": true
+}, {
+  "Nombre": "Regresar",
+  "Regresar": "True"
+}]

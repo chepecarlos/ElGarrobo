@@ -144,6 +144,8 @@ def ActualizarTeclas(deck, tecla, estado):
                 MiMQTT.Enviando(teclas[tecla]['mqtt'])
             elif 'tecla' in teclas[tecla]:
                 ComandoTeclas(teclas[tecla]['tecla'])
+            elif 'texto' in teclas[tecla]:
+                ComandoEscribir(teclas[tecla]['texto'])
             elif 'Opcion' in teclas[tecla]:
                 if teclas[tecla]['Opcion'] == "OBS_Local" and 'OBS_Local' in data:
                     print("Conectando con Sevidor local OBS")

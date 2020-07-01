@@ -19,10 +19,10 @@
     "Cargar": "Recursos/Blender/Botones.json",
     "Key": []
   }, {
-    "Nombre": "Gromit",
-    "ico": "Recursos/Gromit/Gromit.png",
-    "Titulo": "Gromit",
-    "Cargar": "Recursos/Gromit/Botones.json",
+    "Nombre": "Tutorial",
+    "Titulo": "Tutorial",
+    "ico": "Recursos/Tutorial/Tutorial.png",
+    "Cargar": "Recursos/Tutorial/Botones.json",
     "Key": []
   }, {
     "Nombre": "Atom",
