@@ -1,8 +1,8 @@
 [{
-  "Nombre": "Corta Duro",
-  "Titulo": "Corta Duro",
-  "ico": "Recursos/Blender/CortaDuro.png",
-  "mqtt": "Key shift k"
+  "Nombre": "Concatenar",
+  "Titulo": "Concatenar",
+  "ico": "Recursos/Blender/Concatenar.png",
+  "mqtt": "Key shift c"
 }, {
   "Nombre": "Borrar",
   "Titulo": "Borrar",
@@ -24,10 +24,10 @@
   "ico": "Recursos/Blender/Menu.png",
   "mqtt": "Key shift space"
 }, {
-  "Nombre": "Concatenar",
-  "Titulo": "Concatenar",
-  "ico": "Recursos/Blender/Concatenar.png",
-  "mqtt": "Key shift c"
+  "Nombre": "Corta Duro",
+  "Titulo": "Corta Duro",
+  "ico": "Recursos/Blender/CortaDuro.png",
+  "mqtt": "Key shift k"
 }, {
   "Nombre": "Mute",
   "Titulo": "Mute",
@@ -115,6 +115,21 @@
   "Nombre": "Import",
   "Titulo": "Import",
   "mqtt": "Key ctrl shift i"
+}, {
+  "Nombre": "Agrupar",
+  "Titulo": "agrupar",
+  "mqtt": "Key ctrl g"
+}, {
+  "Nombre": "Agrupar",
+  "Titulo": "agrupar",
+  "mqtt": "Key p"
+},{
+  "Nombre": "Agrupar",
+  "Titulo": "agrupar",
+  "mqtt": "Key alt p "
+},{
+  "Nombre": "Entrar Agrupar",
+  "Titulo": "Entrar agrupar"
 }, {
   "Titulo": "Anterior",
   "Nombre": "Anterior",

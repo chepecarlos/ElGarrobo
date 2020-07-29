@@ -84,6 +84,18 @@
   "ico": "Recursos/Tutorial/Discord.png",
   "texto": "https://discord.gg/ReRapub"
 }, {
+  "Nombre": "Patreon",
+  "Titulo": "Patreon",
+  "texto": "https://www.patreon.com/alswnet"
+},{
+  "Nombre": "NP",
+  "Titulo": "NP",
+  "texto": "https://nocheprogramacion.com"
+},{
+  "Nombre": "RA",
+  "Titulo": "RA",
+  "texto": "https://RoboticaAvanzada.com"
+}, {
   "Titulo": "Anterior",
   "Nombre": "Anterior",
   "ico": "Recursos/OBS/Anterior.png",

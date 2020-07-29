@@ -40,20 +40,6 @@
   "ico": "Recursos/OBS/ZoomIn.png",
   "tecla": ["f8"]
 }, {
-  "Nombre": "Inicio",
-  "Titulo": "Inicio",
-  "CambiarEsena": "Inicio",
-  "Estado": false,
-  "icon_true": "Recursos/OBS/InicioOn.png",
-  "icon_false": "Recursos/OBS/InicioOff.png"
-}, {
-  "Nombre": "Empezando",
-  "Titulo": "Empezando",
-  "CambiarEsena": "Empezando",
-  "Estado": false,
-  "icon_true": "Recursos/OBS/EmpezandoOn.png",
-  "icon_false": "Recursos/OBS/EmpezandoOff.png"
-}, {
   "Nombre": "ChepeCarlos",
   "Titulo": "ChepeCarlos",
   "CambiarEsena": "ChepeCarlos",
@@ -67,11 +53,6 @@
   "Estado": false,
   "icon_true": "Recursos/OBS/CodigoOn.png",
   "icon_false": "Recursos/OBS/CodigoOff.png"
-}, {
-  "Nombre": "Zoon Out",
-  "Titulo": "Zoon Out",
-  "ico": "Recursos/OBS/ZoomOut.png",
-  "tecla": ["f7"]
 }, {
   "Nombre": "Circuito",
   "Titulo": "Circuito",
@@ -87,6 +68,23 @@
   "icon_true": "Recursos/OBS/EndCardOn.png",
   "icon_false": "Recursos/OBS/EndCardOff.png"
 }, {
+  "Nombre": "Zoon Out",
+  "Titulo": "Zoon Out",
+  "ico": "Recursos/OBS/ZoomOut.png",
+  "tecla": ["f7"]
+}, {
+  "Nombre": "Celular",
+  "Titulo": "Celular",
+  "Fuente": "Celular",
+  "Estado": true
+}, {
+  "Nombre": "Empezando",
+  "Titulo": "Empezando",
+  "CambiarEsena": "Empezando",
+  "Estado": false,
+  "icon_true": "Recursos/OBS/EmpezandoOn.png",
+  "icon_false": "Recursos/OBS/EmpezandoOff.png"
+}, {
   "Titulo": "Siquiente",
   "Nombre": "Siquiente",
   "ico": "Recursos/OBS/Siquiente.png",
@@ -94,6 +92,14 @@
 }, {
   "Nombre": "Regresar",
   "Regresar": true
+}, {
+  "Nombre": "Inicio",
+  "Titulo": "Inicio",
+  "CambiarEsena": "Inicio",
+  "Estado": false,
+  "icon_true": "Recursos/OBS/InicioOn.png",
+  "icon_false": "Recursos/OBS/InicioOff.png"
+
 }, {
   "Nombre": "Preguntas",
   "Titulo": "Preguntas",
