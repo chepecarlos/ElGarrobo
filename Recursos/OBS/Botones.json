@@ -1,17 +1,13 @@
 [{
-  "Nombre": "Rec",
-  "Titulo": "Rec",
-  "Grabar": "Cambiar",
-  "Estado": false,
-  "icon_true": "Recursos/OBS/RecOn.png",
-  "icon_false": "Recursos/OBS/RecOff.png"
+  "Nombre": "falta",
+  "Titulo": "falta"
 }, {
-  "Nombre": "Live",
-  "Titulo": "Live",
-  "Live": "Cambiar",
+  "Nombre": "Celular",
+  "Titulo": "Celular",
+  "Fuente": "Celular",
   "Estado": false,
-  "icon_true": "Recursos/OBS/LiveOn.png",
-  "icon_false": "Recursos/OBS/LiveOff.png"
+  "icon_true": "Recursos/OBS/CelularOn.png",
+  "icon_false": "Recursos/OBS/CelularOff.png"
 }, {
   "Nombre": "Mic",
   "Titulo": "Mic USB",
@@ -35,11 +31,6 @@
   "icon_true": "Recursos/OBS/CamaraOn.png",
   "icon_false": "Recursos/OBS/CamaraOff.png"
 }, {
-  "Nombre": "Zoon In",
-  "Titulo": "Zoon In",
-  "ico": "Recursos/OBS/ZoomIn.png",
-  "tecla": ["f8"]
-}, {
   "Nombre": "ChepeCarlos",
   "Titulo": "ChepeCarlos",
   "CambiarEsena": "ChepeCarlos",
@@ -61,6 +52,13 @@
   "icon_true": "Recursos/OBS/CircuitoOn.png",
   "icon_false": "Recursos/OBS/CircuitoOff.png"
 }, {
+  "Nombre": "Patreon",
+  "Titulo": "Patreon",
+  "CambiarEsena": "Patreon",
+  "Estado": false,
+  "icon_true": "Recursos/OBS/PatreonOn.png",
+  "icon_false": "Recursos/OBS/PatreonOff.png"
+}, {
   "Nombre": "EndCard",
   "Titulo": "EndCard",
   "CambiarEsena": "EndCard",
@@ -68,15 +66,19 @@
   "icon_true": "Recursos/OBS/EndCardOn.png",
   "icon_false": "Recursos/OBS/EndCardOff.png"
 }, {
-  "Nombre": "Zoon Out",
-  "Titulo": "Zoon Out",
-  "ico": "Recursos/OBS/ZoomOut.png",
-  "tecla": ["f7"]
+  "Nombre": "Rec",
+  "Titulo": "Rec",
+  "Grabar": "Cambiar",
+  "Estado": false,
+  "icon_true": "Recursos/OBS/RecOn.png",
+  "icon_false": "Recursos/OBS/RecOff.png"
 }, {
-  "Nombre": "Celular",
-  "Titulo": "Celular",
-  "Fuente": "Celular",
-  "Estado": true
+  "Nombre": "Live",
+  "Titulo": "Live",
+  "Live": "Cambiar",
+  "Estado": false,
+  "icon_true": "Recursos/OBS/LiveOn.png",
+  "icon_false": "Recursos/OBS/LiveOff.png"
 }, {
   "Nombre": "Empezando",
   "Titulo": "Empezando",
@@ -114,6 +116,14 @@
   "Estado": false,
   "icon_true": "Recursos/OBS/TerminandoOn.png",
   "icon_false": "Recursos/OBS/TerminandoOff.png"
+}, {
+  "Nombre": "OBSRemoto",
+  "Titulo": "OBSRemoto",
+  "Opcion": "OBS_Remoto"
+}, {
+  "Nombre": "OBSLocal",
+  "Titulo": "OBSLocal",
+  "Opcion": "OBS_Local"
 }, {
   "Titulo": "Anterior",
   "Nombre": "Anterior",

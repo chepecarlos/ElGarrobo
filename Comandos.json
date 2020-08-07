@@ -1,5 +1,5 @@
 {
-  "Brillo": 60,
+  "Brillo": 50,
   "Fuente": "Recursos/KomikaTitle.ttf",
   "ico_defecto": "Recursos/Defecto.png",
   "ico_Regresar": "Recursos/Regresar.png",
@@ -23,6 +23,17 @@
     "Titulo": "Tutorial",
     "ico": "Recursos/Tutorial/Tutorial.png",
     "Cargar": "Recursos/Tutorial/Botones.json",
+    "Key": []
+  }, {
+    "Nombre": "Folder L",
+    "Titulo": "Folder L",
+    "Cargar": "Recursos/FolderL/Botones.json",
+    "Key": []
+  }, {
+    "Nombre": "Folder R",
+    "Titulo": "Folder R",
+    "ico": "Recursos/Folder/Folder.png",
+    "Cargar": "Recursos/Folder/Botones.json",
     "Key": []
   }, {
     "Nombre": "Atom",
@@ -59,14 +70,6 @@
       "Regresar": "True"
     }]
   }, {
-    "Nombre": "Krita",
-    "ico": "Recursos/Krita/Krita.png",
-    "Titulo": "Krita",
-    "Key": [{
-      "Nombre": "Regresar",
-      "Regresar": "True"
-    }]
-  }, {
     "Nombre": "Audacity",
     "ico": "Recursos/Audacity/Audacity.png",
     "Titulo": "Audacity",
@@ -90,12 +93,6 @@
       "Nombre": "Regresar",
       "Regresar": "True"
     }]
-  }, {
-    "Nombre": "Folder",
-    "Titulo": "Folder",
-    "ico": "Recursos/Folder/Folder.png",
-    "Cargar": "Recursos/Folder/Botones.json",
-    "Key": []
   }, {
     "Nombre": "Extra",
     "Titulo": "Extra",

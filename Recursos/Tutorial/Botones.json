@@ -86,12 +86,13 @@
 }, {
   "Nombre": "Patreon",
   "Titulo": "Patreon",
+  "ico": "Recursos/Tutorial/Patreon.png",
   "texto": "https://www.patreon.com/alswnet"
-},{
+}, {
   "Nombre": "NP",
   "Titulo": "NP",
   "texto": "https://nocheprogramacion.com"
-},{
+}, {
   "Nombre": "RA",
   "Titulo": "RA",
   "texto": "https://RoboticaAvanzada.com"

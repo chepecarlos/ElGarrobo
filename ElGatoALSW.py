@@ -242,11 +242,14 @@ def EventoOBS(mensaje):
         NombreFiltro = mensaje.datain['filterName']
         NombreFuente = mensaje.datain['sourceName']
         EstadoFiltro = mensaje.datain['filterEnabled']
-        print(
-            f"Se cambio el filtro {NombreFiltro} de {NombreFuente} a {EstadoFiltro}")
+        print(f"Se cambio el filtro {NombreFiltro} de {NombreFuente} a {EstadoFiltro}")
         IdItem = BuscarBoton(IdOBS, NombreFiltro)
         data['Comando'][IdOBS]['Key'][IdItem]['Estado'] = EstadoFiltro
         ActualizarImagenes()
+    elif(mensaje.name == 'Exiting'):
+        print(f"Cerrando por OBS")
+        MiOBS = ''
+        #MiOBS.Cerrar()
     else:
         print(f"Evento no procesado de OBS: {mensaje}")
 
