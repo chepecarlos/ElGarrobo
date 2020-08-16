@@ -58,6 +58,10 @@ def ActualizarImagen(deck, teclas, tecla, limpiar=False):
     global folder
     global DefaceBotones
 
+    # TODO: Mejor logica de deface
+    if(tecla + DefaceBotones < 0 or tecla + DefaceBotones > deck.key_count()):
+        return
+
     image = PILHelper.create_image(deck)
     if not limpiar:
         if 'Regresar' in teclas[tecla]:
@@ -97,11 +101,8 @@ def ActualizarImagen(deck, teclas, tecla, limpiar=False):
             label_w, label_h = dibujo.textsize(titulo, font=font)
             label_pos = ((image.width - label_w) // 2, image.height - 20)
             dibujo.text(label_pos, text=titulo, font=font, fill="white")
-    # TODO: Mejor logica de deface
-    if(tecla + DefaceBotones < 0 or tecla + DefaceBotones > deck.key_count()):
-        return
-    deck.set_key_image(tecla + DefaceBotones,
-                       PILHelper.to_native_format(deck, image))
+
+    deck.set_key_image(tecla + DefaceBotones, PILHelper.to_native_format(deck, image))
 
 
 def ActualizarTeclas(deck, tecla, estado):
@@ -289,8 +290,7 @@ if __name__ == "__main__":
     # Buscando Dispisitovos
     streamdecks = DeviceManager().enumerate()
 
-    print(
-        f"Programa El Gato ALSW - {'Encontrado' if len(streamdecks) > 0 else 'No Conectado'}")
+    print(f"Programa El Gato ALSW - {'Encontrado' if len(streamdecks) > 0 else 'No Conectado'}")
 
     for index, deck in enumerate(streamdecks):
 
@@ -299,8 +299,7 @@ if __name__ == "__main__":
         deck.open()
         deck.reset()
 
-        print(
-            f"Abriendo '{deck.deck_type()}' dispositivo (Numero Serial: '{deck.get_serial_number()}')")
+        print(f"Abriendo '{deck.deck_type()}' dispositivo (Numero Serial: '{deck.get_serial_number()}')")
 
         # Cambiar Brillo
         if 'Brillo' in data:

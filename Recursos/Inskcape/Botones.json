@@ -74,6 +74,11 @@
   "ico": "Recursos/OBS/Siquiente.png",
   "Siquiente": true
 }, {
+  "Nombre": "Ultimo",
+  "Titulo": "Ultimo",
+  "ico": "Recursos/Inskcape/Nodo.png",
+  "tecla": ["shift", "alt", "q"]
+}, {
   "Titulo": "Anterior",
   "Nombre": "Anterior",
   "ico": "Recursos/OBS/Anterior.png",

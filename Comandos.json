@@ -42,6 +42,11 @@
     "Cargar": "Recursos/Inskcape/Botones.json",
     "Key": []
   }, {
+    "Nombre": "Jessyink",
+    "Titulo": "Jessyink",
+    "Cargar": "Recursos/jessyink/Botones.json",
+    "Key": []
+  }, {
     "Nombre": "Atom",
     "ico": "Recursos/Atom/Atom.png",
     "Titulo": "Atom",
