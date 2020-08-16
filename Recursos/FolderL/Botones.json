@@ -26,6 +26,10 @@
   "Nombre": "Super D",
   "Titulo": "Super D",
   "OS": "nemo smb://ryuk.local/superdata/ChepeCarlos@alsw.net"
+},{
+  "Nombre": "Chepecarlos",
+  "Titulo": "Chepecarlos",
+  "OS": "nemo smb://ryuk.local/superdata/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/4.ChepeCarlos/1.Terminado"
 }, {
   "Nombre": "Regresar",
   "Regresar": "True"

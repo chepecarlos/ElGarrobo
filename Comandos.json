@@ -36,6 +36,12 @@
     "Cargar": "Recursos/Folder/Botones.json",
     "Key": []
   }, {
+    "Nombre": "Inskcape",
+    "Titulo": "Inskcape",
+    "ico": "Recursos/Inskcape/Inskcape.png",
+    "Cargar": "Recursos/Inskcape/Botones.json",
+    "Key": []
+  }, {
     "Nombre": "Atom",
     "ico": "Recursos/Atom/Atom.png",
     "Titulo": "Atom",
@@ -61,14 +67,6 @@
     "Titulo": "Gimp",
     "Cargar": "Recursos/Gimp/Botones.json",
     "Key": []
-  }, {
-    "Nombre": "Inskcape",
-    "ico": "Recursos/Inskcape/Inskcape.png",
-    "Titulo": "Inskcape",
-    "Key": [{
-      "Nombre": "Regresar",
-      "Regresar": "True"
-    }]
   }, {
     "Nombre": "Audacity",
     "ico": "Recursos/Audacity/Audacity.png",

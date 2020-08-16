@@ -27,7 +27,7 @@
   "Nombre": "Zoon In",
   "Titulo": "Zoon In",
   "ico": "Recursos/OBS/ZoomIn.png",
-  "tecla": ["f8"]
+  "tecla": ["ctrl", "f8"]
 }, {
   "Nombre": "left PC",
   "Titulo": "left PC",
@@ -52,7 +52,7 @@
   "Nombre": "Zoon Out",
   "Titulo": "Zoon Out",
   "ico": "Recursos/OBS/ZoomOut.png",
-  "tecla": ["f7"]
+  "tecla": ["ctrl", "f7"]
 }, {
   "Nombre": "left tab",
   "Titulo": "left tab",
