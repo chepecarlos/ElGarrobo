@@ -44,6 +44,7 @@
   }, {
     "Nombre": "Jessyink",
     "Titulo": "Jessyink",
+    "ico": "Recursos/jessyink/Jessyink.png",
     "Cargar": "Recursos/jessyink/Botones.json",
     "Key": []
   }, {

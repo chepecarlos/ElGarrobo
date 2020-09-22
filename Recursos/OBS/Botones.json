@@ -45,12 +45,10 @@
   "icon_true": "Recursos/OBS/CodigoOn.png",
   "icon_false": "Recursos/OBS/CodigoOff.png"
 }, {
-  "Nombre": "Circuito",
-  "Titulo": "Circuito",
-  "CambiarEsena": "Circuito",
-  "Estado": false,
-  "icon_true": "Recursos/OBS/CircuitoOn.png",
-  "icon_false": "Recursos/OBS/CircuitoOff.png"
+  "Nombre": "Zoom",
+  "Titulo": "Zoom",
+  "CambiarEsena": "Zoom",
+  "Estado": false
 }, {
   "Nombre": "Patreon",
   "Titulo": "Patreon",
@@ -80,12 +78,12 @@
   "icon_true": "Recursos/OBS/LiveOn.png",
   "icon_false": "Recursos/OBS/LiveOff.png"
 }, {
-  "Nombre": "Empezando",
-  "Titulo": "Empezando",
-  "CambiarEsena": "Empezando",
+  "Nombre": "Circuito",
+  "Titulo": "Circuito",
+  "CambiarEsena": "Circuito",
   "Estado": false,
-  "icon_true": "Recursos/OBS/EmpezandoOn.png",
-  "icon_false": "Recursos/OBS/EmpezandoOff.png"
+  "icon_true": "Recursos/OBS/CircuitoOn.png",
+  "icon_false": "Recursos/OBS/CircuitoOff.png"
 }, {
   "Titulo": "Siquiente",
   "Nombre": "Siquiente",
@@ -102,6 +100,13 @@
   "icon_true": "Recursos/OBS/InicioOn.png",
   "icon_false": "Recursos/OBS/InicioOff.png"
 
+}, {
+  "Nombre": "Empezando",
+  "Titulo": "Empezando",
+  "CambiarEsena": "Empezando",
+  "Estado": false,
+  "icon_true": "Recursos/OBS/EmpezandoOn.png",
+  "icon_false": "Recursos/OBS/EmpezandoOff.png"
 }, {
   "Nombre": "Preguntas",
   "Titulo": "Preguntas",
