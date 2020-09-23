@@ -32,8 +32,8 @@
   }, {
     "Nombre": "Folder R",
     "Titulo": "Folder R",
-    "ico": "Recursos/Folder/Folder.png",
-    "Cargar": "Recursos/Folder/Botones.json",
+    "ico": "Recursos/FolderR/Folder.png",
+    "Cargar": "Recursos/FolderR/Botones.json",
     "Key": []
   }, {
     "Nombre": "Inskcape",

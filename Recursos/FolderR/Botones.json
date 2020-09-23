@@ -5,22 +5,27 @@
 }, {
   "Nombre": "Musica",
   "Titulo": "Musica",
-  "ico": "Recursos/Folder/Musica.png",
+  "ico": "Recursos/FolderR/Musica.png",
   "mqtt": "nemo /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/3.Sonido/1.Musica"
 }, {
   "Nombre": "Sonido",
   "Titulo": "Sonido",
-  "ico": "Recursos/Folder/Sonido.png",
+  "ico": "Recursos/FolderR/Sonido.png",
   "mqtt": "nemo /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/3.Sonido/2.EfectoSonido"
 }, {
   "Nombre": "ChepeCarlos",
   "Titulo": "ChepeCarlos",
-  "ico": "Recursos/Folder/ChepeCarlos.png",
+  "ico": "Recursos/FolderR/ChepeCarlos.png",
   "mqtt": "nemo /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/4.ChepeCarlos/1.Terminado"
 }, {
   "Nombre": "Verde",
   "Titulo": "Verde",
   "mqtt": "nemo /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/2.Video/5.FondoVerde/1.Render"
+}, {
+  "Nombre": "StoryBlocks",
+  "Titulo": "StoryBlocks",
+  "ico": "Recursos/FolderR/StoryBlocks.png",
+  "mqtt": "nemo /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/10.StoryBlocks"
 }, {
   "Nombre": "Meme",
   "Titulo": "Meme",
@@ -40,7 +45,7 @@
 }, {
   "Nombre": "Color",
   "Titulo": "Color",
-  "ico": "Recursos/Folder/Color.png",
+  "ico": "Recursos/FolderR/Color.png",
   "mqtt": "atom /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/6.PaletaColor/2.ColoresDigitallesALSW.md"
 }, {
   "Nombre": "Regresar",
