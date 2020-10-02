@@ -126,11 +126,13 @@
 }, {
   "Nombre": "OBSRemoto",
   "Titulo": "OBSRemoto",
-  "Opcion": "OBS_Remoto"
+  "ico": "Recursos/OBS/Ryuk.png",
+  "OBS": "ryuk.local"
 }, {
   "Nombre": "OBSLocal",
   "Titulo": "OBSLocal",
-  "Opcion": "OBS_Local"
+  "ico": "Recursos/OBS/Umaru.png",
+  "OBS": "umaru.local"
 }, {
   "Titulo": "Anterior",
   "Nombre": "Anterior",

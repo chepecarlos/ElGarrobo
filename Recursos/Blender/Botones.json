@@ -19,10 +19,10 @@
   "ico": "Recursos/Blender/Mover.png",
   "mqtt": "Key g"
 }, {
-  "Nombre": "Menu",
-  "Titulo": "Menu",
-  "ico": "Recursos/Blender/Menu.png",
-  "mqtt": "Key shift space"
+  "Titulo": "Maker",
+  "Nombre": "Maker",
+  "ico": "Recursos/Blender/Maker.png",
+  "mqtt": "Key m"
 }, {
   "Nombre": "Corta Duro",
   "Titulo": "Corta Duro",
@@ -44,10 +44,10 @@
   "ico": "Recursos/Blender/Guardar.png",
   "mqtt": "Key ctrl s"
 }, {
-  "Nombre": "Panel",
-  "Titulo": "Panel",
-  "ico": "Recursos/Blender/Panel.png",
-  "mqtt": "Key n"
+  "Titulo": "Edit Maker",
+  "Nombre": "Edit Maker",
+  "ico": "Recursos/Blender/EditMaker.png",
+  "mqtt": "Key ctrl m"
 }, {
   "Nombre": "Expandir",
   "Titulo": "Expandir",
@@ -64,10 +64,10 @@
   "ico": "Recursos/Blender/MostarAudio.png",
   "mqtt": "Key alt w"
 }, {
-  "Nombre": "Añadir",
-  "Titulo": "Añadir",
-  "ico": "Recursos/Blender/Añadir.png",
-  "mqtt": "Key shift a"
+  "Nombre": "Panel",
+  "Titulo": "Panel",
+  "ico": "Recursos/Blender/Panel.png",
+  "mqtt": "Key n"
 }, {
   "Titulo": "Siquiente",
   "Nombre": "Siquiente",
@@ -79,13 +79,15 @@
   "ico": "Recursos/Blender/Duplicar.png",
   "mqtt": "Key d "
 }, {
-  "Titulo": "Maker",
-  "Nombre": "Maker",
-  "mqtt": "Key m"
+  "Nombre": "Añadir",
+  "Titulo": "Añadir",
+  "ico": "Recursos/Blender/Añadir.png",
+  "mqtt": "Key shift a"
 }, {
-  "Titulo": "Edit Maker",
-  "Nombre": "Edit Maker",
-  "mqtt": "Key ctrl m"
+  "Nombre": "Menu",
+  "Titulo": "Menu",
+  "ico": "Recursos/Blender/Menu.png",
+  "mqtt": "Key shift space"
 }, {
   "Nombre": "TrimI",
   "Titulo": "Trim I",
@@ -123,11 +125,11 @@
   "Nombre": "Agrupar",
   "Titulo": "agrupar",
   "mqtt": "Key p"
-},{
+}, {
   "Nombre": "Agrupar",
   "Titulo": "agrupar",
   "mqtt": "Key alt p "
-},{
+}, {
   "Nombre": "Entrar Agrupar",
   "Titulo": "Entrar agrupar"
 }, {

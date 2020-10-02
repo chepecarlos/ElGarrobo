@@ -2,17 +2,17 @@
   "Nombre": "OBSRemoto",
   "Titulo": "OBSRemoto",
   "ico": "Recursos/Extra/Ryuk.png",
-  "Opcion": "OBS_Remoto"
+  "OBS": "ryuk.local"
 }, {
   "Nombre": "OBSLocal",
   "Titulo": "OBSLocal",
   "ico": "Recursos/Extra/Umaru.png",
-  "Opcion": "OBS_Local"
+  "OBS": "umaru.local"
 }, {
   "Nombre": "MQTT",
   "Titulo": "MQTT",
   "ico": "Recursos/Extra/Mqtt.png",
-  "Opcion": "MQTT_Remoto"
+  "MQTT": "ryuk.local"
 }, {
   "Nombre": "Exit",
   "Titulo": "Exit",
