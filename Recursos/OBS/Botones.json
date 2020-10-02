@@ -48,7 +48,9 @@
   "Nombre": "Zoom",
   "Titulo": "Zoom",
   "CambiarEsena": "Zoom",
-  "Estado": false
+  "Estado": false,
+  "icon_true": "Recursos/OBS/ZoomOn.png",
+  "icon_false": "Recursos/OBS/ZoomOff.png"
 }, {
   "Nombre": "Patreon",
   "Titulo": "Patreon",

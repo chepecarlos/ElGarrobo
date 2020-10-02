@@ -1,31 +1,18 @@
 [{
   "Nombre": "OBSRemoto",
   "Titulo": "OBSRemoto",
+  "ico": "Recursos/Extra/Ryuk.png",
   "Opcion": "OBS_Remoto"
 }, {
   "Nombre": "OBSLocal",
   "Titulo": "OBSLocal",
+  "ico": "Recursos/Extra/Umaru.png",
   "Opcion": "OBS_Local"
 }, {
   "Nombre": "MQTT",
   "Titulo": "MQTT",
+  "ico": "Recursos/Extra/Mqtt.png",
   "Opcion": "MQTT_Remoto"
-}, {
-  "Nombre": "Izquierda",
-  "Titulo": "Izquierda",
-  "tecla": ["ctrl", "alt", "left"]
-}, {
-  "Nombre": "Derecha",
-  "Titulo": "Derecha",
-  "tecla": ["ctrl", "alt", "right"]
-}, {
-  "Nombre": "Izquierda 2",
-  "Titulo": "Izquierda",
-  "mqtt": "Key ctrl alt left"
-}, {
-  "Nombre": "Derecha 2",
-  "Titulo": "Derecha",
-  "mqtt": "Key ctrl alt right"
 }, {
   "Nombre": "Exit",
   "Titulo": "Exit",
