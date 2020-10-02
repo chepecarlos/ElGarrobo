@@ -147,23 +147,14 @@ def ActualizarTeclas(deck, tecla, estado):
                 ComandoTeclas(teclas[tecla]['tecla'])
             elif 'texto' in teclas[tecla]:
                 ComandoEscribir(teclas[tecla]['texto'])
+            elif 'OBS' in teclas[tecla]:
+                ConectarOBS(teclas[tecla]['OBS'])
+            elif 'MQTT' in teclas[tecla]:
+                print(f"Intentando MQTT_Remoto {teclas[tecla]['MQTT']}")
+                MiMQTT.CambiarHost(teclas[tecla]['MQTT'])
+                MiMQTT.Conectar()
             elif 'Opcion' in teclas[tecla]:
-                if teclas[tecla]['Opcion'] == "OBS_Local" and 'OBS_Local' in data:
-                    print("Conectando con Sevidor local OBS")
-                    MiOBS.CambiarHost(data['OBS_Local'])
-                    MiOBS.Conectar()
-                    MiOBS.RegistarEvento(EventoOBS)
-                elif teclas[tecla]['Opcion'] == "OBS_Remoto" and 'OBS_Remoto' in data:
-                    print("Conectando con Sevidor Remoto OBS")
-                    MiOBS.CambiarHost(data['OBS_Remoto'])
-                    MiOBS.Conectar()
-                    MiOBS.RegistarEvento(EventoOBS)
-                # TODO; hacer configuraciones base de obs
-                elif teclas[tecla]['Opcion'] == "MQTT_Remoto" and 'MQTT_Remoto' in data:
-                    print(f"Intentando MQTT_Remoto {data['MQTT_Remoto']}")
-                    MiMQTT.CambiarHost(data['MQTT_Remoto'])
-                    MiMQTT.Conectar()
-                elif teclas[tecla]['Opcion'] == "Exit":
+                if teclas[tecla]['Opcion'] == "Exit":
                     # TODO: ver si esta habierto antes de cerrar
                     MiOBS.Cerrar()
                     MiMQTT.Cerrar()
@@ -171,7 +162,7 @@ def ActualizarTeclas(deck, tecla, estado):
                     deck.close()
                     print("Saliendo ElGato ALSW - Adios :) ")
                 else:
-                    print(f"Opcion: {teclas[tecla]['Opcion']}")
+                    print(f"Opcion No Encontrada: {teclas[tecla]['Opcion']}")
             elif 'Key' in teclas[tecla]:
                 teclas = teclas[tecla]['Key']
                 BorrarActualizarImagenes()
@@ -196,6 +187,10 @@ def BorrarActualizarImagenes():
     DefaceBotones = Tmp
     ActualizarImagenes()
 
+def ConectarOBS(servidor):
+    MiOBS.CambiarHost(servidor)
+    MiOBS.Conectar()
+    MiOBS.RegistarEvento(EventoOBS)
 
 def EventoOBS(mensaje):
     IdOBS = BuscarCarpeta('OBS')
