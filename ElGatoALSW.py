@@ -20,14 +20,18 @@ MiDeck = "nada"
 teclas = "nada"
 folder = ""
 fuente = ""
+depura = True
 
 DefaceBotones = 0
 
 MiOBS = MiObsWS()
 MiMQTT = MiMQTT()
 
-# Recusos para sistema
-FolderRecursos = os.path.join(os.path.dirname(__file__), "Recusos")
+
+def Imprimir(dato):
+    global depura
+    if(depura):
+        print(dato)
 
 
 def CargarComandos():
@@ -38,8 +42,7 @@ def CargarComandos():
         with open(archivo) as f:
             data = json.load(f)
     else:
-        print(archivo)
-        print(f"No se Encontro el Archivo {archivo}")
+        Imprimir(f"No se Encontro el Archivo + {archivo}")
         sys.exit()
 
 
@@ -52,7 +55,7 @@ def CargarBotones():
                 with open(URL_Carga) as f:
                     comando['Key'] = json.load(f)
             else:
-                print(f"{comando['Titulo']} - No se Encontro el Archivo {URL_Carga}")
+                Imprimir(f"{comando['Titulo']} - No se Encontro el Archivo {URL_Carga}")
                 sys.exit()
 
 
@@ -96,13 +99,16 @@ def ActualizarImagen(deck, teclas, tecla, limpiar=False):
         NombreIcon = os.path.dirname(os.path.realpath(__file__)) + "/" + NombreIcon
         if os.path.exists(NombreIcon):
             icon = Image.open(NombreIcon).convert("RGBA")
-            icon.thumbnail((image.width, image.height - 20), Image.LANCZOS)
+            if not titulo == '':
+                icon.thumbnail((image.width, image.height - 20), Image.LANCZOS)
+            else:
+                icon.thumbnail((image.width, image.height), Image.LANCZOS)
             icon_posicion = ((image.width - icon.width) // 2, 0)
             image.paste(icon, icon_posicion, icon)
         else:
-            print(f"No se encontro imagen {NombreIcon}")
-            icon = Image.new(mode = "RGBA", size = (256, 256))
-            icon.thumbnail((image.width, image.height - 20), Image.LANCZOS)
+            Imprimir(f"No se encontro imagen {NombreIcon}")
+            icon = Image.new(mode = "RGBA", size = (256, 256), color = (153, 153, 255))
+            icon.thumbnail((image.width, image.height), Image.LANCZOS)
             icon_posicion = ((image.width - icon.width) // 2, 0)
             image.paste(icon, icon_posicion, icon)
 
@@ -123,7 +129,7 @@ def ActualizarTeclas(deck, tecla, estado):
     tecla = tecla - DefaceBotones
     if estado:
         if tecla < len(teclas):
-            print(f"Boton {tecla} - {teclas[tecla]['Nombre']}")
+            Imprimir(f"Boton {tecla} - {teclas[tecla]['Nombre']}")
 
             if 'Regresar' in teclas[tecla]:
                 teclas = data['Comando']
@@ -150,7 +156,7 @@ def ActualizarTeclas(deck, tecla, estado):
             elif 'OS' in teclas[tecla]:
                 os.system(teclas[tecla]['OS'])
             elif 'mqtt' in teclas[tecla]:
-                print(f"Comando MQTT {teclas[tecla]['mqtt']}")
+                Imprimir(f"Comando MQTT {teclas[tecla]['mqtt']}")
                 MiMQTT.Enviando(teclas[tecla]['mqtt'])
             elif 'tecla' in teclas[tecla]:
                 ComandoTeclas(teclas[tecla]['tecla'])
@@ -159,7 +165,7 @@ def ActualizarTeclas(deck, tecla, estado):
             elif 'OBS' in teclas[tecla]:
                 ConectarOBS(teclas[tecla]['OBS'])
             elif 'MQTT' in teclas[tecla]:
-                print(f"Intentando MQTT_Remoto {teclas[tecla]['MQTT']}")
+                Imprimir(f"Intentando MQTT_Remoto {teclas[tecla]['MQTT']}")
                 MiMQTT.CambiarHost(teclas[tecla]['MQTT'])
                 MiMQTT.Conectar()
             elif 'Opcion' in teclas[tecla]:
@@ -169,16 +175,16 @@ def ActualizarTeclas(deck, tecla, estado):
                     MiMQTT.Cerrar()
                     deck.reset()
                     deck.close()
-                    print("Saliendo ElGato ALSW - Adios :) ")
+                    Imprimir("Saliendo ElGato ALSW - Adios :) ")
                 else:
-                    print(f"Opcion No Encontrada: {teclas[tecla]['Opcion']}")
+                    Imprimir(f"Opcion No Encontrada: {teclas[tecla]['Opcion']}")
             elif 'Key' in teclas[tecla]:
                 teclas = teclas[tecla]['Key']
                 BorrarActualizarImagenes()
             else:
-                print(f"Boton {tecla} - no definida")
+                Imprimir(f"Boton {tecla} - no definida")
         else:
-            print(f"Boton {tecla} - no programada")
+            Imprimir(f"Boton {tecla} - no programada")
 
 
 def ActualizarImagenes():
@@ -204,30 +210,30 @@ def ConectarOBS(servidor):
 def EventoOBS(mensaje):
     IdOBS = BuscarCarpeta('OBS')
     if IdOBS == -1:
-        print("Error no encontado Botones")
+        Imprimir("Error no encontado Botones")
         return
     if(mensaje.name == 'RecordingStopped'):
-        print('Parado la grabacion')
+        Imprimir('Parado la grabacion')
         IdGrabar = BuscarBoton(IdOBS, 'Rec')
         data['Comando'][IdOBS]['Key'][IdGrabar]['Estado'] = False
         ActualizarImagenes()
     elif(mensaje.name == 'RecordingStarted'):
-        print('Iniciado la grabacion')
+        Imprimir('Iniciado la grabacion')
         IdGrabar = BuscarBoton(IdOBS, 'Rec')
         data['Comando'][IdOBS]['Key'][IdGrabar]['Estado'] = True
         ActualizarImagenes()
     elif(mensaje.name == 'StreamStopped'):
-        print("Parando la trasmicion")
+        Imprimir("Parando la trasmicion")
         IdLive = BuscarBoton(IdOBS, 'Live')
         data['Comando'][IdOBS]['Key'][IdLive]['Estado'] = False
         ActualizarImagenes()
     elif(mensaje.name == 'StreamStarted'):
-        print("Empezando la trasmicion")
+        Imprimir("Empezando la trasmicion")
         IdLive = BuscarBoton(IdOBS, 'Live')
         data['Comando'][IdOBS]['Key'][IdLive]['Estado'] = True
         ActualizarImagenes()
     elif(mensaje.name == 'SwitchScenes'):
-        print(f"Cambia a Esena {mensaje.datain['scene-name']}")
+        Imprimir(f"Cambia a Esena {mensaje.datain['scene-name']}")
         EsenaActiva = BuscarBoton(IdOBS, mensaje.datain['scene-name'])
         for tecla in range(len(data['Comando'][IdOBS]['Key'])):
             if EsEsena(IdOBS, tecla):
@@ -240,23 +246,23 @@ def EventoOBS(mensaje):
         NombreIten = mensaje.datain['item-name']
         EstadoItem = mensaje.datain['item-visible']
         IdItem = BuscarBoton(IdOBS, NombreIten)
-        print(f"Se cambio fuente {NombreIten} - {EstadoItem}")
+        Imprimir(f"Se cambio fuente {NombreIten} - {EstadoItem}")
         data['Comando'][IdOBS]['Key'][IdItem]['Estado'] = EstadoItem
         ActualizarImagenes()
     elif(mensaje.name == 'SourceFilterVisibilityChanged'):
         NombreFiltro = mensaje.datain['filterName']
         NombreFuente = mensaje.datain['sourceName']
         EstadoFiltro = mensaje.datain['filterEnabled']
-        print(f"Se cambio el filtro {NombreFiltro} de {NombreFuente} a {EstadoFiltro}")
+        Imprimir(f"Se cambio el filtro {NombreFiltro} de {NombreFuente} a {EstadoFiltro}")
         IdItem = BuscarBoton(IdOBS, NombreFiltro)
         data['Comando'][IdOBS]['Key'][IdItem]['Estado'] = EstadoFiltro
         ActualizarImagenes()
     elif(mensaje.name == 'Exiting'):
-        print(f"Cerrando por OBS")
+        Imprimir(f"Cerrando por OBS")
         MiOBS = ''
         #MiOBS.Cerrar()
     else:
-        print(f"Evento no procesado de OBS: {mensaje}")
+        Imprimir(f"Evento no procesado de OBS: {mensaje}")
 
 
 def BuscarCarpeta(nombre):
@@ -294,7 +300,7 @@ if __name__ == "__main__":
     # Buscando Dispisitovos
     streamdecks = DeviceManager().enumerate()
 
-    print(f"Programa El Gato ALSW - {'Encontrado' if len(streamdecks) > 0 else 'No Conectado'}")
+    Imprimir(f"Programa El Gato ALSW - {'Encontrado' if len(streamdecks) > 0 else 'No Conectado'}")
 
     for index, deck in enumerate(streamdecks):
 
@@ -303,7 +309,7 @@ if __name__ == "__main__":
         deck.open()
         deck.reset()
 
-        print(f"Abriendo '{deck.deck_type()}' dispositivo (Numero Serial: '{deck.get_serial_number()}')")
+        Imprimir(f"Abriendo '{deck.deck_type()}' dispositivo (Numero Serial: '{deck.get_serial_number()}')")
 
         # Cambiar Brillo
         if 'Brillo' in data:
@@ -314,7 +320,7 @@ if __name__ == "__main__":
         if 'Fuente' in data:
             fuente = os.path.dirname(os.path.realpath(__file__)) + "/" + data['Fuente']
         else:
-            print("Fuente no asignada")
+            Imprimir("Fuente no asignada")
             deck.close()
 
         teclas = data['Comando']

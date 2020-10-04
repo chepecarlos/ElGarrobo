@@ -3,21 +3,18 @@
   "Titulo": "falta"
 }, {
   "Nombre": "Celular",
-  "Titulo": "Celular",
   "Fuente": "Celular",
   "Estado": false,
   "icon_true": "Recursos/OBS/CelularOn.png",
   "icon_false": "Recursos/OBS/CelularOff.png"
 }, {
   "Nombre": "Mic",
-  "Titulo": "Mic USB",
   "Fuente": "MicUSB",
   "Estado": true,
   "icon_true": "Recursos/OBS/MicOn.png",
   "icon_false": "Recursos/OBS/MicOff.png"
 }, {
   "Nombre": "Verde",
-  "Titulo": "Verde",
   "Fuente": "Camara",
   "Filtro": "Verde",
   "Estado": true,
@@ -25,14 +22,12 @@
   "icon_false": "Recursos/OBS/VerdeOff.png"
 }, {
   "Nombre": "Camara",
-  "Titulo": "Camara",
   "Fuente": "Camara",
   "Estado": true,
   "icon_true": "Recursos/OBS/CamaraOn.png",
   "icon_false": "Recursos/OBS/CamaraOff.png"
 }, {
   "Nombre": "ChepeCarlos",
-  "Titulo": "ChepeCarlos",
   "CambiarEsena": "ChepeCarlos",
   "Estado": false,
   "icon_true": "Recursos/OBS/ChepeCarlosOn.png",
@@ -53,41 +48,35 @@
   "icon_false": "Recursos/OBS/ZoomOff.png"
 }, {
   "Nombre": "Patreon",
-  "Titulo": "Patreon",
   "CambiarEsena": "Patreon",
   "Estado": false,
   "icon_true": "Recursos/OBS/PatreonOn.png",
   "icon_false": "Recursos/OBS/PatreonOff.png"
 }, {
   "Nombre": "EndCard",
-  "Titulo": "EndCard",
   "CambiarEsena": "EndCard",
   "Estado": false,
   "icon_true": "Recursos/OBS/EndCardOn.png",
   "icon_false": "Recursos/OBS/EndCardOff.png"
 }, {
   "Nombre": "Rec",
-  "Titulo": "Rec",
   "Grabar": "Cambiar",
   "Estado": false,
   "icon_true": "Recursos/OBS/RecOn.png",
   "icon_false": "Recursos/OBS/RecOff.png"
 }, {
   "Nombre": "Live",
-  "Titulo": "Live",
   "Live": "Cambiar",
   "Estado": false,
   "icon_true": "Recursos/OBS/LiveOn.png",
   "icon_false": "Recursos/OBS/LiveOff.png"
 }, {
   "Nombre": "Circuito",
-  "Titulo": "Circuito",
   "CambiarEsena": "Circuito",
   "Estado": false,
   "icon_true": "Recursos/OBS/CircuitoOn.png",
   "icon_false": "Recursos/OBS/CircuitoOff.png"
 }, {
-  "Titulo": "Siquiente",
   "Nombre": "Siquiente",
   "ico": "Recursos/OBS/Siquiente.png",
   "Siquiente": true
@@ -96,7 +85,6 @@
   "Regresar": true
 }, {
   "Nombre": "Inicio",
-  "Titulo": "Inicio",
   "CambiarEsena": "Inicio",
   "Estado": false,
   "icon_true": "Recursos/OBS/InicioOn.png",

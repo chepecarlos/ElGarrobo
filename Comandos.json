@@ -9,18 +9,15 @@
   "Comando": [{
     "Nombre": "OBS",
     "ico": "Recursos/OBS/OBS.png",
-    "Titulo": "OBS",
     "Cargar": "Recursos/OBS/Botones.json",
     "Key": []
   }, {
     "Nombre": "Blender",
     "ico": "Recursos/Blender/Blender.png",
-    "Titulo": "Blender",
     "Cargar": "Recursos/Blender/Botones.json",
     "Key": []
   }, {
     "Nombre": "Tutorial",
-    "Titulo": "Tutorial",
     "ico": "Recursos/Tutorial/Tutorial.png",
     "Cargar": "Recursos/Tutorial/Botones.json",
     "Key": []
@@ -37,38 +34,32 @@
     "Key": []
   }, {
     "Nombre": "Inskcape",
-    "Titulo": "Inskcape",
     "ico": "Recursos/Inskcape/Inskcape.png",
     "Cargar": "Recursos/Inskcape/Botones.json",
     "Key": []
   }, {
     "Nombre": "Jessyink",
-    "Titulo": "Jessyink",
     "ico": "Recursos/jessyink/Jessyink.png",
     "Cargar": "Recursos/jessyink/Botones.json",
     "Key": []
   }, {
     "Nombre": "Extra",
-    "Titulo": "Extra",
     "ico": "Recursos/Extra/Extra.png",
     "Cargar": "Recursos/Extra/Botones.json",
     "Key": []
   }, {
     "Nombre": "Atom",
     "ico": "Recursos/Atom/Atom.png",
-    "Titulo": "Atom",
     "Cargar": "Recursos/Atom/Botones.json",
     "Key": []
   }, {
     "Nombre": "Arduino",
     "ico": "Recursos/Arduino/Arduino.png",
-    "Titulo": "Arduino",
     "Cargar": "Recursos/Arduino/Botones.json",
     "Key": []
   }, {
     "Nombre": "Processing",
     "ico": "Recursos/Processing/Processing.png",
-    "Titulo": "Processing",
     "Key": [{
       "Nombre": "Regresar",
       "Regresar": "True"
@@ -76,13 +67,11 @@
   }, {
     "Nombre": "Gimp",
     "ico": "Recursos/Gimp/Gimp.png",
-    "Titulo": "Gimp",
     "Cargar": "Recursos/Gimp/Botones.json",
     "Key": []
   }, {
     "Nombre": "Audacity",
     "ico": "Recursos/Audacity/Audacity.png",
-    "Titulo": "Audacity",
     "Key": [{
       "Nombre": "Regresar",
       "Regresar": "True"
@@ -90,7 +79,6 @@
   }, {
     "Nombre": "KiCad",
     "ico": "Recursos/KiCad/KiCad.png",
-    "Titulo": "KiCad",
     "Key": [{
       "Nombre": "Regresar",
       "Regresar": "True"
@@ -98,14 +86,12 @@
   }, {
     "Nombre": "Fritzing",
     "ico": "Recursos/Fritzing/Fritzing.png",
-    "Titulo": "Fritzing",
     "Key": [{
       "Nombre": "Regresar",
       "Regresar": "True"
     }]
   }, {
     "Nombre": "IOT",
-    "Titulo": "IOT",
     "Key": [{
       "Nombre": "Encender",
       "Titulo": "Encender"

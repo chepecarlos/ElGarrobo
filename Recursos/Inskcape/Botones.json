@@ -1,46 +1,37 @@
 [{
   "Nombre": "Salvar",
-  "Titulo": "Salvar",
   "ico": "Recursos/Inskcape/Salvar.png",
   "tecla": ["ctrl", "s"]
 }, {
   "Nombre": "Selecion",
-  "Titulo": "Selecion",
   "ico": "Recursos/Inskcape/Selecion.png",
   "tecla": ["f1"]
 }, {
   "Nombre": "Nodo",
-  "Titulo": "Nodo",
   "ico": "Recursos/Inskcape/Nodo.png",
   "tecla": ["f2"]
 }, {
   "Nombre": "curva",
-  "Titulo": "curva",
   "ico": "Recursos/Inskcape/curva.png",
   "tecla": ["shift", "f6"]
 }, {
   "Nombre": "Rectangulo",
-  "Titulo": "Rectangulo",
   "ico": "Recursos/Inskcape/Rectangulo.png",
   "tecla": ["f4"]
 }, {
   "Nombre": "Duplicar",
-  "Titulo": "Duplicar",
   "ico": "Recursos/Inskcape/Duplicar.png",
   "tecla": ["ctrl", "d"]
 }, {
   "Nombre": "Texto",
-  "Titulo": "Texto",
   "ico": "Recursos/Inskcape/Texto.png",
   "tecla": ["f8"]
 }, {
   "Nombre": "Borrar",
-  "Titulo": "Borrar",
   "ico": "Recursos/Inskcape/Borrar.png",
   "tecla": ["del"]
 }, {
   "Nombre": "Aliniar",
-  "Titulo": "Aliniar",
   "ico": "Recursos/Inskcape/Aliniar.png",
   "tecla": ["shift", "ctrl", "a"]
 }, {
@@ -50,22 +41,18 @@
   "tecla": ["shift", "ctrl", "f"]
 }, {
   "Nombre": "Bajar Fondo",
-  "Titulo": "Bajar Fondo",
   "ico": "Recursos/Inskcape/BajarFondo.png",
   "tecla": ["end"]
 }, {
   "Nombre": "Bajar",
-  "Titulo": "Bajar",
   "ico": "Recursos/Inskcape/Bajar.png",
   "tecla": ["pagedown"]
 }, {
   "Nombre": "Suvir",
-  "Titulo": "Suvir",
   "ico": "Recursos/Inskcape/Suvir.png",
   "tecla": ["pageup"]
 }, {
   "Nombre": "Suvir Frente",
-  "Titulo": "Suvir Frente",
   "ico": "Recursos/Inskcape/SuvirFrente.png",
   "tecla": ["home"]
 }, {
