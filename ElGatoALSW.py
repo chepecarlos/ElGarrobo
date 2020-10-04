@@ -33,11 +33,13 @@ FolderRecursos = os.path.join(os.path.dirname(__file__), "Recusos")
 def CargarComandos():
     """Carga Archivo de comandos"""
     global data
-    if os.path.exists('Comandos.json'):
-        with open('Comandos.json') as f:
+    archivo = os.path.dirname(os.path.realpath(__file__)) + '/Comandos.json'
+    if os.path.exists(archivo):
+        with open(archivo) as f:
             data = json.load(f)
     else:
-        print("No se Encontro el Archivo Comandos.json")
+        print(archivo)
+        print(f"No se Encontro el Archivo {archivo}")
         sys.exit()
 
 
@@ -45,7 +47,7 @@ def CargarBotones():
     global data
     for comando in data['Comando']:
         if 'Cargar' in comando:
-            URL_Carga = comando['Cargar']
+            URL_Carga = os.path.dirname(os.path.realpath(__file__)) + "/" + comando['Cargar']
             if os.path.exists(URL_Carga):
                 with open(URL_Carga) as f:
                     comando['Key'] = json.load(f)
@@ -64,6 +66,10 @@ def ActualizarImagen(deck, teclas, tecla, limpiar=False):
 
     image = PILHelper.create_image(deck)
     if not limpiar:
+        titulo = ''
+        if 'Titulo' in teclas[tecla]:
+            titulo = "{}".format(teclas[tecla]['Titulo'])
+
         if 'Regresar' in teclas[tecla]:
             if 'ico' in teclas[tecla]:
                 NombreIcon = "{}".format(teclas[tecla]['ico'])
@@ -87,13 +93,18 @@ def ActualizarImagen(deck, teclas, tecla, limpiar=False):
                 NombreIcon = data['ico_defecto']
             else:
                 NombreIcon = "imagen.png"
-        icon = Image.open(NombreIcon).convert("RGBA")
-        icon.thumbnail((image.width, image.height - 20), Image.LANCZOS)
-        icon_posicion = ((image.width - icon.width) // 2, 0)
-        image.paste(icon, icon_posicion, icon)
-        titulo = ''
-        if 'Titulo' in teclas[tecla]:
-            titulo = "{}".format(teclas[tecla]['Titulo'])
+        NombreIcon = os.path.dirname(os.path.realpath(__file__)) + "/" + NombreIcon
+        if os.path.exists(NombreIcon):
+            icon = Image.open(NombreIcon).convert("RGBA")
+            icon.thumbnail((image.width, image.height - 20), Image.LANCZOS)
+            icon_posicion = ((image.width - icon.width) // 2, 0)
+            image.paste(icon, icon_posicion, icon)
+        else:
+            print(f"No se encontro imagen {NombreIcon}")
+            icon = Image.new(mode = "RGBA", size = (256, 256))
+            icon.thumbnail((image.width, image.height - 20), Image.LANCZOS)
+            icon_posicion = ((image.width - icon.width) // 2, 0)
+            image.paste(icon, icon_posicion, icon)
 
         if not titulo == '':
             dibujo = ImageDraw.Draw(image)
@@ -303,7 +314,7 @@ if __name__ == "__main__":
             deck.set_brightness(50)
 
         if 'Fuente' in data:
-            fuente = data['Fuente']
+            fuente = os.path.dirname(os.path.realpath(__file__)) + "/" + data['Fuente']
         else:
             print("Fuente no asignada")
             deck.close()
