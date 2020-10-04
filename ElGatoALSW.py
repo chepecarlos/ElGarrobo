@@ -130,11 +130,9 @@ def ActualizarTeclas(deck, tecla, estado):
                 DefaceBotones = 0
                 BorrarActualizarImagenes()
             elif 'Siquiente' in teclas[tecla]:
-                print("Se preciono next")
                 DefaceBotones -= deck.key_count()
                 BorrarActualizarImagenes()
             elif 'Anterior' in teclas[tecla]:
-                print("Se preciono next")
                 DefaceBotones += deck.key_count()
                 BorrarActualizarImagenes()
             elif 'Filtro' in teclas[tecla] and 'Fuente' in teclas[tecla]:
@@ -178,9 +176,9 @@ def ActualizarTeclas(deck, tecla, estado):
                 teclas = teclas[tecla]['Key']
                 BorrarActualizarImagenes()
             else:
-                print("Tecla no definida")
+                print(f"Boton {tecla} - no definida")
         else:
-            print("Tecla no programada")
+            print(f"Boton {tecla} - no programada")
 
 
 def ActualizarImagenes():
