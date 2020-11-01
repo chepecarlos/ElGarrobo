@@ -60,6 +60,22 @@ def CargarComandos():
 
 def CargarBotones():
     global data
+    if 'CargandoRaton' in data:
+        URL_Carga = os.path.dirname(os.path.realpath(__file__)) + "/" + data['CargandoRaton']
+        if os.path.exists(URL_Carga):
+            with open(URL_Carga) as f:
+                data['teclado'] = json.load(f)
+        else:
+            Imprimir(f"{data['CargandoRaton']} - No se Encontro el Archivo {URL_Carga}")
+            sys.exit()
+    if 'CargandoComando' in data:
+        URL_Carga = os.path.dirname(os.path.realpath(__file__)) + "/" + data['CargandoComando']
+        if os.path.exists(URL_Carga):
+            with open(URL_Carga) as f:
+                data['Comando'] = json.load(f)
+        else:
+            Imprimir(f"{data['CargandoComando']} - No se Encontro el Archivo {URL_Carga}")
+            sys.exit()
     for comando in data['Comando']:
         if 'Cargar' in comando:
             URL_Carga = os.path.dirname(os.path.realpath(__file__)) + "/" + comando['Cargar']
@@ -67,7 +83,7 @@ def CargarBotones():
                 with open(URL_Carga) as f:
                     comando['Key'] = json.load(f)
             else:
-                Imprimir(f"{comando['Titulo']} - No se Encontro el Archivo {URL_Carga}")
+                Imprimir(f"{comando['Cargar']} - No se Encontro el Archivo {URL_Carga}")
                 sys.exit()
         if 'CargandoRaton' in comando:
             URL_Carga = os.path.dirname(os.path.realpath(__file__)) + "/" + comando['CargandoRaton']
@@ -75,7 +91,7 @@ def CargarBotones():
                 with open(URL_Carga) as f:
                     comando['teclado'] = json.load(f)
             else:
-                Imprimir(f"{comando['Titulo']} - No se Encontro el Archivo {URL_Carga}")
+                Imprimir(f"{comando['CargandoRaton']} - No se Encontro el Archivo {URL_Carga}")
                 sys.exit()
 
 
@@ -368,7 +384,6 @@ def CargandoElGato():
     global teclas
     global fuente
     global MiDeck
-    CargarBotones()
     # Buscando Dispisitovos
     streamdecks = DeviceManager().enumerate()
 
@@ -418,6 +433,7 @@ if __name__ == "__main__":
     if args.master:
         print("Master")
         CargarComandos()
+        CargarBotones()
         CargandoRaton()
         CargandoElGato()
         CargarHilo()
@@ -426,6 +442,7 @@ if __name__ == "__main__":
     else:
         print("No parametro")
         CargarComandos()
+        CargarBotones()
         CargandoRaton()
         CargandoElGato()
         CargarHilo()

@@ -1,0 +1,13 @@
+[{
+  "Nombre": "Play",
+  "Boton": "KEY_1",
+  "texto": "hola mundo"
+}, {
+  "Nombre": "stop",
+  "Boton": "KEY_2",
+  "tecla": ["f12"]
+}, {
+  "Nombre": "verificar",
+  "Boton": "KEY_3",
+  "tecla": ["ctrl", "r"]
+}]
