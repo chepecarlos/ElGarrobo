@@ -66,22 +66,18 @@
   "ico": "Recursos/Inskcape/Nodo.png",
   "tecla": ["shift", "alt", "q"]
 }, {
-  "Titulo": "Rotar I",
   "Nombre": "RotarI",
   "ico": "Recursos/Inskcape/RotarI.png",
   "tecla": ["ctrl", "["]
 }, {
-  "Titulo": "Rotar D",
   "Nombre": "RotarD",
   "ico": "Recursos/Inskcape/RotarD.png",
   "tecla": ["ctrl", "]"]
 }, {
-  "Titulo": "Ref H",
   "Nombre": "ReflejarH",
   "ico": "Recursos/Inskcape/ReflejarH.png",
   "tecla": ["h"]
 }, {
-  "Titulo": "Ref V",
   "Nombre": "ReflejarV",
   "ico": "Recursos/Inskcape/ReflejarV.png",
   "tecla": ["v"]
