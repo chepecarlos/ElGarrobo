@@ -302,12 +302,35 @@ def BuscandoBoton(NombreFolder, NombreBoton):
     return BuscarBoton(IdFolder, NombreBoton)
 
 
+def signal_handler(signal, frame):
+    print("Saliendo de la app")
+    sys.exit(0)
+
+
+def EsucharRaton(Raton): # reading the keyboard
+    signal.signal(signal.SIGINT, signal_handler)
+    for event in Raton.read_loop():
+        if event.type == ecodes.EV_KEY:
+            key = categorize(event)
+            if key.keystate == key.key_down:
+                print(key)
+
+
+def CargandoRaton():
+    print("Cargando Raton Razer")
+    if 'Raton_Razer' in data:
+        print(data['Raton_Razer'])
+        Raton = InputDevice(data['Raton_Razer'])
+        Raton.grab()
+        EsucharRaton(Raton)
+    else:
+        print("error Raron Razer no definido")
+
+
 def CargandoElGato():
     global data
     global teclas
     global fuente
-    # Cargando comandos
-    CargarComandos()
     CargarBotones()
     # Buscando Dispisitovos
     streamdecks = DeviceManager().enumerate()
@@ -355,9 +378,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.master:
         print("Master")
-        CargandoElGato()
+        CargarComandos()
+        # CargandoElGato()
+        CargandoRaton()
     elif args.cliente:
         print("Cliente")
     else:
         print("No parametro")
+        CargarComandos()
+        CargandoRaton()
         CargandoElGato()
