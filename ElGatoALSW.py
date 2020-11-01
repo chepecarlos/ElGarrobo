@@ -24,6 +24,7 @@ from MiMQTT import *
 # TODO: ordenar para no usar variable globales
 MiDeck = "nada"
 teclas = "nada"
+raton = "nada"
 folder = ""
 fuente = ""
 depura = True
@@ -134,68 +135,70 @@ def ActualizarImagen(deck, teclas, tecla, limpiar=False):
 
 
 def ActualizarTeclas(deck, tecla, estado):
-
     global teclas
-    global DefaceBotones
     tecla = tecla - DefaceBotones
     if estado:
         if tecla < len(teclas):
             Imprimir(f"Boton {tecla} - {teclas[tecla]['Nombre']}")
-
-            if 'Regresar' in teclas[tecla]:
-                teclas = data['Comando']
-                DefaceBotones = 0
-                BorrarActualizarImagenes()
-            elif 'Siquiente' in teclas[tecla]:
-                DefaceBotones -= deck.key_count()
-                BorrarActualizarImagenes()
-            elif 'Anterior' in teclas[tecla]:
-                DefaceBotones += deck.key_count()
-                BorrarActualizarImagenes()
-            elif 'Filtro' in teclas[tecla] and 'Fuente' in teclas[tecla]:
-                MiOBS.CambiarFiltro(
-                    teclas[tecla]['Fuente'], teclas[tecla]['Filtro'], teclas[tecla]['Estado'])
-            elif 'Fuente' in teclas[tecla]:
-                MiOBS.CambiarFuente(
-                    teclas[tecla]['Fuente'], not teclas[tecla]['Estado'])
-            elif 'CambiarEsena' in teclas[tecla]:
-                MiOBS.CambiarEsena(teclas[tecla]['CambiarEsena'])
-            elif 'Grabar' in teclas[tecla]:
-                MiOBS.CambiarGrabacion()
-            elif 'Live' in teclas[tecla]:
-                MiOBS.CambiarStriming()
-            elif 'OS' in teclas[tecla]:
-                os.system(teclas[tecla]['OS'])
-            elif 'mqtt' in teclas[tecla]:
-                Imprimir(f"Comando MQTT {teclas[tecla]['mqtt']}")
-                MiMQTT.Enviando(teclas[tecla]['mqtt'])
-            elif 'tecla' in teclas[tecla]:
-                ComandoTeclas(teclas[tecla]['tecla'])
-            elif 'texto' in teclas[tecla]:
-                ComandoEscribir(teclas[tecla]['texto'])
-            elif 'OBS' in teclas[tecla]:
-                ConectarOBS(teclas[tecla]['OBS'])
-            elif 'MQTT' in teclas[tecla]:
-                Imprimir(f"Intentando MQTT_Remoto {teclas[tecla]['MQTT']}")
-                MiMQTT.CambiarHost(teclas[tecla]['MQTT'])
-                MiMQTT.Conectar()
-            elif 'Opcion' in teclas[tecla]:
-                if teclas[tecla]['Opcion'] == "Exit":
-                    # TODO: ver si esta habierto antes de cerrar
-                    MiOBS.Cerrar()
-                    MiMQTT.Cerrar()
-                    deck.reset()
-                    deck.close()
-                    Imprimir("Saliendo ElGato ALSW - Adios :) ")
-                else:
-                    Imprimir(f"Opcion No Encontrada: {teclas[tecla]['Opcion']}")
-            elif 'Key' in teclas[tecla]:
-                teclas = teclas[tecla]['Key']
-                BorrarActualizarImagenes()
-            else:
-                Imprimir(f"Boton {tecla} - no definida")
+            ActualizarAccion(teclas[tecla], deck)
         else:
             Imprimir(f"Boton {tecla} - no programada")
+
+
+def ActualizarAccion(accion, deck):
+    global teclas
+    global DefaceBotones
+    print(accion['Nombre'])
+    if 'Regresar' in accion:
+        teclas = data['Comando']
+        DefaceBotones = 0
+        BorrarActualizarImagenes()
+    elif 'Siquiente' in accion:
+        DefaceBotones -= deck.key_count()
+        BorrarActualizarImagenes()
+    elif 'Anterior' in accion:
+        DefaceBotones += deck.key_count()
+        BorrarActualizarImagenes()
+    elif 'Filtro' in accion and 'Fuente' in accion:
+        MiOBS.CambiarFiltro(accion['Fuente'], accion['Filtro'], accion['Estado'])
+    elif 'Fuente' in accion:
+        MiOBS.CambiarFuente(accion['Fuente'], not accion['Estado'])
+    elif 'CambiarEsena' in accion:
+        MiOBS.CambiarEsena(accion['CambiarEsena'])
+    elif 'Grabar' in accion:
+        MiOBS.CambiarGrabacion()
+    elif 'Live' in accion:
+        MiOBS.CambiarStriming()
+    elif 'OS' in accion:
+        os.system(accion['OS'])
+    elif 'mqtt' in accion:
+        Imprimir(f"Comando MQTT {accion['mqtt']}")
+        MiMQTT.Enviando(accion['mqtt'])
+    elif 'tecla' in accion:
+        ComandoTeclas(accion['tecla'])
+    elif 'texto' in accion:
+        ComandoEscribir(accion['texto'])
+    elif 'OBS' in accion:
+        ConectarOBS(accion['OBS'])
+    elif 'MQTT' in accion:
+        Imprimir(f"Intentando MQTT_Remoto {accion['MQTT']}")
+        MiMQTT.CambiarHost(accion['MQTT'])
+        MiMQTT.Conectar()
+    elif 'Opcion' in accion:
+        if accion['Opcion'] == "Exit":
+            # TODO: ver si esta habierto antes de cerrar
+            MiOBS.Cerrar()
+            MiMQTT.Cerrar()
+            deck.reset()
+            deck.close()
+            Imprimir("Saliendo ElGato ALSW - Adios :) ")
+        else:
+            Imprimir(f"Opcion No Encontrada: {accion['Opcion']}")
+    elif 'Key' in accion:
+        teclas = accion['Key']
+        BorrarActualizarImagenes()
+    else:
+        Imprimir(f"Boton - no definida")
 
 
 def ActualizarImagenes():
@@ -215,10 +218,12 @@ def BorrarActualizarImagenes():
     DefaceBotones = Tmp
     ActualizarImagenes()
 
+
 def ConectarOBS(servidor):
     MiOBS.CambiarHost(servidor)
     MiOBS.Conectar()
     MiOBS.RegistarEvento(EventoOBS)
+
 
 def EventoOBS(mensaje):
     IdOBS = BuscarCarpeta('OBS')
@@ -273,7 +278,7 @@ def EventoOBS(mensaje):
     elif(mensaje.name == 'Exiting'):
         Imprimir(f"Cerrando por OBS")
         MiOBS = ''
-        #MiOBS.Cerrar()
+        # MiOBS.Cerrar()
     else:
         Imprimir(f"Evento no procesado de OBS: {mensaje}")
 
@@ -305,7 +310,11 @@ def BuscandoBoton(NombreFolder, NombreBoton):
     return BuscarBoton(IdFolder, NombreBoton)
 
 
+#  Codigo del Raton_Razer
+
+
 def CargandoRaton():
+    global data
     print("Cargando Raton Razer")
     if 'Raton_Razer' in data:
         Raton = InputDevice(data['Raton_Razer'])
@@ -321,7 +330,13 @@ def HiloRaton(Raton):
         if event.type == ecodes.EV_KEY:
             key = categorize(event)
             if key.keystate == key.key_down:
-                print(key)
+                ActualizarRaton(key.keycode)
+
+
+def ActualizarRaton(Boton):
+    # ActualizarAccion()
+    print(Boton)
+
 
 def CargandoElGato():
     global data
@@ -362,12 +377,14 @@ def CargandoElGato():
         # Sistema de Coalbask
         deck.set_key_callback(ActualizarTeclas)
 
-        for t in threading.enumerate():
-            if t is threading.currentThread():
-                continue
 
-            if t.is_alive():
-                t.join()
+def CargarHilo():
+    for t in threading.enumerate():
+        if t is threading.currentThread():
+            continue
+
+        if t.is_alive():
+            t.join()
 
 
 # Principal
@@ -378,6 +395,7 @@ if __name__ == "__main__":
         CargarComandos()
         CargandoRaton()
         CargandoElGato()
+        CargarHilo()
     elif args.cliente:
         print("Cliente")
     else:
@@ -385,3 +403,4 @@ if __name__ == "__main__":
         CargarComandos()
         CargandoRaton()
         CargandoElGato()
+        CargarHilo()
