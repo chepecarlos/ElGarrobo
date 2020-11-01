@@ -6,14 +6,17 @@
 import os
 import sys
 import threading
+
 # Librerias de ElGato
 from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.ImageHelpers import PILHelper
 # Librerias para idenficiar Teclado
+import asyncio
 from evdev import InputDevice, categorize, ecodes
 import signal
 import argparse
+# Librerias para json
 import json
 
 from EmularTeclado import *
@@ -198,17 +201,19 @@ def ActualizarTeclas(deck, tecla, estado):
 
 
 def ActualizarImagenes():
+    global MiDeck
     for indice in range(len(teclas)):
-        ActualizarImagen(deck, teclas, indice)
+        ActualizarImagen(MiDeck, teclas, indice)
 
 
 def BorrarActualizarImagenes():
+    global MiDeck
     # TODO: Mejorar la logica de guardad en tiemporal
     global DefaceBotones
     Tmp = DefaceBotones
     DefaceBotones = 0
-    for key in range(deck.key_count()):
-        ActualizarImagen(deck, teclas, key, True)
+    for key in range(MiDeck.key_count()):
+        ActualizarImagen(MiDeck, teclas, key, True)
     DefaceBotones = Tmp
     ActualizarImagenes()
 
@@ -307,13 +312,21 @@ def signal_handler(signal, frame):
     sys.exit(0)
 
 
-def EsucharRaton(Raton): # reading the keyboard
+async def helper(dev):
+    async for ev in dev.async_read_loop():
+        print(repr(ev))
+
+
+def EsucharRaton(Raton):
     signal.signal(signal.SIGINT, signal_handler)
-    for event in Raton.read_loop():
-        if event.type == ecodes.EV_KEY:
-            key = categorize(event)
-            if key.keystate == key.key_down:
-                print(key)
+    # for event in Raton.read_loop():
+    #     if event.type == ecodes.EV_KEY:
+    #         key = categorize(event)
+    #         if key.keystate == key.key_down:
+    #             print(key)
+    # print("Despues de raton")
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(helper(Raton))
 
 
 def CargandoRaton():
@@ -331,6 +344,7 @@ def CargandoElGato():
     global data
     global teclas
     global fuente
+    global MiDeck
     CargarBotones()
     # Buscando Dispisitovos
     streamdecks = DeviceManager().enumerate()
@@ -379,12 +393,13 @@ if __name__ == "__main__":
     if args.master:
         print("Master")
         CargarComandos()
-        # CargandoElGato()
-        CargandoRaton()
+        CargandoElGato()
+        # CargandoRaton()
+
     elif args.cliente:
         print("Cliente")
     else:
         print("No parametro")
         CargarComandos()
-        CargandoRaton()
         CargandoElGato()
+        # CargandoRaton()
