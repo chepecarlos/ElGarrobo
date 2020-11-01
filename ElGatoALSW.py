@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
-
 # TODO: agregar git https://python-elgato-streamdeck.readthedocs.io/en/stable/examples/animated.html
+# TODO: Reordenar codigo
 
 # Librerias
 import os
 import sys
 import threading
+# Librerias de ElGato
 from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.ImageHelpers import PILHelper
+# Librerias para idenficiar Teclado
+from evdev import InputDevice, categorize, ecodes
+import signal
+import argparse
 import json
 
 from EmularTeclado import *
@@ -24,8 +29,13 @@ depura = True
 
 DefaceBotones = 0
 
+
 MiOBS = MiObsWS()
 MiMQTT = MiMQTT()
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--master', '-m', help="Cargar servidor de %(prog)s",  action="store_true")
+parser.add_argument('--cliente', '-c', help="Cargando cliente de %(prog)s",  action="store_true")
 
 
 def Imprimir(dato):
@@ -292,8 +302,10 @@ def BuscandoBoton(NombreFolder, NombreBoton):
     return BuscarBoton(IdFolder, NombreBoton)
 
 
-# Principal
-if __name__ == "__main__":
+def CargandoElGato():
+    global data
+    global teclas
+    global fuente
     # Cargando comandos
     CargarComandos()
     CargarBotones()
@@ -336,3 +348,16 @@ if __name__ == "__main__":
 
             if t.is_alive():
                 t.join()
+
+
+# Principal
+if __name__ == "__main__":
+    args = parser.parse_args()
+    if args.master:
+        print("Master")
+        CargandoElGato()
+    elif args.cliente:
+        print("Cliente")
+    else:
+        print("No parametro")
+        CargandoElGato()
