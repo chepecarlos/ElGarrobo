@@ -8,97 +8,120 @@
   "OBS_Local": "localhost",
   "Raton_Razer": "/dev/input/by-id/usb-Razer_Razer_Naga_Trinity_00000000001A-if02-event-kbd",
   "Comando": [{
-    "Nombre": "OBS",
-    "ico": "Recursos/OBS/OBS.png",
-    "Cargar": "Recursos/OBS/Botones.json",
-    "Key": []
-  }, {
-    "Nombre": "Blender",
-    "ico": "Recursos/Blender/Blender.png",
-    "Cargar": "Recursos/Blender/Botones.json",
-    "Key": []
-  }, {
-    "Nombre": "Tutorial",
-    "ico": "Recursos/Tutorial/Tutorial.png",
-    "Cargar": "Recursos/Tutorial/Botones.json",
-    "Key": []
-  }, {
-    "Nombre": "Folder L",
-    "Titulo": "Folder L",
-    "Cargar": "Recursos/FolderL/Botones.json",
-    "Key": []
-  }, {
-    "Nombre": "Folder R",
-    "Titulo": "Folder R",
-    "ico": "Recursos/FolderR/Folder.png",
-    "Cargar": "Recursos/FolderR/Botones.json",
-    "Key": []
-  }, {
-    "Nombre": "Inskcape",
-    "ico": "Recursos/Inskcape/Inskcape.png",
-    "Cargar": "Recursos/Inskcape/Botones.json",
-    "Key": []
-  }, {
-    "Nombre": "Jessyink",
-    "ico": "Recursos/jessyink/Jessyink.png",
-    "Cargar": "Recursos/jessyink/Botones.json",
-    "Key": []
-  }, {
-    "Nombre": "Extra",
-    "ico": "Recursos/Extra/Extra.png",
-    "Cargar": "Recursos/Extra/Botones.json",
-    "Key": []
-  }, {
-    "Nombre": "Atom",
-    "ico": "Recursos/Atom/Atom.png",
-    "Cargar": "Recursos/Atom/Botones.json",
-    "Key": []
-  }, {
-    "Nombre": "Arduino",
-    "ico": "Recursos/Arduino/Arduino.png",
-    "Cargar": "Recursos/Arduino/Botones.json",
-    "Key": []
-  }, {
-    "Nombre": "Processing",
-    "ico": "Recursos/Processing/Processing.png",
-    "Key": [{
-      "Nombre": "Regresar",
-      "Regresar": "True"
-    }]
-  }, {
-    "Nombre": "Gimp",
-    "ico": "Recursos/Gimp/Gimp.png",
-    "Cargar": "Recursos/Gimp/Botones.json",
-    "Key": []
-  }, {
-    "Nombre": "Audacity",
-    "ico": "Recursos/Audacity/Audacity.png",
-    "Key": [{
-      "Nombre": "Regresar",
-      "Regresar": "True"
-    }]
-  }, {
-    "Nombre": "KiCad",
-    "ico": "Recursos/KiCad/KiCad.png",
-    "Key": [{
-      "Nombre": "Regresar",
-      "Regresar": "True"
-    }]
-  }, {
-    "Nombre": "Fritzing",
-    "ico": "Recursos/Fritzing/Fritzing.png",
-    "Key": [{
-      "Nombre": "Regresar",
-      "Regresar": "True"
-    }]
-  }, {
-    "Nombre": "IOT",
-    "Key": [{
-      "Nombre": "Encender",
-      "Titulo": "Encender"
+      "Nombre": "OBS",
+      "ico": "Recursos/OBS/OBS.png",
+      "Cargar": "Recursos/OBS/Botones.json",
+      "Key": []
+    },
+    {
+      "Nombre": "Blender",
+      "ico": "Recursos/Blender/Blender.png",
+      "Cargar": "Recursos/Blender/Botones.json",
+      "Key": []
+    },
+    {
+      "Nombre": "Tutorial",
+      "ico": "Recursos/Tutorial/Tutorial.png",
+      "Cargar": "Recursos/Tutorial/Botones.json",
+      "Key": []
+    },
+    {
+      "Nombre": "Folder L",
+      "Titulo": "Folder L",
+      "Cargar": "Recursos/FolderL/Botones.json",
+      "Key": []
+    },
+    {
+      "Nombre": "Folder R",
+      "Titulo": "Folder R",
+      "ico": "Recursos/FolderR/Folder.png",
+      "Cargar": "Recursos/FolderR/Botones.json",
+      "Key": []
+    },
+    {
+      "Nombre": "Inskcape",
+      "ico": "Recursos/Inskcape/Inskcape.png",
+      "Cargar": "Recursos/Inskcape/Botones.json",
+      "Key": []
+    },
+    {
+      "Nombre": "Jessyink",
+      "ico": "Recursos/jessyink/Jessyink.png",
+      "Cargar": "Recursos/jessyink/Botones.json",
+      "Key": []
+    },
+    {
+      "Nombre": "Extra",
+      "ico": "Recursos/Extra/Extra.png",
+      "Cargar": "Recursos/Extra/Botones.json",
+      "Key": []
+    },
+    {
+      "Nombre": "Atom",
+      "ico": "Recursos/Atom/Atom.png",
+      "Cargar": "Recursos/Atom/Botones.json",
+      "Key": []
+    },
+    {
+      "Nombre": "Processing",
+      "ico": "Recursos/Processing/Processing.png",
+      "Key": [{
+        "Nombre": "Regresar",
+        "Regresar": "True"
+      }]
+    },
+    {
+      "Nombre": "Gimp",
+      "ico": "Recursos/Gimp/Gimp.png",
+      "Cargar": "Recursos/Gimp/Botones.json",
+      "Key": []
+    },
+    {
+      "Nombre": "Audacity",
+      "ico": "Recursos/Audacity/Audacity.png",
+      "Key": [{
+        "Nombre": "Regresar",
+        "Regresar": "True"
+      }]
+    },
+    {
+      "Nombre": "KiCad",
+      "ico": "Recursos/KiCad/KiCad.png",
+      "Key": [{
+        "Nombre": "Regresar",
+        "Regresar": "True"
+      }]
+    },
+    {
+      "Nombre": "Fritzing",
+      "ico": "Recursos/Fritzing/Fritzing.png",
+      "Key": [{
+        "Nombre": "Regresar",
+        "Regresar": "True"
+      }]
+    },
+    {
+      "Nombre": "Arduino",
+      "ico": "Recursos/Arduino/Arduino.png",
+      "Cargar": "Recursos/Arduino/Botones.json",
+      "CargandoRaton": "Recursos/Arduino/Teclado.json",
+      "Key": [],
+      "teclado": []
+    }
+  ],
+  "teclado": [{
+      "Nombre": "Play",
+      "Boton": "KEY_1",
+      "texto": "hola mundo"
     }, {
-      "Nombre": "Regresar",
-      "Regresar": "True"
-    }]
-  }]
+      "Nombre": "stop",
+      "Boton": "KEY_2",
+      "tecla": ["f12"]
+    }, {
+      "Nombre": "verificar",
+      "Boton": "KEY_3",
+      "tecla": ["ctrl", "r"]
+    }
+
+  ]
 }

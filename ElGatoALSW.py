@@ -24,7 +24,7 @@ from MiMQTT import *
 # TODO: ordenar para no usar variable globales
 MiDeck = "nada"
 teclas = "nada"
-raton = "nada"
+ComandosRaton = "nada"
 folder = ""
 fuente = ""
 depura = True
@@ -66,6 +66,14 @@ def CargarBotones():
             if os.path.exists(URL_Carga):
                 with open(URL_Carga) as f:
                     comando['Key'] = json.load(f)
+            else:
+                Imprimir(f"{comando['Titulo']} - No se Encontro el Archivo {URL_Carga}")
+                sys.exit()
+        if 'CargandoRaton' in comando:
+            URL_Carga = os.path.dirname(os.path.realpath(__file__)) + "/" + comando['CargandoRaton']
+            if os.path.exists(URL_Carga):
+                with open(URL_Carga) as f:
+                    comando['teclado'] = json.load(f)
             else:
                 Imprimir(f"{comando['Titulo']} - No se Encontro el Archivo {URL_Carga}")
                 sys.exit()
@@ -140,24 +148,35 @@ def ActualizarTeclas(deck, tecla, estado):
     if estado:
         if tecla < len(teclas):
             Imprimir(f"Boton {tecla} - {teclas[tecla]['Nombre']}")
-            ActualizarAccion(teclas[tecla], deck)
+            ActualizarAccion(teclas[tecla])
         else:
             Imprimir(f"Boton {tecla} - no programada")
 
 
-def ActualizarAccion(accion, deck):
-    global teclas
+def BotonesSiquiente(Siquiente):
+    global MiDeck
     global DefaceBotones
-    print(accion['Nombre'])
+    if Siquiente:
+        DefaceBotones -= MiDeck.key_count()
+    else:
+        DefaceBotones += MiDeck.key_count()
+
+
+def ActualizarAccion(accion):
+    global teclas
+    global raton
+    global DefaceBotones
+    global ComandosRaton
     if 'Regresar' in accion:
         teclas = data['Comando']
+        ComandosRaton = data['teclado']
         DefaceBotones = 0
         BorrarActualizarImagenes()
     elif 'Siquiente' in accion:
-        DefaceBotones -= deck.key_count()
+        BotonesSiquiente(True)
         BorrarActualizarImagenes()
     elif 'Anterior' in accion:
-        DefaceBotones += deck.key_count()
+        BotonesSiquiente(False)
         BorrarActualizarImagenes()
     elif 'Filtro' in accion and 'Fuente' in accion:
         MiOBS.CambiarFiltro(accion['Fuente'], accion['Filtro'], accion['Estado'])
@@ -195,7 +214,11 @@ def ActualizarAccion(accion, deck):
         else:
             Imprimir(f"Opcion No Encontrada: {accion['Opcion']}")
     elif 'Key' in accion:
+        print("Entenado en folder")
         teclas = accion['Key']
+        if 'teclado' in accion:
+            print("cargando teclas")
+            ComandosRaton = accion['teclado']
         BorrarActualizarImagenes()
     else:
         Imprimir(f"Boton - no definida")
@@ -315,7 +338,9 @@ def BuscandoBoton(NombreFolder, NombreBoton):
 
 def CargandoRaton():
     global data
+    global ComandosRaton
     print("Cargando Raton Razer")
+    ComandosRaton = data['teclado']
     if 'Raton_Razer' in data:
         Raton = InputDevice(data['Raton_Razer'])
         Raton.grab()
@@ -326,16 +351,16 @@ def CargandoRaton():
 
 
 def HiloRaton(Raton):
+    global ComandosRaton
     for event in Raton.read_loop():
         if event.type == ecodes.EV_KEY:
             key = categorize(event)
             if key.keystate == key.key_down:
-                ActualizarRaton(key.keycode)
-
-
-def ActualizarRaton(Boton):
-    # ActualizarAccion()
-    print(Boton)
+                for teclas in ComandosRaton:
+                    if 'Boton' in teclas:
+                        if teclas['Boton'] == key.keycode:
+                            print(f"Raton {key.keycode} - {teclas['Nombre']}")
+                            ActualizarAccion(teclas)
 
 
 def CargandoElGato():
