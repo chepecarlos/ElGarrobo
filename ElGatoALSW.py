@@ -38,6 +38,8 @@ MiMQTT = MiMQTT()
 parser = argparse.ArgumentParser()
 parser.add_argument('--master', '-m', help="Cargar servidor de %(prog)s",  action="store_true")
 parser.add_argument('--cliente', '-c', help="Cargando cliente de %(prog)s",  action="store_true")
+parser.add_argument('--deck', '-d', help="Solo usar StreamDeck",  action="store_true")
+parser.add_argument('--ratom', '-r', help="Solo usar Ratom Razer",  action="store_true")
 
 
 def Imprimir(dato):
@@ -143,7 +145,7 @@ def ActualizarImagen(deck, teclas, tecla, limpiar=False):
             image.paste(icon, icon_posicion, icon)
         else:
             Imprimir(f"No se encontro imagen {NombreIcon}")
-            icon = Image.new(mode = "RGBA", size = (256, 256), color = (153, 153, 255))
+            icon = Image.new(mode="RGBA", size=(256, 256), color=(153, 153, 255))
             icon.thumbnail((image.width, image.height), Image.LANCZOS)
             icon_posicion = ((image.width - icon.width) // 2, 0)
             image.paste(icon, icon_posicion, icon)
@@ -194,16 +196,8 @@ def ActualizarAccion(accion):
     elif 'Anterior' in accion:
         BotonesSiquiente(False)
         BorrarActualizarImagenes()
-    elif 'Filtro' in accion and 'Fuente' in accion:
-        MiOBS.CambiarFiltro(accion['Fuente'], accion['Filtro'], accion['Estado'])
-    elif 'Fuente' in accion:
-        MiOBS.CambiarFuente(accion['Fuente'], not accion['Estado'])
-    elif 'CambiarEsena' in accion:
-        MiOBS.CambiarEsena(accion['CambiarEsena'])
-    elif 'Grabar' in accion:
-        MiOBS.CambiarGrabacion()
-    elif 'Live' in accion:
-        MiOBS.CambiarStriming()
+    elif ActualizarOBS(accion):
+        True
     elif 'OS' in accion:
         os.system(accion['OS'])
     elif 'mqtt' in accion:
@@ -213,8 +207,6 @@ def ActualizarAccion(accion):
         ComandoTeclas(accion['tecla'])
     elif 'texto' in accion:
         ComandoEscribir(accion['texto'])
-    elif 'OBS' in accion:
-        ConectarOBS(accion['OBS'])
     elif 'MQTT' in accion:
         Imprimir(f"Intentando MQTT_Remoto {accion['MQTT']}")
         MiMQTT.CambiarHost(accion['MQTT'])
@@ -233,11 +225,30 @@ def ActualizarAccion(accion):
         print("Entenado en folder")
         teclas = accion['Key']
         if 'teclado' in accion:
-            print("cargando teclas")
+            print("Cargando Teclado")
             ComandosRaton = accion['teclado']
         BorrarActualizarImagenes()
     else:
         Imprimir(f"Boton - no definida")
+
+
+def ActualizarOBS(accion):
+    if 'OBS' in accion:
+        ConectarOBS(accion['OBS'])
+    elif 'Grabar' in accion:
+        MiOBS.CambiarGrabacion()
+    elif 'Live' in accion:
+        MiOBS.CambiarStriming()
+    elif 'CambiarEsena' in accion:
+        MiOBS.CambiarEsena(accion['CambiarEsena'])
+    elif 'Fuente' in accion:
+        if 'Filtro' in accion:
+            MiOBS.CambiarFiltro(accion['Fuente'], accion['Filtro'], accion['Estado'])
+        else:
+            MiOBS.CambiarFuente(accion['Fuente'], not accion['Estado'])
+    else:
+        return False
+    return True
 
 
 def ActualizarImagenes():
@@ -431,14 +442,26 @@ def CargarHilo():
 if __name__ == "__main__":
     args = parser.parse_args()
     if args.master:
-        print("Master")
+        print("Modo Master")
         CargarComandos()
         CargarBotones()
         CargandoRaton()
         CargandoElGato()
         CargarHilo()
     elif args.cliente:
-        print("Cliente")
+        print("Modo Cliente")
+    elif args.deck:
+        print("Modo Solo StreamDeck")
+        CargarComandos()
+        CargarBotones()
+        CargandoElGato()
+        CargarHilo()
+    elif args.ratom:
+        print("Moodo Solo Raton Razer")
+        CargarComandos()
+        CargarBotones()
+        CargandoRaton()
+        CargarHilo()
     else:
         print("No parametro")
         CargarComandos()

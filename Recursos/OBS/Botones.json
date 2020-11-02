@@ -60,13 +60,13 @@
   "icon_false": "Recursos/OBS/EndCardOff.png"
 }, {
   "Nombre": "Rec",
-  "Grabar": "Cambiar",
+  "Grabar": true,
   "Estado": false,
   "icon_true": "Recursos/OBS/RecOn.png",
   "icon_false": "Recursos/OBS/RecOff.png"
 }, {
   "Nombre": "Live",
-  "Live": "Cambiar",
+  "Live": true,
   "Estado": false,
   "icon_true": "Recursos/OBS/LiveOn.png",
   "icon_false": "Recursos/OBS/LiveOff.png"
