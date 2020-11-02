@@ -13,6 +13,7 @@ Permite
 * Ejecuccion de comando bash
 * Escribir texto
 * Folderes
+* Paginas
 
 # Instalacion
 
@@ -28,6 +29,8 @@ pip3 install websockets
 pip3 install pyautogui
 ```
 # Carpetas listas
+
+TODO: Agregar imagenes de otras Carpetas
 
 ### OBS
 
@@ -90,6 +93,15 @@ Titulo que aparecera debajo de la imagen, en ausencia se hara la imagen en maxim
 ```json
 {
   "Titulo": "Titulo"
+}
+```
+
+### Boton - solo teclado
+Definicion de teclas de teclado, tambien se puede definir con mas opciones
+
+```json
+{
+  "Boton": "KEY_1"
 }
 ```
 
@@ -170,7 +182,6 @@ Mueve las seleciones a la anterior pantalla de haberlo
 # Comandos OBS
 Contro y manejo de OBS Estudio por medio del plugin OBS_WebSoket. Los botones no funcionaran si no se hay coneccion con OBS
 
-
 ### Conectar OBS
 Para conectarse a OBS el programa debe estar encendido y el plugin de OBS_WebSoket activado, dentro de la misma red, el nombre de la pc se una para conectarse
 
@@ -216,7 +227,6 @@ Cambia Esena y muestra imagen diferente si la esena esta activa dependiendo del 
 }
 ```
 
-
 ### Cambia Estado de Fuente
 Cambian el estado de visibilidad de una fuente y cambia la imagen en base al estado de OBS
 
@@ -227,6 +237,7 @@ Cambian el estado de visibilidad de una fuente y cambia la imagen en base al est
   "icon_true": "Recursos/OBS/CamaraOn.png",
   "icon_false": "Recursos/OBS/CamaraOff.png"
 }
+```
 
 ### Cambia Estado de Filtro de Fuente
 Cambian el estado de visibilidad de un filtro de una fuente y cambia la imagen en base al estado de OBS
