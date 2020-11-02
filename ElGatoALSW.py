@@ -17,10 +17,12 @@ import argparse
 # Librerias para json
 import json
 
-from EmularTeclado import *
-from OBSWebSocketPropio import *
-from MiMQTT import *
-
+from EmularTeclado import ComandoTeclas, ComandoEscribir
+# from OBSWebSocketPropio import *
+# from MiMQTT import *
+# import EmularTeclado as EmularTeclados
+import OBSWebSocketPropio as OBSWebSocketPropios
+import MiMQTT as MiMQTTs
 # TODO: ordenar para no usar variable globales
 MiDeck = "nada"
 teclas = "nada"
@@ -32,8 +34,8 @@ depura = True
 DefaceBotones = 0
 
 
-MiOBS = MiObsWS()
-MiMQTT = MiMQTT()
+MiOBS = OBSWebSocketPropios.MiObsWS()
+MiMQTT = MiMQTTs.MiMQTT()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--master', '-m', help="Cargar servidor de %(prog)s",  action="store_true")
@@ -185,6 +187,7 @@ def ActualizarAccion(accion):
     global raton
     global DefaceBotones
     global ComandosRaton
+    global MiDeck
     if 'Regresar' in accion:
         teclas = data['Comando']
         ComandosRaton = data['teclado']
@@ -216,8 +219,8 @@ def ActualizarAccion(accion):
             # TODO: ver si esta habierto antes de cerrar
             MiOBS.Cerrar()
             MiMQTT.Cerrar()
-            deck.reset()
-            deck.close()
+            MiDeck.reset()
+            MiDeck.close()
             Imprimir("Saliendo ElGato ALSW - Adios :) ")
         else:
             Imprimir(f"Opcion No Encontrada: {accion['Opcion']}")
@@ -276,6 +279,7 @@ def ConectarOBS(servidor):
 
 
 def EventoOBS(mensaje):
+    global MiOBS
     IdOBS = BuscarCarpeta('OBS')
     if IdOBS == -1:
         Imprimir("Error no encontado Botones")
