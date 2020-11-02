@@ -42,6 +42,7 @@ parser.add_argument('--master', '-m', help="Cargar servidor de %(prog)s",  actio
 parser.add_argument('--cliente', '-c', help="Cargando cliente de %(prog)s",  action="store_true")
 parser.add_argument('--deck', '-d', help="Solo usar StreamDeck",  action="store_true")
 parser.add_argument('--ratom', '-r', help="Solo usar Ratom Razer",  action="store_true")
+parser.add_argument('--nodepurar', '-nd', help="Acivar modo sin depuracion", action="store_true")
 
 
 def Imprimir(dato):
@@ -225,10 +226,10 @@ def ActualizarAccion(accion):
         else:
             Imprimir(f"Opcion No Encontrada: {accion['Opcion']}")
     elif 'Key' in accion:
-        print("Entenado en folder")
+        Imprimir("Entenado en folder")
         teclas = accion['Key']
         if 'teclado' in accion:
-            print("Cargando Teclado")
+            Imprimir("Cargando Teclado")
             ComandosRaton = accion['teclado']
         BorrarActualizarImagenes()
     else:
@@ -370,7 +371,7 @@ def BuscandoBoton(NombreFolder, NombreBoton):
 def CargandoRaton():
     global data
     global ComandosRaton
-    print("Cargando Raton Razer")
+    Imprimir("Cargando Raton Razer")
     ComandosRaton = data['teclado']
     if 'Raton_Razer' in data:
         Raton = InputDevice(data['Raton_Razer'])
@@ -378,7 +379,7 @@ def CargandoRaton():
         HiloRazer = threading.Thread(target=HiloRaton, args=(Raton,), daemon=True)
         HiloRazer.start()
     else:
-        print("error Raron Razer no definido")
+        Imprimir("error Raron Razer no definido")
 
 
 def HiloRaton(Raton):
@@ -390,7 +391,7 @@ def HiloRaton(Raton):
                 for teclas in ComandosRaton:
                     if 'Boton' in teclas:
                         if teclas['Boton'] == key.keycode:
-                            print(f"Raton {key.keycode} - {teclas['Nombre']}")
+                            Imprimir(f"Raton {key.keycode} - {teclas['Nombre']}")
                             ActualizarAccion(teclas)
 
 
@@ -445,29 +446,32 @@ def CargarHilo():
 # Principal
 if __name__ == "__main__":
     args = parser.parse_args()
+    if args.nodepurar:
+        depura = False
+
     if args.master:
-        print("Modo Master")
+        Imprimir("Modo Master")
         CargarComandos()
         CargarBotones()
         CargandoRaton()
         CargandoElGato()
         CargarHilo()
     elif args.cliente:
-        print("Modo Cliente")
+        Imprimir("Modo Cliente")
     elif args.deck:
-        print("Modo Solo StreamDeck")
+        Imprimir("Modo Solo StreamDeck")
         CargarComandos()
         CargarBotones()
         CargandoElGato()
         CargarHilo()
     elif args.ratom:
-        print("Moodo Solo Raton Razer")
+        Imprimir("Moodo Solo Raton Razer")
         CargarComandos()
         CargarBotones()
         CargandoRaton()
         CargarHilo()
     else:
-        print("No parametro")
+        Imprimir("No parametro")
         CargarComandos()
         CargarBotones()
         CargandoRaton()
