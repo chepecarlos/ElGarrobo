@@ -30,9 +30,7 @@ ComandosRaton = "nada"
 folder = ""
 fuente = ""
 depura = True
-
 DefaceBotones = 0
-
 
 MiOBS = OBSWebSocketPropios.MiObsWS()
 MiMQTT = MiMQTTs.MiMQTT()
@@ -46,6 +44,7 @@ parser.add_argument('--nodepurar', '-nd', help="Acivar modo sin depuracion", act
 
 
 def Imprimir(dato):
+    '''Imprimi mensaje de depuracion'''
     global depura
     if(depura):
         print(dato)
@@ -184,6 +183,7 @@ def BotonesSiquiente(Siquiente):
 
 
 def ActualizarAccion(accion):
+    '''Acciones que se puede hacer con teclas'''
     global teclas
     global raton
     global DefaceBotones
@@ -237,6 +237,7 @@ def ActualizarAccion(accion):
 
 
 def ActualizarOBS(accion):
+    '''Acciones que puede enviarse a OBS_WebSoket'''
     if 'OBS' in accion:
         ConectarOBS(accion['OBS'])
     elif 'Grabar' in accion:
@@ -274,12 +275,14 @@ def BorrarActualizarImagenes():
 
 
 def ConectarOBS(servidor):
+    '''Se conecta con el servidor y registra eventos'''
     MiOBS.CambiarHost(servidor)
     MiOBS.Conectar()
     MiOBS.RegistarEvento(EventoOBS)
 
 
 def EventoOBS(mensaje):
+    '''Escucha y Reaciona a eventos de OBS'''
     global MiOBS
     IdOBS = BuscarCarpeta('OBS')
     if IdOBS == -1:
@@ -369,6 +372,7 @@ def BuscandoBoton(NombreFolder, NombreBoton):
 
 
 def CargandoRaton():
+    '''Cargas las configuraciones del Teclado Ratom'''
     global data
     global ComandosRaton
     Imprimir("Cargando Raton Razer")
@@ -383,6 +387,7 @@ def CargandoRaton():
 
 
 def HiloRaton(Raton):
+    '''Hila del teclado del Raton'''
     global ComandosRaton
     for event in Raton.read_loop():
         if event.type == ecodes.EV_KEY:
@@ -396,6 +401,7 @@ def HiloRaton(Raton):
 
 
 def CargandoElGato():
+    '''Cargas StreamDeck'''
     global data
     global teclas
     global fuente
@@ -435,6 +441,7 @@ def CargandoElGato():
 
 
 def CargarHilo():
+    '''Carga los todos los hilos disponibles'''
     for t in threading.enumerate():
         if t is threading.currentThread():
             continue
