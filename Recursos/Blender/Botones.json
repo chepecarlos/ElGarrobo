@@ -1,59 +1,59 @@
 [{
   "Nombre": "Concatenar",
   "ico": "Recursos/Blender/Concatenar.png",
-  "mqtt": "Key shift c"
+  "tecla": ["shift", "c"]
 }, {
   "Nombre": "Borrar",
   "ico": "Recursos/Blender/Borrar.png",
-  "mqtt": "Key x"
+  "tecla": ["x"]
 }, {
   "Nombre": "TrimAll",
   "ico": "Recursos/Blender/TrimAll.png",
-  "mqtt": "Key shift t"
+  "tecla": ["shift", "t"]
 }, {
   "Nombre": "Mover",
   "ico": "Recursos/Blender/Mover.png",
-  "mqtt": "Key g"
+  "tecla": ["g"]
 }, {
   "Nombre": "Maker",
   "ico": "Recursos/Blender/Maker.png",
-  "mqtt": "Key m"
+  "tecla": ["m"]
 }, {
   "Nombre": "Corta Duro",
   "ico": "Recursos/Blender/CortaDuro.png",
-  "mqtt": "Key shift k"
+  "tecla": ["shift", "k"]
 }, {
   "Nombre": "Mute",
   "ico": "Recursos/Blender/Ocultar.png",
-  "mqtt": "Key h"
+  "tecla": ["h"]
 }, {
   "Nombre": "Play",
   "ico": "Recursos/Blender/Play.png",
-  "mqtt": "Key space"
+  "tecla": ["space"]
 }, {
   "Nombre": "Guardar",
   "ico": "Recursos/Blender/Guardar.png",
-  "mqtt": "Key ctrl s"
+  "tecla": ["ctrl", "s"]
 }, {
   "Nombre": "Edit Maker",
   "ico": "Recursos/Blender/EditMaker.png",
-  "mqtt": "Key ctrl m"
+  "tecla": ["ctrl", "m"]
 }, {
   "Nombre": "Expandir",
   "ico": "Recursos/Blender/Expandir.png",
-  "mqtt": "Key ctrl e"
+  "tecla": ["ctrl", "e"]
 }, {
   "Nombre": "AjusTime",
   "ico": "Recursos/Blender/AjusTime.png",
-  "mqtt": "Key ctrl alt p"
+  "tecla": ["ctrl", "alt", "p"]
 }, {
   "Nombre": "MostarAudio",
   "ico": "Recursos/Blender/MostarAudio.png",
-  "mqtt": "Key alt w"
+  "tecla": ["alt", "w"]
 }, {
   "Nombre": "Panel",
   "ico": "Recursos/Blender/Panel.png",
-  "mqtt": "Key n"
+  "tecla": ["n"]
 }, {
   "Nombre": "Siquiente",
   "ico": "Recursos/OBS/Siquiente.png",
@@ -62,58 +62,58 @@
   "Nombre": "Duplicar",
   "Titulo": "Duplicar",
   "ico": "Recursos/Blender/Duplicar.png",
-  "mqtt": "Key d "
+  "tecla": ["d"]
 }, {
   "Nombre": "Añadir",
   "Titulo": "Añadir",
   "ico": "Recursos/Blender/Añadir.png",
-  "mqtt": "Key shift a"
+  "tecla": ["shift", "a"]
 }, {
   "Nombre": "Menu",
   "Titulo": "Menu",
   "ico": "Recursos/Blender/Menu.png",
-  "mqtt": "Key shift space"
+  "tecla": ["shift", "space"]
 }, {
   "Nombre": "TrimI",
   "Titulo": "Trim I",
   "ico": "Recursos/Blender/TrimI.png",
-  "mqtt": "Key i"
+  "tecla": ["i"]
 }, {
   "Nombre": "TrimD",
   "Titulo": "Trim D",
   "ico": "Recursos/Blender/TrimD.png",
-  "mqtt": "Key o"
+  "tecla": ["o"]
 }, {
   "Nombre": "FadeIn",
   "Titulo": "Fade In",
   "ico": "Recursos/Blender/FadeIn.png",
-  "mqtt": "Key ctrl f"
+  "tecla": ["ctrl", "f"]
 }, {
   "Nombre": "FadeOut",
   "Titulo": "Fade Out",
   "ico": "Recursos/Blender/FadeOut.png",
-  "mqtt": "Key alt f"
+  "tecla": ["alt", "f"]
 }, {
   "Nombre": "LimpiarFade",
   "Titulo": "Clear Fade",
   "ico": "Recursos/Blender/LimpiarFade.png",
-  "mqtt": "Key ctrl alt f"
+  "tecla": ["ctrl", "alt", "f"]
 }, {
   "Nombre": "Import",
   "Titulo": "Import",
-  "mqtt": "Key ctrl shift i"
+  "tecla": ["ctrl","shift","i"]
 }, {
   "Nombre": "Agrupar",
   "Titulo": "agrupar",
-  "mqtt": "Key ctrl g"
+  "tecla": ["ctrl","g"]
 }, {
   "Nombre": "Agrupar",
   "Titulo": "agrupar",
-  "mqtt": "Key p"
+  "tecla": ["p"]
 }, {
   "Nombre": "Agrupar",
   "Titulo": "agrupar",
-  "mqtt": "Key alt p "
+  "tecla": ["alt", "p"]
 }, {
   "Nombre": "Entrar Agrupar",
   "Titulo": "Entrar agrupar"

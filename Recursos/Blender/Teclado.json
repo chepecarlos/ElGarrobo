@@ -1,0 +1,9 @@
+[{
+  "Nombre": "PlatStop",
+  "Boton": "KEY_1",
+  "tecla": ["space"]
+}, {
+  "Nombre": "AutoFormato",
+  "Boton": "KEY_2",
+  "tecla": ["ctrl", "t"]
+}]
