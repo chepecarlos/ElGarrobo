@@ -1,8 +1,20 @@
 [{
+  "Nombre": "Beautify",
+  "Titulo": "Beautify",
+  "tecla": ["alt", "ctrl", "d"]
+}, {
   "Nombre": "TODO",
   "Titulo": "TODO",
-  "tecla": ["ctrl", "k", "T"]
-}, {
+  "tecla": ["shift", "alt", "t"]
+},{
+  "Nombre": "Live Server",
+  "Titulo": "Live Server",
+  "tecla": ["ctrl", "alt", "l"]
+},{
+  "Nombre": "goto-definition",
+  "Titulo": "goto-definition",
+  "tecla": ["ctrl", "alt", "g"]
+},  {
   "Nombre": "Regresar",
   "Regresar": "True"
 }]
