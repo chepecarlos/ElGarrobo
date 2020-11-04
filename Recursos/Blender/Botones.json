@@ -101,11 +101,11 @@
 }, {
   "Nombre": "Import",
   "Titulo": "Import",
-  "tecla": ["ctrl","shift","i"]
+  "tecla": ["ctrl", "shift", "i"]
 }, {
   "Nombre": "Agrupar",
   "Titulo": "agrupar",
-  "tecla": ["ctrl","g"]
+  "tecla": ["ctrl", "g"]
 }, {
   "Nombre": "Agrupar",
   "Titulo": "agrupar",

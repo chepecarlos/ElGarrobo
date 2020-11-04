@@ -1,9 +1,29 @@
 [{
-  "Nombre": "PlatStop",
+  "Nombre": "Play",
   "Boton": "KEY_1",
   "tecla": ["space"]
 }, {
-  "Nombre": "AutoFormato",
+  "Nombre": "TrimAll",
   "Boton": "KEY_2",
-  "tecla": ["ctrl", "t"]
+  "tecla": ["shift", "t"]
+}, {
+  "Nombre": "Guardar",
+  "Boton": "KEY_3",
+  "tecla": ["ctrl", "s"]
+}, {
+  "Nombre": "Concatenar",
+  "Boton": "KEY_4",
+  "tecla": ["shift", "c"]
+}, {
+  "Nombre": "Borrar",
+  "Boton": "KEY_5",
+  "tecla": ["x"]
+}, {
+  "Nombre": "Mover",
+  "Boton": "KEY_6",
+  "tecla": ["g"]
+}, {
+  "Nombre": "Mute",
+  "Boton": "KEY_7",
+  "tecla": ["h"]
 }]
