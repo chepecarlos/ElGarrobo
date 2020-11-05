@@ -34,8 +34,8 @@ DefaceBotones = 0
 
 MiOBS = OBSWebSocketPropios.MiObsWS()
 MiMQTT = MiMQTTs.MiMQTT()
-
-parser = argparse.ArgumentParser()
+# TODO: Agregar sonidos
+parser = argparse.ArgumentParser(description='Heramienta de creacion de contenido de ALSW')
 parser.add_argument('--master', '-m', help="Cargar servidor de %(prog)s",  action="store_true")
 parser.add_argument('--cliente', '-c', help="Cargando cliente de %(prog)s",  action="store_true")
 parser.add_argument('--deck', '-d', help="Solo usar StreamDeck",  action="store_true")
