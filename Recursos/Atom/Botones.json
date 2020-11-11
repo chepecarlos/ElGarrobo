@@ -1,8 +1,12 @@
 [{
   "Nombre": "Beautify",
   "Titulo": "Beautify",
-  "tecla": ["alt", "ctrl", "d"]
+  "tecla": ["alt", "ctrl", "b"]
 }, {
+  "Nombre": "Salvar",
+  "Titulo": "Salvar",
+  "tecla": ["ctrl", "s"]
+},{
   "Nombre": "TODO",
   "Titulo": "TODO",
   "tecla": ["shift", "alt", "t"]
