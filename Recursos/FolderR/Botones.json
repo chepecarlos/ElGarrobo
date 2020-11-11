@@ -1,52 +1,60 @@
 [{
   "Nombre": "Biblioteca",
   "Titulo": "Biblioteca",
-  "mqtt": "nemo /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca"
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca &"
 }, {
   "Nombre": "Musica",
   "Titulo": "Musica",
   "ico": "Recursos/FolderR/Musica.png",
-  "mqtt": "nemo /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/3.Sonido/1.Musica"
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/3.Sonido/1.Musica &"
 }, {
   "Nombre": "Sonido",
   "Titulo": "Sonido",
   "ico": "Recursos/FolderR/Sonido.png",
-  "mqtt": "nemo /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/3.Sonido/2.EfectoSonido"
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/3.Sonido/2.EfectoSonido &"
 }, {
   "Nombre": "ChepeCarlos",
   "Titulo": "ChepeCarlos",
   "ico": "Recursos/FolderR/ChepeCarlos.png",
-  "mqtt": "nemo /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/4.ChepeCarlos/1.Terminado"
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/4.ChepeCarlos/1.Terminado &"
 }, {
   "Nombre": "Verde",
   "Titulo": "Verde",
-  "mqtt": "nemo /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/2.Video/5.FondoVerde/1.Render"
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/2.Video/5.FondoVerde/1.Render &"
 }, {
   "Nombre": "StoryBlocks",
   "Titulo": "StoryBlocks",
   "ico": "Recursos/FolderR/StoryBlocks.png",
-  "mqtt": "nemo /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/10.StoryBlocks"
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/10.StoryBlocks &"
 }, {
   "Nombre": "Meme",
   "Titulo": "Meme",
-  "mqtt": "nemo /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/2.Video/1.Meme"
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/2.Video/1.Meme &"
 }, {
   "Nombre": "Abstracto",
   "Titulo": "Abstracto",
-  "mqtt": "nemo /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/4.Abstracto/1.Vectores"
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/4.Abstracto/1.Vectores &"
 }, {
   "Nombre": "Logos",
   "Titulo": "Logos",
-  "mqtt": "nemo /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/5.Logos/1.Vectores"
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/5.Logos/1.Vectores &"
 }, {
   "Nombre": "Logos2",
   "Titulo": "Logos2",
-  "mqtt": "nemo /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/5.Logos/1.Vectores"
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/5.Logos/1.Vectores &"
 }, {
   "Nombre": "Color",
   "Titulo": "Color",
   "ico": "Recursos/FolderR/Color.png",
-  "mqtt": "atom /home/SuperData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/6.PaletaColor/2.ColoresDigitallesALSW.md"
+  "OS": "atom /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/6.PaletaColor/2.ColoresDigitallesALSW.md &"
+}, {
+  "Nombre": "Tutorial",
+  "Titulo": "Tutorial",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/2.Proyectos/1.Tutorial &"
+}, {
+  "Nombre": "Curso",
+  "Titulo": "Curso",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/2.Proyectos/2.Cursos/2.Libres &"
 }, {
   "Nombre": "Regresar",
   "Regresar": "True"

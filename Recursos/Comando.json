@@ -52,7 +52,9 @@
   "Nombre": "Atom",
   "ico": "Recursos/Atom/Atom.png",
   "Cargar": "Recursos/Atom/Botones.json",
-  "Key": []
+  "CargandoRaton": "Recursos/Atom/Teclado.json",
+  "Key": [],
+  "teclado": []
 }, {
   "Nombre": "Processing",
   "ico": "Recursos/Processing/Processing.png",

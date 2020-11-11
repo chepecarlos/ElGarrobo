@@ -3,11 +3,11 @@
   "Boton": "KEY_1",
   "texto": "hola mundo"
 }, {
-  "Nombre": "stop",
+  "Nombre": "TrimAll",
   "Boton": "KEY_2",
-  "tecla": ["f12"]
+  "tecla": ["shift", "t"]
 }, {
-  "Nombre": "verificar",
+  "Nombre": "quake",
   "Boton": "KEY_3",
-  "tecla": ["ctrl", "r"]
+  "tecla": ["f12"]
 }]
