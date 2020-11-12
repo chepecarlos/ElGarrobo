@@ -23,6 +23,13 @@
   "Key": [],
   "teclado": []
 }, {
+  "Nombre": "Atom",
+  "ico": "Recursos/Atom/Atom.png",
+  "Cargar": "Recursos/Atom/Botones.json",
+  "CargandoRaton": "Recursos/Atom/Teclado.json",
+  "Key": [],
+  "teclado": []
+}, {
   "Nombre": "Folder L",
   "Titulo": "Folder L",
   "Cargar": "Recursos/FolderL/Botones.json",
@@ -49,13 +56,6 @@
   "Cargar": "Recursos/Extra/Botones.json",
   "Key": []
 }, {
-  "Nombre": "Atom",
-  "ico": "Recursos/Atom/Atom.png",
-  "Cargar": "Recursos/Atom/Botones.json",
-  "CargandoRaton": "Recursos/Atom/Teclado.json",
-  "Key": [],
-  "teclado": []
-}, {
   "Nombre": "Processing",
   "ico": "Recursos/Processing/Processing.png",
   "Key": [{
@@ -68,12 +68,23 @@
   "Cargar": "Recursos/Gimp/Botones.json",
   "Key": []
 }, {
+  "Nombre": "Proyecto",
+  "Titulo": "Proyecto",
+  "Key": [{
+    "Nombre": "Regresar",
+    "Regresar": "True"
+  }]
+}, {
   "Nombre": "Audacity",
   "ico": "Recursos/Audacity/Audacity.png",
   "Key": [{
     "Nombre": "Regresar",
     "Regresar": "True"
   }]
+}, {
+  "Nombre": "Siquiente",
+  "ico": "Recursos/OBS/Siquiente.png",
+  "Siquiente": true
 }, {
   "Nombre": "KiCad",
   "ico": "Recursos/KiCad/KiCad.png",
@@ -88,4 +99,8 @@
     "Nombre": "Regresar",
     "Regresar": "True"
   }]
+}, {
+  "Nombre": "Anterior",
+  "ico": "Recursos/OBS/Anterior.png",
+  "Anterior": true
 }]
