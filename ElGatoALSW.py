@@ -24,7 +24,7 @@ import OBSWebSocketPropio as OBSWebSocketPropios
 import MiMQTT as MiMQTTs
 
 # Cargar funciones de Archivos
-from Extra.SalvarProyecto import SalvarProyecto, CargarProyecto
+from Extra.FuncionesProyecto import SalvarProyecto, CargarProyecto, AbirProyecto
 from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
 from Extra.Depuracion import Imprimir, CambiarDepuracion
 
@@ -214,6 +214,8 @@ def ActualizarAccion(accion):
         Imprimir(f"Intentando MQTT_Remoto {accion['MQTT']}")
         MiMQTT.CambiarHost(accion['MQTT'])
         MiMQTT.Conectar()
+    elif 'Proyecto' in accion:
+        AbirProyecto(accion['Proyecto'])
     elif 'Opcion' in accion:
         if accion['Opcion'] == "Exit":
             # TODO: ver si esta habierto antes de cerrar

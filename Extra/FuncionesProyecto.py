@@ -19,5 +19,14 @@ def CargarProyecto():
             if 'ProyectoActual' in data:
                 return data['ProyectoActual']
     else:
-        Imprimir(f"No se Encontro el Archivo + {Archivo}")
+        Imprimir(f"No se Encontro el Archivo {Archivo}")
         sys.exit()
+
+def AbirProyecto(Opcion):
+    FolderProyecto = CargarProyecto()
+    if Opcion == '':
+        Comando = "nemo " + FolderProyecto
+    else:
+        Comando = "nemo " + FolderProyecto + "/" + Opcion
+    print(Comando)
+    os.system(Comando)

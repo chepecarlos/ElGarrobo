@@ -56,12 +56,10 @@
   "Cargar": "Recursos/Extra/Botones.json",
   "Key": []
 }, {
-  "Nombre": "Processing",
-  "ico": "Recursos/Processing/Processing.png",
-  "Key": [{
-    "Nombre": "Regresar",
-    "Regresar": "True"
-  }]
+  "Nombre": "Proyecto",
+  "Titulo": "Proyecto",
+  "Cargar": "Recursos/Proyecto/Botones.json",
+  "Key": []
 }, {
   "Nombre": "Gimp",
   "ico": "Recursos/Gimp/Gimp.png",
@@ -95,6 +93,13 @@
 }, {
   "Nombre": "Fritzing",
   "ico": "Recursos/Fritzing/Fritzing.png",
+  "Key": [{
+    "Nombre": "Regresar",
+    "Regresar": "True"
+  }]
+}, {
+  "Nombre": "Processing",
+  "ico": "Recursos/Processing/Processing.png",
   "Key": [{
     "Nombre": "Regresar",
     "Regresar": "True"
