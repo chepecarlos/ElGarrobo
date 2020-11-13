@@ -2,32 +2,41 @@
 
 Heramienta para aumentar la eficiencia y rapidez, en desarrollo y trabajo en produccion con diferentes heramientas, compatible con StreamDeck en Linux y multiples teclados
 
-Compatible con
+### Compatible con
 * El Gato StreamDeck
 * OBS_WebSoket
 * control MQTT
 * Linux y Python3
 
-Permite
+### Permite
 * Macros
 * Ejecuccion de comando bash
 * Escribir texto
 * Folderes
 * Paginas
 
-# Instalacion
+### Cosas por hacer
+* Gif
+* Sonidos
+* Secuencias de Comandos
+* Folder de trabajo
 
-TODO: Competar instucciones de instalacio
+### Comando Ejecuccion
 
 ```bash
-sudo apt update
-sudo apt upgrade
-sudo apt install python3-pip
-sudo apt-get install scrot python3-tk python3-dev
-pip install setuptools
-pip3 install websockets
-pip3 install pyautogui
+usage: ElGatoALSW.py [-h] [--master] [--cliente] [--deck] [--ratom] [--nodepurar]
+
+Heramienta de creacion de contenido de ALSW
+
+optional arguments:
+  -h, --help        show this help message and exit
+  --master, -m      Cargar servidor de ElGatoALSW.py
+  --cliente, -c     Cargando cliente de ElGatoALSW.py
+  --deck, -d        Solo usar StreamDeck
+  --ratom, -r       Solo usar Ratom Razer
+  --nodepurar, -nd  Acivar modo sin depuracion
 ```
+
 # Carpetas listas
 
 TODO: Agregar imagenes de otras Carpetas
@@ -272,6 +281,16 @@ Preciona la tecla en la pc cliente, puede ser de una tecla o multiples
   "mqtt": "nemo $HOME/2.VideoMusicales"
 }
 ```
+
+# Proyecto Activo
+Abre el folder del proyecto activo mas parametro
+
+```json
+{
+    "Proyecto": "1.Guion"
+}
+```
+
 
 ### Lista de Teclas disponibles
 Lista de teclas disponibles

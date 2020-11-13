@@ -28,5 +28,4 @@ def AbirProyecto(Opcion):
         Comando = "nemo " + FolderProyecto
     else:
         Comando = "nemo " + FolderProyecto + "/" + Opcion
-    print(Comando)
     os.system(Comando)
