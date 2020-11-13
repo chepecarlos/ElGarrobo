@@ -23,6 +23,10 @@ from EmularTeclado import ComandoTeclas, ComandoEscribir
 # import EmularTeclado as EmularTeclados
 import OBSWebSocketPropio as OBSWebSocketPropios
 import MiMQTT as MiMQTTs
+
+# Cargar funciones de Archivos
+from Extra.SalvarProyecto import SalvarProyecto
+
 # TODO: ordenar para no usar variable globales
 MiDeck = "nada"
 teclas = "nada"
@@ -41,6 +45,7 @@ parser.add_argument('--cliente', '-c', help="Cargando cliente de %(prog)s",  act
 parser.add_argument('--deck', '-d', help="Solo usar StreamDeck",  action="store_true")
 parser.add_argument('--ratom', '-r', help="Solo usar Ratom Razer",  action="store_true")
 parser.add_argument('--nodepurar', '-nd', help="Acivar modo sin depuracion", action="store_true")
+parser.add_argument('--proyecto', '-p', help="Configurar folder a proyecto actual", action="store_true")
 
 
 def Imprimir(dato):
@@ -472,11 +477,14 @@ if __name__ == "__main__":
         CargandoElGato()
         CargarHilo()
     elif args.ratom:
-        Imprimir("Moodo Solo Raton Razer")
+        Imprimir("Modo Solo Raton Razer")
         CargarComandos()
         CargarBotones()
         CargandoRaton()
         CargarHilo()
+    elif args.proyecto:
+        Imprimir("Configurando Folder como Proyecto Actual")
+        SalvarProyecto(os.getcwd())
     else:
         Imprimir("No parametro")
         CargarComandos()
