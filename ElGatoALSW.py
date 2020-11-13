@@ -24,7 +24,7 @@ import OBSWebSocketPropio as OBSWebSocketPropios
 import MiMQTT as MiMQTTs
 
 # Cargar funciones de Archivos
-from Extra.SalvarProyecto import SalvarProyecto
+from Extra.SalvarProyecto import SalvarProyecto, CargarProyecto
 from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
 from Extra.Depuracion import Imprimir, CambiarDepuracion
 
