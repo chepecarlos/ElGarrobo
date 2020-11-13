@@ -17,7 +17,6 @@ import argparse
 # Librerias para json
 import json
 
-from EmularTeclado import ComandoTeclas, ComandoEscribir
 # from OBSWebSocketPropio import *
 # from MiMQTT import *
 # import EmularTeclado as EmularTeclados
@@ -26,6 +25,8 @@ import MiMQTT as MiMQTTs
 
 # Cargar funciones de Archivos
 from Extra.SalvarProyecto import SalvarProyecto
+from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
+from Extra.Depuracion import Imprimir, CambiarDepuracion
 
 # TODO: ordenar para no usar variable globales
 MiDeck = "nada"
@@ -33,7 +34,6 @@ teclas = "nada"
 ComandosRaton = "nada"
 folder = ""
 fuente = ""
-depura = True
 DefaceBotones = 0
 
 MiOBS = OBSWebSocketPropios.MiObsWS()
@@ -47,12 +47,6 @@ parser.add_argument('--ratom', '-r', help="Solo usar Ratom Razer",  action="stor
 parser.add_argument('--nodepurar', '-nd', help="Acivar modo sin depuracion", action="store_true")
 parser.add_argument('--proyecto', '-p', help="Configurar folder a proyecto actual", action="store_true")
 
-
-def Imprimir(dato):
-    '''Imprimi mensaje de depuracion'''
-    global depura
-    if(depura):
-        print(dato)
 
 
 def CargarComandos():
@@ -459,7 +453,7 @@ def CargarHilo():
 if __name__ == "__main__":
     args = parser.parse_args()
     if args.nodepurar:
-        depura = False
+        CambiarDepuracion(False)
 
     if args.master:
         Imprimir("Modo Master")
