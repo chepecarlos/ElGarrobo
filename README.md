@@ -10,31 +10,34 @@ Heramienta para aumentar la eficiencia y rapidez, en desarrollo y trabajo en pro
 
 ### Permite
 * Macros
+* delay
 * Ejecuccion de comando bash
 * Escribir texto
 * Folderes
 * Paginas
+* Abir folder proyecto
 
 ### Cosas por hacer
 * Gif
 * Sonidos
-* Secuencias de Comandos
-* Folder de trabajo
+* Reloc
+* Temperatura
 
 ### Comando Ejecuccion
 
 ```bash
-usage: ElGatoALSW.py [-h] [--master] [--cliente] [--deck] [--ratom] [--nodepurar]
+usage: ElGatoALSW [-h] [--master] [--cliente] [--deck] [--ratom] [--nodepurar] [--proyecto]
 
 Heramienta de creacion de contenido de ALSW
 
 optional arguments:
   -h, --help        show this help message and exit
-  --master, -m      Cargar servidor de ElGatoALSW.py
-  --cliente, -c     Cargando cliente de ElGatoALSW.py
+  --master, -m      Cargar servidor de ElGatoALSW
+  --cliente, -c     Cargando cliente de ElGatoALSW
   --deck, -d        Solo usar StreamDeck
   --ratom, -r       Solo usar Ratom Razer
   --nodepurar, -nd  Acivar modo sin depuracion
+  --proyecto, -p    Configurar folder a proyecto actua
 ```
 
 # Carpetas listas
@@ -287,7 +290,34 @@ Abre el folder del proyecto activo mas parametro
 
 ```json
 {
-    "Proyecto": "1.Guion"
+  "Proyecto": "1.Guion"
+}
+```
+
+# Delay o espera
+Detine el proceso por cierta cantidad de millisegundos
+
+```json
+{
+  "delay": 1000
+}
+```
+
+# Macro
+Ejecuta comandos uno tras otra
+
+```json
+{
+  "Macro": [{
+    "Nombre": "Comando1",
+    "texto": "Hola "
+  }, {
+    "Nombre": "Comando2",
+    "delay": 1000
+  },{
+    "Nombre": "Comando3",
+    "texto": "mundo"
+  }]
 }
 ```
 

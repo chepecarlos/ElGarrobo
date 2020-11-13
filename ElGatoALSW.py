@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # TODO: agregar git https://python-elgato-streamdeck.readthedocs.io/en/stable/examples/animated.html
 # TODO: Reordenar codigo
-
+# BUG: Error cargando sin folder
 # Librerias
 import os
 import sys
 import threading
+import time
 
 # Librerias de ElGato
 from PIL import Image, ImageDraw, ImageFont
@@ -193,6 +194,12 @@ def ActualizarAccion(accion):
         ComandosRaton = data['teclado']
         DefaceBotones = 0
         BorrarActualizarImagenes()
+    elif 'Macro' in accion:
+        for AccionMatro in accion['Macro']:
+            print(AccionMatro['Nombre'])
+            ActualizarAccion(AccionMatro)
+    elif 'delay' in accion:
+        time.sleep(accion['delay'] / 1000)
     elif 'Siquiente' in accion:
         BotonesSiquiente(True)
         BorrarActualizarImagenes()
