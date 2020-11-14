@@ -26,9 +26,10 @@ import Extra.OBSWebSocketPropio as OBSWebSocketPropios
 import Extra.MiMQTT as MiMQTTs
 
 # Cargar funciones de Archivos
-from Extra.FuncionesProyecto import SalvarProyecto, CargarProyecto, AbirProyecto
+from Extra.FuncionesProyecto import SalvarProyecto, CargarProyecto, AbirProyecto, CargarIdVideo
 from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
 from Extra.Depuracion import Imprimir, CambiarDepuracion
+from Extra.YoutubeChat import SalvarChatYoutube
 
 # TODO: ordenar para no usar variable globales
 MiDeck = "nada"
@@ -48,7 +49,7 @@ parser.add_argument('--deck', '-d', help="Solo usar StreamDeck",  action="store_
 parser.add_argument('--ratom', '-r', help="Solo usar Ratom Razer",  action="store_true")
 parser.add_argument('--nodepurar', '-nd', help="Acivar modo sin depuracion", action="store_true")
 parser.add_argument('--proyecto', '-p', help="Configurar folder a proyecto actual", action="store_true")
-
+parser.add_argument('--salvaryoutube', '-sy', help="Salva el chat en un archivo", action="store_true")
 
 
 def CargarComandos():
@@ -98,6 +99,7 @@ def CargarBotones():
             else:
                 Imprimir(f"{comando['CargandoRaton']} - No se Encontro el Archivo {URL_Carga}")
                 sys.exit()
+
 
 def ActualizarImagen(deck, teclas, tecla, limpiar=False):
     global folder
@@ -182,7 +184,6 @@ def BotonesSiquiente(Siquiente):
         DefaceBotones += MiDeck.key_count()
 
 
-
 def ActualizarAccion(accion):
     '''Acciones que se puede hacer con teclas'''
     global teclas
@@ -242,7 +243,7 @@ def ActualizarAccion(accion):
             ComandosRaton = accion['teclado']
         BorrarActualizarImagenes()
     else:
-        Imprimir(f"Boton - no definida")
+        Imprimir("Boton - no definida")
 
 
 def ActualizarOBS(accion):
@@ -343,7 +344,7 @@ def EventoOBS(mensaje):
         data['Comando'][IdOBS]['Key'][IdItem]['Estado'] = EstadoFiltro
         ActualizarImagenes()
     elif(mensaje.name == 'Exiting'):
-        Imprimir(f"Cerrando por OBS")
+        Imprimir("Cerrando por OBS")
         MiOBS = ''
         # MiOBS.Cerrar()
     else:
@@ -489,6 +490,8 @@ if __name__ == "__main__":
     elif args.proyecto:
         Imprimir("Configurando Folder como Proyecto Actual")
         SalvarProyecto(os.getcwd())
+    elif args.salvaryoutube:
+        SalvarChatYoutube(CargarIdVideo())
     else:
         Imprimir("No parametro")
         CargarComandos()

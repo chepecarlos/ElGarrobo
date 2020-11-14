@@ -1,7 +1,10 @@
 import json
 import os
+import sys
+import yaml
 
-Archivo =  os.path.abspath(os.path.join(os.path.dirname(__file__),"..")) + '/Recursos/Data.json'
+Archivo = os.path.abspath(os.path.join(os.path.dirname(__file__), "..")) + '/Recursos/Data.json'
+
 
 def SalvarProyecto(Directorio):
     global Archivo
@@ -10,6 +13,7 @@ def SalvarProyecto(Directorio):
 
     with open(Archivo, 'w') as file:
         json.dump(data, file, indent=4)
+
 
 def CargarProyecto():
     global Archivo
@@ -22,6 +26,15 @@ def CargarProyecto():
         Imprimir(f"No se Encontro el Archivo {Archivo}")
         sys.exit()
 
+
+def CargarIdVideo():
+    Archivo = CargarProyecto() + "/1.Guion/1.Info.md"
+    with open(Archivo) as f:
+        data = yaml.load(f, Loader=yaml.FullLoader)
+        if 'youtube_id' in data:
+            return data['youtube_id']
+
+
 def AbirProyecto(Opcion):
     FolderProyecto = CargarProyecto()
     if Opcion == '':
@@ -29,3 +42,15 @@ def AbirProyecto(Opcion):
     else:
         Comando = "nemo " + FolderProyecto + "/" + Opcion
     os.system(Comando)
+
+
+def GuardadDato(Archivo, Valor):
+    if os.path.exists(Archivo):
+        with open(Archivo) as f:
+            data = yaml.load(f, Loader=yaml.FullLoader)
+    else:
+        data = []
+    data.append(Valor)
+
+    with open(Archivo, 'w') as f:
+        json.dump(data, f, indent=4)
