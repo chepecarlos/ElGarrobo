@@ -21,8 +21,9 @@ import json
 # from OBSWebSocketPropio import *
 # from MiMQTT import *
 # import EmularTeclado as EmularTeclados
-import OBSWebSocketPropio as OBSWebSocketPropios
-import MiMQTT as MiMQTTs
+
+import Extra.OBSWebSocketPropio as OBSWebSocketPropios
+import Extra.MiMQTT as MiMQTTs
 
 # Cargar funciones de Archivos
 from Extra.FuncionesProyecto import SalvarProyecto, CargarProyecto, AbirProyecto
@@ -97,7 +98,6 @@ def CargarBotones():
             else:
                 Imprimir(f"{comando['CargandoRaton']} - No se Encontro el Archivo {URL_Carga}")
                 sys.exit()
-
 
 def ActualizarImagen(deck, teclas, tecla, limpiar=False):
     global folder
@@ -180,6 +180,7 @@ def BotonesSiquiente(Siquiente):
         DefaceBotones -= MiDeck.key_count()
     else:
         DefaceBotones += MiDeck.key_count()
+
 
 
 def ActualizarAccion(accion):

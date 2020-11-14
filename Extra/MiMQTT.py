@@ -1,8 +1,12 @@
-#!/usr/bin/env python3
-
 import os
 import pyautogui
 import paho.mqtt.client as mqtt
+
+
+def Imprimir(dato):
+    global depura
+    if(depura):
+        print(dato)
 
 
 def ComandoTeclas(Teclas):
