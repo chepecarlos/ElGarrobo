@@ -491,7 +491,7 @@ if __name__ == "__main__":
         Imprimir("Configurando Folder como Proyecto Actual")
         SalvarProyecto(os.getcwd())
     elif args.salvaryoutube:
-        SalvarChatYoutube(CargarIdVideo())
+        SalvarChatYoutube(CargarProyecto(), CargarIdVideo())
     else:
         Imprimir("No parametro")
         CargarComandos()

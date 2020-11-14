@@ -13,7 +13,7 @@ def ChatYoutube(IdVideo):
             print(f"{c.datetime} - [{c.type}] [{c.author.name}]- {c.message}")
 
 
-def SalvarChatYoutube(IdVideo):
+def SalvarChatYoutube(Directorio, IdVideo):
     print(f"El ID es {IdVideo}")
     ChatYoutube = pytchat.create(video_id=IdVideo)
     while ChatYoutube.is_alive():
@@ -22,15 +22,16 @@ def SalvarChatYoutube(IdVideo):
                 "Tiempo": Chat.datetime,
                 "Tipo": Chat.type,
                 "Nombre": Chat.author.name,
+                "CanalID": Chat.author.channelId,
                 "Mensaje": Chat.message
             }
             print(f"{Chat.datetime} [{Chat.author.name} - {Chat.type}]- {Chat.message}")
-            GuardadDato("ChatGeneral.md", ChatData)
+            GuardadDato(Directorio + "/9.Chat/ChatGeneral.json", ChatData)
 
             if(Chat.author.isChatSponsor):
-                DatoExtra ={"Publicidad": Chat.author.isChatSponsor }
+                DatoExtra ={"Miembro": Chat.author.isChatSponsor }
                 ChatData.append(DatoExtra)
-                GuardadDato("ChatSponsor.md", ChatData)
+                GuardadDato(Directorio + "/9.Chat/ChatMiembro.json", ChatData)
                 print(f"Sponsor")
             if(Chat.type == "superChat"):
                 DataExtra ={
@@ -38,7 +39,7 @@ def SalvarChatYoutube(IdVideo):
                     "URL": Chat.author.channelUrl
                 }
                 ChatData.append(DatoExtra)
-                GuardadDato("ChatSuperChat.md", ChatData)
+                GuardadDato(Directorio + "/9.Chat/ChatSuperChat.json", ChatData)
                 print(f"Super chat {c.amountString}")
 
 
