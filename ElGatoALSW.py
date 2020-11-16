@@ -16,7 +16,7 @@ from StreamDeck.ImageHelpers import PILHelper
 from evdev import InputDevice, categorize, ecodes
 import argparse
 
-import Extra.OBSWebSocketPropio as OBSWebSocketPropios
+import Extra.FuncionesOBS as OBSWebSocketPropios
 import Extra.MiMQTT as MiMQTTs
 
 # Cargar funciones de Archivos
@@ -145,7 +145,6 @@ def ActualizarAccion(accion):
         BorrarActualizarImagenes()
     elif 'Macro' in accion:
         for AccionMatro in accion['Macro']:
-            print(AccionMatro['Nombre'])
             ActualizarAccion(AccionMatro)
     elif 'delay' in accion:
         time.sleep(accion['delay'] / 1000)
@@ -184,7 +183,6 @@ def ActualizarAccion(accion):
             Imprimir(f"Opcion No Encontrada: {accion['Opcion']}")
     elif 'Key' in accion:
         Imprimir("Entenado en folder")
-        print(accion['Key'])
         teclas = accion['Key']
         if 'teclado' in accion:
             Imprimir("Cargando Teclado")
@@ -293,8 +291,8 @@ def EventoOBS(mensaje):
         ActualizarImagenes()
     elif(mensaje.name == 'Exiting'):
         Imprimir("Cerrando por OBS")
-        MiOBS = ''
-        # MiOBS.Cerrar()
+        # MiOBS = ''
+        MiOBS.Cerrar()
     else:
         Imprimir(f"Evento no procesado de OBS: {mensaje}")
 
@@ -436,6 +434,7 @@ if __name__ == "__main__":
         Imprimir("Configurando Folder como Proyecto Actual")
         SalvarProyecto(os.getcwd())
     elif args.salvaryoutube:
+        Imprimir("Emezandoa a guardar Chat en Proyecto Actual")
         SalvarChatYoutube(CargarProyecto(), CargarIdVideo())
     else:
         Imprimir("No parametro")
