@@ -29,19 +29,19 @@ def SalvarChatYoutube(Directorio, IdVideo):
             GuardadDato(Directorio + "/9.Chat/ChatGeneral.json", ChatData)
 
             if(Chat.author.isChatSponsor):
-                DatoExtra ={"Miembro": Chat.author.isChatSponsor }
+                DatoExtra = {"Miembro": Chat.author.isChatSponsor}
                 ChatData.append(DatoExtra)
                 GuardadDato(Directorio + "/9.Chat/ChatMiembro.json", ChatData)
                 print(f"Sponsor")
             if(Chat.type == "superChat"):
-                DataExtra ={
+                DataExtra = {
                     "SuperChat": Chat.amountString,
                     "URL": Chat.author.channelUrl
                 }
-                ChatData.append(DatoExtra)
+                ChatData.append(DataExtra)
                 GuardadDato(Directorio + "/9.Chat/ChatSuperChat.json", ChatData)
-                print(f"Super chat {c.amountString}")
+                print(f"Super chat {Chat.amountString}")
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     ChatYoutube("GfSidouUVlw")
