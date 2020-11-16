@@ -4,7 +4,7 @@ import sys
 from Extra.Depuracion import Imprimir
 
 def CargarData(Direcion):
-    """Carga Archivo de comandos"""
+    """Carga Archivo de comandos y Raton"""
     Data = CargarValores(Direcion)
     if 'CargarData' in Data:
         Data['teclado'] = CargarValores(Data['CargandoRaton'])
@@ -15,10 +15,10 @@ def CargarData(Direcion):
                 Data['Comando'][i]['Key'] = CargarValores(Data['Comando'][i]['Cargar'])
             if 'CargandoRaton' in Data['Comando'][i]:
                 Data['Comando'][i]['teclado'] = CargarValores(Data['Comando'][i]['CargandoRaton'])
-            print(Data['Comando'][i])
     return Data
 
 def CargarValores(Direcion):
+    """Cargando Data de un Archivo"""
     archivo = os.path.join(os.path.dirname(__file__), '..') + "/" + Direcion
     if os.path.exists(archivo):
         with open(archivo) as f:
