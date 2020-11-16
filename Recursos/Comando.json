@@ -51,12 +51,9 @@
   "ico": "Recursos/Gimp/Gimp.png",
   "Cargar": "Recursos/Gimp/Botones.json"
 }, {
-  "Nombre": "Proyecto",
-  "Titulo": "Proyecto",
-  "Key": [{
-    "Nombre": "Regresar",
-    "Regresar": "True"
-  }]
+  "Nombre": "Links",
+  "Titulo": "Links",
+  "Cargar": "Recursos/Links/Botones.json"
 }, {
   "Nombre": "Audacity",
   "ico": "Recursos/Audacity/Audacity.png",

@@ -1,0 +1,39 @@
+[{
+  "Nombre": "Discord",
+  "Titulo": "Discord",
+  "ico": "Recursos/Tutorial/Discord.png",
+  "texto": "si quieres Entra a Discord de la comunidad de ALSW nos vemos en Ayuda-chat https://discord.gg/ReRapub y hablamos :) "
+}, {
+  "Nombre": "Discord Link",
+  "Titulo": "Link",
+  "ico": "Recursos/Tutorial/Discord.png",
+  "texto": "https://discord.gg/ReRapub"
+}, {
+  "Nombre": "Patreon",
+  "Titulo": "Patreon",
+  "ico": "Recursos/Tutorial/Patreon.png",
+  "texto": "https://www.patreon.com/alswnet"
+}, {
+  "Nombre": "Noche P",
+  "Titulo": "Noche P",
+  "texto": "https://nocheprogramacion.com"
+}, {
+  "Nombre": "C Chatbot",
+  "Titulo": "C. Chatbot",
+  "texto": "https://nocheprogramacion.com/Cursos/01_Arduino_ChatBot_Telegram/"
+}, {
+  "Nombre": "RA",
+  "Titulo": "RA",
+  "texto": "https://RoboticaAvanzada.com"
+}, {
+  "Nombre": "AppLinux",
+  "Titulo": "AppLinux",
+  "texto": "https://nocheprogramacion.com/mas/linuxappuso/"
+  },{
+  "Nombre": "Git",
+  "Titulo": "GIT",
+  "texto": "Te recomiendo ver este video para aprende a usar git y pasarme el codigo https://nocheprogramacion.com/Tutoriales/058_Como_Usar_Git_y_Github_En_Windows_Facil.html"
+}, {
+  "Nombre": "Regresar",
+  "Regresar": "True"
+}]
