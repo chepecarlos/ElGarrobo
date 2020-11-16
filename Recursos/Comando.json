@@ -1,70 +1,55 @@
 [{
   "Nombre": "OBS",
   "ico": "Recursos/OBS/OBS.png",
-  "Cargar": "Recursos/OBS/Botones.json",
-  "Key": []
+  "Cargar": "Recursos/OBS/Botones.json"
 }, {
   "Nombre": "Blender",
   "ico": "Recursos/Blender/Blender.png",
   "Cargar": "Recursos/Blender/Botones.json",
-  "CargandoRaton": "Recursos/Blender/Teclado.json",
-  "Key": [],
-  "teclado": []
+  "CargandoRaton": "Recursos/Blender/Teclado.json"
 }, {
   "Nombre": "Tutorial",
   "ico": "Recursos/Tutorial/Tutorial.png",
-  "Cargar": "Recursos/Tutorial/Botones.json",
-  "Key": []
+  "Cargar": "Recursos/Tutorial/Botones.json"
 }, {
   "Nombre": "Arduino",
   "ico": "Recursos/Arduino/Arduino.png",
   "Cargar": "Recursos/Arduino/Botones.json",
-  "CargandoRaton": "Recursos/Arduino/Teclado.json",
-  "Key": [],
-  "teclado": []
+  "CargandoRaton": "Recursos/Arduino/Teclado.json"
 }, {
   "Nombre": "Atom",
   "ico": "Recursos/Atom/Atom.png",
   "Cargar": "Recursos/Atom/Botones.json",
-  "CargandoRaton": "Recursos/Atom/Teclado.json",
-  "Key": [],
-  "teclado": []
+  "CargandoRaton": "Recursos/Atom/Teclado.json"
 }, {
   "Nombre": "Folder L",
   "Titulo": "Folder L",
-  "Cargar": "Recursos/FolderL/Botones.json",
-  "Key": []
+  "Cargar": "Recursos/FolderL/Botones.json"
 }, {
   "Nombre": "Folder R",
   "Titulo": "Folder R",
   "ico": "Recursos/FolderR/Folder.png",
-  "Cargar": "Recursos/FolderR/Botones.json",
-  "Key": []
+  "Cargar": "Recursos/FolderR/Botones.json"
 }, {
   "Nombre": "Inskcape",
   "ico": "Recursos/Inskcape/Inskcape.png",
-  "Cargar": "Recursos/Inskcape/Botones.json",
-  "Key": []
+  "Cargar": "Recursos/Inskcape/Botones.json"
 }, {
   "Nombre": "Jessyink",
   "ico": "Recursos/jessyink/Jessyink.png",
-  "Cargar": "Recursos/jessyink/Botones.json",
-  "Key": []
+  "Cargar": "Recursos/jessyink/Botones.json"
 }, {
   "Nombre": "Extra",
   "ico": "Recursos/Extra/Extra.png",
-  "Cargar": "Recursos/Extra/Botones.json",
-  "Key": []
+  "Cargar": "Recursos/Extra/Botones.json"
 }, {
   "Nombre": "Proyecto",
   "Titulo": "Proyecto",
-  "Cargar": "Recursos/Proyecto/Botones.json",
-  "Key": []
+  "Cargar": "Recursos/Proyecto/Botones.json"
 }, {
   "Nombre": "Gimp",
   "ico": "Recursos/Gimp/Gimp.png",
-  "Cargar": "Recursos/Gimp/Botones.json",
-  "Key": []
+  "Cargar": "Recursos/Gimp/Botones.json"
 }, {
   "Nombre": "Proyecto",
   "Titulo": "Proyecto",

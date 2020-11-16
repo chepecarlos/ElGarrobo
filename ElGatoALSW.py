@@ -15,12 +15,6 @@ from StreamDeck.ImageHelpers import PILHelper
 # Librerias para idenficiar Teclado
 from evdev import InputDevice, categorize, ecodes
 import argparse
-# Librerias para json
-import json
-
-# from OBSWebSocketPropio import *
-# from MiMQTT import *
-# import EmularTeclado as EmularTeclados
 
 import Extra.OBSWebSocketPropio as OBSWebSocketPropios
 import Extra.MiMQTT as MiMQTTs
@@ -30,6 +24,7 @@ from Extra.FuncionesProyecto import SalvarProyecto, CargarProyecto, AbirProyecto
 from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
 from Extra.Depuracion import Imprimir, CambiarDepuracion
 from Extra.YoutubeChat import SalvarChatYoutube
+from Extra.CargarData import CargarData
 
 # TODO: ordenar para no usar variable globales
 MiDeck = "nada"
@@ -37,6 +32,7 @@ teclas = "nada"
 ComandosRaton = "nada"
 folder = ""
 fuente = ""
+data = ""
 DefaceBotones = 0
 
 MiOBS = OBSWebSocketPropios.MiObsWS()
@@ -50,55 +46,6 @@ parser.add_argument('--ratom', '-r', help="Solo usar Ratom Razer",  action="stor
 parser.add_argument('--nodepurar', '-nd', help="Acivar modo sin depuracion", action="store_true")
 parser.add_argument('--proyecto', '-p', help="Configurar folder a proyecto actual", action="store_true")
 parser.add_argument('--salvaryoutube', '-sy', help="Salva el chat en un archivo", action="store_true")
-
-
-def CargarComandos():
-    """Carga Archivo de comandos"""
-    global data
-    archivo = os.path.dirname(os.path.realpath(__file__)) + '/Comandos.json'
-    if os.path.exists(archivo):
-        with open(archivo) as f:
-            data = json.load(f)
-    else:
-        Imprimir(f"No se Encontro el Archivo + {archivo}")
-        sys.exit()
-
-
-def CargarBotones():
-    global data
-    if 'CargandoRaton' in data:
-        URL_Carga = os.path.dirname(os.path.realpath(__file__)) + "/" + data['CargandoRaton']
-        if os.path.exists(URL_Carga):
-            with open(URL_Carga) as f:
-                data['teclado'] = json.load(f)
-        else:
-            Imprimir(f"{data['CargandoRaton']} - No se Encontro el Archivo {URL_Carga}")
-            sys.exit()
-    if 'CargandoComando' in data:
-        URL_Carga = os.path.dirname(os.path.realpath(__file__)) + "/" + data['CargandoComando']
-        if os.path.exists(URL_Carga):
-            with open(URL_Carga) as f:
-                data['Comando'] = json.load(f)
-        else:
-            Imprimir(f"{data['CargandoComando']} - No se Encontro el Archivo {URL_Carga}")
-            sys.exit()
-    for comando in data['Comando']:
-        if 'Cargar' in comando:
-            URL_Carga = os.path.dirname(os.path.realpath(__file__)) + "/" + comando['Cargar']
-            if os.path.exists(URL_Carga):
-                with open(URL_Carga) as f:
-                    comando['Key'] = json.load(f)
-            else:
-                Imprimir(f"{comando['Cargar']} - No se Encontro el Archivo {URL_Carga}")
-                sys.exit()
-        if 'CargandoRaton' in comando:
-            URL_Carga = os.path.dirname(os.path.realpath(__file__)) + "/" + comando['CargandoRaton']
-            if os.path.exists(URL_Carga):
-                with open(URL_Carga) as f:
-                    comando['teclado'] = json.load(f)
-            else:
-                Imprimir(f"{comando['CargandoRaton']} - No se Encontro el Archivo {URL_Carga}")
-                sys.exit()
 
 
 def ActualizarImagen(deck, teclas, tecla, limpiar=False):
@@ -237,6 +184,7 @@ def ActualizarAccion(accion):
             Imprimir(f"Opcion No Encontrada: {accion['Opcion']}")
     elif 'Key' in accion:
         Imprimir("Entenado en folder")
+        print(accion['Key'])
         teclas = accion['Key']
         if 'teclado' in accion:
             Imprimir("Cargando Teclado")
@@ -468,8 +416,7 @@ if __name__ == "__main__":
 
     if args.master:
         Imprimir("Modo Master")
-        CargarComandos()
-        CargarBotones()
+        data = CargarData('Comandos.json')
         CargandoRaton()
         CargandoElGato()
         CargarHilo()
@@ -477,14 +424,12 @@ if __name__ == "__main__":
         Imprimir("Modo Cliente")
     elif args.deck:
         Imprimir("Modo Solo StreamDeck")
-        CargarComandos()
-        CargarBotones()
+        data = CargarData('Comandos.json')
         CargandoElGato()
         CargarHilo()
     elif args.ratom:
         Imprimir("Modo Solo Raton Razer")
-        CargarComandos()
-        CargarBotones()
+        data = CargarData('Comandos.json')
         CargandoRaton()
         CargarHilo()
     elif args.proyecto:
@@ -494,8 +439,7 @@ if __name__ == "__main__":
         SalvarChatYoutube(CargarProyecto(), CargarIdVideo())
     else:
         Imprimir("No parametro")
-        CargarComandos()
-        CargarBotones()
+        data = CargarData('Comandos.json')
         CargandoRaton()
         CargandoElGato()
         CargarHilo()
