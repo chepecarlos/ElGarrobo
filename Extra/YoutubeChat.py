@@ -28,6 +28,10 @@ def SalvarChatYoutube(Directorio, IdVideo):
             print(f"{Chat.datetime} [{Chat.author.name} - {Chat.type}]- {Chat.message}")
             GuardadDato(Directorio + "/9.Chat/ChatGeneral.json", ChatData)
 
+            Filtro = "pregunta"
+            if(FiltranChat(Chat.message, Filtro)):
+                print(f"Filtro: {Filtro}")
+                GuardadDato(Directorio + "/9.Chat/Chat" + Filtro + ".json", ChatData)
             if(Chat.author.isChatSponsor):
                 DatoExtra = {"Miembro": Chat.author.isChatSponsor}
                 ChatData.append(DatoExtra)
@@ -42,6 +46,13 @@ def SalvarChatYoutube(Directorio, IdVideo):
                 GuardadDato(Directorio + "/9.Chat/ChatSuperChat.json", ChatData)
                 print(f"Super chat {Chat.amountString}")
 
+
+def FiltranChat(Mensaje, Palabra):
+    MensajeFiltrado = Mensaje.split()[0].lower()
+    if(MensajeFiltrado == Palabra):
+        return True
+    else:
+        return False
 
 if __name__ == '__main__':
     ChatYoutube("GfSidouUVlw")
