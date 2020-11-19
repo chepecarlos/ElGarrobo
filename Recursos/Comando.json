@@ -8,9 +8,9 @@
   "Cargar": "Recursos/Blender/Botones.json",
   "CargandoRaton": "Recursos/Blender/Teclado.json"
 }, {
-  "Nombre": "Tutorial",
-  "ico": "Recursos/Tutorial/Tutorial.png",
-  "Cargar": "Recursos/Tutorial/Botones.json"
+  "Nombre": "Inskcape",
+  "ico": "Recursos/Inskcape/Inskcape.png",
+  "Cargar": "Recursos/Inskcape/Botones.json"
 }, {
   "Nombre": "Arduino",
   "ico": "Recursos/Arduino/Arduino.png",
@@ -22,6 +22,14 @@
   "Cargar": "Recursos/Atom/Botones.json",
   "CargandoRaton": "Recursos/Atom/Teclado.json"
 }, {
+  "Nombre": "Links",
+  "ico": "Recursos/Links/Links.png",
+  "Cargar": "Recursos/Links/Botones.json"
+}, {
+  "Nombre": "Tutorial",
+  "ico": "Recursos/Tutorial/Tutorial.png",
+  "Cargar": "Recursos/Tutorial/Botones.json"
+}, {
   "Nombre": "Folder L",
   "Titulo": "Folder L",
   "Cargar": "Recursos/FolderL/Botones.json"
@@ -30,10 +38,6 @@
   "Titulo": "Folder R",
   "ico": "Recursos/FolderR/Folder.png",
   "Cargar": "Recursos/FolderR/Botones.json"
-}, {
-  "Nombre": "Inskcape",
-  "ico": "Recursos/Inskcape/Inskcape.png",
-  "Cargar": "Recursos/Inskcape/Botones.json"
 }, {
   "Nombre": "Jessyink",
   "ico": "Recursos/jessyink/Jessyink.png",
@@ -50,10 +54,6 @@
   "Nombre": "Gimp",
   "ico": "Recursos/Gimp/Gimp.png",
   "Cargar": "Recursos/Gimp/Botones.json"
-}, {
-  "Nombre": "Links",
-  "Titulo": "Links",
-  "Cargar": "Recursos/Links/Botones.json"
 }, {
   "Nombre": "Audacity",
   "ico": "Recursos/Audacity/Audacity.png",
