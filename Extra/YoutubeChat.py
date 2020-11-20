@@ -48,11 +48,15 @@ def SalvarChatYoutube(Directorio, IdVideo):
 
 
 def FiltranChat(Mensaje, Palabra):
-    MensajeFiltrado = Mensaje.split()[0].lower()
-    if(MensajeFiltrado == Palabra):
-        return True
-    else:
-        return False
+    if Mensaje:
+        Palabra = Palabra.lower()
+        MensajeFiltrado = Mensaje.split()[0].lower()
+        if(MensajeFiltrado == Palabra):
+            return True
+    return False
+
 
 if __name__ == '__main__':
-    ChatYoutube("GfSidouUVlw")
+    print("Empezando prueba")
+    # ChatYoutube("GfSidouUVlw")
+    print(FiltranChat("Pregunta como encender led", "Pregunta"))
