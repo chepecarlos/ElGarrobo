@@ -1,6 +1,7 @@
 import pyautogui
 # Implementar press y onrelles
 
+
 def ComandoTeclas(Teclas):
     for tecla in Teclas:
         pyautogui.keyDown(tecla)
@@ -8,5 +9,5 @@ def ComandoTeclas(Teclas):
         pyautogui.keyUp(tecla)
 
 
-def ComandoEscribir(Texto):
-    pyautogui.write(Texto, interval=0.01)
+def ComandoEscribir(Texto, Velocidad=0.01):
+    pyautogui.write(Texto, interval=Velocidad)
