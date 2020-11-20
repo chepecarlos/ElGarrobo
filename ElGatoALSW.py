@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # TODO: agregar git https://python-elgato-streamdeck.readthedocs.io/en/stable/examples/animated.html
 # TODO: Reordenar codigo
+# TODO: Emular Raton
 # BUG: Error cargando sin folder
 # Librerias
 import os
-import sys
 import threading
 import time
 
@@ -18,6 +18,7 @@ import argparse
 
 import Extra.FuncionesOBS as OBSWebSocketPropios
 import Extra.MiMQTT as MiMQTTs
+import Extra.MiDeck as MiDecks
 
 # Cargar funciones de Archivos
 from Extra.FuncionesProyecto import SalvarProyecto, CargarProyecto, AbirProyecto, CargarIdVideo
@@ -46,6 +47,7 @@ parser.add_argument('--ratom', '-r', help="Solo usar Ratom Razer",  action="stor
 parser.add_argument('--nodepurar', '-nd', help="Acivar modo sin depuracion", action="store_true")
 parser.add_argument('--proyecto', '-p', help="Configurar folder a proyecto actual", action="store_true")
 parser.add_argument('--salvaryoutube', '-sy', help="Salva el chat en un archivo", action="store_true")
+parser.add_argument('--deckdemo', '-dd', help="Solo usar StreamDeck",  action="store_true")
 
 
 def ActualizarImagen(deck, teclas, tecla, limpiar=False):
@@ -436,6 +438,10 @@ if __name__ == "__main__":
     elif args.salvaryoutube:
         Imprimir("Emezandoa a guardar Chat en Proyecto Actual")
         SalvarChatYoutube(CargarProyecto(), CargarIdVideo())
+    elif args.deckdemo:
+        Imprimir("Demo de StreamDeck con nuevas Librerias")
+        data = CargarData('Comandos.json')
+        Deck = MiDecks.MiDeck(data)
     else:
         Imprimir("No parametro")
         data = CargarData('Comandos.json')
