@@ -46,7 +46,6 @@ def ActualizarIcono(Deck, BotonActuales, IndiceBoton, Data, Limpiar=False):
             ColorTexto = "white"
 
         DirecionIcono = os.path.join(os.path.dirname(__file__), '..') + "/" + NombreIcono
-        print(DirecionIcono)
         if os.path.exists(DirecionIcono):
             Icono = Image.open(DirecionIcono).convert("RGBA")
             if TituloBoton:

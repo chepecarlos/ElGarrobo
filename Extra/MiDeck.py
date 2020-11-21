@@ -10,6 +10,7 @@ class MiDeck(object):
 
     def __init__(self, Data):
         self.Data = Data
+        self.DesfaceBoton = 0
         self.ConectadoMiDeck = False
         streamdecks = DeviceManager().enumerate()
         Imprimir(f"Cargando StreamDeck - {'Encontrado' if len(streamdecks) > 0 else 'No Conectado'}")
@@ -36,12 +37,20 @@ class MiDeck(object):
         DefinirDesface()
         self.ActualizarTodasImagenes()
 
+        self.Deck.set_key_callback(self.ActualizarBoton)
+
     def ActualizarTodasImagenes(self):
         for IndiceBoton in range(len(self.BotonActuales)):
             ActualizarIcono(self.Deck, self.BotonActuales, IndiceBoton, self.Data)
 
     def Cerrar(self):
-        self.deck.close()
+        self.Deck.close()
 
-    # Sistema de Coalbask
-    # deck.set_key_callback(ActualizarTeclas)
+    def ActualizarBoton(self, Deck, IndiceBoton, estado):
+        IndiceBoton = IndiceBoton - self.DesfaceBoton
+        if estado:
+            if IndiceBoton < len(self.BotonActuales):
+                Imprimir(f"Boton {IndiceBoton} - {self.BotonActuales[IndiceBoton]['Nombre']}")
+                # ActualizarAccion(teclas[IndiceBoton])
+            else:
+                Imprimir(f"Boton {IndiceBoton} - no programada")
