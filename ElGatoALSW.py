@@ -26,6 +26,7 @@ from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
 from Extra.Depuracion import Imprimir, CambiarDepuracion
 from Extra.YoutubeChat import SalvarChatYoutube
 from Extra.CargarData import CargarData
+from Extra.Hilos import CargarHilo
 
 # TODO: ordenar para no usar variable globales
 MiDeck = "nada"
@@ -399,16 +400,6 @@ def CargandoElGato():
         deck.set_key_callback(ActualizarTeclas)
 
 
-def CargarHilo():
-    '''Carga los todos los hilos disponibles'''
-    for t in threading.enumerate():
-        if t is threading.currentThread():
-            continue
-
-        if t.is_alive():
-            t.join()
-
-
 # Principal
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -422,7 +413,7 @@ if __name__ == "__main__":
         CargandoElGato()
         CargarHilo()
     elif args.cliente:
-        Imprimir("Modo Cliente")
+        Imprimir("Modo Cliente MQTT")
     elif args.deck:
         Imprimir("Modo Solo StreamDeck")
         data = CargarData('Comandos.json')
@@ -443,6 +434,7 @@ if __name__ == "__main__":
         Imprimir("Demo de StreamDeck con nuevas Librerias")
         data = CargarData('Comandos.json')
         Deck = MiDecks.MiDeck(data)
+        CargarHilo()
     else:
         Imprimir("No parametro")
         data = CargarData('Comandos.json')
