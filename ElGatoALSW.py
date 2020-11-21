@@ -186,6 +186,7 @@ def ActualizarAccion(accion):
     elif 'Key' in accion:
         Imprimir("Entenado en folder")
         teclas = accion['Key']
+        DefaceBotones = 0
         if 'teclado' in accion:
             Imprimir("Cargando Teclado")
             ComandosRaton = accion['teclado']
