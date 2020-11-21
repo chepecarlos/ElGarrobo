@@ -3,6 +3,7 @@ from StreamDeck.DeviceManager import DeviceManager
 
 from Extra.Depuracion import Imprimir
 from Extra.MiDeckImagen import ActualizarIcono, DefinirFuente, DefinirDesface
+from Extra.Acciones import RealizarAccion, AgregarStreanDeck
 
 
 class MiDeck(object):
@@ -33,13 +34,19 @@ class MiDeck(object):
             Imprimir("Fuente no asignada")
             self.Cerrar()
 
+        AgregarStreanDeck(self)
         self.BotonActuales = self.Data['Comando']
         DefinirDesface()
         self.ActualizarTodasImagenes()
 
         self.Deck.set_key_callback(self.ActualizarBoton)
 
-    def ActualizarTodasImagenes(self):
+    def ActualizarTodasImagenes(self, Limpiar=False):
+        if(Limpiar):
+            DefinirDesface()
+            for IndiceBoton in range(self.Deck.key_count()):
+                ActualizarIcono(self.Deck, self.BotonActuales, IndiceBoton, self.Data, Limpiar)
+            DefinirDesface(self.DesfaceBoton)
         for IndiceBoton in range(len(self.BotonActuales)):
             ActualizarIcono(self.Deck, self.BotonActuales, IndiceBoton, self.Data)
 
@@ -51,6 +58,6 @@ class MiDeck(object):
         if estado:
             if IndiceBoton < len(self.BotonActuales):
                 Imprimir(f"Boton {IndiceBoton} - {self.BotonActuales[IndiceBoton]['Nombre']}")
-                # ActualizarAccion(teclas[IndiceBoton])
+                RealizarAccion(self.BotonActuales[IndiceBoton])
             else:
                 Imprimir(f"Boton {IndiceBoton} - no programada")

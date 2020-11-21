@@ -14,9 +14,9 @@ def ActualizarIcono(Deck, BotonActuales, IndiceBoton, Data, Limpiar=False):
         return
 
     ImagenBoton = PILHelper.create_image(Deck)
-    ActualBoton = BotonActuales[IndiceBoton]
 
     if not Limpiar:
+        ActualBoton = BotonActuales[IndiceBoton]
         if 'Titulo' in ActualBoton:
             TituloBoton = "{}".format(ActualBoton['Titulo'])
         else:
