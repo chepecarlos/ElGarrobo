@@ -56,6 +56,10 @@
   "Titulo": "Curso",
   "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/2.Proyectos/2.Cursos/2.Libres &"
 }, {
+  "Nombre": "Grabaciones",
+  "Titulo": "Grabaciones",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/2.Proyectos/7.Grabaciones/ &"
+}, {
   "Nombre": "Regresar",
   "Regresar": "True"
 }]

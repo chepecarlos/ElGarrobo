@@ -48,7 +48,7 @@
   "Cargar": "Recursos/Extra/Botones.json"
 }, {
   "Nombre": "Proyecto",
-  "Titulo": "Proyecto",
+  "ico": "Recursos/Proyecto/Proyecto.png",
   "Cargar": "Recursos/Proyecto/Botones.json"
 }, {
   "Nombre": "Gimp",
@@ -86,6 +86,10 @@
     "Nombre": "Regresar",
     "Regresar": "True"
   }]
+}, {
+  "Nombre": "Umaru",
+  "ico": "Recursos/Umaru/Umaru.png",
+  "Cargar": "Recursos/Umaru/Botones.json"
 }, {
   "Nombre": "Anterior",
   "ico": "Recursos/OBS/Anterior.png",
