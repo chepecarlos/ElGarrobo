@@ -9,13 +9,13 @@ def AgregarStreanDeck(_Deck):
 def RealizarAccion(Accion):
     global Deck
 
-    # if 'Siquiente' in Accion:
-    #     Deck.BotonesSiquiente(True)
-    #     Deck.ActualizarTodasImagenes()
-    # elif 'Anterior' in Accion:
-    #     Deck.BotonesSiquiente(False)
-    #     Deck.ActualizarTodasImagenes()
-    if 'Regresar' in Accion:
+    if 'Siquiente' in Accion:
+        Deck.BotonesSiquiente(True)
+        Deck.ActualizarTodasImagenes(True)
+    elif 'Anterior' in Accion:
+        Deck.BotonesSiquiente(False)
+        Deck.ActualizarTodasImagenes(True)
+    elif 'Regresar' in Accion:
         Deck.BotonActuales = Deck.Data['Comando']
         # ComandosRaton = data['teclado']
         Deck.DesfaceBoton = 0

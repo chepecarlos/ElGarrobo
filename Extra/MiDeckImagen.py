@@ -6,16 +6,20 @@ from StreamDeck.ImageHelpers import PILHelper
 from Extra.Depuracion import Imprimir
 
 
-def ActualizarIcono(Deck, BotonActuales, IndiceBoton, Data, Limpiar=False):
-    global DesfaceBoton
+def ActualizarIcono(MiDeck, IndiceBoton, Limpiar=False):
     global FuenteBoton
 
-    if(IndiceBoton + DesfaceBoton < 0 or IndiceBoton + DesfaceBoton > Deck.key_count()):
-        return
+    Deck = MiDeck.Deck
+    Data = MiDeck.Data
+    BotonActuales = MiDeck.BotonActuales
+    DesfaceBoton = MiDeck.DesfaceBoton
 
     ImagenBoton = PILHelper.create_image(Deck)
 
     if not Limpiar:
+        if(IndiceBoton + DesfaceBoton < 0 or IndiceBoton + DesfaceBoton > Deck.key_count()):
+            return
+
         ActualBoton = BotonActuales[IndiceBoton]
         if 'Titulo' in ActualBoton:
             TituloBoton = "{}".format(ActualBoton['Titulo'])
@@ -67,14 +71,11 @@ def ActualizarIcono(Deck, BotonActuales, IndiceBoton, Data, Limpiar=False):
             label_pos = ((ImagenBoton.width - label_w) // 2, ImagenBoton.height - 20)
             dibujo.text(label_pos, text=TituloBoton, font=font, fill=ColorTexto)
 
-    Deck.set_key_image(IndiceBoton + DesfaceBoton, PILHelper.to_native_format(Deck, ImagenBoton))
+        Deck.set_key_image(IndiceBoton + DesfaceBoton, PILHelper.to_native_format(Deck, ImagenBoton))
+    else:
+        Deck.set_key_image(IndiceBoton, PILHelper.to_native_format(Deck, ImagenBoton))
 
 
 def DefinirFuente(_Fuente):
     global FuenteBoton
     FuenteBoton = os.path.join(os.path.dirname(__file__), '..') + "/" + _Fuente
-
-
-def DefinirDesface(_Desface=0):
-    global DesfaceBoton
-    DesfaceBoton = _Desface

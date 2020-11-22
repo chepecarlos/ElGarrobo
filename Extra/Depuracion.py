@@ -1,8 +1,10 @@
 depura = True
 
+
 def CambiarDepuracion(Estado):
     global depura
     depura = Estado
+
 
 def Imprimir(dato):
     '''Imprimi mensaje de depuracion'''
