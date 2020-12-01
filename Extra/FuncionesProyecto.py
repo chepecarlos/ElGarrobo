@@ -3,6 +3,8 @@ import os
 import sys
 import yaml
 
+from Extra.Depuracion import Imprimir
+
 Archivo = os.path.abspath(os.path.join(os.path.dirname(__file__), "..")) + '/Recursos/Data.json'
 
 
@@ -38,9 +40,10 @@ def CargarIdVideo():
 def AbirProyecto(Opcion):
     FolderProyecto = CargarProyecto()
     if Opcion == '':
-        Comando = "nemo " + FolderProyecto
+        Comando = "nemo " + FolderProyecto + " &"
     else:
-        Comando = "nemo " + FolderProyecto + "/" + Opcion
+        Comando = "nemo " + FolderProyecto + "/" + Opcion + " &"
+    print(Comando)
     os.system(Comando)
 
 
