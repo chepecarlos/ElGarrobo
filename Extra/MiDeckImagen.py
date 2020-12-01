@@ -30,6 +30,10 @@ def ActualizarIcono(MiDeck, IndiceBoton, Limpiar=False):
             NombreIcono = "{}".format(ActualBoton['ico'])
         elif 'Regresar' in ActualBoton and 'ico_Regresar' in Data:
             NombreIcono = Data['ico_Regresar']
+        elif 'Siquiente' in ActualBoton and 'ico_Siquiente' in Data:
+            NombreIcono = Data['ico_Siquiente']
+        elif 'Anterior' in ActualBoton and 'ico_Anterior' in Data:
+            NombreIcono = Data['ico_Anterior']
         elif 'Estado' in ActualBoton:
             if ActualBoton['Estado'] and 'icon_true' in ActualBoton:
                 NombreIcono = ActualBoton['icon_true']
