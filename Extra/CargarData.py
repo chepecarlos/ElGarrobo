@@ -16,7 +16,7 @@ def CargarData(Direcion):
             Data['Comando'][i]['Key'] = CargarValores(Data['Comando'][i]['Cargar'])
         if 'CargandoRaton' in Data['Comando'][i]:
             Data['Comando'][i]['teclado'] = CargarValores(Data['Comando'][i]['CargandoRaton'])
-    return AgregarComodines(Data)
+    return Data
 
 
 def CargarValores(Direcion):
@@ -30,18 +30,31 @@ def CargarValores(Direcion):
         sys.exit()
 
 
-def AgregarComodines(Data):
-    # Agregando al final Regresar
-    DataComando = Data['Comando']
-    if 'Comando' in Data:
-        DataComando.append({
-          "Nombre": "Regresar",
-          "Regresar": True
-        })
-        for Boton in range(len(DataComando)):
-            if 'Key' in DataComando[Boton]:
-                DataComando[Boton]['Key'].append({
-                  "Nombre": "Regresar",
-                  "Regresar": True
+def AgregarComodines(Data, CantidaBotones):
+    Data.append({
+      "Nombre": "Regresar",
+      "Regresar": True
+    })
+    for Boton in range(len(Data)):
+        if 'Key' in Data[Boton]:
+            AgregarComodines(Data[Boton]['Key'], CantidaBotones)
+
+    i = 1
+    Insertar = i * CantidaBotones
+    while len(Data) > Insertar:
+        if i != 1:
+            Data.insert(Insertar - 2, {
+                "Nombre": "Anterior",
+                "Anterior": True
                 })
-    return Data
+        Data.insert(Insertar - 1, {
+              "Nombre": "Siquiente",
+              "Siquiente": True
+            })
+        i += 1
+        Insertar = i * CantidaBotones
+    if i != 1:
+        Data.insert(len(Data) - 1, {
+              "Nombre": "Anterior",
+              "Anterior": True
+            })

@@ -4,20 +4,24 @@ from StreamDeck.DeviceManager import DeviceManager
 from Extra.Depuracion import Imprimir
 from Extra.MiDeckImagen import ActualizarIcono, DefinirFuente
 from Extra.Acciones import RealizarAccion, AgregarStreanDeck
+from Extra.CargarData import AgregarComodines
 
 
 class MiDeck(object):
     """docstring for MiMQTT."""
 
     def __init__(self, Data):
-        self.Data = Data
-        self.DesfaceBoton = 0
         self.ConectadoMiDeck = False
         streamdecks = DeviceManager().enumerate()
         Imprimir(f"Cargando StreamDeck - {'Encontrado' if len(streamdecks) > 0 else 'No Conectado'}")
 
         for index, deck in enumerate(streamdecks):
             self.Deck = deck
+            self.ConectadoMiDeck = True
+            self.DesfaceBoton = 0
+            self.Data = Data
+            if 'Comando' in self.Data:
+                AgregarComodines(self.Data['Comando'], self.Deck.key_count())
             self.Deck.open()
             self.Deck.reset()
 
