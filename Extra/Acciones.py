@@ -1,4 +1,10 @@
+import sys
+
 from Extra.Depuracion import Imprimir
+from Extra.Delay import Delay
+from Extra.MiOS import MiOS
+from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
+from Extra.FuncionesProyecto import AbirProyecto
 
 
 def AgregarStreanDeck(_Deck):
@@ -28,5 +34,29 @@ def RealizarAccion(Accion):
         #     Imprimir("Cargando Teclado")
         #     ComandosRaton = accion['teclado']
         Deck.ActualizarTodasImagenes(True)
+    elif 'Macro' in Accion:
+        for AccionMacro in Accion['Macro']:
+            RealizarAccion(AccionMacro)
+    elif 'os' in Accion:
+        MiOS(Accion['os'])
+    elif 'tecla' in Accion:
+        ComandoTeclas(Accion['tecla'])
+    elif 'texto' in Accion:
+        ComandoEscribir(Accion['texto'])
+    elif 'delay' in Accion:
+        Delay(Accion['delay'])
+    elif 'Proyecto' in Accion:
+        AbirProyecto(Accion['Proyecto'])
+    elif 'Opcion' in Accion:
+        if Accion['Opcion'] == "Exit":
+            # TODO: ver si esta habierto antes de cerrar
+            Imprimir("Saliendo ElGatoALSW - Adios :) ")
+            sys.exit()
+            # MiOBS.Cerrar()
+            # MiMQTT.Cerrar()
+            # MiDeck.reset()
+            # MiDeck.close()
+        else:
+            Imprimir(f"Opcion No Encontrada: {Accion['Opcion']}")
     else:
         Imprimir("Boton - no definida")
