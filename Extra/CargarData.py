@@ -17,7 +17,6 @@ def CargarData(Direcion):
         if 'CargandoRaton' in Data['Comando'][i]:
             Data['Comando'][i]['teclado'] = CargarValores(Data['Comando'][i]['CargandoRaton'])
     return AgregarComodines(Data)
-    return Data
 
 
 def CargarValores(Direcion):
@@ -33,18 +32,16 @@ def CargarValores(Direcion):
 
 def AgregarComodines(Data):
     # Agregando al final Regresar
+    DataComando = Data['Comando']
     if 'Comando' in Data:
-        Data['Comando'].append({
+        DataComando.append({
           "Nombre": "Regresar",
           "Regresar": True
         })
-        for Boton in range(len(Data['Comando'])):
-            if 'Nombre' in Data['Comando'][Boton]:
-                # Imprimir(Data['Comando'][Boton]['Nombre'])
-                if 'Key' in Data['Comando'][Boton]:
-                    # Imprimir(Data['Comando'][Boton]['Key'])
-                    Data['Comando'][Boton]['Key'].append({
-                      "Nombre": "Regresar",
-                      "Regresar": True
-                    })
+        for Boton in range(len(DataComando)):
+            if 'Key' in DataComando[Boton]:
+                DataComando[Boton]['Key'].append({
+                  "Nombre": "Regresar",
+                  "Regresar": True
+                })
     return Data
