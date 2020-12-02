@@ -112,15 +112,17 @@ def EventoOBS(mensaje):
             print(f"No se pudo conectar a OBS - {e}")
             MiOBS.OBSConectado = False
     elif mensaje.name == 'RecordingStopped':
-        Imprimir('Parado la grabacion')
-        # IdGrabar = BuscarBoton(IdOBS, 'Rec')
-        # data['Comando'][IdOBS]['Key'][IdGrabar]['Estado'] = False
-        # ActualizarImagenes()
+        Imprimir(f'Parado la grabacion - {MiOBS.Carpeta}')
+        IdGrabar = Deck.BuscarBoton(IdOBS, 'Rec')
+        if IdGrabar != -1:
+            Deck.Data['Comando'][IdOBS]['Key'][IdGrabar]['Estado'] = False
+            Deck.ActualizarTodasImagenes()
     elif mensaje.name == 'RecordingStarted':
-        Imprimir('Iniciado la grabacion')
-        # IdGrabar = BuscarBoton(IdOBS, 'Rec')
-        # data['Comando'][IdOBS]['Key'][IdGrabar]['Estado'] = True
-        # ActualizarImagenes()
+        Imprimir(f'Iniciado la grabacion - {MiOBS.Carpeta}')
+        IdGrabar = Deck.BuscarBoton(IdOBS, 'Rec')
+        if IdGrabar != -1:
+            Deck.Data['Comando'][IdOBS]['Key'][IdGrabar]['Estado'] = True
+            Deck.ActualizarTodasImagenes()
     elif(mensaje.name == 'StreamStopped'):
         Imprimir("Parando la trasmicion")
         # IdLive = BuscarBoton(IdOBS, 'Live')

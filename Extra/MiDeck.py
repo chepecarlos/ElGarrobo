@@ -73,7 +73,7 @@ class MiDeck(object):
     def BuscarCarpeta(self, Nombre):
         ComandosFolder = self.Data['Comando']
         for Boton in range(len(ComandosFolder)):
-            if(ComandosFolder[Boton]['Nombre'] == Nombre):
+            if ComandosFolder[Boton]['Nombre'] == Nombre:
                 return Boton
         return -1
 
@@ -83,5 +83,5 @@ class MiDeck(object):
         else:
             BotonesFolder = self.Data['Comando'][IdFolder]['Key']
             for tecla in range(len(BotonesFolder)):
-                if(BotonesFolder['Nombre'] == Nombre):
+                if BotonesFolder[tecla]['Nombre'] == Nombre:
                     return tecla
