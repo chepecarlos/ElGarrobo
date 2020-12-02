@@ -3,7 +3,7 @@ from StreamDeck.DeviceManager import DeviceManager
 
 from Extra.Depuracion import Imprimir
 from Extra.MiDeckImagen import ActualizarIcono, DefinirFuente
-from Extra.Acciones import RealizarAccion, AgregarStreanDeck
+from Extra.Acciones import Accion, AgregarStreanDeck
 from Extra.CargarData import AgregarComodines
 
 
@@ -19,6 +19,7 @@ class MiDeck(object):
             self.Deck = deck
             self.ConectadoMiDeck = True
             self.DesfaceBoton = 0
+            self.OBSConectado = False
             self.Folder = "Base"
             self.Data = Data
             if 'Comando' in self.Data:
@@ -60,7 +61,7 @@ class MiDeck(object):
         if estado:
             if IndiceBoton < len(self.BotonActuales):
                 Imprimir(f"Boton {IndiceBoton} - {self.BotonActuales[IndiceBoton]['Nombre']}")
-                RealizarAccion(self.BotonActuales[IndiceBoton])
+                Accion(self.BotonActuales[IndiceBoton])
             else:
                 Imprimir(f"Boton {IndiceBoton} - no programada")
 
@@ -85,3 +86,6 @@ class MiDeck(object):
             for tecla in range(len(BotonesFolder)):
                 if BotonesFolder[tecla]['Nombre'] == Nombre:
                     return tecla
+
+    def CambiarEstadoBoton(self, IdFolder, IdBoton, Estado):
+        self.Data['Comando'][IdFolder]['Key'][IdBoton]['Estado'] = Estado

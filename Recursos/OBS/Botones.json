@@ -65,12 +65,14 @@
   "icon_false": "Recursos/OBS/EndCardOff.png"
 }, {
   "Nombre": "Rec",
+  "OBS": "Grabar",
   "Grabar": true,
   "Estado": false,
   "icon_true": "Recursos/OBS/RecOn.png",
   "icon_false": "Recursos/OBS/RecOff.png"
 }, {
   "Nombre": "Live",
+  "OBS": "Live",
   "Live": true,
   "Estado": false,
   "icon_true": "Recursos/OBS/LiveOn.png",

@@ -19,7 +19,7 @@ def AgregarOBS(_MiOBS):
     MiOBS = _MiOBS
 
 
-def RealizarAccion(Accion):
+def Accion(Accion):
     global Deck
 
     # No Saltar extra
@@ -46,7 +46,7 @@ def RealizarAccion(Accion):
         Deck.ActualizarTodasImagenes(True)
     elif 'Macro' in Accion:
         for AccionMacro in Accion['Macro']:
-            RealizarAccion(AccionMacro)
+            Accion(AccionMacro)
     elif 'os' in Accion:
         MiOS(Accion['os'])
     elif 'tecla' in Accion:
@@ -58,7 +58,7 @@ def RealizarAccion(Accion):
     elif 'Proyecto' in Accion:
         AbirProyecto(Accion['Proyecto'])
     elif 'OBS' in Accion:
-        ActualizarOBS(Accion)
+        AccionesOBS(Accion)
     elif 'Opcion' in Accion:
         if Accion['Opcion'] == "Exit":
             # TODO: ver si esta habierto antes de cerrar
@@ -74,28 +74,29 @@ def RealizarAccion(Accion):
         Imprimir("Boton - no definida")
 
 
-def ActualizarOBS(Accion):
+def AccionesOBS(Accion):
+    '''Acciones que puede enviarse a OBS_WebSoket'''
     global MiOBS
     global Deck
-    '''Acciones que puede enviarse a OBS_WebSoket'''
-    # print(Accion)
-    if Accion['OBS'] == "Cerrar":
-        MiOBS.DesregistarEvento(EventoOBS)
-        MiOBS.Cerrar()
-        return True
-    elif Accion['OBS'] == "Server" and 'Server' in Accion:
+    if Accion['OBS'] == "Server" and 'Server' in Accion:
         AgregarOBS(MiOBSs.MiObsWS(Deck.Carpeta))
         MiOBS.CambiarHost(Accion['Server'])
         MiOBS.Conectar()
         MiOBS.RegistarEvento(EventoOBS)
+        Deck.OBSConectado = True
+    elif Deck.OBSConectado:
+        if Accion['OBS'] == "Cerrar":
+            Deck.OBSConectado = False
+            MiOBS.DesregistarEvento(EventoOBS)
+            MiOBS.Cerrar()
+        elif Accion['OBS'] == "Grabar":
+            MiOBS.CambiarGrabacion()
+        elif Accion['OBS'] == "Live":
+            MiOBS.CambiarStriming()
+        else:
+            Imprimir("No encontramos esta Opcion de OBS")
     else:
-        AgregarOBS(MiOBSs.MiObsWS())
-        MiOBS.CambiarHost(Accion['OBS'])
-        MiOBS.Conectar()
-        MiOBS.RegistarEvento(EventoOBS)
-        return True
-    return False
-
+        Imprimir("OBS no esta conectado")
 
 def EventoOBS(mensaje):
     '''Escucha y Reaciona a eventos de OBS'''
@@ -115,24 +116,26 @@ def EventoOBS(mensaje):
         Imprimir(f'Parado la grabacion - {MiOBS.Carpeta}')
         IdGrabar = Deck.BuscarBoton(IdOBS, 'Rec')
         if IdGrabar != -1:
-            Deck.Data['Comando'][IdOBS]['Key'][IdGrabar]['Estado'] = False
+            Deck.CambiarEstadoBoton(IdOBS, IdGrabar, False)
             Deck.ActualizarTodasImagenes()
     elif mensaje.name == 'RecordingStarted':
         Imprimir(f'Iniciado la grabacion - {MiOBS.Carpeta}')
         IdGrabar = Deck.BuscarBoton(IdOBS, 'Rec')
         if IdGrabar != -1:
-            Deck.Data['Comando'][IdOBS]['Key'][IdGrabar]['Estado'] = True
+            Deck.CambiarEstadoBoton(IdOBS, IdGrabar, True)
             Deck.ActualizarTodasImagenes()
     elif(mensaje.name == 'StreamStopped'):
         Imprimir("Parando la trasmicion")
-        # IdLive = BuscarBoton(IdOBS, 'Live')
-        # data['Comando'][IdOBS]['Key'][IdLive]['Estado'] = False
-        # ActualizarImagenes()
+        IdLive = Deck.BuscarBoton(IdOBS, 'Live')
+        if IdLive != -1:
+            Deck.CambiarEstadoBoton(IdOBS, IdLive, False)
+            Deck.ActualizarTodasImagenes()
     elif(mensaje.name == 'StreamStarted'):
         Imprimir("Empezando la trasmicion")
-        # IdLive = BuscarBoton(IdOBS, 'Live')
-        # data['Comando'][IdOBS]['Key'][IdLive]['Estado'] = True
-        # ActualizarImagenes()
+        IdLive = Deck.BuscarBoton(IdOBS, 'Live')
+        if IdLive != -1:
+            Deck.CambiarEstadoBoton(IdOBS, IdLive, True)
+            Deck.ActualizarTodasImagenes()
     elif(mensaje.name == 'SwitchScenes'):
         Imprimir(f"Cambia a Esena {mensaje.datain['scene-name']}")
         # EsenaActiva = BuscarBoton(IdOBS, mensaje.datain['scene-name'])
