@@ -95,6 +95,10 @@ def AccionesOBS(Accion):
             MiOBS.CambiarStriming()
         elif Accion['OBS'] == "Esena":
             MiOBS.CambiarEsena(Accion['Esena'])
+        elif Accion['OBS'] == "Fuente":
+            MiOBS.CambiarFuente(Accion['Fuente'], not Accion['Estado'])
+        elif Accion['OBS'] == "Filtro":
+            MiOBS.CambiarFiltro(Accion['Fuente'], Accion['Filtro'], not Accion['Estado'])
         else:
             Imprimir("No encontramos esta Opcion de OBS")
     else:
@@ -109,7 +113,6 @@ def EventoOBS(Mensaje):
     if Mensaje.name == "Exiting":
         try:
             print("Cerrando OBS")
-            # MiOBS.DesregistarEvento(EventoOBS)
             MiOBS.Cerrar()
             MiOBS.OBSConectado = True
         except Exception as e:
@@ -152,17 +155,17 @@ def EventoOBS(Mensaje):
     elif(Mensaje.name == 'SceneItemVisibilityChanged'):
         NombreIten = Mensaje.datain['item-name']
         EstadoItem = Mensaje.datain['item-visible']
-        # IdItem = BuscarBoton(IdOBS, NombreIten)
+        IdItem = Deck.BuscarBoton(IdOBS, NombreIten)
         Imprimir(f"Se cambio fuente {NombreIten} - {EstadoItem}")
-        # data['Comando'][IdOBS]['Key'][IdItem]['Estado'] = EstadoItem
-        # ActualizarImagenes()
+        Deck.CambiarEstadoBoton(IdOBS, IdItem, EstadoItem)
+        Deck.ActualizarTodasImagenes()
     elif(Mensaje.name == 'SourceFilterVisibilityChanged'):
         NombreFiltro = Mensaje.datain['filterName']
         NombreFuente = Mensaje.datain['sourceName']
         EstadoFiltro = Mensaje.datain['filterEnabled']
         Imprimir(f"Se cambio el filtro {NombreFiltro} de {NombreFuente} a {EstadoFiltro}")
-        # IdItem = BuscarBoton(IdOBS, NombreFiltro)
-        # data['Comando'][IdOBS]['Key'][IdItem]['Estado'] = EstadoFiltro
-        # ActualizarImagenes()
+        IdItem = Deck.BuscarBoton(IdOBS, NombreFiltro)
+        Deck.CambiarEstadoBoton(IdOBS, IdItem, EstadoFiltro)
+        Deck.ActualizarTodasImagenes()
     else:
         Imprimir(f"Evento no procesado de OBS: {Mensaje.name}")

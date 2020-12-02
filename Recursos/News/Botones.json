@@ -1,0 +1,66 @@
+[{
+  "Nombre": "Cero",
+  "Titulo": "Cero"
+}, {
+  "Nombre": "i--",
+  "Titulo": "i--"
+}, {
+  "Nombre": "i++",
+  "Titulo": "i++"
+}, {
+  "Nombre": "Verde",
+  "OBS": "Filtro",
+  "Fuente": "Camara",
+  "Filtro": "Verde",
+  "Estado": true,
+  "icon_true": "Recursos/OBS/VerdeOn.png",
+  "icon_false": "Recursos/OBS/VerdeOff.png"
+}, {
+  "Nombre": "Camara",
+  "OBS": "Fuente",
+  "Fuente": "Camara",
+  "Estado": true,
+  "icon_true": "Recursos/OBS/CamaraOn.png",
+  "icon_false": "Recursos/OBS/CamaraOff.png"
+}, {
+  "Nombre": "Principal",
+  "Titulo": "Principal",
+  "OBS": "Esena",
+  "Esena": "Principal",
+  "Estado": true,
+  "icon_true": "Recursos/OBS/CodigoOn.png",
+  "icon_false": "Recursos/OBS/CodigoOff.png"
+}, {
+  "Nombre": "PC",
+  "Titulo": "PC",
+  "OBS": "Esena",
+  "Esena": "PC",
+  "Estado": false,
+  "icon_true": "Recursos/OBS/CodigoOn.png",
+  "icon_false": "Recursos/OBS/CodigoOff.png"
+}, {
+  "Nombre": "Local",
+  "Titulo": "Local",
+  "ico": "Recursos/OBS/Ryuk.png",
+  "OBS": "Server",
+  "Server": "localhost"
+}, {
+  "Nombre": "Cerrar",
+  "Titulo": "Cerrar",
+  "OBS": "Cerrar"
+}, {
+  "Nombre": "Rec",
+  "OBS": "Grabar",
+  "Estado": false,
+  "icon_true": "Recursos/OBS/RecOn.png",
+  "icon_false": "Recursos/OBS/RecOff.png"
+}, {
+  "Nombre": "Live",
+  "OBS": "Live",
+  "Estado": false,
+  "icon_true": "Recursos/OBS/LiveOn.png",
+  "icon_false": "Recursos/OBS/LiveOff.png"
+}, {
+  "Nombre": "Regresar",
+  "Regresar": "True"
+}]
