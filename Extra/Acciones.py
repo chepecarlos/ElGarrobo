@@ -63,8 +63,8 @@ def Accion(Accion):
         if Accion['Opcion'] == "Exit":
             # TODO: ver si esta habierto antes de cerrar
             Imprimir("Saliendo ElGatoALSW - Adios :) ")
+            CerrarOBS()
             sys.exit()
-            # MiOBS.Cerrar()
             # MiMQTT.Cerrar()
             # MiDeck.reset()
             # MiDeck.close()
@@ -86,9 +86,7 @@ def AccionesOBS(Accion):
         Deck.OBSConectado = True
     elif Deck.OBSConectado:
         if Accion['OBS'] == "Cerrar":
-            Deck.OBSConectado = False
-            MiOBS.DesregistarEvento(EventoOBS)
-            MiOBS.Cerrar()
+            CerrarOBS()
         elif Accion['OBS'] == "Grabar":
             MiOBS.CambiarGrabacion()
         elif Accion['OBS'] == "Live":
@@ -102,7 +100,16 @@ def AccionesOBS(Accion):
         else:
             Imprimir("No encontramos esta Opcion de OBS")
     else:
-        Imprimir("OBS no esta conectado")
+        Imprimir("OBS no Conectado")
+
+
+def CerrarOBS():
+    global MiOBS
+    global Deck
+    if Deck.OBSConectado:
+        Deck.OBSConectado = False
+        MiOBS.DesregistarEvento(EventoOBS)
+        MiOBS.Cerrar()
 
 
 def EventoOBS(Mensaje):
@@ -112,9 +119,8 @@ def EventoOBS(Mensaje):
     IdOBS = Deck.BuscarCarpeta(MiOBS.Carpeta)
     if Mensaje.name == "Exiting":
         try:
-            print("Cerrando OBS")
-            MiOBS.Cerrar()
-            MiOBS.OBSConectado = True
+            print("Cerrando OBS - Evento")
+            CerrarOBS()
         except Exception as e:
             print(f"No se pudo conectar a OBS - {e}")
             MiOBS.OBSConectado = False

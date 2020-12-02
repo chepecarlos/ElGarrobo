@@ -18,13 +18,13 @@ class MiObsWS:
         if self.OBSConectado:
             self.ConeccionOBS.register(LaFuncion)
         else:
-            print("No se encontro OBS")
+            print("OBS no Conectado")
 
     def DesregistarEvento(self, LaFuncion):
         if self.OBSConectado:
             self.ConeccionOBS.unregister(LaFuncion)
         else:
-            print("No se encontro OBS")
+            print("OBS no Conectado")
 
     def Conectar(self):
         try:
@@ -41,28 +41,28 @@ class MiObsWS:
             print("Cambiando estado Grabacion")
             self.ConeccionOBS.call(requests.StartStopRecording())
         else:
-            print("No se encontro OBS")
+            print("OBS no Conectado")
 
     def CambiarStriming(self):
         if self.OBSConectado:
             print("Cambiando estado Striming")
             self.ConeccionOBS.call(requests.StartStopStreaming())
         else:
-            print("No se encontro OBS")
+            print("OBS no Conectado")
 
     def CambiarEsena(self, Esena):
         if self.OBSConectado:
             print("Cambiando a {}".format(Esena))
             self.ConeccionOBS.call(requests.SetCurrentScene(Esena))
         else:
-            print("No se encontro OBS")
+            print("OBS no Conectado")
 
     def CambiarVolumen(self, Fuente):
         if self.OBSConectado:
             print("Cambiando estado Volumen {}".format(Fuente))
             self.ConeccionOBS.call(requests.ToggleMute(Fuente))
         else:
-            print("No se encontro OBS")
+            print("OBS no Conectado")
 
     def CambiarFiltro(self, Fuente, Filtro, Estado):
         '''Funcion que cambia el estado de un filtro'''
@@ -70,14 +70,14 @@ class MiObsWS:
             print(f"Cambiando del Filtro {Filtro} de {Fuente} a {Estado}")
             self.ConeccionOBS.call(requests.SetSourceFilterVisibility(Fuente, Filtro, Estado))
         else:
-            print("No se encontro OBS")
+            print("OBS no Conectado")
 
     def CambiarFuente(self, Fuente, Estado):
         if self.OBSConectado:
             print(f"Cambiando Fuente {Fuente} - {Estado}")
             self.ConeccionOBS.call(requests.SetSceneItemProperties(Fuente, visible=Estado))
         else:
-            print("No se encontro OBS")
+            print("OBS no Conectado")
 
     def Cerrar(self):
         if self.OBSConectado:
