@@ -7,7 +7,6 @@ from Extra.Delay import Delay
 from Extra.MiOS import MiOS
 from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
 from Extra.FuncionesProyecto import AbirProyecto
-from Extra.MiOBS import EventoOBS
 
 
 def AgregarStreanDeck(_Deck):
@@ -93,3 +92,18 @@ def ActualizarOBS(Accion):
         MiOBS.RegistarEvento(EventoOBS)
         return True
     return False
+
+
+def EventoOBS(mensaje):
+    '''Escucha y Reaciona a eventos de OBS'''
+    global MiOBS
+    print(f"Evento OBS {mensaje.name} ")
+    if mensaje.name == "Exiting":
+        try:
+            print("Cerrando OBS")
+            # MiOBS.DesregistarEvento(EventoOBS)
+            MiOBS.Cerrar()
+            MiOBS.OBSConectado = True
+        except Exception as e:
+            print(f"No se pudo conectar a OBS - {e}")
+            MiOBS.OBSConectado = False

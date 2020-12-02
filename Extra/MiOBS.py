@@ -1,13 +1,6 @@
 from obswebsocket import obsws, requests, events
 
 
-def EventoOBS(mensaje):
-    '''Escucha y Reaciona a eventos de OBS'''
-    print(f"Evento OBS {mensaje.name}")
-    if mensaje.name == "Exiting":
-        print("Cerrando OBS")
-
-
 class MiObsWS:
     def __init__(self):
         self.host = "localhost"
@@ -39,8 +32,7 @@ class MiObsWS:
             self.ConeccionOBS.connect()
             self.OBSConectado = True
         except Exception as e:
-            print(e)
-            print("No se pudo conectar a OBS")
+            print(f"No se pudo conectar a OBS {e}")
             self.OBSConectado = False
 
     def CambiarGrabacion(self):
