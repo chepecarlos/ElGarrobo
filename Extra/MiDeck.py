@@ -19,6 +19,7 @@ class MiDeck(object):
             self.Deck = deck
             self.ConectadoMiDeck = True
             self.DesfaceBoton = 0
+            self.Folder = "Base"
             self.Data = Data
             if 'Comando' in self.Data:
                 AgregarComodines(self.Data['Comando'], self.Deck.key_count())
@@ -68,3 +69,19 @@ class MiDeck(object):
             self.DesfaceBoton -= self.Deck.key_count()
         else:
             self.DesfaceBoton += self.Deck.key_count()
+
+    def BuscarCarpeta(self, Nombre):
+        ComandosFolder = self.Data['Comando']
+        for Boton in range(len(ComandosFolder)):
+            if(ComandosFolder[Boton]['Nombre'] == Nombre):
+                return Boton
+        return -1
+
+    def BuscarBoton(self, IdFolder, Nombre):
+        if(IdFolder == -1):
+            return -1
+        else:
+            BotonesFolder = self.Data['Comando'][IdFolder]['Key']
+            for tecla in range(len(BotonesFolder)):
+                if(BotonesFolder['Nombre'] == Nombre):
+                    return tecla
