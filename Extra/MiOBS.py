@@ -2,10 +2,11 @@ from obswebsocket import obsws, requests, events
 
 
 class MiObsWS:
-    def __init__(self):
+    def __init__(self, _Carpeta):
         self.host = "localhost"
         self.port = 4444
         self.OBSConectado = False
+        self.Carpeta = _Carpeta
 
     def CambiarHost(self, host_):
         self.host = host_
@@ -27,7 +28,7 @@ class MiObsWS:
 
     def Conectar(self):
         try:
-            print(f"Intentando Conectar con {self.host}")
+            print(f"Intentando Conectar con {self.host} - {self.Carpeta}")
             self.ConeccionOBS = obsws(self.host, self.port)
             self.ConeccionOBS.connect()
             self.OBSConectado = True
