@@ -1,4 +1,8 @@
 [{
+  "Nombre": "Youtube",
+  "Titulo": "Youtube",
+  "texto": "https://youtube.com/alswnet?sub_confirmation=1"
+}, {
   "Nombre": "Ayuda Discord",
   "Titulo": "Ayuda",
   "ico": "Recursos/Tutorial/Discord.png",
@@ -17,6 +21,10 @@
   "Nombre": "Noche P",
   "Titulo": "Noche P",
   "texto": "https://nocheprogramacion.com"
+}, {
+  "Nombre": "P News",
+  "Titulo": "P News",
+  "texto": "https://programacion.news"
 }, {
   "Nombre": "C Chatbot",
   "Titulo": "C. Chatbot",
