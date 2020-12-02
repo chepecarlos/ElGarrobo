@@ -1,6 +1,11 @@
 [{
-  "Nombre": "falta",
-  "Titulo": "falta"
+  "Nombre": "Mascara",
+  "Titulo": "Mascara",
+  "Fuente": "Camara",
+  "Filtro": "Mascara",
+  "Estado": false,
+  "icon_true": "Recursos/OBS/VerdeOn.png",
+  "icon_false": "Recursos/OBS/VerdeOff.png"
 }, {
   "Nombre": "Celular",
   "Fuente": "Celular",
@@ -71,11 +76,12 @@
   "icon_true": "Recursos/OBS/LiveOn.png",
   "icon_false": "Recursos/OBS/LiveOff.png"
 }, {
-  "Nombre": "Circuito",
-  "CambiarEsena": "Circuito",
+  "Nombre": "Empezando",
+  "Titulo": "Empezando",
+  "CambiarEsena": "Empezando",
   "Estado": false,
-  "icon_true": "Recursos/OBS/CircuitoOn.png",
-  "icon_false": "Recursos/OBS/CircuitoOff.png"
+  "icon_true": "Recursos/OBS/EmpezandoOn.png",
+  "icon_false": "Recursos/OBS/EmpezandoOff.png"
 }, {
   "Nombre": "Siquiente",
   "ico": "Recursos/OBS/Siquiente.png",
@@ -91,19 +97,18 @@
   "icon_false": "Recursos/OBS/InicioOff.png"
 
 }, {
-  "Nombre": "Empezando",
-  "Titulo": "Empezando",
-  "CambiarEsena": "Empezando",
-  "Estado": false,
-  "icon_true": "Recursos/OBS/EmpezandoOn.png",
-  "icon_false": "Recursos/OBS/EmpezandoOff.png"
-}, {
   "Nombre": "Preguntas",
   "Titulo": "Preguntas",
   "CambiarEsena": "Preguntas",
   "Estado": false,
   "icon_true": "Recursos/OBS/PreguntasOn.png",
   "icon_false": "Recursos/OBS/PreguntasOff.png"
+}, {
+  "Nombre": "Circuito",
+  "CambiarEsena": "Circuito",
+  "Estado": false,
+  "icon_true": "Recursos/OBS/CircuitoOn.png",
+  "icon_false": "Recursos/OBS/CircuitoOff.png"
 }, {
   "Nombre": "Terminando",
   "Titulo": "Terminando",
@@ -112,13 +117,23 @@
   "icon_true": "Recursos/OBS/TerminandoOn.png",
   "icon_false": "Recursos/OBS/TerminandoOff.png"
 }, {
-  "Nombre": "OBSRemoto",
-  "Titulo": "OBSRemoto",
-  "ico": "Recursos/OBS/Ryuk.png",
-  "OBS": "ryuk.local"
-}, {
   "Nombre": "OBSLocal",
   "Titulo": "OBSLocal",
+  "ico": "Recursos/OBS/Ryuk.png",
+  "OBS": "localhost"
+}, {
+  "Nombre": "Cerrar",
+  "Titulo": "Cerrar",
+  "OBS": "Cerrar"
+}, {
+  "Nombre": "Local",
+  "Titulo": "Local",
+  "ico": "Recursos/OBS/Ryuk.png",
+  "OBS": "Server",
+  "Server": "localhost"
+}, {
+  "Nombre": "OBSRemoto",
+  "Titulo": "OBSRemoto",
   "ico": "Recursos/OBS/Umaru.png",
   "OBS": "umaru.local"
 }, {

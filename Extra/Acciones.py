@@ -1,10 +1,13 @@
 import sys
 
+import Extra.MiOBS as MiOBSs
+
 from Extra.Depuracion import Imprimir
 from Extra.Delay import Delay
 from Extra.MiOS import MiOS
 from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
 from Extra.FuncionesProyecto import AbirProyecto
+from Extra.MiOBS import EventoOBS
 
 
 def AgregarStreanDeck(_Deck):
@@ -12,9 +15,15 @@ def AgregarStreanDeck(_Deck):
     Deck = _Deck
 
 
+def AgregarOBS(_MiOBS):
+    global MiOBS
+    MiOBS = _MiOBS
+
+
 def RealizarAccion(Accion):
     global Deck
 
+    # No Saltar extra
     if 'Siquiente' in Accion:
         Deck.BotonesSiquiente(True)
         Deck.ActualizarTodasImagenes(True)
@@ -47,6 +56,8 @@ def RealizarAccion(Accion):
         Delay(Accion['delay'])
     elif 'Proyecto' in Accion:
         AbirProyecto(Accion['Proyecto'])
+    elif 'OBS' in Accion:
+        ActualizarOBS(Accion)
     elif 'Opcion' in Accion:
         if Accion['Opcion'] == "Exit":
             # TODO: ver si esta habierto antes de cerrar
@@ -60,3 +71,25 @@ def RealizarAccion(Accion):
             Imprimir(f"Opcion No Encontrada: {Accion['Opcion']}")
     else:
         Imprimir("Boton - no definida")
+
+
+def ActualizarOBS(Accion):
+    global MiOBS
+    '''Acciones que puede enviarse a OBS_WebSoket'''
+    # print(Accion)
+    if Accion['OBS'] == "Cerrar":
+        MiOBS.DesregistarEvento(EventoOBS)
+        MiOBS.Cerrar()
+        return True
+    elif Accion['OBS'] == "Server" and 'Server' in Accion:
+        AgregarOBS(MiOBSs.MiObsWS())
+        MiOBS.CambiarHost(Accion['Server'])
+        MiOBS.Conectar()
+        MiOBS.RegistarEvento(EventoOBS)
+    else:
+        AgregarOBS(MiOBSs.MiObsWS())
+        MiOBS.CambiarHost(Accion['OBS'])
+        MiOBS.Conectar()
+        MiOBS.RegistarEvento(EventoOBS)
+        return True
+    return False
