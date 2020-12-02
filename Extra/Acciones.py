@@ -93,17 +93,20 @@ def AccionesOBS(Accion):
             MiOBS.CambiarGrabacion()
         elif Accion['OBS'] == "Live":
             MiOBS.CambiarStriming()
+        elif Accion['OBS'] == "Esena":
+            MiOBS.CambiarEsena(Accion['Esena'])
         else:
             Imprimir("No encontramos esta Opcion de OBS")
     else:
         Imprimir("OBS no esta conectado")
 
-def EventoOBS(mensaje):
+
+def EventoOBS(Mensaje):
     '''Escucha y Reaciona a eventos de OBS'''
     global MiOBS
     global Deck
     IdOBS = Deck.BuscarCarpeta(MiOBS.Carpeta)
-    if mensaje.name == "Exiting":
+    if Mensaje.name == "Exiting":
         try:
             print("Cerrando OBS")
             # MiOBS.DesregistarEvento(EventoOBS)
@@ -112,54 +115,54 @@ def EventoOBS(mensaje):
         except Exception as e:
             print(f"No se pudo conectar a OBS - {e}")
             MiOBS.OBSConectado = False
-    elif mensaje.name == 'RecordingStopped':
+    elif Mensaje.name == 'RecordingStopped':
         Imprimir(f'Parado la grabacion - {MiOBS.Carpeta}')
         IdGrabar = Deck.BuscarBoton(IdOBS, 'Rec')
         if IdGrabar != -1:
             Deck.CambiarEstadoBoton(IdOBS, IdGrabar, False)
             Deck.ActualizarTodasImagenes()
-    elif mensaje.name == 'RecordingStarted':
+    elif Mensaje.name == 'RecordingStarted':
         Imprimir(f'Iniciado la grabacion - {MiOBS.Carpeta}')
         IdGrabar = Deck.BuscarBoton(IdOBS, 'Rec')
         if IdGrabar != -1:
             Deck.CambiarEstadoBoton(IdOBS, IdGrabar, True)
             Deck.ActualizarTodasImagenes()
-    elif(mensaje.name == 'StreamStopped'):
+    elif(Mensaje.name == 'StreamStopped'):
         Imprimir("Parando la trasmicion")
         IdLive = Deck.BuscarBoton(IdOBS, 'Live')
         if IdLive != -1:
             Deck.CambiarEstadoBoton(IdOBS, IdLive, False)
             Deck.ActualizarTodasImagenes()
-    elif(mensaje.name == 'StreamStarted'):
+    elif(Mensaje.name == 'StreamStarted'):
         Imprimir("Empezando la trasmicion")
         IdLive = Deck.BuscarBoton(IdOBS, 'Live')
         if IdLive != -1:
             Deck.CambiarEstadoBoton(IdOBS, IdLive, True)
             Deck.ActualizarTodasImagenes()
-    elif(mensaje.name == 'SwitchScenes'):
-        Imprimir(f"Cambia a Esena {mensaje.datain['scene-name']}")
-        # EsenaActiva = BuscarBoton(IdOBS, mensaje.datain['scene-name'])
-        # for tecla in range(len(data['Comando'][IdOBS]['Key'])):
-        #     if EsEsena(IdOBS, tecla):
-        #         if(EsenaActiva == tecla):
-        #             data['Comando'][IdOBS]['Key'][tecla]['Estado'] = True
-        #         else:
-        #             data['Comando'][IdOBS]['Key'][tecla]['Estado'] = False
-        # ActualizarImagenes()
-    elif(mensaje.name == 'SceneItemVisibilityChanged'):
-        NombreIten = mensaje.datain['item-name']
-        EstadoItem = mensaje.datain['item-visible']
+    elif(Mensaje.name == 'SwitchScenes'):
+        Imprimir(f"Cambia a Esena - {Mensaje.datain['scene-name']}")
+        IdEsena = Deck.BuscarBoton(IdOBS, Mensaje.datain['scene-name'])
+        for Boton in range(len(Deck.Data['Comando'][IdOBS]['Key'])):
+            if Deck.EsEsena(IdOBS, Boton):
+                if IdEsena == Boton:
+                    Deck.CambiarEstadoBoton(IdOBS, Boton, True)
+                else:
+                    Deck.CambiarEstadoBoton(IdOBS, Boton, False)
+        Deck.ActualizarTodasImagenes()
+    elif(Mensaje.name == 'SceneItemVisibilityChanged'):
+        NombreIten = Mensaje.datain['item-name']
+        EstadoItem = Mensaje.datain['item-visible']
         # IdItem = BuscarBoton(IdOBS, NombreIten)
         Imprimir(f"Se cambio fuente {NombreIten} - {EstadoItem}")
         # data['Comando'][IdOBS]['Key'][IdItem]['Estado'] = EstadoItem
         # ActualizarImagenes()
-    elif(mensaje.name == 'SourceFilterVisibilityChanged'):
-        NombreFiltro = mensaje.datain['filterName']
-        NombreFuente = mensaje.datain['sourceName']
-        EstadoFiltro = mensaje.datain['filterEnabled']
+    elif(Mensaje.name == 'SourceFilterVisibilityChanged'):
+        NombreFiltro = Mensaje.datain['filterName']
+        NombreFuente = Mensaje.datain['sourceName']
+        EstadoFiltro = Mensaje.datain['filterEnabled']
         Imprimir(f"Se cambio el filtro {NombreFiltro} de {NombreFuente} a {EstadoFiltro}")
         # IdItem = BuscarBoton(IdOBS, NombreFiltro)
         # data['Comando'][IdOBS]['Key'][IdItem]['Estado'] = EstadoFiltro
         # ActualizarImagenes()
     else:
-        Imprimir(f"Evento no procesado de OBS: {mensaje.name}")
+        Imprimir(f"Evento no procesado de OBS: {Mensaje.name}")

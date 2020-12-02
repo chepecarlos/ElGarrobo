@@ -89,3 +89,9 @@ class MiDeck(object):
 
     def CambiarEstadoBoton(self, IdFolder, IdBoton, Estado):
         self.Data['Comando'][IdFolder]['Key'][IdBoton]['Estado'] = Estado
+
+    def EsEsena(self, IdFolder, IdEsena):
+        if 'OBS' in self.Data['Comando'][IdFolder]['Key'][IdEsena]:
+            if self.Data['Comando'][IdFolder]['Key'][IdEsena]['OBS'] == "Esena":
+                return True
+        return False
