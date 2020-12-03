@@ -1,12 +1,15 @@
 [{
-  "Nombre": "Cero",
-  "Titulo": "Cero"
+  "Nombre": "Reiniciar",
+  "Titulo": "Reiniciar",
+  "News": "Reiniciar"
 }, {
   "Nombre": "i--",
-  "Titulo": "i--"
+  "Titulo": "i--",
+  "News": "Anterior"
 }, {
   "Nombre": "i++",
-  "Titulo": "i++"
+  "Titulo": "i++",
+  "News": "Siquiente"
 }, {
   "Nombre": "Verde",
   "OBS": "Filtro",

@@ -61,6 +61,8 @@ def Accion(Accion):
         AccionesOBS(Accion)
     elif 'MQTT' in Accion:
         Imprimir("Cosas de MQTT")
+    elif 'News' in Accion:
+        AccionesNews(Accion)
         # MiMQTT.CambiarHost(accion['MQTT'])
         # MiMQTT.Conectar()
     # elif 'mqtt' in accion:
@@ -182,3 +184,12 @@ def EventoOBS(Mensaje):
         Deck.ActualizarTodasImagenes()
     else:
         Imprimir(f"Evento no procesado de OBS: {Mensaje.name}")
+
+
+def AccionesNews(Accion):
+    if Accion['News'] == "Siquiente":
+        Imprimir("Siquiente Noticia")
+    elif Accion['News'] == "Anterior":
+        Imprimir("Anterior Noticia")
+    elif Accion['News'] == "Reiniciar":
+        Imprimir("Reiniciar Noticia")
