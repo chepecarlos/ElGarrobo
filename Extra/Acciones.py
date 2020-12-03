@@ -59,6 +59,13 @@ def Accion(Accion):
         AbirProyecto(Accion['Proyecto'])
     elif 'OBS' in Accion:
         AccionesOBS(Accion)
+    elif 'MQTT' in Accion:
+        Imprimir("Cosas de MQTT")
+        # MiMQTT.CambiarHost(accion['MQTT'])
+        # MiMQTT.Conectar()
+    # elif 'mqtt' in accion:
+    #     Imprimir(f"Comando MQTT {accion['mqtt']}")
+    #     MiMQTT.Enviando(accion['mqtt'])
     elif 'Opcion' in Accion:
         if Accion['Opcion'] == "Exit":
             # TODO: ver si esta habierto antes de cerrar
