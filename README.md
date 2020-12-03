@@ -23,6 +23,12 @@ Heramienta para aumentar la eficiencia y rapidez, en desarrollo y trabajo en pro
 * Reloc
 * Temperatura
 
+### Instalar
+
+```bash
+pip3 install -r requiraments.txt
+```
+
 ### Comando Ejecuccion
 
 ```bash
