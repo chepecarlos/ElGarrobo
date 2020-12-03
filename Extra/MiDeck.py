@@ -71,6 +71,11 @@ class MiDeck(object):
         else:
             self.DesfaceBoton += self.Deck.key_count()
 
+        if self.DesfaceBoton > 0:
+            self.DesfaceBoton = 0
+        elif -self.DesfaceBoton > len(self.BotonActuales):
+            self.DesfaceBoton += self.Deck.key_count()
+
     def BuscarCarpeta(self, Nombre):
         ComandosFolder = self.Data['Comando']
         for Boton in range(len(ComandosFolder)):
