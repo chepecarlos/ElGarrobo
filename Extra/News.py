@@ -11,6 +11,8 @@ ArchivoID = os.path.abspath(os.path.join(
     os.path.dirname(__file__), "..")) + '/Data/IdNews.json'
 ArchivoTituloNoticias = os.path.abspath(os.path.join(
     os.path.dirname(__file__), "..")) + '/Data/News/TituloNoticia.txt'
+ArchivoTituloAutor = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), "..")) + '/Data/News/TituloAutor.txt'
 
 
 def SalvarArchivoNoticia(Directorio):
@@ -31,7 +33,7 @@ def SalvarIdNoticia(ID):
 
 
 def SalvarTexto(Archivo, Texto):
-    with open(ArchivoTituloNoticias, 'w') as file:
+    with open(Archivo, 'w') as file:
         file.write(Texto)
 
 
@@ -75,6 +77,8 @@ def CargarNoticias():
 
 
 def CambiarNoticia(Cambiar=True):
+    global ArchivoTituloNoticias
+    global ArchivoTituloAutor
     Noticias = CargarNoticias()
     ID = CargarIDNoticia()
     if Cambiar:
@@ -86,20 +90,19 @@ def CambiarNoticia(Cambiar=True):
         ID = 0
     elif ID >= len(Noticias):
         ID = len(Noticias) - 1
-    SalvarNoticia(ID, Noticias[ID])
+    SalvarIdNoticia(ID)
+    SalvarTexto(ArchivoTituloNoticias, Noticias[ID]['title'])
+    if 'author' in Noticias[ID]:
+        SalvarTexto(ArchivoTituloAutor, "Autor: " + Noticias[ID]['author']['name'])
+    else:
+        SalvarTexto(ArchivoTituloAutor, " ")
 
 
 def AsignarNoticia(ID):
+    global ArchivoTituloNoticias
     Noticias = CargarNoticias()
     SalvarIdNoticia(ID)
-    SalvarNoticia(ID, Noticias[ID])
-
-
-def SalvarNoticia(ID, Noticia):
-    global ArchivoTituloNoticias
-    SalvarIdNoticia(ID)
-    Imprimir(f"{ID} - {Noticia['title']}")
-    SalvarTexto(ArchivoTituloNoticias, Noticia['title'])
+    SalvarTexto(ArchivoTituloNoticias, Noticias[ID]['title'])
 
 
 def LinkNoticia():
