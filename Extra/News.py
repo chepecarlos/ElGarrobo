@@ -22,6 +22,7 @@ def SalvarArchivoNoticia(Directorio):
     Imprimir(f"El Archivo de Noticas es {data['Noticia']}")
     with open(ArchivoNoticias, 'w') as file:
         json.dump(data, file, indent=4)
+        AsignarNoticia(0)
 
 
 def SalvarIdNoticia(ID):
