@@ -5,7 +5,7 @@ import yaml
 
 from Extra.Depuracion import Imprimir
 
-Archivo = os.path.abspath(os.path.join(os.path.dirname(__file__), "..")) + '/Recursos/Data.json'
+Archivo = os.path.abspath(os.path.join(os.path.dirname(__file__), "..")) + '/Data/Proyecto.json'
 
 
 def SalvarProyecto(Directorio):

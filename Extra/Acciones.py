@@ -7,7 +7,7 @@ from Extra.Delay import Delay
 from Extra.MiOS import MiOS
 from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
 from Extra.FuncionesProyecto import AbirProyecto
-from Extra.News import CambiarNoticia, AsignarNoticia
+from Extra.News import CambiarNoticia, AsignarNoticia, LinkNoticia
 
 
 def AgregarStreanDeck(_Deck):
@@ -207,3 +207,9 @@ def AccionesNews(Accion):
     elif Accion['News'] == "Reiniciar":
         Imprimir("Reiniciar Noticia")
         AsignarNoticia(0)
+    elif Accion['News'] == "Link":
+        Imprimir("Pegar Link de Noticia")
+        Link = LinkNoticia()
+        ComandoEscribir(Link)
+    else:
+        Imprimir("No accion de News")

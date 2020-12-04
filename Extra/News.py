@@ -98,5 +98,15 @@ def AsignarNoticia(ID):
 def SalvarNoticia(ID, Noticia):
     global ArchivoTituloNoticias
     SalvarIdNoticia(ID)
-    Imprimir(f"{ID} - {Noticia}")
+    Imprimir(f"{ID} - {Noticia['title']}")
     SalvarTexto(ArchivoTituloNoticias, Noticia['title'])
+
+
+def LinkNoticia():
+    Noticias = CargarNoticias()
+    ID = CargarIDNoticia()
+
+    if 'url' in Noticias[ID]:
+        return Noticias[ID]['url']
+    else:
+        return "No Link"

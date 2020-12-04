@@ -1,15 +1,23 @@
 [{
   "Nombre": "Reiniciar",
   "Titulo": "Reiniciar",
+  "ico": "Recursos/News/Reiniciar.png",
   "News": "Reiniciar"
 }, {
-  "Nombre": "i--",
-  "Titulo": "i--",
+  "Nombre": "AnteriorNoticia",
+  "ico": "Recursos/News/Anterior.png",
+  "Titulo": "I--",
   "News": "Anterior"
 }, {
-  "Nombre": "i++",
-  "Titulo": "i++",
+  "Nombre": "SiquienteNoticia",
+  "ico": "Recursos/News/Siquiente.png",
+  "Titulo": "I++",
   "News": "Siquiente"
+}, {
+  "Nombre": "LinkNews",
+  "ico":  "Recursos/News/Link.png",
+  "Titulo": "LinkNews",
+  "News": "Link"
 }, {
   "Nombre": "Verde",
   "OBS": "Filtro",

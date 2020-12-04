@@ -4,7 +4,7 @@
   "Cargar": "Recursos/OBS/Botones.json"
 }, {
   "Nombre": "News",
-  "Titulo": "News",
+  "ico": "Recursos/News/ProgramacionNews.png",
   "Cargar": "Recursos/News/Botones.json"
 }, {
   "Nombre": "Blender",
