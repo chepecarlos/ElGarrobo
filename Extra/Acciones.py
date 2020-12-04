@@ -7,6 +7,7 @@ from Extra.Delay import Delay
 from Extra.MiOS import MiOS
 from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
 from Extra.FuncionesProyecto import AbirProyecto
+from Extra.News import CambiarNoticia, AsignarNoticia
 
 
 def AgregarStreanDeck(_Deck):
@@ -199,7 +200,10 @@ def EventoOBS(Mensaje):
 def AccionesNews(Accion):
     if Accion['News'] == "Siquiente":
         Imprimir("Siquiente Noticia")
+        CambiarNoticia()
     elif Accion['News'] == "Anterior":
         Imprimir("Anterior Noticia")
+        CambiarNoticia(False)
     elif Accion['News'] == "Reiniciar":
         Imprimir("Reiniciar Noticia")
+        AsignarNoticia(0)

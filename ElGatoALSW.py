@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # TODO: agregar git https://python-elgato-streamdeck.readthedocs.io/en/stable/examples/animated.html
+# TODO: Agregar siquiente automaticamente
 # TODO: Reordenar codigo
 # TODO: Emular Raton
 # BUG: Error cargando sin folder
@@ -22,6 +23,7 @@ import Extra.MiDeck as MiDecks
 
 # Cargar funciones de Archivos
 from Extra.FuncionesProyecto import SalvarProyecto, CargarProyecto, AbirProyecto, CargarIdVideo
+from Extra.News import SalvarArchivoNoticia
 from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
 from Extra.Depuracion import Imprimir, CambiarDepuracion
 from Extra.YoutubeChat import SalvarChatYoutube
@@ -47,6 +49,7 @@ parser.add_argument('--deck', '-d', help="Solo usar StreamDeck",  action="store_
 parser.add_argument('--ratom', '-r', help="Solo usar Ratom Razer",  action="store_true")
 parser.add_argument('--nodepurar', '-nd', help="Acivar modo sin depuracion", action="store_true")
 parser.add_argument('--proyecto', '-p', help="Configurar folder a proyecto actual", action="store_true")
+parser.add_argument('--noticias', '-n', help="Configurar folder a noticias actual")
 parser.add_argument('--salvaryoutube', '-sy', help="Salva el chat en un archivo", action="store_true")
 parser.add_argument('--deckdemo', '-dd', help="Solo usar StreamDeck",  action="store_true")
 
@@ -427,6 +430,9 @@ if __name__ == "__main__":
     elif args.proyecto:
         Imprimir("Configurando Folder como Proyecto Actual")
         SalvarProyecto(os.getcwd())
+    elif args.noticias:
+        Imprimir("Configurar Folder para Noticias Actual")
+        SalvarArchivoNoticia(os.getcwd() + "/" + args.noticias)
     elif args.salvaryoutube:
         Imprimir("Emezandoa a guardar Chat en Proyecto Actual")
         SalvarChatYoutube(CargarProyecto(), CargarIdVideo())
