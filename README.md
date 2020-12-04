@@ -3,25 +3,28 @@
 Heramienta para aumentar la eficiencia y rapidez, en desarrollo y trabajo en produccion con diferentes heramientas, compatible con StreamDeck en Linux y multiples teclados
 
 ### Compatible con
-* El Gato StreamDeck
-* OBS_WebSoket
-* control MQTT
-* Linux y Python3
+
+-   El Gato StreamDeck
+-   OBS_WebSoket
+-   control MQTT
+-   Linux y Python3
 
 ### Permite
-* Macros
-* delay
-* Ejecuccion de comando bash
-* Escribir texto
-* Folderes
-* Paginas
-* Abir folder proyecto
+
+-   Macros
+-   delay
+-   Ejecuccion de comando bash
+-   Escribir texto
+-   Folderes
+-   Paginas
+-   Abir folder proyecto
 
 ### Cosas por hacer
-* Gif
-* Sonidos
-* Reloc
-* Temperatura
+
+-   Gif
+-   Sonidos
+-   Reloc
+-   Temperatura
 
 ### Instalar
 
@@ -69,7 +72,6 @@ Control del editor de video
 
 # Ejecuccion
 
-
 ```bash
 python3 ElGatoALSW.py -h
   usage: ElGatoALSW.py [-h] [--master] [--cliente] [--deck] [--ratom]
@@ -80,7 +82,6 @@ python3 ElGatoALSW.py -h
     --cliente, -c  Cargando cliente de ElGatoALSW.py
     --deck, -d     Solo usar StreamDeck
     --ratom, -r    Solo usar Ratom Razer
-
 ```
 
 # Opciones de comando
@@ -88,6 +89,7 @@ python3 ElGatoALSW.py -h
 Folder donde esta las descripcion de cada tecla de StreamDeck es **Botones.json** y las teclas que describen los teclados es **Teclado.json**
 
 ### Info Basica - Obligatorio
+
 Informacion Minima de cada tecla
 
 ```json
@@ -97,6 +99,7 @@ Informacion Minima de cada tecla
 ```
 
 ### Icono - Solo StreamDeck
+
 Imagen con la que se activara la tecla, si no se define una una por defecto
 
 ```json
@@ -106,6 +109,7 @@ Imagen con la que se activara la tecla, si no se define una una por defecto
 ```
 
 ### Titulo Imagen - Solo StreamDeck
+
 Titulo que aparecera debajo de la imagen, en ausencia se hara la imagen en maximo tamaño
 
 ```json
@@ -115,6 +119,7 @@ Titulo que aparecera debajo de la imagen, en ausencia se hara la imagen en maxim
 ```
 
 ### Boton - solo teclado
+
 Definicion de teclas de teclado, tambien se puede definir con mas opciones
 
 ```json
@@ -124,6 +129,7 @@ Definicion de teclas de teclado, tambien se puede definir con mas opciones
 ```
 
 ### Folder StreamDeck
+
 Carga las teclas, que esten guardas dentro de un archivo **Botones.json**
 
 ```json
@@ -134,6 +140,7 @@ Carga las teclas, que esten guardas dentro de un archivo **Botones.json**
 ```
 
 ### Folder Teclado
+
 Carga las configuraciones, que dentro de un folder, el **Raton_Razere** es considerado un teclado
 
 ```json
@@ -144,6 +151,7 @@ Carga las configuraciones, que dentro de un folder, el **Raton_Razere** es consi
 ```
 
 ### Acciones teclado
+
 Preciona la tecla en la pc master, puede ser de una tecla o multiples
 
 ```json
@@ -153,6 +161,7 @@ Preciona la tecla en la pc master, puede ser de una tecla o multiples
 ```
 
 ### Comando Sistema Operativo
+
 Ejecutca un comando en bash en pc master
 
 ```json
@@ -162,6 +171,7 @@ Ejecutca un comando en bash en pc master
 ```
 
 ### Escribir texto
+
 Escribe un texto automaticamente con sierta velocidad
 
 ```json
@@ -171,6 +181,7 @@ Escribe un texto automaticamente con sierta velocidad
 ```
 
 ### Regresar dentro folder
+
 Regresa al inicio de la aplicacion
 
 ```json
@@ -180,6 +191,7 @@ Regresa al inicio de la aplicacion
 ```
 
 ### Siquiente pantalla
+
 Mueve las seleciones a la siquiente pantalla de haberlo
 
 ```json
@@ -189,6 +201,7 @@ Mueve las seleciones a la siquiente pantalla de haberlo
 ```
 
 ### Anterior pantalla
+
 Mueve las seleciones a la anterior pantalla de haberlo
 
 ```json
@@ -198,9 +211,11 @@ Mueve las seleciones a la anterior pantalla de haberlo
 ```
 
 # Comandos OBS
+
 Contro y manejo de OBS Estudio por medio del plugin OBS_WebSoket. Los botones no funcionaran si no se hay coneccion con OBS
 
 ### Conectar OBS
+
 Para conectarse a OBS el programa debe estar encendido y el plugin de OBS_WebSoket activado, dentro de la misma red, el nombre de la pc se una para conectarse
 
 ```json
@@ -210,6 +225,7 @@ Para conectarse a OBS el programa debe estar encendido y el plugin de OBS_WebSok
 ```
 
 ### Empezar/Parar grabacion
+
 Empieza o para la grabacion, cambia de icono si esta definido dependiendo del estado de OBS
 
 ```json
@@ -222,6 +238,7 @@ Empieza o para la grabacion, cambia de icono si esta definido dependiendo del es
 ```
 
 ### Empezar/Parar trasmicion en vivo
+
 Empieza o para la trasmicion en vivo, cambia de icono si esta definido dependiendo del estado de OBS
 
 ```json
@@ -234,6 +251,7 @@ Empieza o para la trasmicion en vivo, cambia de icono si esta definido dependien
 ```
 
 ### Cambia Esena
+
 Cambia Esena y muestra imagen diferente si la esena esta activa dependiendo del estado de OBS
 
 ```json
@@ -246,6 +264,7 @@ Cambia Esena y muestra imagen diferente si la esena esta activa dependiendo del 
 ```
 
 ### Cambia Estado de Fuente
+
 Cambian el estado de visibilidad de una fuente y cambia la imagen en base al estado de OBS
 
 ```json
@@ -258,6 +277,7 @@ Cambian el estado de visibilidad de una fuente y cambia la imagen en base al est
 ```
 
 ### Cambia Estado de Filtro de Fuente
+
 Cambian el estado de visibilidad de un filtro de una fuente y cambia la imagen en base al estado de OBS
 
 ```json
@@ -271,9 +291,11 @@ Cambian el estado de visibilidad de un filtro de una fuente y cambia la imagen e
 ```
 
 ## Comandos MQTT - Computadora Remota
+
 Mandar senales por medio de red a una pc dentro de la red por MQTT
 
 ### Acciones teclas - Computadora Remota
+
 Preciona la tecla en la pc cliente, puede ser de una tecla o multiples
 
 ```json
@@ -283,6 +305,7 @@ Preciona la tecla en la pc cliente, puede ser de una tecla o multiples
 ```
 
 ### Comando Sistema Operativo - Computadora Remota
+
 Preciona la tecla en la pc cliente, puede ser de una tecla o multiples
 
 ```json
@@ -292,6 +315,7 @@ Preciona la tecla en la pc cliente, puede ser de una tecla o multiples
 ```
 
 # Proyecto Activo
+
 Abre el folder del proyecto activo mas parametro
 
 ```json
@@ -301,6 +325,7 @@ Abre el folder del proyecto activo mas parametro
 ```
 
 # Delay o espera
+
 Detine el proceso por cierta cantidad de millisegundos
 
 ```json
@@ -310,6 +335,7 @@ Detine el proceso por cierta cantidad de millisegundos
 ```
 
 # Macro
+
 Ejecuta comandos uno tras otra
 
 ```json
@@ -327,8 +353,36 @@ Ejecuta comandos uno tras otra
 }
 ```
 
+# News
+
+Funciones para programa de Noticias
+
+## Siquiente Noticia
+
+```json
+{
+    "News": "Siquiente"
+}
+```
+
+## Anterior Noticia
+
+```json
+{
+    "News": "Anterior"
+}
+```
+
+## Reiniciar Noticia
+
+```json
+{
+    "News": "Reiniciar"
+}
+```
 
 ### Lista de Teclas disponibles
+
 Lista de teclas disponibles
 
 ```json
