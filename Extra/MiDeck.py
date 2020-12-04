@@ -28,9 +28,10 @@ class MiDeck(object):
             self.Deck.reset()
 
             if 'Brillo' in self.Data:
-                deck.set_brightness(self.Data['Brillo'])
+                self.Deck.set_brightness(self.Data['Brillo'])
             else:
-                deck.set_brightness(50)
+                self.Deck.set_brightness(50)
+                self.Data['Brillo'] = 50
 
             Imprimir(f"Abriendo '{deck.deck_type()}' (Numero Serial: '{deck.get_serial_number()}')")
 
@@ -55,6 +56,15 @@ class MiDeck(object):
 
     def Cerrar(self):
         self.Deck.close()
+
+    def CambiarBrillo(self, Incremento):
+        self.Data['Brillo'] += Incremento
+        if self.Data['Brillo'] > 100:
+            self.Data['Brillo'] = 100
+        elif self.Data['Brillo'] < 0:
+            self.Data['Brillo'] = 0
+        Imprimir(f"Intensidad Brillo StreamDeck - {self.Data['Brillo']}")
+        self.Deck.set_brightness(self.Data['Brillo'])
 
     def ActualizarBoton(self, Deck, IndiceBoton, estado):
         IndiceBoton = IndiceBoton - self.DesfaceBoton

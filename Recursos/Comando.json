@@ -95,6 +95,10 @@
   "ico": "Recursos/Umaru/Umaru.png",
   "Cargar": "Recursos/Umaru/Botones.json"
 }, {
+  "Nombre": "StreamDeck",
+  "Titulo": "StreanDeck",
+  "Cargar": "Recursos/StreamDeck/Botones.json"
+}, {
   "Nombre": "Salir",
   "Titulo": "Salir",
   "Opcion": "Exit"

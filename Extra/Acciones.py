@@ -59,6 +59,8 @@ def Accion(Accion):
         AbirProyecto(Accion['Proyecto'])
     elif 'OBS' in Accion:
         AccionesOBS(Accion)
+    elif "StreamDeck" in Accion:
+        AccionesStreanDeck(Accion)
     elif 'MQTT' in Accion:
         Imprimir("Cosas de MQTT")
     elif 'News' in Accion:
@@ -81,6 +83,14 @@ def Accion(Accion):
             Imprimir(f"Opcion No Encontrada: {Accion['Opcion']}")
     else:
         Imprimir("Boton - no definida")
+
+
+def AccionesStreanDeck(Accion):
+    global Deck
+    if Accion['StreamDeck'] == "SubirBrillo":
+        Deck.CambiarBrillo(5)
+    elif Accion['StreamDeck'] == "BajarBrillo":
+        Deck.CambiarBrillo(-5)
 
 
 def AccionesOBS(Accion):
