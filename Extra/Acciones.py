@@ -8,6 +8,7 @@ from Extra.MiOS import MiOS
 from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
 from Extra.FuncionesProyecto import AbirProyecto
 from Extra.News import CambiarNoticia, AsignarNoticia, LinkNoticia
+from Extra.Sonidos import Reproducir, PararReproducion
 
 
 def AgregarStreanDeck(_Deck):
@@ -66,6 +67,8 @@ def Accion(Accion):
         Imprimir("Cosas de MQTT")
     elif 'News' in Accion:
         AccionesNews(Accion)
+    elif 'Sonido' in Accion:
+        AccionSonido(Accion)
         # MiMQTT.CambiarHost(accion['MQTT'])
         # MiMQTT.Conectar()
     # elif 'mqtt' in accion:
@@ -85,6 +88,12 @@ def Accion(Accion):
     else:
         Imprimir("Boton - no definida")
 
+
+def AccionSonido(Accion):
+    if Accion['Sonido'] == 'Parar':
+        PararReproducion()
+    else:
+        Reproducir(Accion['Sonido'])
 
 def AccionesStreanDeck(Accion):
     global Deck

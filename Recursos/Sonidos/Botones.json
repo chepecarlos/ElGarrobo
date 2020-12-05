@@ -1,0 +1,13 @@
+[{
+  "Nombre": "Parar",
+  "Titulo": "Parar",
+  "Sonido": "Parar"
+}, {
+  "Nombre": "Golpe",
+  "Titulo": "Golpe",
+  "Sonido": "Recursos/Sonidos/Musica.mp3"
+}, {
+  "Nombre": "Aplausos",
+  "Titulo": "Aplausos",
+  "Sonido": "Recursos/Sonidos/Aplausos.pm3"
+}]
