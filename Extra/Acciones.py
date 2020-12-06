@@ -49,8 +49,8 @@ def Accion(Accion):
     elif 'Macro' in Accion:
         for AccionMacro in Accion['Macro']:
             Accion(AccionMacro)
-    elif 'os' in Accion:
-        MiOS(Accion['os'])
+    elif 'OS' in Accion:
+        MiOS(Accion['OS'])
     elif 'tecla' in Accion:
         ComandoTeclas(Accion['tecla'])
     elif 'texto' in Accion:
