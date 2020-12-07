@@ -16,10 +16,9 @@
   "ico": "Recursos/Inskcape/Inskcape.png",
   "Cargar": "Recursos/Inskcape/Botones.json"
 }, {
-  "Nombre": "Arduino",
-  "ico": "Recursos/Arduino/Arduino.png",
-  "Cargar": "Recursos/Arduino/Botones.json",
-  "CargandoRaton": "Recursos/Arduino/Teclado.json"
+  "Nombre": "Sonidos",
+  "ico": "Recursos/Sonidos/Sonidos.png",
+  "Cargar": "Recursos/Sonidos/Botones.json"
 }, {
   "Nombre": "Atom",
   "ico": "Recursos/Atom/Atom.png",
@@ -90,6 +89,11 @@
     "Nombre": "Regresar",
     "Regresar": "True"
   }]
+}, {
+  "Nombre": "Arduino",
+  "ico": "Recursos/Arduino/Arduino.png",
+  "Cargar": "Recursos/Arduino/Botones.json",
+  "CargandoRaton": "Recursos/Arduino/Teclado.json"
 }, {
   "Nombre": "Umaru",
   "ico": "Recursos/Umaru/Umaru.png",

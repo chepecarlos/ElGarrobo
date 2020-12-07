@@ -5,9 +5,29 @@
 }, {
   "Nombre": "Golpe",
   "Titulo": "Golpe",
-  "Sonido": "Recursos/Sonidos/Musica.mp3"
+  "Sonido": "Recursos/Sonidos/Golpe.mp3"
 }, {
   "Nombre": "Aplausos",
   "Titulo": "Aplausos",
-  "Sonido": "Recursos/Sonidos/Aplausos.pm3"
+  "Sonido": "Recursos/Sonidos/Aplausos.mp3"
+}, {
+  "Nombre": "Chan",
+  "Titulo": "ChanChan",
+  "Sonido": "Recursos/Sonidos/CHANCHANCHAAAAN.mp3"
+}, {
+  "Nombre": "Rebotinar",
+  "Titulo": "Rebotinar",
+  "Sonido": "Recursos/Sonidos/CintaRebobinando.mp3"
+}, {
+  "Nombre": "Gritando",
+  "Titulo": "Gritando",
+  "Sonido": "Recursos/Sonidos/MujerGritando.mp3"
+}, {
+  "Nombre": "Sensura",
+  "Titulo": "Sensura",
+  "Sonido": "Recursos/Sonidos/Sensura.mp3"
+}, {
+  "Nombre": "Grillo",
+  "Titulo": "Grillo",
+  "Sonido": "Recursos/Sonidos/Grillo.mp3"
 }]
