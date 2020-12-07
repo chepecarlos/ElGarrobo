@@ -3,6 +3,9 @@ import os
 import sys
 import yaml
 
+# TODO: Icono Link se Apaga cuando no hay LinkNoticia
+# TODO: Contador de ID Noticia Actual / Total Noticias
+# TODO: Macro Sonido de Siquiente Noticia
 from Extra.Depuracion import Imprimir
 
 ArchivoNoticias = os.path.abspath(os.path.join(
@@ -22,7 +25,7 @@ def SalvarArchivoNoticia(Directorio):
     Imprimir(f"El Archivo de Noticas es {data['Noticia']}")
     with open(ArchivoNoticias, 'w') as file:
         json.dump(data, file, indent=4)
-        AsignarNoticia(0)
+    AsignarNoticia(0)
 
 
 def SalvarIdNoticia(ID):
