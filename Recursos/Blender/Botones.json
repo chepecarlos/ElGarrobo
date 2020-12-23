@@ -55,10 +55,6 @@
   "ico": "Recursos/Blender/Panel.png",
   "tecla": ["n"]
 }, {
-  "Nombre": "Siquiente",
-  "ico": "Recursos/OBS/Siquiente.png",
-  "Siquiente": true
-}, {
   "Nombre": "Duplicar",
   "Titulo": "Duplicar",
   "ico": "Recursos/Blender/Duplicar.png",
@@ -117,13 +113,4 @@
 }, {
   "Nombre": "Entrar Agrupar",
   "Titulo": "Entrar agrupar"
-}, {
-  "Titulo": "Anterior",
-  "Nombre": "Anterior",
-  "ico": "Recursos/OBS/Anterior.png",
-  "Anterior": true
-}, {
-  "Nombre": "Regresar",
-  "ico": "Recursos/Blender/Regresar.png",
-  "Regresar": "True"
 }]

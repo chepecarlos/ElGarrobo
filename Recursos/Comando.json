@@ -7,6 +7,10 @@
   "ico": "Recursos/News/ProgramacionNews.png",
   "Cargar": "Recursos/News/Botones.json"
 }, {
+  "Nombre": "Sonidos",
+  "ico": "Recursos/Sonidos/Sonidos.png",
+  "Cargar": "Recursos/Sonidos/Botones.json"
+}, {
   "Nombre": "Blender",
   "ico": "Recursos/Blender/Blender.png",
   "Cargar": "Recursos/Blender/Botones.json",
@@ -15,10 +19,6 @@
   "Nombre": "Inskcape",
   "ico": "Recursos/Inskcape/Inskcape.png",
   "Cargar": "Recursos/Inskcape/Botones.json"
-}, {
-  "Nombre": "Sonidos",
-  "ico": "Recursos/Sonidos/Sonidos.png",
-  "Cargar": "Recursos/Sonidos/Botones.json"
 }, {
   "Nombre": "Atom",
   "ico": "Recursos/Atom/Atom.png",
@@ -106,8 +106,4 @@
   "Nombre": "Salir",
   "Titulo": "Salir",
   "Opcion": "Exit"
-}, {
-  "Nombre": "Anterior",
-  "ico": "Recursos/OBS/Anterior.png",
-  "Anterior": true
 }]
