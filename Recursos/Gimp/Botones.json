@@ -3,10 +3,23 @@
   "Titulo": "Salvar",
   "tecla": ["ctrl", "s"]
 }, {
-  "Nombre": "Salvar2",
-  "Titulo": "Salvar2",
-  "tecla": ["ctrl", "s"]
+  "Nombre": "exportar",
+  "Titulo": "exportar",
+  "tecla": ["ctrl", "shift", "e"]
 }, {
-  "Nombre": "Regresar",
-  "Regresar": "True"
+  "Nombre": "selecion",
+  "Titulo": "selecion",
+  "tecla": ["u"]
+}, {
+  "Nombre": "sel Color",
+  "Titulo": "sel Color",
+  "tecla": ["shift", "o"]
+}, {
+  "Nombre": "borrador",
+  "Titulo": "borrador",
+  "tecla": ["shift", "e"]
+}, {
+  "Nombre": "Sel Cuadro",
+  "Titulo": "Sel Cuadro",
+  "tecla": ["r"]
 }]

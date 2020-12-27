@@ -12,5 +12,6 @@
   "CargandoRaton": "Recursos/Teclado.json",
   "teclado": [],
   "CargandoComando": "Recursos/Comando.json",
-  "Comando": []
+  "Comando": [],
+  "Teclados": "Recursos/Teclados.json"
 }

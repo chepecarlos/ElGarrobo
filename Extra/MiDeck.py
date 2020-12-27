@@ -5,7 +5,7 @@ from Extra.Depuracion import Imprimir
 from Extra.MiDeckImagen import ActualizarIcono, DefinirFuente
 from Extra.Acciones import Accion, AgregarStreanDeck
 from Extra.CargarData import AgregarComodines
-
+# from Extra.TecladoMacro import TecTecladoMacro
 
 class MiDeck(object):
     """docstring for MiMQTT."""
