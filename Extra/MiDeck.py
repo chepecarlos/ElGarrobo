@@ -121,3 +121,5 @@ class MiDeck(object):
                 TecladoActual = TecladoMacros.TecladoMacro(Teclado['Nombre'], Teclado['Input'], Teclado['File'])
                 if TecladoActual.Conectar():
                     self.ListaTeclados.append(TecladoActual)
+            for Teclado in self.ListaTeclados:
+                Teclado.ActualizarTeclas("")

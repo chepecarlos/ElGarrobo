@@ -2,7 +2,7 @@ import threading
 
 from Extra.Depuracion import Imprimir
 from Extra.Acciones import Accion
-
+from Extra.CargarData import ExisteArchivo, CargarValores
 from evdev import InputDevice, categorize, ecodes
 
 
@@ -24,16 +24,21 @@ class TecladoMacro:
             return False
         return True
 
+    def ActualizarTeclas(self, Archivo):
+        if ExisteArchivo(Archivo + "/" + self.File, True):
+            print(f"Cargando Archivo {self.File}")
+            self.TeclasActuales = CargarValores(Archivo + "/" + self.File, True)
+        else:
+            print(f"No se encontro el {Archivo}")
+
     def HiloRaton(self, Teclado):
-        '''Hila del teclado del Raton'''
-        # global ComandosRaton
+        '''Hila del teclado del Teclado'''
         for event in Teclado.read_loop():
             if event.type == ecodes.EV_KEY:
                 key = categorize(event)
                 if key.keystate == key.key_down:
-                    Imprimir(key.keycode)
-                    # for teclas in ComandosRaton:
-                    #     if 'Boton' in teclas:
-                    #         if teclas['Boton'] == key.keycode:
-                    #             Imprimir(f"Raton {key.keycode} - {teclas['Nombre']}")
-                    #             Accion(teclas)
+                    for Boton in self.TeclasActuales:
+                        if 'KEY' in Boton:
+                            if Boton['KEY'] == key.keycode:
+                                Imprimir(f"Tecla Encontrada - {key.keycode}")
+                                Accion(Boton)

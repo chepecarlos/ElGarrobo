@@ -7,12 +7,6 @@
 # Librerias
 import os
 import threading
-import time
-
-# Librerias de ElGato
-from PIL import Image, ImageDraw, ImageFont
-from StreamDeck.DeviceManager import DeviceManager
-from StreamDeck.ImageHelpers import PILHelper
 # Librerias para idenficiar Teclado
 from evdev import InputDevice, categorize, ecodes
 import argparse

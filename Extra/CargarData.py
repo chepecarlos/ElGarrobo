@@ -5,6 +5,7 @@ from Extra.Depuracion import Imprimir
 
 
 def CargarData(Direcion):
+    global Recursos
     """Carga Archivo de comandos y Raton"""
     Data = CargarValores(Direcion)
     if 'Configuraciones' in Data:
@@ -32,9 +33,13 @@ def CargarData(Direcion):
     return Data
 
 
-def CargarValores(Direcion):
+def CargarValores(Direcion, EnRecursos=False):
     """Cargando Data de un Archivo"""
-    archivo = os.path.join(os.path.dirname(__file__), '..') + "/" + Direcion
+    global Recursos
+    if EnRecursos:
+        archivo = os.path.join(os.path.dirname(__file__), '..') + "/" + Recursos + Direcion
+    else:
+        archivo = os.path.join(os.path.dirname(__file__), '..') + "/" + Direcion
     if os.path.exists(archivo):
         with open(archivo) as f:
             return json.load(f)
@@ -43,8 +48,14 @@ def CargarValores(Direcion):
         sys.exit()
 
 
-def ExisteArchivo(Direcion):
-    archivo = os.path.join(os.path.dirname(__file__), '..') + "/" + Direcion
+def ExisteArchivo(Direcion, EnRecursos=False, deputar=False):
+    global Recursos
+    if EnRecursos:
+        archivo = os.path.join(os.path.dirname(__file__), '..') + "/" + Recursos + Direcion
+    else:
+        archivo = os.path.join(os.path.dirname(__file__), '..') + "/" + Direcion
+    if deputar:
+        Imprimir(archivo)
     if os.path.exists(archivo):
         return True
     return False
