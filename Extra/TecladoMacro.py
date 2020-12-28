@@ -16,11 +16,11 @@ class TecladoMacro:
         try:
             self.Teclado = InputDevice(self.Dispisitivo)
             self.Teclado.grab()
-            self.HiloTeclado = threading.Thread(target=self.HiloRaton, args=(self.Teclado,), daemon=True)
+            self.HiloTeclado = threading.Thread(target=self.HiloRaton, args=(self.Teclado,self.Nombre,), daemon=True)
             self.HiloTeclado.start()
             Imprimir(f"Conectando a Teclado {self.Nombre}")
         except:
-            Imprimir(f"Error con Teclado {self.Nombre}")
+            Imprimir(f"No se encontro el Teclado {self.Nombre}")
             return False
         return True
 
@@ -31,7 +31,7 @@ class TecladoMacro:
         else:
             print(f"No se encontro el {Archivo}")
 
-    def HiloRaton(self, Teclado):
+    def HiloRaton(self, Teclado, Nombre):
         '''Hila del teclado del Teclado'''
         for event in Teclado.read_loop():
             if event.type == ecodes.EV_KEY:
@@ -41,8 +41,8 @@ class TecladoMacro:
                     for Boton in self.TeclasActuales:
                         if 'KEY' in Boton:
                             if Boton['KEY'] == key.keycode:
-                                Imprimir(f"Tecla Encontrada - {key.keycode}")
+                                Imprimir(f"Teclado {Nombre} - {key.keycode}")
                                 Accion(Boton)
                                 Encontrado = True
                     if not Encontrado:
-                        Imprimir(f"Tecla Encontrada {key.keycode}")
+                        Imprimir(f"Teclado {Nombre} - No programado {key.keycode}")
