@@ -56,10 +56,6 @@
   "ico": "Recursos/Gimp/Gimp.png",
   "Folder": true
 }, {
-  "Nombre": "Siquiente",
-  "ico": "Recursos/OBS/Siquiente.png",
-  "Siquiente": true
-}, {
   "Nombre": "Audacity",
   "ico": "Recursos/Audacity/Audacity.png",
   "Key": [{
