@@ -10,31 +10,28 @@
   "Nombre": "TomaA",
   "Titulo": "TomaA",
   "Proyecto": "2.TomaA"
-},{
+}, {
   "Nombre": "TomaB",
   "Titulo": "TomaB",
   "Proyecto": "3.TomaB"
-},{
+}, {
   "Nombre": "Audio",
   "Titulo": "Audio",
   "Proyecto": "4.Audio"
-},{
+}, {
   "Nombre": "Recursos",
   "Titulo": "Recursos",
   "Proyecto": "5.Recursos"
-},{
+}, {
   "Nombre": "Render",
   "Titulo": "Render",
   "Proyecto": "6.Render"
-},{
+}, {
   "Nombre": "Miniatura",
   "Titulo": "Miniatura",
   "Proyecto": "7.Miniatura"
-},{
+}, {
   "Nombre": "Gif",
   "Titulo": "Gif",
   "Proyecto": "8.Gif"
-},{
-  "Nombre": "Regresar",
-  "Regresar": "True"
 }]
