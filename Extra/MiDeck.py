@@ -5,7 +5,8 @@ from Extra.Depuracion import Imprimir
 from Extra.MiDeckImagen import ActualizarIcono, DefinirFuente
 from Extra.Acciones import Accion, AgregarStreanDeck
 from Extra.CargarData import AgregarComodines
-# from Extra.TecladoMacro import TecTecladoMacro
+import Extra.TecladoMacro as TecladoMacros
+
 
 class MiDeck(object):
     """docstring for MiMQTT."""
@@ -40,6 +41,8 @@ class MiDeck(object):
         else:
             Imprimir("Fuente no asignada")
             self.Cerrar()
+
+        self.CargarTeclados()
 
         AgregarStreanDeck(self)
         self.BotonActuales = self.Data['StreamDeck']
@@ -110,3 +113,11 @@ class MiDeck(object):
             if self.Data['StreamDeck'][IdFolder]['StreamDeck'][IdEsena]['OBS'] == "Esena":
                 return True
         return False
+
+    def CargarTeclados(self):
+        if 'Teclados' in self.Data:
+            self.ListaTeclados = []
+            for Teclado in self.Data['Teclados']:
+                TecladoActual = TecladoMacros.TecladoMacro(Teclado['Nombre'], Teclado['Input'], Teclado['File'])
+                if TecladoActual.Conectar():
+                    self.ListaTeclados.append(TecladoActual)
