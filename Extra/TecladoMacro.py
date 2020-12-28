@@ -37,8 +37,12 @@ class TecladoMacro:
             if event.type == ecodes.EV_KEY:
                 key = categorize(event)
                 if key.keystate == key.key_down:
+                    Encontrado = False
                     for Boton in self.TeclasActuales:
                         if 'KEY' in Boton:
                             if Boton['KEY'] == key.keycode:
                                 Imprimir(f"Tecla Encontrada - {key.keycode}")
                                 Accion(Boton)
+                                Encontrado = True
+                    if not Encontrado:
+                        Imprimir(f"Tecla Encontrada {key.keycode}")
