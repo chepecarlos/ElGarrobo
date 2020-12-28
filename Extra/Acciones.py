@@ -43,6 +43,7 @@ def Accion(Accion):
         Deck.BotonActuales = Accion['StreamDeck']
         Deck.DesfaceBoton = 0
         Deck.Carpeta = Accion['Nombre']
+        Deck.ConfigurandoTeclados(Accion['Nombre'])
         # if 'teclado' in accion:
         #     Imprimir("Cargando Teclado")
         #     ComandosRaton = accion['teclado']
@@ -62,7 +63,7 @@ def Accion(Accion):
         AbirProyecto(Accion['Proyecto'])
     elif 'OBS' in Accion:
         AccionesOBS(Accion)
-    elif "StreamDeck" in Accion:
+    elif "ConfigDeck" in Accion:
         AccionesStreanDeck(Accion)
     elif 'MQTT' in Accion:
         Imprimir("Cosas de MQTT")
@@ -96,11 +97,12 @@ def AccionSonido(Accion):
     else:
         Reproducir(Accion['Sonido'])
 
+
 def AccionesStreanDeck(Accion):
     global Deck
-    if Accion['StreamDeck'] == "SubirBrillo":
+    if Accion['ConfigDeck'] == "SubirBrillo":
         Deck.CambiarBrillo(5)
-    elif Accion['StreamDeck'] == "BajarBrillo":
+    elif Accion['ConfigDeck'] == "BajarBrillo":
         Deck.CambiarBrillo(-5)
 
 

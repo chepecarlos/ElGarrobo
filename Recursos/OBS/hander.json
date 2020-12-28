@@ -1,0 +1,13 @@
+[{
+  "Nombre": "Play",
+  "KEY": "KEY_SPACE",
+  "texto": "hola mundo OBS"
+}, {
+  "Nombre": "TrimAll",
+  "Boton": "KEY_2",
+  "tecla": ["shift", "t"]
+}, {
+  "Nombre": "quake",
+  "Boton": "KEY_3",
+  "tecla": ["f12"]
+}]

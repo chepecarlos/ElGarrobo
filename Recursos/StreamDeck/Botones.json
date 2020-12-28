@@ -1,9 +1,9 @@
 [{
   "Nombre": "SubirBrillo",
   "Titulo": "SubirBrillo",
-  "StreamDeck": "SubirBrillo"
+  "ConfigDeck": "SubirBrillo"
 }, {
   "Nombre": "BajarBrillo",
   "Titulo": "BajarBrillo",
-  "StreamDeck": "BajarBrillo"
+  "ConfigDeck": "BajarBrillo"
 }]
