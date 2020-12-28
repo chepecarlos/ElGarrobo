@@ -3,6 +3,14 @@
   "ico": "Recursos/OBS/OBS.png",
   "Folder": true
 }, {
+  "Nombre": "News",
+  "ico": "Recursos/News/ProgramacionNews.png",
+  "Folder": true
+}, {
+  "Nombre": "Sonidos",
+  "ico": "Recursos/Sonidos/Sonidos.png",
+  "Folder": true
+}, {
   "Nombre": "Salir",
   "Titulo": "Salir",
   "Opcion": "Exit"
