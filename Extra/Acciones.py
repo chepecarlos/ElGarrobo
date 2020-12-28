@@ -32,14 +32,14 @@ def Accion(Accion):
         Deck.BotonesSiquiente(False)
         Deck.ActualizarTodasImagenes(True)
     elif 'Regresar' in Accion:
-        Deck.BotonActuales = Deck.Data['Comando']
+        Deck.BotonActuales = Deck.Data['StreamDeck']
         # ComandosRaton = data['teclado']
         Deck.DesfaceBoton = 0
         Deck.Carpeta = "Base"
-        Deck.ActualizarTodasImagenes()
-    elif 'Key' in Accion:
+        Deck.ActualizarTodasImagenes(True)
+    elif 'StreamDeck' in Accion:
         Imprimir("Entenado en folder")
-        Deck.BotonActuales = Accion['Key']
+        Deck.BotonActuales = Accion['StreamDeck']
         Deck.DesfaceBoton = 0
         Deck.Carpeta = Accion['Nombre']
         # if 'teclado' in accion:
@@ -180,7 +180,7 @@ def EventoOBS(Mensaje):
     elif(Mensaje.name == 'SwitchScenes'):
         Imprimir(f"Cambia a Esena - {Mensaje.datain['scene-name']}")
         IdEsena = Deck.BuscarBoton(IdOBS, Mensaje.datain['scene-name'])
-        for Boton in range(len(Deck.Data['Comando'][IdOBS]['Key'])):
+        for Boton in range(len(Deck.Data['StreamDeck'][IdOBS]['StreamDeck'])):
             if Deck.EsEsena(IdOBS, Boton):
                 if IdEsena == Boton:
                     Deck.CambiarEstadoBoton(IdOBS, Boton, True)

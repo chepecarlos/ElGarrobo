@@ -22,8 +22,8 @@ class MiDeck(object):
             self.OBSConectado = False
             self.Folder = "Base"
             self.Data = Data
-            if 'Comando' in self.Data:
-                AgregarComodines(self.Data['Comando'], self.Deck.key_count())
+            if 'StreamDeck' in self.Data:
+                AgregarComodines(self.Data['StreamDeck'], self.Deck.key_count())
             self.Deck.open()
             self.Deck.reset()
 
@@ -42,7 +42,7 @@ class MiDeck(object):
             self.Cerrar()
 
         AgregarStreanDeck(self)
-        self.BotonActuales = self.Data['Comando']
+        self.BotonActuales = self.Data['StreamDeck']
         self.ActualizarTodasImagenes()
 
         self.Deck.set_key_callback(self.ActualizarBoton)
@@ -87,7 +87,7 @@ class MiDeck(object):
             self.DesfaceBoton += self.Deck.key_count()
 
     def BuscarCarpeta(self, Nombre):
-        ComandosFolder = self.Data['Comando']
+        ComandosFolder = self.Data['StreamDeck']
         for Boton in range(len(ComandosFolder)):
             if ComandosFolder[Boton]['Nombre'] == Nombre:
                 return Boton
@@ -97,16 +97,16 @@ class MiDeck(object):
         if(IdFolder == -1):
             return -1
         else:
-            BotonesFolder = self.Data['Comando'][IdFolder]['Key']
+            BotonesFolder = self.Data['StreamDeck'][IdFolder]['StreamDeck']
             for tecla in range(len(BotonesFolder)):
                 if BotonesFolder[tecla]['Nombre'] == Nombre:
                     return tecla
 
     def CambiarEstadoBoton(self, IdFolder, IdBoton, Estado):
-        self.Data['Comando'][IdFolder]['Key'][IdBoton]['Estado'] = Estado
+        self.Data['StreamDeck'][IdFolder]['StreamDeck'][IdBoton]['Estado'] = Estado
 
     def EsEsena(self, IdFolder, IdEsena):
-        if 'OBS' in self.Data['Comando'][IdFolder]['Key'][IdEsena]:
-            if self.Data['Comando'][IdFolder]['Key'][IdEsena]['OBS'] == "Esena":
+        if 'OBS' in self.Data['StreamDeck'][IdFolder]['StreamDeck'][IdEsena]:
+            if self.Data['StreamDeck'][IdFolder]['StreamDeck'][IdEsena]['OBS'] == "Esena":
                 return True
         return False

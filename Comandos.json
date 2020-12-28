@@ -1,6 +1,8 @@
 {
   "Brillo": 50,
   "Fuente": "Recursos/Roboto-Black.ttf",
+  "StreamDeck_file": "StreamDeck.json",
+  "Configuraciones": "Recursos",
   "ico_defecto": "Recursos/Defecto.png",
   "ico_Regresar": "Recursos/Regresar.png",
   "ico_Siquiente": "Recursos/Siquiente.png",

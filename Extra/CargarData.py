@@ -7,15 +7,26 @@ from Extra.Depuracion import Imprimir
 def CargarData(Direcion):
     """Carga Archivo de comandos y Raton"""
     Data = CargarValores(Direcion)
-    if 'CargandoRaton' in Data:
-        Data['teclado'] = CargarValores(Data['CargandoRaton'])
-    if 'CargandoComando' in Data:
-        Data['Comando'] = CargarValores(Data['CargandoComando'])
-    for i in range(len(Data['Comando'])):
-        if 'Cargar' in Data['Comando'][i]:
-            Data['Comando'][i]['Key'] = CargarValores(Data['Comando'][i]['Cargar'])
-        if 'CargandoRaton' in Data['Comando'][i]:
-            Data['Comando'][i]['teclado'] = CargarValores(Data['Comando'][i]['CargandoRaton'])
+    if 'Configuraciones' in Data:
+        Recursos = Data['Configuraciones'] + "/"
+    else:
+        Recursos = "Recursos/"
+    if 'StreamDeck_file' in Data:
+        Data['StreamDeck'] = CargarValores(Recursos + Data['StreamDeck_file'])
+    if 'StreamDeck' in Data:
+        for Folder in Data['StreamDeck']:
+            if 'Folder' in Folder:
+                Folder['StreamDeck'] = CargarValores(Recursos + Folder['Nombre'] + "/" + Data['StreamDeck_file'])
+    # if 'CargandoRaton' in Data:
+    #     Data['teclado'] = CargarValores(Data['CargandoRaton'])
+    # if 'CargandoComando' in Data:
+    #     Data['Comando'] = CargarValores(Data['CargandoComando'])
+    # for i in range(len(Data['Comando'])):
+    #     if 'Cargar' in Data['Comando'][i]:
+    #         Data['Comando'][i]['Key'] = CargarValores(Data['Comando'][i]['Cargar'])
+    #     if 'CargandoRaton' in Data['Comando'][i]:
+    #         Data['Comando'][i]['teclado'] = CargarValores(Data['Comando'][i]['CargandoRaton'])
+    # print(Data['StreamDeck'])
     return Data
 
 
@@ -36,8 +47,8 @@ def AgregarComodines(Data, CantidaBotones):
       "Regresar": True
     })
     for Boton in range(len(Data)):
-        if 'Key' in Data[Boton]:
-            AgregarComodines(Data[Boton]['Key'], CantidaBotones)
+        if 'StreamDeck' in Data[Boton]:
+            AgregarComodines(Data[Boton]['StreamDeck'], CantidaBotones)
 
     i = 1
     Insertar = i * CantidaBotones
