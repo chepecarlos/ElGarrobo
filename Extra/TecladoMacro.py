@@ -7,26 +7,33 @@ from evdev import InputDevice, categorize, ecodes
 
 
 class TecladoMacro:
-    def __init__(self, Data):
-        self.BotonesActuales = Data['teclado']
-        Imprimir("Cargando Raton Razer")
-        if 'Raton_Razer' in Data:
-            Raton = InputDevice(Data['Raton_Razer'])
-            Raton.grab()
-            HiloRazer = threading.Thread(target=self.HiloRaton, args=(Raton,), daemon=True)
-            HiloRazer.start()
-        else:
-            Imprimir("Error Teclado: Razer no definido")
+    def __init__(self, Nombre_, Dispisitivo_, File_):
+        self.Nombre = Nombre_
+        self.Dispisitivo = Dispisitivo_
+        self.File = File_
 
-    def HiloRaton(self, Raton):
+    def Conectar(self):
+        try:
+            self.Teclado = InputDevice(self.Dispisitivo)
+            self.Teclado.grab()
+            self.HiloTeclado = threading.Thread(target=self.HiloRaton, args=(self.Teclado,), daemon=True)
+            self.HiloTeclado.start()
+            Imprimir(f"Conectando a Teclado {self.Nombre}")
+        except:
+            Imprimir(f"Error con Teclado {self.Nombre}")
+            return False
+        return True
+
+    def HiloRaton(self, Teclado):
         '''Hila del teclado del Raton'''
-        global ComandosRaton
-        for event in Raton.read_loop():
+        # global ComandosRaton
+        for event in Teclado.read_loop():
             if event.type == ecodes.EV_KEY:
                 key = categorize(event)
                 if key.keystate == key.key_down:
-                    for teclas in ComandosRaton:
-                        if 'Boton' in teclas:
-                            if teclas['Boton'] == key.keycode:
-                                Imprimir(f"Raton {key.keycode} - {teclas['Nombre']}")
-                                Accion(teclas)
+                    Imprimir(key.keycode)
+                    # for teclas in ComandosRaton:
+                    #     if 'Boton' in teclas:
+                    #         if teclas['Boton'] == key.keycode:
+                    #             Imprimir(f"Raton {key.keycode} - {teclas['Nombre']}")
+                    #             Accion(teclas)

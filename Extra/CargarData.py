@@ -17,6 +17,8 @@ def CargarData(Direcion):
         for Folder in Data['StreamDeck']:
             if 'Folder' in Folder:
                 Folder['StreamDeck'] = CargarValores(Recursos + Folder['Nombre'] + "/" + Data['StreamDeck_file'])
+    if 'Teclados_file' in Data:
+        Data['Teclados'] = CargarValores(Recursos + Data['Teclados_file'])
     # if 'CargandoRaton' in Data:
     #     Data['teclado'] = CargarValores(Data['CargandoRaton'])
     # if 'CargandoComando' in Data:
@@ -26,7 +28,7 @@ def CargarData(Direcion):
     #         Data['Comando'][i]['Key'] = CargarValores(Data['Comando'][i]['Cargar'])
     #     if 'CargandoRaton' in Data['Comando'][i]:
     #         Data['Comando'][i]['teclado'] = CargarValores(Data['Comando'][i]['CargandoRaton'])
-    # print(Data['StreamDeck'])
+    # print(Data['Teclados'])
     return Data
 
 
@@ -39,6 +41,13 @@ def CargarValores(Direcion):
     else:
         Imprimir(f"No se Encontro el Archivo: {archivo}")
         sys.exit()
+
+
+def ExisteArchivo(Direcion):
+    archivo = os.path.join(os.path.dirname(__file__), '..') + "/" + Direcion
+    if os.path.exists(archivo):
+        return True
+    return False
 
 
 def AgregarComodines(Data, CantidaBotones):

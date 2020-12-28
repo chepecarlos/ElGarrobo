@@ -1,9 +1,9 @@
 [{
-  "nombre": "nega_trinity",
-  "input": "/dev/input/by-id/usb-Razer_Razer_Naga_Trinity_00000000001A-if02-event-kbd",
-  "archivo": "nega.json"
+  "Nombre": "nega_trinity",
+  "Input": "/dev/input/by-id/usb-Razer_Razer_Naga_Trinity_00000000001A-if02-event-kbd",
+  "File": "nega.json"
 }, {
-  "nombre": "redgraib_one_handed",
-  "input": "/dev/input/by-id/",
-  "archivo": ""
+  "Nombre": "redgraib_one_handed",
+  "Input": "/dev/input/by-id/usb-SONiX_USB_DEVICE-event-kbd",
+  "File": "hander.json"
 }]
