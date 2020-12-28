@@ -69,21 +69,8 @@
   "ico": "Recursos/Tutorial/CerrarTab.png",
   "tecla": ["ctrl", "w"]
 }, {
-  "Titulo": "Siquiente",
-  "Nombre": "Siquiente",
-  "ico": "Recursos/OBS/Siquiente.png",
-  "Siquiente": true
-}, {
   "Nombre": "Terminal",
   "Titulo": "Terminal",
   "ico": "Recursos/Tutorial/Terminal.png",
   "tecla": ["f12"]
-}, {
-  "Titulo": "Anterior",
-  "Nombre": "Anterior",
-  "ico": "Recursos/OBS/Anterior.png",
-  "Anterior": true
-}, {
-  "Nombre": "Regresar",
-  "Regresar": "True"
 }]

@@ -11,6 +11,95 @@
   "ico": "Recursos/Sonidos/Sonidos.png",
   "Folder": true
 }, {
+  "Nombre": "Blender",
+  "ico": "Recursos/Blender/Blender.png",
+  "Folder": true
+}, {
+  "Nombre": "Inskcape",
+  "ico": "Recursos/Inskcape/Inskcape.png",
+  "Folder": true
+}, {
+  "Nombre": "Atom",
+  "ico": "Recursos/Atom/Atom.png",
+  "Folder": true
+}, {
+  "Nombre": "Links",
+  "ico": "Recursos/Links/Links.png",
+  "Folder": true
+}, {
+  "Nombre": "Tutorial",
+  "ico": "Recursos/Tutorial/Tutorial.png",
+  "Folder": true
+}, {
+  "Nombre": "FolderL",
+  "Titulo": "Folder L",
+  "Folder": true
+}, {
+  "Nombre": "FolderR",
+  "Titulo": "Folder R",
+  "ico": "Recursos/FolderR/Folder.png",
+  "Folder": true
+}, {
+  "Nombre": "Jessyink",
+  "ico": "Recursos/Jessyink/Jessyink.png",
+  "Folder": true
+}, {
+  "Nombre": "Extra",
+  "ico": "Recursos/Extra/Extra.png",
+  "Folder": true
+}, {
+  "Nombre": "Proyecto",
+  "ico": "Recursos/Proyecto/Proyecto.png",
+  "Folder": true
+}, {
+  "Nombre": "Gimp",
+  "ico": "Recursos/Gimp/Gimp.png",
+  "Folder": true
+}, {
+  "Nombre": "Siquiente",
+  "ico": "Recursos/OBS/Siquiente.png",
+  "Siquiente": true
+}, {
+  "Nombre": "Audacity",
+  "ico": "Recursos/Audacity/Audacity.png",
+  "Key": [{
+    "Nombre": "Regresar",
+    "Regresar": "True"
+  }]
+}, {
+  "Nombre": "KiCad",
+  "ico": "Recursos/KiCad/KiCad.png",
+  "Key": [{
+    "Nombre": "Regresar",
+    "Regresar": "True"
+  }]
+}, {
+  "Nombre": "Fritzing",
+  "ico": "Recursos/Fritzing/Fritzing.png",
+  "Key": [{
+    "Nombre": "Regresar",
+    "Regresar": "True"
+  }]
+}, {
+  "Nombre": "Processing",
+  "ico": "Recursos/Processing/Processing.png",
+  "Key": [{
+    "Nombre": "Regresar",
+    "Regresar": "True"
+  }]
+}, {
+  "Nombre": "Arduino",
+  "ico": "Recursos/Arduino/Arduino.png",
+  "Folder": true
+}, {
+  "Nombre": "Umaru",
+  "ico": "Recursos/Umaru/Umaru.png",
+  "Folder": true
+}, {
+  "Nombre": "StreamDeck",
+  "Titulo": "StreanDeck",
+  "Folder": true
+}, {
   "Nombre": "Salir",
   "Titulo": "Salir",
   "Opcion": "Exit"

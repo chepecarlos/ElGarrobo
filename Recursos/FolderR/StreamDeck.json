@@ -1,0 +1,65 @@
+[{
+  "Nombre": "Biblioteca",
+  "Titulo": "Biblioteca",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca &"
+}, {
+  "Nombre": "Musica",
+  "Titulo": "Musica",
+  "ico": "Recursos/FolderR/Musica.png",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/3.Sonido/1.Musica &"
+}, {
+  "Nombre": "Sonido",
+  "Titulo": "Sonido",
+  "ico": "Recursos/FolderR/Sonido.png",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/3.Sonido/2.EfectoSonido &"
+}, {
+  "Nombre": "ChepeCarlos",
+  "Titulo": "ChepeCarlos",
+  "ico": "Recursos/FolderR/ChepeCarlos.png",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/4.ChepeCarlos/1.Terminado &"
+}, {
+  "Nombre": "Verde",
+  "Titulo": "Verde",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/2.Video/5.FondoVerde/1.Render &"
+}, {
+  "Nombre": "StoryBlocks",
+  "Titulo": "StoryBlocks",
+  "ico": "Recursos/FolderR/StoryBlocks.png",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/10.StoryBlocks &"
+}, {
+  "Nombre": "Meme",
+  "Titulo": "Meme",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/2.Video/1.Meme &"
+}, {
+  "Nombre": "Abstracto",
+  "Titulo": "Abstracto",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/4.Abstracto/1.Vectores &"
+}, {
+  "Nombre": "Logos",
+  "Titulo": "Logos",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/5.Logos/1.Vectores &"
+}, {
+  "Nombre": "Logos2",
+  "Titulo": "Logos2",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/5.Logos/1.Vectores &"
+}, {
+  "Nombre": "Color",
+  "Titulo": "Color",
+  "ico": "Recursos/FolderR/Color.png",
+  "OS": "atom /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/6.PaletaColor/2.ColoresDigitallesALSW.md &"
+}, {
+  "Nombre": "Tutorial",
+  "Titulo": "Tutorial",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/2.Proyectos/1.Tutorial &"
+}, {
+  "Nombre": "Curso",
+  "Titulo": "Curso",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/2.Proyectos/2.Cursos/2.Libres &"
+}, {
+  "Nombre": "Grabaciones",
+  "Titulo": "Grabaciones",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/2.Proyectos/7.Grabaciones/ &"
+}, {
+  "Nombre": "Regresar",
+  "Regresar": "True"
+}]

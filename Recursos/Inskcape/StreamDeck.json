@@ -1,0 +1,92 @@
+[{
+  "Nombre": "Salvar",
+  "ico": "Recursos/Inskcape/Salvar.png",
+  "tecla": ["ctrl", "s"]
+}, {
+  "Nombre": "Selecion",
+  "ico": "Recursos/Inskcape/Selecion.png",
+  "tecla": ["f1"]
+}, {
+  "Nombre": "Nodo",
+  "ico": "Recursos/Inskcape/Nodo.png",
+  "tecla": ["f2"]
+}, {
+  "Nombre": "curva",
+  "ico": "Recursos/Inskcape/curva.png",
+  "tecla": ["shift", "f6"]
+}, {
+  "Nombre": "Rectangulo",
+  "ico": "Recursos/Inskcape/Rectangulo.png",
+  "tecla": ["f4"]
+}, {
+  "Nombre": "Duplicar",
+  "ico": "Recursos/Inskcape/Duplicar.png",
+  "tecla": ["ctrl", "d"]
+}, {
+  "Nombre": "Texto",
+  "ico": "Recursos/Inskcape/Texto.png",
+  "tecla": ["f8"]
+}, {
+  "Nombre": "Borrar",
+  "ico": "Recursos/Inskcape/Borrar.png",
+  "tecla": ["del"]
+}, {
+  "Nombre": "Aliniar",
+  "ico": "Recursos/Inskcape/Aliniar.png",
+  "tecla": ["shift", "ctrl", "a"]
+}, {
+  "Nombre": "Relleno",
+  "Titulo": "Relleno",
+  "ico": "Recursos/Inskcape/Relleno.png",
+  "tecla": ["shift", "ctrl", "f"]
+}, {
+  "Nombre": "Bajar Fondo",
+  "ico": "Recursos/Inskcape/BajarFondo.png",
+  "tecla": ["end"]
+}, {
+  "Nombre": "Bajar",
+  "ico": "Recursos/Inskcape/Bajar.png",
+  "tecla": ["pagedown"]
+}, {
+  "Nombre": "Suvir",
+  "ico": "Recursos/Inskcape/Suvir.png",
+  "tecla": ["pageup"]
+}, {
+  "Nombre": "Suvir Frente",
+  "ico": "Recursos/Inskcape/SuvirFrente.png",
+  "tecla": ["home"]
+}, {
+  "Titulo": "Siquiente",
+  "Nombre": "Siquiente",
+  "ico": "Recursos/OBS/Siquiente.png",
+  "Siquiente": true
+}, {
+  "Nombre": "Ultimo",
+  "Titulo": "Ultimo",
+  "ico": "Recursos/Inskcape/Nodo.png",
+  "tecla": ["shift", "alt", "q"]
+}, {
+  "Nombre": "RotarI",
+  "ico": "Recursos/Inskcape/RotarI.png",
+  "tecla": ["ctrl", "["]
+}, {
+  "Nombre": "RotarD",
+  "ico": "Recursos/Inskcape/RotarD.png",
+  "tecla": ["ctrl", "]"]
+}, {
+  "Nombre": "ReflejarH",
+  "ico": "Recursos/Inskcape/ReflejarH.png",
+  "tecla": ["h"]
+}, {
+  "Nombre": "ReflejarV",
+  "ico": "Recursos/Inskcape/ReflejarV.png",
+  "tecla": ["v"]
+}, {
+  "Titulo": "Anterior",
+  "Nombre": "Anterior",
+  "ico": "Recursos/OBS/Anterior.png",
+  "Anterior": true
+}, {
+  "Nombre": "Regresar",
+  "Regresar": "True"
+}]
