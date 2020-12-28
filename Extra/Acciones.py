@@ -37,6 +37,7 @@ def Accion(Accion):
         Deck.DesfaceBoton = 0
         Deck.Carpeta = "Base"
         Deck.ActualizarTodasImagenes(True)
+        Deck.ConfigurandoTeclados("")
     elif 'StreamDeck' in Accion:
         Imprimir("Entenado en folder")
         Deck.BotonActuales = Accion['StreamDeck']
