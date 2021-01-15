@@ -1,0 +1,49 @@
+[{
+  "Nombre": "Buscar",
+  "Titulo": "Buscar",
+  "tecla": ["ctrl", "p"]
+}, {
+  "Nombre": "Modo Oscuro",
+  "Titulo": "Modo Oscuro",
+  "tecla": ["ctrl", "shift", "l"]
+}, {
+  "Nombre": "H0",
+  "Titulo": "H0",
+  "tecla": ["ctrl", "shift", "0"]
+}, {
+  "Nombre": "H1",
+  "Titulo": "H1",
+  "tecla": ["ctrl", "shift", "1"]
+}, {
+  "Nombre": "H2",
+  "Titulo": "H2",
+  "tecla": ["ctrl", "shift", "2"]
+}, {
+  "Nombre": "H3",
+  "Titulo": "H3",
+  "tecla": ["ctrl", "shift", "3"]
+}, {
+  "Nombre": "Todo",
+  "Titulo": "Todo",
+  "tecla": ["ctrl", "shift", "4"]
+}, {
+  "Nombre": "Puntos",
+  "Titulo": "Puntos",
+  "tecla": ["ctrl", "shift", "5"]
+}, {
+  "Nombre": "Lista",
+  "Titulo": "Lista",
+  "tecla": ["ctrl", "shift", "6"]
+}, {
+  "Nombre": "Toggle",
+  "Titulo": "Toggle",
+  "tecla": ["ctrl", "shift", "7"]
+}, {
+  "Nombre": "Code",
+  "Titulo": "Code",
+  "tecla": ["ctrl", "shift", "8"]
+}, {
+  "Nombre": "Nueva Pagina",
+  "Titulo": "Nueva Pagina",
+  "tecla": ["ctrl", "shift", "9"]
+}]

@@ -31,13 +31,8 @@
   "ico": "Recursos/Tutorial/Tutorial.png",
   "Folder": true
 }, {
-  "Nombre": "FolderL",
-  "Titulo": "Folder L",
-  "Folder": true
-}, {
-  "Nombre": "FolderR",
-  "Titulo": "Folder R",
-  "ico": "Recursos/FolderR/Folder.png",
+  "Nombre": "Notion",
+  "Titulo": "Notion",
   "Folder": true
 }, {
   "Nombre": "Jessyink",
@@ -94,6 +89,15 @@
 }, {
   "Nombre": "StreamDeck",
   "Titulo": "StreanDeck",
+  "Folder": true
+}, {
+  "Nombre": "FolderL",
+  "Titulo": "Folder L",
+  "Folder": true
+}, {
+  "Nombre": "FolderR",
+  "Titulo": "Folder R",
+  "ico": "Recursos/FolderR/Folder.png",
   "Folder": true
 }, {
   "Nombre": "Salir",
