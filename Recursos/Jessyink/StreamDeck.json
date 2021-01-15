@@ -1,34 +1,31 @@
 [{
   "Nombre": "Instalar",
   "Titulo": "Instalar",
-  "ico": "Recursos/jessyink/Instalar.png",
+  "ico": "Recursos/Jessyink/Instalar.png",
   "tecla": ["shift", "alt", "ctrl", "l"]
 }, {
   "Nombre": "Eliminar",
   "Titulo": "Eliminar",
-  "ico": "Recursos/jessyink/Eliminar.png",
+  "ico": "Recursos/Jessyink/Eliminar.png",
   "tecla": ["shift", "alt", "ctrl", "k"]
 }, {
   "Nombre": "Vista",
   "Titulo": "Vista",
-  "ico": "Recursos/jessyink/Vista.png",
+  "ico": "Recursos/Jessyink/Vista.png",
   "tecla": ["shift", "alt", "ctrl", "j"]
 }, {
   "Nombre": "Efecto",
   "Titulo": "Efecto",
-  "ico": "Recursos/jessyink/Efecto.png",
+  "ico": "Recursos/Jessyink/Efecto.png",
   "tecla": ["shift", "alt", "ctrl", "y"]
 }, {
   "Nombre": "Maestra",
   "Titulo": "Maestra",
-  "ico": "Recursos/jessyink/Maestra.png",
+  "ico": "Recursos/Jessyink/Maestra.png",
   "tecla": ["shift", "alt", "ctrl", "g"]
 }, {
   "Nombre": "AutoText",
   "Titulo": "AutoText",
-  "ico": "Recursos/jessyink/AutoText.png",
+  "ico": "Recursos/Jessyink/AutoText.png",
   "tecla": ["shift", "alt", "ctrl", "f"]
-}, {
-  "Nombre": "Regresar",
-  "Regresar": "True"
 }]
