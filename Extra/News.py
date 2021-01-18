@@ -37,6 +37,8 @@ def SalvarIdNoticia(ID):
 
 
 def SalvarTexto(Archivo, Texto):
+    if(len(Texto) > 50):
+        Texto = Texto + "  -  "
     with open(Archivo, 'w+') as file:
         file.write(Texto)
 
