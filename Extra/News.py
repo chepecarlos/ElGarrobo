@@ -23,7 +23,7 @@ def SalvarArchivoNoticia(Directorio):
     data = {}
     data['Noticia'] = str(Directorio)
     Imprimir(f"El Archivo de Noticas es {data['Noticia']}")
-    with open(ArchivoNoticias, 'w') as file:
+    with open(ArchivoNoticias, 'w+') as file:
         json.dump(data, file, indent=4)
     AsignarNoticia(0)
 
@@ -32,12 +32,12 @@ def SalvarIdNoticia(ID):
     global Archivo
     data = {}
     data['ID'] = str(ID)
-    with open(ArchivoID, 'w') as file:
+    with open(ArchivoID, 'w+') as file:
         json.dump(data, file, indent=4)
 
 
 def SalvarTexto(Archivo, Texto):
-    with open(Archivo, 'w') as file:
+    with open(Archivo, 'w+') as file:
         file.write(Texto)
 
 
@@ -104,9 +104,14 @@ def CambiarNoticia(Cambiar=True):
 
 def AsignarNoticia(ID):
     global ArchivoTituloNoticias
+    global ArchivoTituloAutor
     Noticias = CargarNoticias()
     SalvarIdNoticia(ID)
     SalvarTexto(ArchivoTituloNoticias, Noticias[ID]['title'])
+    if 'author' in Noticias[ID]:
+        SalvarTexto(ArchivoTituloAutor, "Autor: " + Noticias[ID]['author']['name'])
+    else:
+        SalvarTexto(ArchivoTituloAutor, " ")
 
 
 def LinkNoticia():
