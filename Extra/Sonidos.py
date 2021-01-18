@@ -22,6 +22,6 @@ def Reproducir(Archivo):
 
 def PararReproducion():
     global ListaSonidos
-    Imprimir("Parar Reproducion")
+    Imprimir("Parar Reproducion de Sonidos")
     for Sonido in ListaSonidos:
         Sonido.terminate()
