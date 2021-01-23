@@ -47,6 +47,11 @@
   "ico": "Recursos/Proyecto/Proyecto.png",
   "Folder": true
 }, {
+  "Nombre": "RyukPC",
+  "Titulo": "RyukPC",
+  "ico": "Recursos/RyukPC/RyukPC.png",
+  "Folder": true
+}, {
   "Nombre": "Gimp",
   "ico": "Recursos/Gimp/Gimp.png",
   "Folder": true
@@ -93,11 +98,6 @@
 }, {
   "Nombre": "FolderL",
   "Titulo": "Folder L",
-  "Folder": true
-}, {
-  "Nombre": "FolderR",
-  "Titulo": "Folder R",
-  "ico": "Recursos/FolderR/Folder.png",
   "Folder": true
 }, {
   "Nombre": "Salir",

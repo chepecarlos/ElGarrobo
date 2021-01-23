@@ -56,11 +56,6 @@
   "ico": "Recursos/Inskcape/SuvirFrente.png",
   "tecla": ["home"]
 }, {
-  "Titulo": "Siquiente",
-  "Nombre": "Siquiente",
-  "ico": "Recursos/OBS/Siquiente.png",
-  "Siquiente": true
-}, {
   "Nombre": "Ultimo",
   "Titulo": "Ultimo",
   "ico": "Recursos/Inskcape/Nodo.png",
@@ -81,12 +76,4 @@
   "Nombre": "ReflejarV",
   "ico": "Recursos/Inskcape/ReflejarV.png",
   "tecla": ["v"]
-}, {
-  "Titulo": "Anterior",
-  "Nombre": "Anterior",
-  "ico": "Recursos/OBS/Anterior.png",
-  "Anterior": true
-}, {
-  "Nombre": "Regresar",
-  "Regresar": "True"
 }]
