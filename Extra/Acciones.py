@@ -21,63 +21,63 @@ def AgregarOBS(_MiOBS):
     MiOBS = _MiOBS
 
 
-def Accion(Accion):
+def Accion(AccionActual):
     global Deck
 
     # No Saltar extra
-    if 'Siquiente' in Accion:
+    if 'Siquiente' in AccionActual:
         Deck.BotonesSiquiente(True)
         Deck.ActualizarTodasImagenes(True)
-    elif 'Anterior' in Accion:
+    elif 'Anterior' in AccionActual:
         Deck.BotonesSiquiente(False)
         Deck.ActualizarTodasImagenes(True)
-    elif 'Regresar' in Accion:
+    elif 'Regresar' in AccionActual:
         Deck.BotonActuales = Deck.Data['StreamDeck']
         # ComandosRaton = data['teclado']
         Deck.DesfaceBoton = 0
         Deck.Carpeta = "Base"
         Deck.ActualizarTodasImagenes(True)
         Deck.ConfigurandoTeclados("")
-    elif 'StreamDeck' in Accion:
+    elif 'StreamDeck' in AccionActual:
         Imprimir("Entenado en folder")
-        Deck.BotonActuales = Accion['StreamDeck']
+        Deck.BotonActuales = AccionActual['StreamDeck']
         Deck.DesfaceBoton = 0
-        Deck.Carpeta = Accion['Nombre']
-        Deck.ConfigurandoTeclados(Accion['Nombre'])
+        Deck.Carpeta = AccionActual['Nombre']
+        Deck.ConfigurandoTeclados(AccionActual['Nombre'])
         # if 'teclado' in accion:
         #     Imprimir("Cargando Teclado")
         #     ComandosRaton = accion['teclado']
         Deck.ActualizarTodasImagenes(True)
-    elif 'Macro' in Accion:
-        for AccionMacro in Accion['Macro']:
-            Accion(AccionMacro)
-    elif 'OS' in Accion:
-        MiOS(Accion['OS'])
-    elif 'tecla' in Accion:
-        ComandoTeclas(Accion['tecla'])
-    elif 'texto' in Accion:
-        ComandoEscribir(Accion['texto'])
-    elif 'delay' in Accion:
-        Delay(Accion['delay'])
-    elif 'Proyecto' in Accion:
-        AbirProyecto(Accion['Proyecto'])
-    elif 'OBS' in Accion:
-        AccionesOBS(Accion)
-    elif "ConfigDeck" in Accion:
-        AccionesStreanDeck(Accion)
-    elif 'MQTT' in Accion:
+    elif 'Macro' in AccionActual:
+        for AccionMacro in AccionActual['Macro']:
+            Accion(AccionActual)
+    elif 'OS' in AccionActual:
+        MiOS(AccionActual['OS'])
+    elif 'tecla' in AccionActual:
+        ComandoTeclas(AccionActual['tecla'])
+    elif 'texto' in AccionActual:
+        ComandoEscribir(AccionActual['texto'])
+    elif 'delay' in AccionActual:
+        Delay(AccionActual['delay'])
+    elif 'Proyecto' in AccionActual:
+        AbirProyecto(AccionActual['Proyecto'])
+    elif 'OBS' in AccionActual:
+        AccionesOBS(AccionActual)
+    elif "ConfigDeck" in AccionActual:
+        AccionesStreanDeck(AccionActual)
+    elif 'MQTT' in AccionActual:
         Imprimir("Cosas de MQTT")
-    elif 'News' in Accion:
-        AccionesNews(Accion)
-    elif 'Sonido' in Accion:
-        AccionSonido(Accion)
+    elif 'News' in AccionActual:
+        AccionesNews(AccionActual)
+    elif 'Sonido' in AccionActual:
+        AccionSonido(AccionActual)
         # MiMQTT.CambiarHost(accion['MQTT'])
         # MiMQTT.Conectar()
     # elif 'mqtt' in accion:
     #     Imprimir(f"Comando MQTT {accion['mqtt']}")
     #     MiMQTT.Enviando(accion['mqtt'])
-    elif 'Opcion' in Accion:
-        if Accion['Opcion'] == "Exit":
+    elif 'Opcion' in AccionActual:
+        if AccionActual['Opcion'] == "Exit":
             # TODO: ver si esta habierto antes de cerrar
             Imprimir("Saliendo ElGatoALSW - Adios :) ")
             CerrarOBS()
@@ -86,49 +86,49 @@ def Accion(Accion):
             # MiDeck.reset()
             # MiDeck.close()
         else:
-            Imprimir(f"Opcion No Encontrada: {Accion['Opcion']}")
+            Imprimir(f"Opcion No Encontrada: {AccionActual['Opcion']}")
     else:
         Imprimir("Boton - no definida")
 
 
-def AccionSonido(Accion):
-    if Accion['Sonido'] == 'Parar':
+def AccionSonido(AccionActual):
+    if AccionActual['Sonido'] == 'Parar':
         PararReproducion()
     else:
-        Reproducir(Accion['Sonido'])
+        Reproducir(AccionActual['Sonido'])
 
 
-def AccionesStreanDeck(Accion):
+def AccionesStreanDeck(AccionActual):
     global Deck
-    if Accion['ConfigDeck'] == "SubirBrillo":
+    if AccionActual['ConfigDeck'] == "SubirBrillo":
         Deck.CambiarBrillo(5)
-    elif Accion['ConfigDeck'] == "BajarBrillo":
+    elif AccionActual['ConfigDeck'] == "BajarBrillo":
         Deck.CambiarBrillo(-5)
 
 
-def AccionesOBS(Accion):
+def AccionesOBS(AccionActual):
     '''Acciones que puede enviarse a OBS_WebSoket'''
     global MiOBS
     global Deck
-    if Accion['OBS'] == "Server" and 'Server' in Accion:
+    if AccionActual['OBS'] == "Server" and 'Server' in AccionActual:
         AgregarOBS(MiOBSs.MiObsWS(Deck.Carpeta))
-        MiOBS.CambiarHost(Accion['Server'])
+        MiOBS.CambiarHost(AccionActual['Server'])
         MiOBS.Conectar()
         MiOBS.RegistarEvento(EventoOBS)
         Deck.OBSConectado = True
     elif Deck.OBSConectado:
-        if Accion['OBS'] == "Cerrar":
+        if AccionActual['OBS'] == "Cerrar":
             CerrarOBS()
-        elif Accion['OBS'] == "Grabar":
+        elif AccionActual['OBS'] == "Grabar":
             MiOBS.CambiarGrabacion()
-        elif Accion['OBS'] == "Live":
+        elif AccionActual['OBS'] == "Live":
             MiOBS.CambiarStriming()
-        elif Accion['OBS'] == "Esena":
-            MiOBS.CambiarEsena(Accion['Esena'])
-        elif Accion['OBS'] == "Fuente":
-            MiOBS.CambiarFuente(Accion['Fuente'], not Accion['Estado'])
-        elif Accion['OBS'] == "Filtro":
-            MiOBS.CambiarFiltro(Accion['Fuente'], Accion['Filtro'], not Accion['Estado'])
+        elif AccionActual['OBS'] == "Esena":
+            MiOBS.CambiarEsena(AccionActual['Esena'])
+        elif AccionActual['OBS'] == "Fuente":
+            MiOBS.CambiarFuente(AccionActual['Fuente'], not AccionActual['Estado'])
+        elif AccionActual['OBS'] == "Filtro":
+            MiOBS.CambiarFiltro(AccionActual['Fuente'], AccionActual['Filtro'], not AccionActual['Estado'])
         else:
             Imprimir("No encontramos esta Opcion de OBS")
     else:
@@ -209,17 +209,17 @@ def EventoOBS(Mensaje):
         Imprimir(f"Evento no procesado de OBS: {Mensaje.name}")
 
 
-def AccionesNews(Accion):
-    if Accion['News'] == "Siquiente":
+def AccionesNews(AccionActual):
+    if AccionActual['News'] == "Siquiente":
         Imprimir("Siquiente Noticia")
         CambiarNoticia()
-    elif Accion['News'] == "Anterior":
+    elif AccionActual['News'] == "Anterior":
         Imprimir("Anterior Noticia")
         CambiarNoticia(False)
-    elif Accion['News'] == "Reiniciar":
+    elif AccionActual['News'] == "Reiniciar":
         Imprimir("Reiniciar Noticia")
         AsignarNoticia(0)
-    elif Accion['News'] == "Link":
+    elif AccionActual['News'] == "Link":
         Imprimir("Pegar Link de Noticia")
         Link = LinkNoticia()
         ComandoEscribir(Link)
