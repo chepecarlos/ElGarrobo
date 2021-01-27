@@ -1,3 +1,4 @@
+# https://github.com/Elektordi/obs-websocket-py
 from obswebsocket import obsws, requests, events
 
 

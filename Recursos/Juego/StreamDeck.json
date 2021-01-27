@@ -1,0 +1,34 @@
+[{
+  "Nombre": "Juego",
+  "Titulo": "Juego",
+  "Macro": [{
+    "OBS": "Esena",
+    "Esena": "Juego",
+    "Estado": true,
+    "icon_true": "Recursos/OBS/CodigoOn.png",
+    "icon_false": "Recursos/OBS/CodigoOff.png"
+  }]
+}, {
+  "Nombre": "Rostro",
+  "Titulo": "Rostro",
+  "Macro": [{
+    "OBS": "Esena",
+    "Esena": "Rostro",
+    "Estado": true,
+    "icon_true": "Recursos/OBS/CodigoOn.png",
+    "icon_false": "Recursos/OBS/CodigoOff.png"
+  }]
+}, {
+  "Nombre": "Camara",
+  "OBS": "Fuente",
+  "Fuente": "Camara",
+  "Estado": true,
+  "icon_true": "Recursos/OBS/CamaraOn.png",
+  "icon_false": "Recursos/OBS/CamaraOff.png"
+}, {
+  "Nombre": "Local",
+  "Titulo": "Local",
+  "ico": "Recursos/OBS/Ryuk.png",
+  "OBS": "Server",
+  "Server": "localhost"
+}]

@@ -1,14 +1,22 @@
 import os
-import subprocess
+# import subprocess
 import multiprocessing
 from Extra.Depuracion import Imprimir
+
+import simpleaudio as sa
 
 ListaSonidos = []
 
 
 def Sonido(Archivo):
-    subprocess.run(['play', Archivo], capture_output=True)
-
+    try:
+        sound = sa.WaveObject.from_wave_file(Archivo)
+        Repoductor = sound.play()
+        print(f"Empezar a repoducir {Archivo}")
+        Repoductor.wait_done()
+        print(f"Terminando de repoducir {Archivo}")
+    except FileNotFoundError:
+        print(f"No se encontro {Archivo}")
 
 def Reproducir(Archivo):
     global ListaSonidos

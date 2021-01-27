@@ -50,7 +50,7 @@ def Accion(AccionActual):
         Deck.ActualizarTodasImagenes(True)
     elif 'Macro' in AccionActual:
         for AccionMacro in AccionActual['Macro']:
-            Accion(AccionActual)
+            Accion(AccionMacro)
     elif 'OS' in AccionActual:
         MiOS(AccionActual['OS'])
     elif 'tecla' in AccionActual:
@@ -146,6 +146,7 @@ def CerrarOBS():
 
 def EventoOBS(Mensaje):
     '''Escucha y Reaciona a eventos de OBS'''
+    Imprimir(Mensaje.name)
     global MiOBS
     global Deck
     IdOBS = Deck.BuscarCarpeta(MiOBS.Carpeta)
