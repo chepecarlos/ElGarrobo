@@ -1,6 +1,11 @@
 # Data Temrporal
 Data/*
+
+# Carpeta de Demos
+demo
+# Archivos de Audio
 *.mp3
+*.wav
 
 
 # Byte-compiled / optimized / DLL files
