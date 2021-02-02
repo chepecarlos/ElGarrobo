@@ -8,7 +8,7 @@
   "Folder": true
 }, {
   "Nombre": "Juego",
-  "Titulo": "Juego",
+  "ico": "Recursos/Juego/Juego.png",
   "Folder": true
 }, {
   "Nombre": "Sonidos",
