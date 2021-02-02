@@ -76,4 +76,12 @@
   "Nombre": "ReflejarV",
   "ico": "Recursos/Inskcape/ReflejarV.png",
   "tecla": ["v"]
+}, {
+  "Nombre": "Recortar",
+  "Titulo": "Recortar",
+  "tecla": ["ctrl", "shift", "i"]
+}, {
+  "Nombre": "Liberrar",
+  "Titulo": "Liberrar",
+  "tecla": ["ctrl", "shift", "u"]
 }]
