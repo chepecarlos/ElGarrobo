@@ -1,12 +1,33 @@
 [{
   "Nombre": "Biblioteca",
   "Titulo": "Biblioteca",
+  "ico": "Recursos/RyukPC/Biblioteca.png",
   "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca &"
+}, {
+  "Nombre": "Logos",
+  "Titulo": "Logos",
+  "ico": "Recursos/RyukPC/Logos.png",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/5.Logos/1.Vectores &"
+}, {
+  "Nombre": "Fondos",
+  "Titulo": "Fondos",
+  "ico": "Recursos/RyukPC/Fondos.png",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/1.Fondos/2.MapaBits &"
+}, {
+  "Nombre": "Circuitos",
+  "Titulo": "Circuitos",
+  "ico": "Recursos/RyukPC/Circuitos.png",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/3.Objetos/2.MapaBits/1.Circuitos &"
 }, {
   "Nombre": "Musica",
   "Titulo": "Musica",
   "ico": "Recursos/RyukPC/Musica.png",
   "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/3.Sonido/1.Musica &"
+}, {
+  "Nombre": "Indicadores",
+  "Titulo": "Indicadores",
+  "ico": "Recursos/RyukPC/Indicadores.png",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/7.Indicadores &"
 }, {
   "Nombre": "Sonido",
   "Titulo": "Sonido",
@@ -17,10 +38,6 @@
   "Titulo": "ChepeCarlos",
   "ico": "Recursos/RyukPC/ChepeCarlos.png",
   "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/4.ChepeCarlos/1.Terminado &"
-}, {
-  "Nombre": "Verde",
-  "Titulo": "Verde",
-  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/2.Video/5.FondoVerde/1.Render &"
 }, {
   "Nombre": "StoryBlocks",
   "Titulo": "StoryBlocks",
@@ -35,14 +52,6 @@
   "Titulo": "Abstracto",
   "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/4.Abstracto/1.Vectores &"
 }, {
-  "Nombre": "Logos",
-  "Titulo": "Logos",
-  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/5.Logos/1.Vectores &"
-}, {
-  "Nombre": "Logos2",
-  "Titulo": "Logos2",
-  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/5.Logos/1.Vectores &"
-}, {
   "Nombre": "Color",
   "Titulo": "Color",
   "ico": "Recursos/RyukPC/Color.png",
@@ -56,11 +65,11 @@
   "Titulo": "Curso",
   "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/2.Proyectos/2.Cursos/2.Libres &"
 }, {
-  "Nombre": "Circuitos",
-  "Titulo": "Circuitos",
-  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/3.Objetos/2.MapaBits/1.Circuitos &"
-}, {
   "Nombre": "Grabaciones",
   "Titulo": "Grabaciones",
   "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/2.Proyectos/7.Grabaciones/ &"
+}, {
+  "Nombre": "Verde",
+  "Titulo": "Verde",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/2.Video/5.FondoVerde/1.Render &"
 }]
