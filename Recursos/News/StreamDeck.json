@@ -23,6 +23,7 @@
   "Titulo": "Contador"
 }, {
   "Nombre": "Mover",
+  "Titulo": "Mover",
   "OBS": "Filtro",
   "Fuente": "TextoNoticia",
   "Filtro": "Mover",

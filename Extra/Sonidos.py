@@ -1,9 +1,7 @@
 import os
-# import subprocess
 import multiprocessing
-from Extra.Depuracion import Imprimir
-
 import simpleaudio as sa
+from Extra.Depuracion import Imprimir
 
 ListaSonidos = []
 
@@ -17,6 +15,7 @@ def Sonido(Archivo):
         print(f"Terminando de repoducir {Archivo}")
     except FileNotFoundError:
         print(f"No se encontro {Archivo}")
+
 
 def Reproducir(Archivo):
     global ListaSonidos

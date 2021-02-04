@@ -1,13 +1,37 @@
 [{
-  "Nombre": "Play",
+  "Nombre": "Parar",
   "KEY": "KEY_SPACE",
-  "texto": "hola mundo"
+  "Sonido": "Parar"
 }, {
-  "Nombre": "TrimAll",
-  "Boton": "KEY_2",
-  "tecla": ["shift", "t"]
+  "Nombre": "Golpe",
+  "KEY": "KEY_F5",
+  "Sonido": "Recursos/Sonidos/Clips/Golpe.wav"
 }, {
-  "Nombre": "quake",
-  "Boton": "KEY_3",
-  "tecla": ["f12"]
+  "Nombre": "Aplausos",
+  "KEY": "KEY_F4",
+  "Sonido": "Recursos/Sonidos/Clips/Aplausos.wav"
+}, {
+  "Nombre": "Chan",
+  "KEY": "KEY_F1",
+  "Sonido": "Recursos/Sonidos/Clips/Chan.wav"
+}, {
+  "Nombre": "Activar",
+  "KEY": "KEY_GRAVE",
+  "tecla": ["f9"]
+}, {
+  "Nombre": "Limpiar",
+  "KEY": "KEY_1",
+  "tecla": ["shift", "f9"]
+}, {
+  "Nombre": "Ocultar",
+  "KEY": "KEY_2",
+  "tecla": ["ctrl", "f9"]
+}, {
+  "Nombre": "Desacer",
+  "KEY": "KEY_3",
+  "tecla": ["f10"]
+}, {
+  "Nombre": "Reacer",
+  "KEY": "KEY_4",
+  "tecla": ["shift", "f10"]
 }]

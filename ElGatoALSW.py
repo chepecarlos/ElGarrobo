@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
 # TODO: agregar git https://python-elgato-streamdeck.readthedocs.io/en/stable/examples/animated.html
 # Librerias
 import os

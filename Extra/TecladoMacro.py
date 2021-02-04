@@ -16,7 +16,7 @@ class TecladoMacro:
         try:
             self.Teclado = InputDevice(self.Dispisitivo)
             self.Teclado.grab()
-            self.HiloTeclado = threading.Thread(target=self.HiloRaton, args=(self.Teclado,self.Nombre,), daemon=True)
+            self.HiloTeclado = threading.Thread(target=self.HiloRaton, args=(self.Teclado, self.Nombre,), daemon=True)
             self.HiloTeclado.start()
             Imprimir(f"Conectando a Teclado {self.Nombre}")
         except:

@@ -5,15 +5,15 @@
 }, {
   "Nombre": "Golpe",
   "Titulo": "Golpe",
-  "Sonido": "Recursos/Sonidos/Golpe.mp3"
+  "Sonido": "Recursos/Sonidos/Clips/Golpe.wav"
 }, {
   "Nombre": "Aplausos",
   "Titulo": "Aplausos",
-  "Sonido": "Recursos/Sonidos/Aplausos.mp3"
+  "Sonido": "Recursos/Sonidos/Clips/Aplausos.wav"
 }, {
   "Nombre": "Chan",
   "Titulo": "ChanChan",
-  "Sonido": "Recursos/Sonidos/CHANCHANCHAAAAN.mp3"
+  "Sonido": "Recursos/Sonidos/Clips/Chan.wav"
 }, {
   "Nombre": "Rebotinar",
   "Titulo": "Rebotinar",

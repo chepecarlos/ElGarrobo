@@ -1,14 +1,9 @@
 
 # Instalacion
 
-TODO: Competar instucciones de instalacio
+TODO: Competar instucciones de Instalacion
 
-Confirmar que se tiene python3
-```bash
-python3 --version
-```
-
-Pasos para instalacion
+### Instalacion de Python y Git
 
 ```bash
 sudo apt update
@@ -17,17 +12,31 @@ git clone https://github.com/chepecarlos/ElGatoALSW.git
 cd ElGatoALSW
 ```
 
+### Instalar Paquetes de Python3
+
+```bash
+pip3 install -r requiraments.txt
+```
+
+```bash
+pip3 freeze > paquetes.txt
+```
+
 ### Configuraciones de StreamDeck
 ```bash
-sudo apt install -y libhidapi-hidraw0 libudev-dev libusb-1.0-0-dev
-sudo apt install -y libhidapi-libusb0
-sudo apt install -y libudev-dev libusb-1.0-0-dev libhidapi-libusb0
-sudo apt install -y libjpeg-dev zlib1g-dev
+sudo apt install -y libhidapi-hidraw0 libudev-dev libusb-1.0-0-dev libhidapi-libusb0 zlib1g-dev
 sudo usermod -a -G plugdev `whoami`
 pip3 install wheel
 pip3 install pillow
 ```
-Agregar
+
+### Repoducion Sonidos
+```bash
+sudo apt-get install -y python3-dev libasound2-dev
+```
+
+### Crear y Agregar e los archivos
+
 sudo nano /etc/udev/rules.d/10-streamdeck.rules
 ```bash
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0fd9", GROUP="users"
@@ -45,14 +54,15 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="006d", MODE:="660"
 sudo udevadm control --reload-rules
 pip3 install streamdeck
 ```
+# Teclados Extras
+
+```bash
+sudo usermod -a -G input $USER
+```
 
 
 ## funciones
 
 ```bash
-pip3 install evdev
 pip3 install argparse
-pip3 install obs-websocket-py
-pip3 install pyautogui
-pip3 install paho-mqtt
 ```
