@@ -15,7 +15,7 @@ from Extra.Depuracion import Imprimir, CambiarDepuracion
 from Extra.YoutubeChat import SalvarChatYoutube
 from Extra.CargarData import CargarData
 from Extra.Hilos import CargarHilo
-from Extra.FuncionesBlender import CrearProxy
+from Extra.FuncionesBlender import CrearProxy, RenderizarVideo
 
 
 parser = argparse.ArgumentParser(description='Heramienta de creacion de contenido de ALSW')
@@ -29,6 +29,7 @@ parser.add_argument('--noticias', '-n', help="Configurar folder a noticias actua
 parser.add_argument('--salvaryoutube', '-sy', help="Salva el chat en un archivo", action="store_true")
 parser.add_argument('--deckdemo', '-dd', help="Solo usar StreamDeck",  action="store_true")
 parser.add_argument('--blenderproxy', '-bp', help="Creando proxy de Blender",  action="store_true")
+parser.add_argument('--blenderrenderizar', '-br', help="Empezando a Renderizar Video")
 
 # Principal
 if __name__ == "__main__":
@@ -70,7 +71,10 @@ if __name__ == "__main__":
         CargarHilo()
     elif args.blenderproxy:
         Imprimir("Empezando a crear proxy")
-        CrearProxy()
+        CrearProxy(os.getcwd())
+    elif args.blenderrenderizar:
+        Imprimir("Empezando a Renderizar video")
+        RenderizarVideo(args.blenderrenderizar)
     else:
         Imprimir("No parametro")
         data = CargarData('Comandos.json')
