@@ -1,12 +1,32 @@
 from Extra.MiCharBot import EnviarMensaje
 from Extra.Depuracion import Imprimir
+from Extra.SubProceso import EmpezarSubProceso
+import time
+import datetime
+
+IDChat = 30085334
 
 
 def CrearProxy(Directorio):
-    EnviarMensaje(30085334, ("Empezar a crear <b>Proxy</b> " + Directorio))
-    print(Directorio)
+    global IDChat
+    Inicio = time.time()
+    EnviarMensaje(IDChat, ("<b>Empezar</b> a crear Proxy" + Directorio))
+
+    comando = ['bpsproxy']
+    EstadoPreceso = EmpezarSubProceso(comando)
+
+    Final = time.time()
+    Tiempo = round(Final - Inicio)
+    Tiempo = str(datetime.timedelta(seconds=Tiempo))
+    if EstadoPreceso == 0:
+        Imprimir(f"Finalizo creacion de proxy {Tiempo} {Directorio}")
+        EnviarMensaje(IDChat, ("<b>Finalizo</b> creacion de proxy " + Tiempo + " - " + Directorio))
+    else:
+        Imprimir(f"ERROR {EstadoPreceso} creacion de proxy {Tiempo} {Directorio} ")
+        EnviarMensaje(IDChat, ("<b>ERROR</b> " + EstadoPreceso + "creacion de proxy" + Tiempo + " - " + Directorio))
 
 
 def RenderizarVideo(Archivo):
-    EnviarMensaje(30085334, ("Empezar a <b>Rendizar Video</b> " + Archivo))
+    global IDChat
+    EnviarMensaje(IDChat, ("Empezar a <b>Rendizar Video</b> " + Archivo))
     print(Archivo)
