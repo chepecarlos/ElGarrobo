@@ -9,9 +9,9 @@ IDChat = 30085334
 
 def CrearProxy(Directorio):
     global IDChat
-    Inicio = time.time()
     EnviarMensaje(IDChat, ("<b>Empezar</b> a crear Proxy" + Directorio))
 
+    Inicio = time.time()
     comando = ['bpsproxy']
     EstadoPreceso = EmpezarSubProceso(comando)
 
@@ -30,3 +30,16 @@ def RenderizarVideo(Archivo):
     global IDChat
     EnviarMensaje(IDChat, ("Empezar a <b>Rendizar Video</b> " + Archivo))
     print(Archivo)
+    Inicio = time.time()
+    comando = ['bpsrender', Archivo]
+    EstadoPreceso = EmpezarSubProceso(comando)
+
+    Final = time.time()
+    Tiempo = round(Final - Inicio)
+    Tiempo = str(datetime.timedelta(seconds=Tiempo))
+    if EstadoPreceso == 0:
+        Imprimir(f"Finalizo la renderizacion {Tiempo} {Archivo}")
+        EnviarMensaje(IDChat, ("<b>Finalizo</b> la renderizacion " + Tiempo + " - " + Archivo))
+    else:
+        Imprimir(f"ERROR {EstadoPreceso} la renderizacion {Tiempo} {Archivo} ")
+        EnviarMensaje(IDChat, ("<b>ERROR</b> " + EstadoPreceso + "la renderizacion" + Tiempo + " - " + Archivo))
