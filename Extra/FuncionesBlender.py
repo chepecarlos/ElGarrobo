@@ -4,8 +4,6 @@ from Extra.SubProceso import EmpezarSubProceso
 import time
 import datetime
 
-IDChat = 30085334
-
 
 def CrearProxy(Directorio):
     global IDChat
