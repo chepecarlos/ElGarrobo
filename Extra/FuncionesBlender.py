@@ -46,6 +46,7 @@ def RenderizarVideo(Archivo):
 
 
 def BorrarTemporalesBender(Directorio):
+    # TODO: no entrar en folder ocultos
     print(f"Emezando a borrar {Directorio}")
 
     Ruta_Actual = os.getcwd()
