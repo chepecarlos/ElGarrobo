@@ -3,6 +3,8 @@ from Extra.Depuracion import Imprimir
 from Extra.SubProceso import EmpezarSubProceso
 import time
 import datetime
+import os
+import shutil
 
 
 def CrearProxy(Directorio):
@@ -41,3 +43,20 @@ def RenderizarVideo(Archivo):
     else:
         Imprimir(f"ERROR {EstadoPreceso} la renderizacion {Tiempo} {Archivo} ")
         EnviarMensaje("<b>ERROR</b> " + EstadoPreceso + "la renderizacion" + Tiempo + " - " + Archivo)
+
+
+def BorrarTemporalesBender(Directorio):
+    print(f"Emezando a borrar {Directorio}")
+
+    Ruta_Actual = os.getcwd()
+    num_directorios = 0
+    linea = '-' * 60
+
+    for ruta, directorios, archivos in os.walk(Ruta_Actual, topdown=True):
+        for directorio in directorios:
+            if(directorio == Directorio):
+                num_directorios += 1
+                print(f"Borrar {ruta} {directorio}")
+                shutil.rmtree(os.path.join(ruta, directorio))
+    print(linea)
+    print(f'Cantidad de folder {Directorio} eliminados: {num_directorios}')

@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# TODO: agregar git https://python-elgato-streamdeck.readthedocs.io/en/stable/examples/animated.html
+# TODO: agregar gif https://python-elgato-streamdeck.readthedocs.io/en/stable/examples/animated.html
 # Librerias
 import os
 import argparse
@@ -15,7 +15,7 @@ from Extra.Depuracion import Imprimir, CambiarDepuracion
 from Extra.YoutubeChat import SalvarChatYoutube
 from Extra.CargarData import CargarData
 from Extra.Hilos import CargarHilo
-from Extra.FuncionesBlender import CrearProxy, RenderizarVideo
+from Extra.FuncionesBlender import CrearProxy, RenderizarVideo, BorrarTemporalesBender
 
 
 parser = argparse.ArgumentParser(description='Heramienta de creacion de contenido de ALSW')
@@ -30,6 +30,8 @@ parser.add_argument('--salvaryoutube', '-sy', help="Salva el chat en un archivo"
 parser.add_argument('--deckdemo', '-dd', help="Solo usar StreamDeck",  action="store_true")
 parser.add_argument('--blenderproxy', '-bp', help="Creando proxy de Blender",  action="store_true")
 parser.add_argument('--blenderrenderizar', '-br', help="Empezando a Renderizar Video")
+parser.add_argument('--blenderborrar', '-bb', help="Borrar Temporales", action="store_true")
+
 
 # Principal
 if __name__ == "__main__":
@@ -75,6 +77,10 @@ if __name__ == "__main__":
     elif args.blenderrenderizar:
         Imprimir("Empezando a Renderizar video")
         RenderizarVideo(args.blenderrenderizar)
+    elif args.blenderborrar:
+        Imprimir("Borrar temporales de Blender")
+        BorrarTemporalesBender('BL_proxy')
+        BorrarTemporalesBender('bpsrender')
     else:
         Imprimir("No parametro")
         data = CargarData('Comandos.json')
