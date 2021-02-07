@@ -29,6 +29,11 @@
   "ico": "Recursos/RyukPC/Indicadores.png",
   "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/7.Indicadores &"
 }, {
+  "Nombre": "Personaje",
+  "Titulo": "Personaje",
+  "ico": "Recursos/RyukPC/Personaje.png",
+  "OS": "nemo /home/SudoData/ChepeCarlos@alsw.net/2.Contenido/1.Biblioteca/5.Clip/1.Imagenes/2.Personajes/1.Vectorizada &"
+}, {
   "Nombre": "Sonido",
   "Titulo": "Sonido",
   "ico": "Recursos/RyukPC/Sonido.png",
