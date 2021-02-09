@@ -153,6 +153,14 @@ def EventoOBS2(Mensaje):
         Imprimir(f"Cambiando a Esena OBS - {Mensaje.datain['scene-name']}")
         ActualizarDato("/Data/OBS.json", Mensaje.datain['scene-name'], "EsenaActual")
         Deck.ActualizarTodasImagenes()
+    elif Mensaje.name == 'RecordingStopped':
+        Imprimir('Parado la grabacion en OBS')
+        ActualizarDato("/Data/OBS.json", False, "EstadoGrabando")
+        Deck.ActualizarTodasImagenes()
+    elif Mensaje.name == 'RecordingStarted':
+        Imprimir('Iniciado la grabacion en OBS ')
+        ActualizarDato("/Data/OBS.json", True, "EstadoGrabando")
+        Deck.ActualizarTodasImagenes()
 
 
 def EventoOBS(Mensaje):

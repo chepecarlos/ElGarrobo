@@ -34,6 +34,12 @@ def ActualizarIcono(MiDeck, IndiceBoton, Limpiar=False):
                     ActualBoton['Estado'] = True
                 else:
                     ActualBoton['Estado'] = False
+            elif ActualBoton['OBS'] == "Grabar":
+                EstadoGrabacion = ObtenerDato("/Data/OBS.json", "EstadoGrabando")
+                if EstadoGrabacion:
+                    ActualBoton['Estado'] = True
+                else:
+                    ActualBoton['Estado'] = False
 
         if 'ico' in ActualBoton:
             NombreIcono = "{}".format(ActualBoton['ico'])
@@ -43,9 +49,6 @@ def ActualizarIcono(MiDeck, IndiceBoton, Limpiar=False):
             NombreIcono = Data['ico_Siquiente']
         elif 'Anterior' in ActualBoton and 'ico_Anterior' in Data:
             NombreIcono = Data['ico_Anterior']
-        # elif 'OBS' in ActualBoton:
-        #     if ActualBoton['OBS'] == "Esena":
-        #
         elif 'Estado' in ActualBoton:
             if ActualBoton['Estado'] and 'icon_true' in ActualBoton:
                 NombreIcono = ActualBoton['icon_true']
