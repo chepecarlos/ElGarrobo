@@ -148,6 +148,7 @@ def EventoOBS2(Mensaje):
     '''Mensajes de OBS '''
     global Deck
     # TODO: Buscar Esena Actual al conectarse al Servidor de OBS
+    # TODO: Eliminar funciones CambiarEstadoBoton
     # Imprimir(f"Evento OBS {Mensaje}")
     if(Mensaje.name == 'SwitchScenes'):
         Imprimir(f"Cambiando a Esena OBS - {Mensaje.datain['scene-name']}")
@@ -161,6 +162,12 @@ def EventoOBS2(Mensaje):
         Imprimir('Iniciado la grabacion en OBS ')
         ActualizarDato("/Data/OBS.json", True, "EstadoGrabando")
         Deck.ActualizarTodasImagenes()
+    elif(Mensaje.name == 'StreamStopped'):
+        Imprimir("Parando la trasmicion")
+        ActualizarDato("/Data/OBS.json", False, "EstadoLive")
+    elif(Mensaje.name == 'StreamStarted'):
+        Imprimir("Empezando la trasmicion")
+        ActualizarDato("/Data/OBS.json", True, "EstadoLive")
 
 
 def EventoOBS(Mensaje):

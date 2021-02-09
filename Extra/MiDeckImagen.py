@@ -28,18 +28,7 @@ def ActualizarIcono(MiDeck, IndiceBoton, Limpiar=False):
             TituloBoton = ''
 
         if 'OBS' in ActualBoton:
-            if ActualBoton['OBS'] == "Esena" and "Esena" in ActualBoton:
-                EsenaActual = ObtenerDato("/Data/OBS.json", "EsenaActual")
-                if ActualBoton['Esena'] == EsenaActual:
-                    ActualBoton['Estado'] = True
-                else:
-                    ActualBoton['Estado'] = False
-            elif ActualBoton['OBS'] == "Grabar":
-                EstadoGrabacion = ObtenerDato("/Data/OBS.json", "EstadoGrabando")
-                if EstadoGrabacion:
-                    ActualBoton['Estado'] = True
-                else:
-                    ActualBoton['Estado'] = False
+            ActualizarEstadoOBS(ActualBoton)
 
         if 'ico' in ActualBoton:
             NombreIcono = "{}".format(ActualBoton['ico'])
@@ -98,3 +87,24 @@ def ActualizarIcono(MiDeck, IndiceBoton, Limpiar=False):
 def DefinirFuente(_Fuente):
     global FuenteBoton
     FuenteBoton = os.path.join(os.path.dirname(__file__), '..') + "/" + _Fuente
+
+
+def ActualizarEstadoOBS(ActualBoton):
+    if ActualBoton['OBS'] == "Esena" and "Esena" in ActualBoton:
+        EsenaActual = ObtenerDato("/Data/OBS.json", "EsenaActual")
+        if ActualBoton['Esena'] == EsenaActual:
+            ActualBoton['Estado'] = True
+        else:
+            ActualBoton['Estado'] = False
+    elif ActualBoton['OBS'] == "Grabar":
+        EstadoGrabacion = ObtenerDato("/Data/OBS.json", "EstadoGrabando")
+        if EstadoGrabacion:
+            ActualBoton['Estado'] = True
+        else:
+            ActualBoton['Estado'] = False
+    elif ActualBoton['OBS'] == "Live":
+        EstadoGrabacion = ObtenerDato("/Data/OBS.json", "EstadoLive")
+        if EstadoGrabacion:
+            ActualBoton['Estado'] = True
+        else:
+            ActualBoton['Estado'] = False
