@@ -6,7 +6,7 @@ from Extra.Depuracion import Imprimir
 from Extra.Delay import Delay
 from Extra.MiOS import MiOS
 from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
-from Extra.FuncionesProyecto import AbirProyecto
+from Extra.FuncionesProyecto import AbirProyecto, ActualizarDato
 from Extra.News import CambiarNoticia, AsignarNoticia, LinkNoticia
 from Extra.Sonidos import Reproducir, PararReproducion
 
@@ -114,7 +114,7 @@ def AccionesOBS(AccionActual):
         AgregarOBS(MiOBSs.MiObsWS(Deck.Carpeta))
         MiOBS.CambiarHost(AccionActual['Server'])
         MiOBS.Conectar()
-        MiOBS.RegistarEvento(EventoOBS)
+        MiOBS.RegistarEvento(EventoOBS2)
         Deck.OBSConectado = True
     elif Deck.OBSConectado:
         if AccionActual['OBS'] == "Cerrar":
@@ -140,8 +140,19 @@ def CerrarOBS():
     global Deck
     if Deck.OBSConectado:
         Deck.OBSConectado = False
-        MiOBS.DesregistarEvento(EventoOBS)
+        MiOBS.DesregistarEvento(EventoOBS2)
         MiOBS.Cerrar()
+
+
+def EventoOBS2(Mensaje):
+    '''Mensajes de OBS '''
+    global Deck
+    # TODO: Buscar Esena Actual al conectarse al Servidor de OBS
+    # Imprimir(f"Evento OBS {Mensaje}")
+    if(Mensaje.name == 'SwitchScenes'):
+        Imprimir(f"Cambiando a Esena OBS - {Mensaje.datain['scene-name']}")
+        ActualizarDato("/Data/OBS.json", Mensaje.datain['scene-name'], "EsenaActual")
+        Deck.ActualizarTodasImagenes()
 
 
 def EventoOBS(Mensaje):

@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.ImageHelpers import PILHelper
 
 from Extra.Depuracion import Imprimir
+from Extra.FuncionesProyecto import ObtenerDato
 
 
 def ActualizarIcono(MiDeck, IndiceBoton, Limpiar=False):
@@ -26,6 +27,14 @@ def ActualizarIcono(MiDeck, IndiceBoton, Limpiar=False):
         else:
             TituloBoton = ''
 
+        if 'OBS' in ActualBoton:
+            if ActualBoton['OBS'] == "Esena" and "Esena" in ActualBoton:
+                EsenaActual = ObtenerDato("/Data/OBS.json", "EsenaActual")
+                if ActualBoton['Esena'] == EsenaActual:
+                    ActualBoton['Estado'] = True
+                else:
+                    ActualBoton['Estado'] = False
+
         if 'ico' in ActualBoton:
             NombreIcono = "{}".format(ActualBoton['ico'])
         elif 'Regresar' in ActualBoton and 'ico_Regresar' in Data:
@@ -34,6 +43,9 @@ def ActualizarIcono(MiDeck, IndiceBoton, Limpiar=False):
             NombreIcono = Data['ico_Siquiente']
         elif 'Anterior' in ActualBoton and 'ico_Anterior' in Data:
             NombreIcono = Data['ico_Anterior']
+        # elif 'OBS' in ActualBoton:
+        #     if ActualBoton['OBS'] == "Esena":
+        #
         elif 'Estado' in ActualBoton:
             if ActualBoton['Estado'] and 'icon_true' in ActualBoton:
                 NombreIcono = ActualBoton['icon_true']

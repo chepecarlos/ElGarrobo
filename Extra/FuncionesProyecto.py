@@ -5,7 +5,8 @@ import yaml
 
 from Extra.Depuracion import Imprimir
 
-Archivo = os.path.abspath(os.path.join(os.path.dirname(__file__), "..")) + '/Data/Proyecto.json'
+ArchivoLocal = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+Archivo = ArchivoLocal + '/Data/Proyecto.json'
 
 
 def SalvarProyecto(Directorio):
@@ -57,3 +58,28 @@ def GuardadDato(Archivo, Valor):
 
     with open(Archivo, 'w') as f:
         json.dump(data, f, indent=4)
+
+
+def ActualizarDato(Archivo, Valor, Atributo):
+    Archivo = ArchivoLocal + Archivo
+    if os.path.exists(Archivo):
+        with open(Archivo) as f:
+            data = yaml.load(f, Loader=yaml.FullLoader)
+    else:
+        data = []
+    if Atributo in data:
+        data[Atributo] = Valor
+
+    with open(Archivo, 'w') as f:
+        json.dump(data, f, indent=4)
+
+
+def ObtenerDato(Archivo, Atributo):
+    Archivo = ArchivoLocal + Archivo
+    if os.path.exists(Archivo):
+        with open(Archivo) as f:
+            data = yaml.load(f, Loader=yaml.FullLoader)
+    if Atributo in data:
+        return data[Atributo]
+    else:
+        return ""
