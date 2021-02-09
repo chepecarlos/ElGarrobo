@@ -67,8 +67,8 @@ def ActualizarDato(Archivo, Valor, Atributo):
             data = yaml.load(f, Loader=yaml.FullLoader)
     else:
         data = []
-    if Atributo in data:
-        data[Atributo] = Valor
+
+    data[Atributo] = Valor
 
     with open(Archivo, 'w') as f:
         json.dump(data, f, indent=4)
