@@ -1,6 +1,6 @@
 import pytchat
 from Extra.FuncionesProyecto import GuardadDato
-
+from Extra.MiMQTT import EnviarMQTTSimple
 
 def ChatYoutube(IdVideo):
     chat = pytchat.create(video_id=IdVideo)
@@ -32,6 +32,10 @@ def SalvarChatYoutube(Directorio, IdVideo):
             if(FiltranChat(Chat.message, Filtro)):
                 print(f"Filtro: {Filtro}")
                 GuardadDato(Directorio + "/9.Chat/Chat" + Filtro + ".json", ChatData)
+            if(FiltranChat(Chat.message, "reiniciar")):
+                print(f"Reiniciando gracias a {Chat.author.name}")
+                GuardadDato(Directorio + "/9.Chat/Comandos.json", ChatData)
+                EnviarMQTTSimple("fondo/reiniciar", "1")
             if(Chat.author.isChatSponsor):
                 DatoExtra = {"Miembro": Chat.author.isChatSponsor}
                 ChatData.append(DatoExtra)
