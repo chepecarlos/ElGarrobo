@@ -2,6 +2,9 @@ import pytchat
 from Extra.FuncionesProyecto import GuardadDato
 from Extra.MiMQTT import EnviarMQTTSimple
 
+colores = ["rojo", "azul", "verde", "blanco", "gris", "aqua", "amarillo", "naranja", "morado"]
+
+
 def ChatYoutube(IdVideo):
     chat = pytchat.create(video_id=IdVideo)
     while chat.is_alive():
@@ -14,6 +17,7 @@ def ChatYoutube(IdVideo):
 
 
 def SalvarChatYoutube(Directorio, IdVideo):
+    global colores
     print(f"El ID es {IdVideo}")
     ChatYoutube = pytchat.create(video_id=IdVideo)
     while ChatYoutube.is_alive():
@@ -36,6 +40,12 @@ def SalvarChatYoutube(Directorio, IdVideo):
                 print(f"Reiniciando gracias a {Chat.author.name}")
                 GuardadDato(Directorio + "/9.Chat/Comandos.json", ChatData)
                 EnviarMQTTSimple("fondo/reiniciar", "1")
+            if(FiltranChat(Chat.message, "color")):
+                Color = FiltrarChatComando(Chat.message, colores)
+                if(Color != 'no'):
+                    print(f"Cambiando color gracias a {Chat.author.name}")
+                    GuardadDato(Directorio + "/9.Chat/Comandos.json", ChatData)
+                    EnviarMQTTSimple("fondo/color", Color)
             if(Chat.author.isChatSponsor):
                 DatoExtra = {"Miembro": Chat.author.isChatSponsor}
                 ChatData.append(DatoExtra)
@@ -54,10 +64,18 @@ def SalvarChatYoutube(Directorio, IdVideo):
 def FiltranChat(Mensaje, Palabra):
     if Mensaje:
         Palabra = Palabra.lower()
-        MensajeFiltrado = Mensaje.split()[0].lower()
-        if(MensajeFiltrado == Palabra):
+        Mensaje = Mensaje.lower()
+        if Palabra in Mensaje:
             return True
     return False
+
+
+def FiltrarChatComando(Mensaje, Comandos):
+    if Mensaje:
+        for Comando in Comandos:
+            if Comando in Mensaje:
+                return Comando
+    return 'no'
 
 
 if __name__ == '__main__':
