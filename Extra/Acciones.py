@@ -168,7 +168,21 @@ def EventoOBS2(Mensaje):
     elif(Mensaje.name == 'StreamStarted'):
         Imprimir("Empezando la trasmicion")
         ActualizarDato("/Data/OBS.json", True, "EstadoLive")
-
+    elif(Mensaje.name == 'SceneItemVisibilityChanged'):
+        NombreIten = Mensaje.datain['item-name']
+        EstadoItem = Mensaje.datain['item-visible']
+        Imprimir(f"Se cambio fuente {NombreIten} - {EstadoItem}")
+        # TODO: Guardas Estado de Fuente
+        Deck.ActualizarTodasImagenes()
+    elif(Mensaje.name == 'SourceFilterVisibilityChanged'):
+        NombreFiltro = Mensaje.datain['filterName']
+        NombreFuente = Mensaje.datain['sourceName']
+        EstadoFiltro = Mensaje.datain['filterEnabled']
+        Imprimir(f"Se cambio el filtro {NombreFiltro} de {NombreFuente} a {EstadoFiltro}")
+        # Todo: Guardas Estado del Filtro
+        Deck.ActualizarTodasImagenes()
+    else:
+        Imprimir(f"Evento no procesado de OBS: {Mensaje.name}")
 
 def EventoOBS(Mensaje):
     '''Escucha y Reaciona a eventos de OBS'''
