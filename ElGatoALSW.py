@@ -5,7 +5,7 @@
 # Librerias
 import os
 import argparse
-
+import sys
 import Extra.MiDeck as MiDecks
 
 # Cargar funciones de Archivos
@@ -32,6 +32,10 @@ parser.add_argument('--blenderproxy', '-bp', help="Creando proxy de Blender",  a
 parser.add_argument('--blenderrenderizar', '-br', help="Empezando a Renderizar Video")
 parser.add_argument('--blenderborrar', '-bb', help="Borrar Temporales", action="store_true")
 
+
+if sys.version_info[0] < 3:
+    print('Tienes que usar Python 3 para este programa')
+    sys.exit(1)
 
 # Principal
 if __name__ == "__main__":
