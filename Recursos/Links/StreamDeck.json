@@ -13,6 +13,10 @@
   "ico": "Recursos/Tutorial/Discord.png",
   "texto": "https://nocheprogramacion.com/discord"
 }, {
+  "Nombre": "Bot",
+  "Titulo": "Bot Youtube",
+  "texto": "https://nocheprogramacion.com/bot"
+},{
   "Nombre": "Patreon",
   "Titulo": "Patreon",
   "ico": "Recursos/Tutorial/Patreon.png",

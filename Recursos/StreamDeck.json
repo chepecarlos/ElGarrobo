@@ -56,6 +56,10 @@
   "ico": "Recursos/RyukPC/RyukPC.png",
   "Folder": true
 }, {
+  "Nombre": "MQTT",
+  "Titulo": "MQTT",
+  "Folder": true
+}, {
   "Nombre": "Gimp",
   "ico": "Recursos/Gimp/Gimp.png",
   "Folder": true

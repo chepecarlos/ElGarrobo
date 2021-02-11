@@ -9,6 +9,7 @@ from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
 from Extra.FuncionesProyecto import AbirProyecto, ActualizarDato
 from Extra.News import CambiarNoticia, AsignarNoticia, LinkNoticia
 from Extra.Sonidos import Reproducir, PararReproducion
+from Extra.MiMQTT import EnviarMQTTSimple
 
 
 def AgregarStreanDeck(_Deck):
@@ -66,7 +67,7 @@ def Accion(AccionActual):
     elif "ConfigDeck" in AccionActual:
         AccionesStreanDeck(AccionActual)
     elif 'MQTT' in AccionActual:
-        Imprimir("Cosas de MQTT")
+        AccionesMQTT(AccionActual)
     elif 'News' in AccionActual:
         AccionesNews(AccionActual)
     elif 'Sonido' in AccionActual:
@@ -104,6 +105,12 @@ def AccionesStreanDeck(AccionActual):
         Deck.CambiarBrillo(5)
     elif AccionActual['ConfigDeck'] == "BajarBrillo":
         Deck.CambiarBrillo(-5)
+
+
+def AccionesMQTT(AccionActual):
+    if AccionActual['MQTT'] == "mensaje" and 'topic' in AccionActual and 'mensaje' in AccionActual:
+        Imprimir(f"Enviando Mensaje MQTT {AccionActual['topic']} - {AccionActual['mensaje']}")
+        EnviarMQTTSimple(AccionActual['topic'], AccionActual['mensaje'])
 
 
 def AccionesOBS(AccionActual):

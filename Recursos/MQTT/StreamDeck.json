@@ -1,0 +1,10 @@
+[{
+  "Nombre": "reiniciar",
+  "Titulo": "reiniciar",
+  "MQTT": "mensaje",
+  "topic": "fondo/reiniciar",
+  "mensaje": "1"
+}, {
+  "Nombre": "color",
+  "Titulo": "color"
+}]
