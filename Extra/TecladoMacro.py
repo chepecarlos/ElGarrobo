@@ -24,13 +24,10 @@ class TecladoMacro:
             return False
         return True
 
-# TODO Mensaje cuando no encuentra archivo de Teclados
     def ActualizarTeclas(self, Archivo):
         if ExisteArchivo(Archivo + "/" + self.File, True):
             print(f"Cargando Archivo {self.File}")
             self.TeclasActuales = CargarValores(Archivo + "/" + self.File, True)
-        else:
-            print(f"No se encontro elf {Archivo}")
 
     def HiloRaton(self, Teclado, Nombre):
         '''Hila del teclado del Teclado'''
