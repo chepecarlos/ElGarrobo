@@ -51,6 +51,8 @@ def ActualizarIcono(MiDeck, IndiceBoton, Limpiar=False):
                 NombreIcono = ActualBoton['icon_true']
             elif not ActualBoton['Estado'] and 'icon_false' in ActualBoton:
                 NombreIcono = ActualBoton['icon_false']
+            elif 'icon_true' in ActualBoton or 'icon_false' in ActualBoton:
+                return
             elif 'ico_defecto' in Data:
                 NombreIcono = Data['ico_defecto']
             else:
@@ -101,10 +103,24 @@ def ActualizarGif(MiDeck, IndiceBoton):
     ActualBoton = BotonActuales[IndiceBoton]
     if 'gif' in ActualBoton:
         if 'gif_cargado' in ActualBoton:
-            Deck.set_key_image(IndiceBoton, next(ActualBoton['gif_cargado']))
+            Deck.set_key_image(IndiceBoton + DesfaceBoton, next(ActualBoton['gif_cargado']))
         else:
             ActualBoton['gif_cargado'] = CrearGif(MiDeck.Deck, ActualBoton['gif'])
         return
+    elif 'Estado' in ActualBoton:
+        if ActualBoton['Estado']:
+            if 'gif_true' in ActualBoton:
+                if 'gif_cargado_true' in ActualBoton:
+                    Deck.set_key_image(IndiceBoton + DesfaceBoton, next(ActualBoton['gif_cargado_true']))
+                else:
+                    ActualBoton['gif_cargado_true'] = CrearGif(MiDeck.Deck, ActualBoton['gif_true'])
+        else:
+            if 'git_false' in ActualBoton:
+                if 'gif_cargado_false' in ActualBoton:
+                    Deck.set_key_image(IndiceBoton + DesfaceBoton, next(ActualBoton['gif_cargado_false']))
+                else:
+                    ActualBoton['gif_cargado_false'] = CrearGif(MiDeck.Deck, ActualBoton['git_false'])
+    # TODO: Agregar git por defecto si no se encuentra git
 
 
 def DefinirFuente(_Fuente):
@@ -115,6 +131,7 @@ def DefinirFuente(_Fuente):
 def CrearGif(deck, Archivo_Gif):
     icon_frames = list()
     Archivo_Gif = os.path.join(os.path.dirname(__file__), '..') + "/" + Archivo_Gif
+    # TODO revisar que el archivo exista
     icon = Image.open(Archivo_Gif)
     for frame in ImageSequence.Iterator(icon):
         frame_image = PILHelper.create_scaled_image(deck, frame)
