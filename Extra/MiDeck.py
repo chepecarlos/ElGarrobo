@@ -2,7 +2,7 @@
 from StreamDeck.DeviceManager import DeviceManager
 
 from Extra.Depuracion import Imprimir
-from Extra.MiDeckImagen import ActualizarIcono, DefinirFuente
+from Extra.MiDeckImagen import ActualizarIcono, DefinirFuente, IniciarAnimacion
 from Extra.Acciones import Accion, AgregarStreanDeck
 from Extra.CargarData import AgregarComodines
 import Extra.TecladoMacro as TecladoMacros
@@ -43,11 +43,10 @@ class MiDeck(object):
             self.Cerrar()
 
         self.CargarTeclados()
-
         AgregarStreanDeck(self)
         self.BotonActuales = self.Data['StreamDeck']
+        IniciarAnimacion(self)
         self.ActualizarTodasImagenes()
-
         self.Deck.set_key_callback(self.ActualizarBoton)
 
     def ActualizarTodasImagenes(self, Limpiar=False):

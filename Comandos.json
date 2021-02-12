@@ -8,6 +8,6 @@
   "ico_Regresar": "Recursos/Regresar.png",
   "ico_Siquiente": "Recursos/Siquiente.png",
   "ico_Anterior": "Recursos/Anterior.png",
-  "MQTT_Remoto": "ryuk.local",
+  "Gif_fps": 30,
   "Teclados": "Recursos/Teclados.json"
 }
