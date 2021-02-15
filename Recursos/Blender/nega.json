@@ -1,29 +1,29 @@
 [{
   "Nombre": "Play",
-  "Boton": "KEY_1",
+  "KEY": "KEY_1",
   "tecla": ["space"]
 }, {
   "Nombre": "TrimAll",
-  "Boton": "KEY_2",
+  "KEY": "KEY_2",
   "tecla": ["shift", "t"]
 }, {
   "Nombre": "Guardar",
-  "Boton": "KEY_3",
+  "KEY": "KEY_3",
   "tecla": ["ctrl", "s"]
 }, {
   "Nombre": "Concatenar",
-  "Boton": "KEY_4",
+  "KEY": "KEY_4",
   "tecla": ["shift", "c"]
 }, {
   "Nombre": "Borrar",
-  "Boton": "KEY_5",
+  "KEY": "KEY_5",
   "tecla": ["x"]
 }, {
   "Nombre": "Mover",
-  "Boton": "KEY_6",
+  "KEY": "KEY_6",
   "tecla": ["g"]
 }, {
   "Nombre": "Mute",
-  "Boton": "KEY_7",
+  "KEY": "KEY_7",
   "tecla": ["h"]
 }]
