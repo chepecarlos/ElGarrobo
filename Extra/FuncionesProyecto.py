@@ -60,30 +60,5 @@ def GuardadDato(Archivo, Valor):
         json.dump(data, f, indent=4)
 
 
-def ActualizarDato(Archivo, Valor, Atributo):
-    Archivo = ArchivoLocal + Archivo
-    if os.path.exists(Archivo):
-        with open(Archivo) as f:
-            data = yaml.load(f, Loader=yaml.FullLoader)
-    else:
-        data = []
-
-    data[Atributo] = Valor
-
-    with open(Archivo, 'w') as f:
-        json.dump(data, f, indent=4)
-
-
-def ObtenerDato(Archivo, Atributo):
-    Archivo = ArchivoLocal + Archivo
-    if os.path.exists(Archivo):
-        with open(Archivo) as f:
-            data = yaml.load(f, Loader=yaml.FullLoader)
-    if Atributo in data:
-        return data[Atributo]
-    else:
-        return ""
-
-
 def CrearFolderProyecto(NombreFolder):
     Imprimir(f"{NombreFolder}")

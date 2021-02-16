@@ -9,7 +9,7 @@ from StreamDeck.Transport.Transport import TransportError
 from fractions import Fraction
 
 from Extra.Depuracion import Imprimir
-from Extra.FuncionesProyecto import ObtenerDato
+from Extra.FuncionesArchivos import ObtenerDato
 
 
 def ActualizarIcono(MiDeck, IndiceBoton, Limpiar=False):

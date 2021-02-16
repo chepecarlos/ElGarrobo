@@ -1,5 +1,5 @@
 import paho.mqtt.client as mqtt
-from Extra.FuncionesProyecto import ObtenerDato
+from Extra.FuncionesArchivos import ObtenerDato
 
 
 def EnviarMQTTSimple(Topic, Mensaje):

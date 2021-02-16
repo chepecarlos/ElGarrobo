@@ -6,7 +6,8 @@ from Extra.Depuracion import Imprimir
 from Extra.Delay import Delay
 from Extra.MiOS import MiOS
 from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
-from Extra.FuncionesProyecto import AbirProyecto, ActualizarDato
+from Extra.FuncionesProyecto import AbirProyecto
+from Extra.FuncionesArchivos import ActualizarDato
 from Extra.News import CambiarNoticia, AsignarNoticia, LinkNoticia
 from Extra.Sonidos import Reproducir, PararReproducion
 from Extra.MiMQTT import EnviarMQTTSimple
