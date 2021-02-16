@@ -6,8 +6,8 @@ def CambiarDepuracion(Estado):
     depura = Estado
 
 
-def Imprimir(dato):
+def Imprimir(Mensaje):
     '''Imprimi mensaje de depuracion'''
     global depura
     if(depura):
-        print(dato)
+        print(Mensaje)

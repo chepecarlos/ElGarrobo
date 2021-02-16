@@ -44,7 +44,7 @@ def AbirProyecto(Opcion):
         Comando = "nemo " + FolderProyecto + " &"
     else:
         Comando = "nemo " + FolderProyecto + "/" + Opcion + " &"
-    print(Comando)
+    Imprimir(Comando)
     os.system(Comando)
 
 
@@ -86,4 +86,4 @@ def ObtenerDato(Archivo, Atributo):
 
 
 def CrearFolderProyecto(NombreFolder):
-    print(f"{NombreFolder}")
+    Imprimir(f"{NombreFolder}")

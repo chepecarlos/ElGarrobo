@@ -181,7 +181,7 @@ def Animacion(MiDeck, fps):
                 for IndiceBoton in range(len(BotonActuales)):
                     ActualizarGif(MiDeck, IndiceBoton)
         except TransportError as err:
-            print("TransportError: {0}".format(err))
+            Imprimir("TransportError: {0}".format(err))
             break
 
         siquiente_frame += tiempo_frame

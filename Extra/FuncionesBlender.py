@@ -29,7 +29,7 @@ def CrearProxy(Directorio):
 def RenderizarVideo(Archivo):
     global IDChat
     EnviarMensaje("Empezar a <b>Rendizar Video</b> " + Archivo)
-    print(Archivo)
+    Imprimir(Archivo)
     Inicio = time.time()
     comando = ['bpsrender', Archivo]
     EstadoPreceso = EmpezarSubProceso(comando)
@@ -47,7 +47,7 @@ def RenderizarVideo(Archivo):
 
 def BorrarTemporalesBender(Directorio):
     # TODO: no entrar en folder ocultos
-    print(f"Emezando a borrar {Directorio}")
+    Imprimir(f"Emezando a borrar {Directorio}")
 
     Ruta_Actual = os.getcwd()
     num_directorios = 0
@@ -57,7 +57,7 @@ def BorrarTemporalesBender(Directorio):
         for directorio in directorios:
             if(directorio == Directorio):
                 num_directorios += 1
-                print(f"Borrar {ruta} {directorio}")
+                Imprimir(f"Borrar {ruta} {directorio}")
                 shutil.rmtree(os.path.join(ruta, directorio))
-    print(linea)
-    print(f'Cantidad de folder {Directorio} eliminados: {num_directorios}')
+    Imprimir(linea)
+    Imprimir(f'Cantidad de folder {Directorio} eliminados: {num_directorios}')

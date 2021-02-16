@@ -10,11 +10,11 @@ def Sonido(Archivo):
     try:
         sound = sa.WaveObject.from_wave_file(Archivo)
         Repoductor = sound.play()
-        print(f"Empezar a repoducir {Archivo}")
+        Imprimir(f"Empezar a repoducir {Archivo}")
         Repoductor.wait_done()
-        print(f"Terminando de repoducir {Archivo}")
+        Imprimir(f"Terminando de repoducir {Archivo}")
     except FileNotFoundError:
-        print(f"No se encontro {Archivo}")
+        Imprimir(f"No se encontro {Archivo}")
 
 
 def Reproducir(Archivo):

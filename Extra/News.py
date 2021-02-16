@@ -71,14 +71,13 @@ def CargarNoticias():
     Archivo = CargarArchivoNoticia()
     with open(Archivo) as f:
         try:
-            data = list(yaml.load_all(f, Loader=yaml.SafeLoader))[
-                0]['custom_sections']
+            data = list(yaml.load_all(f, Loader=yaml.SafeLoader))[0]['custom_sections']
             for i in range(len(data)):
                 if 'title' in data[i]:
                     if data[i]['title'] == "Noticias":
                         return data[i]['items']
         except yaml.YAMLError as exc:
-            print("error con yaml")
+            Imprimir("error con yaml")
             return exc
 
 

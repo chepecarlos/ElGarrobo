@@ -26,7 +26,7 @@ class TecladoMacro:
 
     def ActualizarTeclas(self, Archivo):
         if ExisteArchivo(Archivo + "/" + self.File, True):
-            print(f"Cargando Archivo {self.File}")
+            Imprimir(f"Cargando Archivo {self.File}")
             self.TeclasActuales = CargarValores(Archivo + "/" + self.File, True)
 
     def HiloRaton(self, Teclado, Nombre):

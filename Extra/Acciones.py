@@ -199,10 +199,10 @@ def EventoOBS(Mensaje):
     IdOBS = Deck.BuscarCarpeta(MiOBS.Carpeta)
     if Mensaje.name == "Exiting":
         try:
-            print("Cerrando OBS - Evento")
+            Imprimir("Cerrando OBS - Evento")
             CerrarOBS()
         except Exception as e:
-            print(f"No se pudo conectar a OBS - {e}")
+            Imprimir(f"No se pudo conectar a OBS - {e}")
             MiOBS.OBSConectado = False
     elif Mensaje.name == 'RecordingStopped':
         Imprimir(f'Parado la grabacion - {MiOBS.Carpeta}')

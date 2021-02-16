@@ -6,6 +6,7 @@ import os
 import argparse
 import sys
 import Extra.MiDeck as MiDecks
+import Extra.ElGatito as ElGatitos
 
 # Cargar funciones de Archivos
 from Extra.FuncionesProyecto import SalvarProyecto, CargarProyecto, CargarIdVideo, CrearFolderProyecto
@@ -34,20 +35,20 @@ parser.add_argument('--folderproyecto', '-fp', help="Creando folder proyecto de 
 
 
 if sys.version_info[0] < 3:
-    print('Tienes que usar Python 3 para este programa')
+    Imprimir('Tienes que usar Python 3 para este programa')
     sys.exit(1)
 
 # Principal
 if __name__ == "__main__":
     args = parser.parse_args()
+
     if args.nodepurar:
         CambiarDepuracion(False)
 
     if args.master:
         Imprimir("Modo Master")
         data = CargarData('Comandos.json')
-        # CargandoRaton()
-        # CargandoElGato()
+        ElGatitos.ElGatito(data)
         CargarHilo()
     elif args.cliente:
         Imprimir("Modo Cliente MQTT")
