@@ -1,6 +1,7 @@
 [{
   "Nombre": "OBS",
-  "ico": "Recursos/OBS/OBS.png",
+  "ico2": "Recursos/OBS/OBS.png",
+  "gif": "Recursos/OBS/CamaraOn.gif",
   "Folder": true
 }, {
   "Nombre": "News",
@@ -12,7 +13,12 @@
   "Folder": true
 }, {
   "Nombre": "Sonidos",
-  "ico": "Recursos/Sonidos/Sonidos.png",
+  "ico2": "Recursos/Sonidos/Sonidos.png",
+  "gif": "Recursos/Sonidos/Sonidos.gif",
+  "Folder": true
+}, {
+  "Nombre": "MQTT",
+  "Titulo": "MQTT",
   "Folder": true
 }, {
   "Nombre": "Blender",
@@ -21,10 +27,6 @@
 }, {
   "Nombre": "Inskcape",
   "ico": "Recursos/Inskcape/Inskcape.png",
-  "Folder": true
-}, {
-  "Nombre": "Atom",
-  "ico": "Recursos/Atom/Atom.png",
   "Folder": true
 }, {
   "Nombre": "Links",
@@ -53,11 +55,17 @@
 }, {
   "Nombre": "RyukPC",
   "Titulo": "RyukPC",
-  "ico": "Recursos/RyukPC/RyukPC.png",
+  "ico2": "Recursos/RyukPC/RyukPC.png",
+  "gif": "Recursos/RyukPC/RyukPC.gif",
   "Folder": true
 }, {
-  "Nombre": "MQTT",
-  "Titulo": "MQTT",
+  "Nombre": "FanPage",
+  "Titulo": "FanPage",
+  "ico": "Recursos/FanPage/FanPage.png",
+  "Folder": true
+}, {
+  "Nombre": "Atom",
+  "ico": "Recursos/Atom/Atom.png",
   "Folder": true
 }, {
   "Nombre": "Gimp",
@@ -93,7 +101,7 @@
   }]
 }, {
   "Nombre": "Arduino",
-  "ico": "Recursos/Arduino/Arduino.png",
+  "ico": "Recursos/Arduino/Arduino.gif",
   "Folder": true
 }, {
   "Nombre": "Umaru",
