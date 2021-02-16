@@ -83,3 +83,7 @@ def ObtenerDato(Archivo, Atributo):
         return data[Atributo]
     else:
         return ""
+
+
+def CrearFolderProyecto(NombreFolder):
+    print(f"{NombreFolder}")

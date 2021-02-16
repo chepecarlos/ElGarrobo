@@ -20,6 +20,37 @@ Imagen con la que se activara la tecla, si no se define una una por defecto
 }
 ```
 
+### Gif - Solo StreamDeck
+
+Git con la que se activa la tecla
+
+```json
+{
+  "gif": "folder/imagen.gif"
+}
+```
+
+
+
+### Estado - Solo StreamDeck
+
+
+```json
+{
+  "Estado": true,
+  "icon_true": "Recursos/OBS/RecOn.png",
+  "icon_false": "Recursos/OBS/RecOff.png"
+}
+```
+
+```json
+{
+  "Estado": false,
+  "gif_true": "Recursos/OBS/RecOn.gif",
+  "gif_false": "Recursos/OBS/RecOff.gif"
+}
+```
+
 ### Titulo Imagen - Solo StreamDeck
 
 Titulo que aparecera debajo de la imagen, en ausencia se hara la imagen en maximo tamaño
@@ -135,19 +166,6 @@ Para conectarse a OBS el programa debe estar encendido y el plugin de OBS_WebSok
 ```json
 {
   "OBS": "ryuk.local"
-}
-```
-
-### Empezar/Parar grabacion
-
-Empieza o para la grabacion, cambia de icono si esta definido dependiendo del estado de OBS
-
-```json
-{
-  "Grabar": true,
-  "Estado": false,
-  "icon_true": "Recursos/OBS/RecOn.png",
-  "icon_false": "Recursos/OBS/RecOff.png"
 }
 ```
 

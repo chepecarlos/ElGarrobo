@@ -1,8 +1,10 @@
 import pytchat
+import re
 from Extra.FuncionesProyecto import GuardadDato
 from Extra.MiMQTT import EnviarMQTTSimple
 
 colores = ["rojo", "azul", "verde", "blanco", "gris", "aqua", "amarillo", "naranja", "morado"]
+ExprecionColores = '\#[a-fA-f0-9][a-fA-f0-9][a-fA-f0-9][a-fA-f0-9][a-fA-f0-9][a-fA-f0-9]'
 
 
 def ChatYoutube(IdVideo):
@@ -18,6 +20,7 @@ def ChatYoutube(IdVideo):
 
 def SalvarChatYoutube(Directorio, IdVideo):
     global colores
+    global ExprecionColores
     print(f"El ID es {IdVideo}")
     ChatYoutube = pytchat.create(video_id=IdVideo)
     while ChatYoutube.is_alive():
@@ -33,25 +36,29 @@ def SalvarChatYoutube(Directorio, IdVideo):
             GuardadDato(Directorio + "/9.Chat/ChatGeneral.json", ChatData)
 
             Filtro = "pregunta"
-            if(FiltranChat(Chat.message, Filtro)):
+            if FiltranChat(Chat.message, Filtro):
                 print(f"Filtro: {Filtro}")
                 GuardadDato(Directorio + "/9.Chat/Chat" + Filtro + ".json", ChatData)
-            if(FiltranChat(Chat.message, "reiniciar")):
+            if FiltranChat(Chat.message, "reiniciar"):
                 print(f"Reiniciando gracias a {Chat.author.name}")
                 GuardadDato(Directorio + "/9.Chat/Comandos.json", ChatData)
                 EnviarMQTTSimple("fondo/reiniciar", "1")
-            if(FiltranChat(Chat.message, "color")):
-                Color = FiltrarChatComando(Chat.message, colores)
-                if(Color != 'no'):
+            if FiltranChat(Chat.message, "color"):
+                if FiltrarChatComando(Chat.message, colores) != 'no':
+                    Color = FiltrarChatComando(Chat.message, colores)
                     print(f"Cambiando color gracias a {Chat.author.name}")
                     GuardadDato(Directorio + "/9.Chat/Comandos.json", ChatData)
                     EnviarMQTTSimple("fondo/color", Color)
-            if(Chat.author.isChatSponsor):
+                elif FiltrarExprecion(Chat.message, ExprecionColores):
+                    Color = FiltrarExprecion(Chat.message, ExprecionColores)
+                    GuardadDato(Directorio + "/9.Chat/Comandos.json", ChatData)
+                    EnviarMQTTSimple("fondo/expresion/color", Color[0])
+            if Chat.author.isChatSponsor:
                 DatoExtra = {"Miembro": Chat.author.isChatSponsor}
                 ChatData.append(DatoExtra)
                 GuardadDato(Directorio + "/9.Chat/ChatMiembro.json", ChatData)
                 print(f"Sponsor")
-            if(Chat.type == "superChat"):
+            if Chat.type == "superChat":
                 DataExtra = {
                     "SuperChat": Chat.amountString,
                     "URL": Chat.author.channelUrl
@@ -77,6 +84,9 @@ def FiltrarChatComando(Mensaje, Comandos):
                 return Comando
     return 'no'
 
+
+def FiltrarExprecion(Mensaje, Expresion):
+    return re.findall(Expresion, Mensaje)
 
 if __name__ == '__main__':
     print("Empezando prueba")

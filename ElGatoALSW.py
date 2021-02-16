@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# TODO: agregar gif https://python-elgato-streamdeck.readthedocs.io/en/stable/examples/animated.html
 # Librerias
 import os
 import argparse
@@ -9,7 +8,7 @@ import sys
 import Extra.MiDeck as MiDecks
 
 # Cargar funciones de Archivos
-from Extra.FuncionesProyecto import SalvarProyecto, CargarProyecto, CargarIdVideo
+from Extra.FuncionesProyecto import SalvarProyecto, CargarProyecto, CargarIdVideo, CrearFolderProyecto
 from Extra.News import SalvarArchivoNoticia
 from Extra.Depuracion import Imprimir, CambiarDepuracion
 from Extra.YoutubeChat import SalvarChatYoutube
@@ -31,6 +30,7 @@ parser.add_argument('--deckdemo', '-dd', help="Solo usar StreamDeck",  action="s
 parser.add_argument('--blenderproxy', '-bp', help="Creando proxy de Blender",  action="store_true")
 parser.add_argument('--blenderrenderizar', '-br', help="Empezando a Renderizar Video")
 parser.add_argument('--blenderborrar', '-bb', help="Borrar Temporales", action="store_true")
+parser.add_argument('--folderproyecto', '-fp', help="Creando folder proyecto de video")
 
 
 if sys.version_info[0] < 3:
@@ -85,6 +85,9 @@ if __name__ == "__main__":
         Imprimir("Borrar temporales de Blender")
         BorrarTemporalesBender('BL_proxy')
         BorrarTemporalesBender('bpsrender')
+    elif args.folderproyecto:
+        Imprimir(f"Creando folder de Proyecto {args.folderproyecto}")
+        CrearFolderProyecto(args.folderproyecto)
     else:
         Imprimir("No parametro")
         data = CargarData('Comandos.json')

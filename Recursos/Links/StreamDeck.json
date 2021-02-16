@@ -15,8 +15,17 @@
 }, {
   "Nombre": "Bot",
   "Titulo": "Bot Youtube",
+  "gif": "Recursos/Links/Bot.gif",
   "texto": "https://nocheprogramacion.com/bot"
-},{
+}, {
+  "Nombre": "Donar",
+  "Titulo": "Donar",
+  "texto": "https://nocheprogramacion.com/donar"
+}, {
+  "Nombre": "Apoyar",
+  "Titulo": "Apoyar",
+  "texto": "https://nocheprogramacion.com/apoyar"
+}, {
   "Nombre": "Patreon",
   "Titulo": "Patreon",
   "ico": "Recursos/Tutorial/Patreon.png",
