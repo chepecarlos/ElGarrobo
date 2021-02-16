@@ -10,11 +10,9 @@ def EmpezarSubProceso(Comando):
     while True:
         output = process.stdout.readline()
         Imprimir(output.strip())
-        # Do something else
         return_code = process.poll()
         if return_code is not None:
-            Imprimir('RETURN CODE', return_code)
-            # Process has finished, read rest of the output
+            Imprimir(f'RETURN CODE {return_code}')
             for output in process.stdout.readlines():
                 Imprimir(output.strip())
             return return_code
