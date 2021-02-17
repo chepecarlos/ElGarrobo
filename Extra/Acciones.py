@@ -1,5 +1,4 @@
-import sys
-
+import os
 import Extra.MiOBS as MiOBSs
 
 from Extra.Depuracion import Imprimir
@@ -75,20 +74,10 @@ def Accion(AccionActual):
         AccionSonido(AccionActual)
     elif 'Archivo' in AccionActual:
         AccionesArchivos(AccionActual)
-        # MiMQTT.CambiarHost(accion['MQTT'])
-        # MiMQTT.Conectar()
-    # elif 'mqtt' in accion:
-    #     Imprimir(f"Comando MQTT {accion['mqtt']}")
-    #     MiMQTT.Enviando(accion['mqtt'])
     elif 'Opcion' in AccionActual:
         if AccionActual['Opcion'] == "Exit":
-            # TODO: ver si esta habierto antes de cerrar
             Imprimir("Saliendo ElGatoALSW - Adios :) ")
-            CerrarOBS()
-            sys.exit()
-            # MiMQTT.Cerrar()
-            # MiDeck.reset()
-            # MiDeck.close()
+            os._exit(0)
         else:
             Imprimir(f"Opcion No Encontrada: {AccionActual['Opcion']}")
     else:
