@@ -1,9 +1,11 @@
 import telegram
 from telegram import ParseMode
-from Extra.CargarData import CargarData
+
+from Extra.FuncionesArchivos import ObtenerDato
 
 
 def EnviarMensaje(Mensaje):
-    Token = CargarData("Recursos/TelegramBot.json")
-    bot = telegram.Bot(token=Token['Token_Telegram'])
-    bot.send_message(chat_id=Token['ID_Chat'], text=Mensaje, parse_mode=ParseMode.HTML)
+    Token = ObtenerDato("/Data/TelegramBot.json", 'Token_Telegram')
+    ID_Chat = ObtenerDato("/Data/TelegramBot.json", 'ID_Chat')
+    bot = telegram.Bot(token=Token)
+    bot.send_message(chat_id=ID_Chat, text=Mensaje, parse_mode=ParseMode.HTML)
