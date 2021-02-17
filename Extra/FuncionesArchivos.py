@@ -33,3 +33,11 @@ def ObtenerDato(Archivo, Atributo):
         return data[Atributo]
     else:
         return ""
+
+
+def ObtenerLista(Archivo, Atributo, ID):
+    Lista = ObtenerDato(Archivo, Atributo)
+    print(len(Lista))
+    if ID < 0 or ID >= len(Lista):
+        return "No Lista"
+    return Lista[ID]

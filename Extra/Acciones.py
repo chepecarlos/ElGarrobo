@@ -7,7 +7,7 @@ from Extra.Delay import Delay
 from Extra.MiOS import MiOS
 from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
 from Extra.FuncionesProyecto import AbirProyecto
-from Extra.FuncionesArchivos import ActualizarDato
+from Extra.FuncionesArchivos import ObtenerDato, ActualizarDato, ObtenerLista
 from Extra.News import CambiarNoticia, AsignarNoticia, LinkNoticia
 from Extra.Sonidos import Reproducir, PararReproducion
 from Extra.MiMQTT import EnviarMQTTSimple
@@ -73,6 +73,8 @@ def Accion(AccionActual):
         AccionesNews(AccionActual)
     elif 'Sonido' in AccionActual:
         AccionSonido(AccionActual)
+    elif 'Archivo' in AccionActual:
+        AccionesArchivos(AccionActual)
         # MiMQTT.CambiarHost(accion['MQTT'])
         # MiMQTT.Conectar()
     # elif 'mqtt' in accion:
@@ -192,6 +194,7 @@ def EventoOBS2(Mensaje):
     else:
         Imprimir(f"Evento no procesado de OBS: {Mensaje.name}")
 
+
 def EventoOBS(Mensaje):
     '''Escucha y Reaciona a eventos de OBS'''
     Imprimir(Mensaje.name)
@@ -274,3 +277,30 @@ def AccionesNews(AccionActual):
         ComandoEscribir(Link)
     else:
         Imprimir("No accion de News")
+
+
+def AccionesArchivos(AccionActual):
+    if AccionActual['Archivo'] == "Reiniciar":
+        if 'json' in AccionActual and 'Atributo' in AccionActual:
+            Imprimir(f"Reiniciando {AccionActual['Atributo']}")
+            ActualizarDato("/Data/" + AccionActual['json'], 0, AccionActual['Atributo'])
+    if AccionActual['Archivo'] == "Siquiente":
+        if 'json' in AccionActual and 'Atributo' in AccionActual:
+            CantidadActual = ObtenerDato("/Data/" + AccionActual['json'], AccionActual['Atributo']) + 1
+            Imprimir(f"Incrementando {AccionActual['Atributo']} a {CantidadActual}")
+            ActualizarDato("/Data/" + AccionActual['json'], CantidadActual, AccionActual['Atributo'])
+    if AccionActual['Archivo'] == "Anterior":
+        if 'json' in AccionActual and 'Atributo' in AccionActual:
+            CantidadActual = ObtenerDato("/Data/" + AccionActual['json'], AccionActual['Atributo']) - 1
+            Imprimir(f"Bajando {AccionActual['Atributo']} a {CantidadActual}")
+            ActualizarDato("/Data/" + AccionActual['json'], CantidadActual, AccionActual['Atributo'])
+    if AccionActual['Archivo'] == "Lista":
+        if 'json' in AccionActual and 'Lista' in AccionActual and 'ID' in AccionActual:
+            CantidadActual = ObtenerDato("/Data/" + AccionActual['json'], AccionActual['ID'])
+            Texto = ObtenerLista("/Data/" + AccionActual['json'], AccionActual['Lista'], CantidadActual)
+            Imprimir(f"Posicion {CantidadActual} - {Texto}")
+            ComandoEscribir(Texto)
+    if AccionActual['Archivo'] == "Pegar":
+        if 'json' in AccionActual and 'Atributo' in AccionActual:
+            Texto = ObtenerDato("/Data/" + AccionActual['json'], AccionActual['Atributo'])
+            ComandoEscribir(Texto)
