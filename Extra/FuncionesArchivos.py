@@ -29,6 +29,9 @@ def ObtenerDato(Archivo, Atributo):
     if os.path.exists(Archivo):
         with open(Archivo) as f:
             data = yaml.load(f, Loader=yaml.FullLoader)
+    else:
+        Imprimir(f"Archivo no Exite {Archivo}")
+        return ""
     if Atributo in data:
         return data[Atributo]
     else:

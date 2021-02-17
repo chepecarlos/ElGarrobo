@@ -5,6 +5,7 @@ from Extra.Depuracion import Imprimir
 from Extra.MiDeckImagen import ActualizarIcono, DefinirFuente, IniciarAnimacion
 from Extra.Acciones import Accion, AgregarStreanDeck
 from Extra.CargarData import AgregarComodines
+from Extra.FuncionesArchivos import ObtenerDato, ActualizarDato
 import Extra.TecladoMacro as TecladoMacros
 
 
@@ -28,11 +29,8 @@ class MiDeck(object):
             self.Deck.open()
             self.Deck.reset()
 
-            if 'Brillo' in self.Data:
-                self.Deck.set_brightness(self.Data['Brillo'])
-            else:
-                self.Deck.set_brightness(50)
-                self.Data['Brillo'] = 50
+            Brillo = ObtenerDato("/Data/StreanDeck.json", "Brillo")
+            self.Deck.set_brightness(Brillo)
 
             Imprimir(f"Abriendo '{deck.deck_type()}' (Numero Serial: '{deck.get_serial_number()}')")
 
@@ -60,13 +58,15 @@ class MiDeck(object):
         self.Deck.close()
 
     def CambiarBrillo(self, Incremento):
-        self.Data['Brillo'] += Incremento
-        if self.Data['Brillo'] > 100:
-            self.Data['Brillo'] = 100
-        elif self.Data['Brillo'] < 0:
-            self.Data['Brillo'] = 0
-        Imprimir(f"Intensidad Brillo StreamDeck - {self.Data['Brillo']}")
-        self.Deck.set_brightness(self.Data['Brillo'])
+        Brillo = ObtenerDato("/Data/StreanDeck.json", "Brillo")
+        Brillo += Incremento
+        if Brillo > 100:
+            Brillo = 100
+        elif Brillo < 0:
+            Brillo = 0
+        Imprimir(f"Intensidad Brillo StreamDeck - {Brillo}")
+        self.Deck.set_brightness(Brillo)
+        ActualizarDato("/Data/StreanDeck.json", Brillo, "Brillo")
 
     def ActualizarBoton(self, Deck, IndiceBoton, estado):
         IndiceBoton = IndiceBoton - self.DesfaceBoton
