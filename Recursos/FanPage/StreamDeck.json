@@ -23,14 +23,20 @@
   "Nombre": "Fanpage",
   "Titulo": "Fanpage",
   "ico": "Recursos/FanPage/FanPage.png",
-  "Archivo": "Lista",
-  "json": "FanPage.json",
-  "Lista": "FanPage",
-  "ID": "ID"
+  "Macro": [{
+    "Archivo": "Lista",
+    "json": "FanPage.json",
+    "Lista": "FanPage",
+    "ID": "ID"
+  }, {
+    "tecla": ["enter"]
+  }]
 }, {
   "Nombre": "Post",
   "Titulo": "Post",
-  "Archivo": "Pegar",
-  "json": "FanPage.json",
-  "Atributo": "Post"
+  "Macro": [{
+    "Archivo": "Pegar",
+    "json": "FanPage.json",
+    "Atributo": "Post"
+  }]
 }]

@@ -4,7 +4,7 @@ import Extra.MiOBS as MiOBSs
 from Extra.Depuracion import Imprimir
 from Extra.Delay import Delay
 from Extra.MiOS import MiOS
-from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir
+from Extra.EmularTeclado import ComandoTeclas, ComandoEscribir, PegarTexto
 from Extra.FuncionesProyecto import AbirProyecto
 from Extra.FuncionesArchivos import ObtenerDato, ActualizarDato, ObtenerLista
 from Extra.News import CambiarNoticia, AsignarNoticia, LinkNoticia
@@ -292,4 +292,4 @@ def AccionesArchivos(AccionActual):
     if AccionActual['Archivo'] == "Pegar":
         if 'json' in AccionActual and 'Atributo' in AccionActual:
             Texto = ObtenerDato("/Data/" + AccionActual['json'], AccionActual['Atributo'])
-            ComandoEscribir(Texto)
+            PegarTexto(Texto)
