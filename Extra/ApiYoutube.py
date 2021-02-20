@@ -44,5 +44,31 @@ def CargarCredenciales():
     return credentials
 
 
-def ActualizarDescripcion(video_id):
+def ActualizarDescripcion(video_id, arhivo=""):
     credenciales = CargarCredenciales()
+    if arhivo:
+        print(f"Archivo existe y es {arhivo}")
+    else:
+        print("No existe archivo")
+
+    youtube = build("youtube", "v3", credentials=credenciales)
+
+    SolisitudVideo = youtube.videos().list(
+        id=video_id,
+        part='snippet'
+      )
+
+    DataVideo = SolisitudVideo.execute()
+    SnippetVideo = DataVideo["items"][0]["snippet"]
+
+    SnippetVideo["description"] = "pollo 2 el regreso el pollo"
+
+    SolisituActualizar = youtube.videos().update(
+        part='snippet',
+        body=dict(
+          snippet=SnippetVideo,
+          id=video_id
+        ))
+
+    RespuestaYoutube = SolisituActualizar.execute()
+    print(RespuestaYoutube)
