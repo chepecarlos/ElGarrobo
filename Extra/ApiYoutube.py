@@ -1,6 +1,5 @@
 import os
 import pickle
-import sys
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
@@ -46,11 +45,17 @@ def CargarCredenciales():
 
 def ActualizarDescripcion(video_id, arhivo=""):
     credenciales = CargarCredenciales()
-    if arhivo:
-        print(f"Archivo existe y es {arhivo}")
-    else:
-        print("No existe archivo")
+    DescripcionVideo = ""
+    if not arhivo:
+        arhivo = video_id + ".txt"
+        print(f"Usando el archivo {arhivo} por defecto")
 
+    if os.path.exists(arhivo):
+        with open(arhivo, 'r') as linea:
+            DescripcionVideo = linea.read()
+    else:
+        print(f"Erro fatal el archivo {arhivo} no existe")
+        return
     youtube = build("youtube", "v3", credentials=credenciales)
 
     SolisitudVideo = youtube.videos().list(
@@ -59,16 +64,22 @@ def ActualizarDescripcion(video_id, arhivo=""):
       )
 
     DataVideo = SolisitudVideo.execute()
-    SnippetVideo = DataVideo["items"][0]["snippet"]
+    if len(DataVideo["items"]) > 0:
+        SnippetVideo = DataVideo["items"][0]["snippet"]
 
-    SnippetVideo["description"] = "pollo 2 el regreso el pollo"
+        SnippetVideo["description"] = DescripcionVideo
 
-    SolisituActualizar = youtube.videos().update(
-        part='snippet',
-        body=dict(
-          snippet=SnippetVideo,
-          id=video_id
-        ))
+        SolisituActualizar = youtube.videos().update(
+            part='snippet',
+            body=dict(
+              snippet=SnippetVideo,
+              id=video_id
+            ))
 
-    RespuestaYoutube = SolisituActualizar.execute()
-    print(RespuestaYoutube)
+        RespuestaYoutube = SolisituActualizar.execute()
+        if len(RespuestaYoutube['snippet']) > 0:
+            print("Actualizacion Completa")
+        else:
+            print("Hubo un problema?")
+    else:
+        print(f"No existe el video con ID {video_id}")

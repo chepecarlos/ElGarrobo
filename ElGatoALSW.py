@@ -34,6 +34,7 @@ parser.add_argument('--blenderrenderizar', '-br', help="Empezando a Renderizar V
 parser.add_argument('--blenderborrar', '-bb', help="Borrar Temporales", action="store_true")
 parser.add_argument('--folderproyecto', '-fp', help="Creando folder proyecto de video")
 parser.add_argument('--video-id', '-vi', help="ID del video a actualizar descripcipn en Youtube")
+parser.add_argument("--descripcion", '-vd', help="ID del video a actualizar descripcipn en Youtube")
 
 
 if sys.version_info[0] < 3:
@@ -93,7 +94,10 @@ if __name__ == "__main__":
         CrearFolderProyecto(args.folderproyecto)
     elif args.video_id:
         Imprimir(f"Actualizando Video {args.video_id} descripcion")
-        ActualizarDescripcion(args.video_id)
+        if args.descripcion:
+            ActualizarDescripcion(args.video_id, args.descripcion)
+        else:
+            ActualizarDescripcion(args.video_id)
     else:
         Imprimir("No parametro")
         data = CargarData('Comandos.json')
