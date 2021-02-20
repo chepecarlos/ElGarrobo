@@ -67,6 +67,10 @@ def ActualizarDescripcion(video_id, arhivo=""):
     if len(DataVideo["items"]) > 0:
         SnippetVideo = DataVideo["items"][0]["snippet"]
 
+        if DescripcionVideo == SnippetVideo["description"]:
+            print(f"Descripcion del video {video_id} ya esta actualizada")
+            return
+
         SnippetVideo["description"] = DescripcionVideo
 
         SolisituActualizar = youtube.videos().update(

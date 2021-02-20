@@ -93,7 +93,7 @@ if __name__ == "__main__":
         Imprimir(f"Creando folder de Proyecto {args.folderproyecto}")
         CrearFolderProyecto(args.folderproyecto)
     elif args.video_id:
-        Imprimir(f"Actualizando Video {args.video_id} descripcion")
+        Imprimir(f"Actualizando descripcion del Video {args.video_id}")
         if args.descripcion:
             ActualizarDescripcion(args.video_id, args.descripcion)
         else:
