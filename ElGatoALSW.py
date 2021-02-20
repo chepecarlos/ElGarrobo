@@ -16,6 +16,7 @@ from Extra.YoutubeChat import SalvarChatYoutube
 from Extra.CargarData import CargarData
 from Extra.Hilos import CargarHilo
 from Extra.FuncionesBlender import CrearProxy, RenderizarVideo, BorrarTemporalesBender
+from Extra.ApiYoutube import ActualizarDescripcion
 
 
 parser = argparse.ArgumentParser(description='Heramienta de creacion de contenido de ALSW')
@@ -32,6 +33,7 @@ parser.add_argument('--blenderproxy', '-bp', help="Creando proxy de Blender",  a
 parser.add_argument('--blenderrenderizar', '-br', help="Empezando a Renderizar Video")
 parser.add_argument('--blenderborrar', '-bb', help="Borrar Temporales", action="store_true")
 parser.add_argument('--folderproyecto', '-fp', help="Creando folder proyecto de video")
+parser.add_argument('--video-id', '-vi', help="ID del video a actualizar descripcipn en Youtube")
 
 
 if sys.version_info[0] < 3:
@@ -89,6 +91,9 @@ if __name__ == "__main__":
     elif args.folderproyecto:
         Imprimir(f"Creando folder de Proyecto {args.folderproyecto}")
         CrearFolderProyecto(args.folderproyecto)
+    elif args.video_id:
+        Imprimir(f"Actualizando Video {args.video_id} descripcion")
+        ActualizarDescripcion(args.video_id)
     else:
         Imprimir("No parametro")
         data = CargarData('Comandos.json')
