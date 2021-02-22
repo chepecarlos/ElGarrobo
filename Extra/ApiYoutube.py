@@ -47,7 +47,7 @@ def ActualizarDescripcion(video_id, arhivo=""):
     credenciales = CargarCredenciales()
     DescripcionVideo = ""
     if not arhivo:
-        arhivo = video_id + ".txt"
+        arhivo = "Zen_" + video_id + ".txt"
         print(f"Usando el archivo {arhivo} por defecto")
 
     if os.path.exists(arhivo):
