@@ -71,11 +71,9 @@ def CargarNoticias():
     Archivo = CargarArchivoNoticia()
     with open(Archivo) as f:
         try:
-            data = list(yaml.load_all(f, Loader=yaml.SafeLoader))[0]['custom_sections']
-            for i in range(len(data)):
-                if 'title' in data[i]:
-                    if data[i]['title'] == "Noticias":
-                        return data[i]['items']
+            data = list(yaml.load_all(f, Loader=yaml.SafeLoader))[0]
+            if 'news' in data:
+                return data['news']
         except yaml.YAMLError as exc:
             Imprimir("error con yaml")
             return exc
@@ -96,7 +94,7 @@ def CambiarNoticia(Cambiar=True):
     elif ID >= len(Noticias):
         ID = len(Noticias) - 1
     SalvarIdNoticia(ID)
-    SalvarTexto(ArchivoTituloNoticias, Noticias[ID]['title'])
+    SalvarTexto(ArchivoTituloNoticias, Noticias[ID]['title'] + "  ")
     if 'author' in Noticias[ID]:
         SalvarTexto(ArchivoTituloAutor, "Autor: " + Noticias[ID]['author']['name'])
     else:
