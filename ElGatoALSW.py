@@ -16,7 +16,7 @@ from Extra.YoutubeChat import SalvarChatYoutube
 from Extra.CargarData import CargarData
 from Extra.Hilos import CargarHilo
 from Extra.FuncionesBlender import CrearProxy, RenderizarVideo, BorrarTemporalesBender
-from Extra.ApiYoutube import ActualizarDescripcion, ActualizarDescripcionFolder
+from Extra.ApiYoutube import ActualizarDescripcion, ActualizarThumbnails, ActualizarDescripcionFolder
 
 
 parser = argparse.ArgumentParser(description='Heramienta de creacion de contenido de ALSW')
@@ -33,10 +33,13 @@ parser.add_argument('--blenderproxy', '-bp', help="Creando proxy de Blender",  a
 parser.add_argument('--blenderrenderizar', '-br', help="Empezando a Renderizar Video")
 parser.add_argument('--blenderborrar', '-bb', help="Borrar Temporales", action="store_true")
 parser.add_argument('--folderproyecto', '-fp', help="Creando folder proyecto de video")
-parser.add_argument('--video-id', '-vi', help="ID del video a actualizar descripcipn en Youtube")
-parser.add_argument("--descripcion", '-vd', help="ID del video a actualizar descripcipn en Youtube")
-parser.add_argument("--youtube-descripcion", '-yd', help="Actualiza todos las descripciones de los video del folder", action="store_true")
 
+parser.add_argument('--video-thumbnails', '-vt', help="Archivo de Thumbnails  en Youtube",  action="store_true")
+parser.add_argument("--video-descripcion", '-vd', help="ID del video a actualizar descripcipn en Youtube",  action="store_true")
+
+parser.add_argument('--video-id', '-vi', help="ID del video a actualizar Youtube")
+parser.add_argument('--video-file', '-vf', help="Archivo a usar para actualizar Youtube")
+parser.add_argument('--video-recursivo', '-vr', help="Archivo a usar para actualizar Youtube")
 
 if sys.version_info[0] < 3:
     Imprimir('Tienes que usar Python 3 para este programa')
@@ -93,15 +96,27 @@ if __name__ == "__main__":
     elif args.folderproyecto:
         Imprimir(f"Creando folder de Proyecto {args.folderproyecto}")
         CrearFolderProyecto(args.folderproyecto)
-    elif args.video_id:
-        Imprimir(f"Actualizando descripcion del Video {args.video_id}")
-        if args.descripcion:
-            ActualizarDescripcion(args.video_id, args.descripcion)
+    elif args.video_descripcion:
+        if args.video_id:
+            Imprimir(f"Actualizando descripcion del Video {args.video_id}")
+            if args.video_file:
+                ActualizarDescripcion(args.video_id, args.video_file)
+            else:
+                ActualizarDescripcion(args.video_id)
+        elif args.video_recursivo:
+            Imprimir(f"Actualizando descripciones de Youtube desde folder")
+            ActualizarDescripcionFolder()
         else:
-            ActualizarDescripcion(args.video_id)
-    elif args.youtube_descripcion:
-        Imprimir(f"Actualizando descripciones de Youtube desde folder")
-        ActualizarDescripcionFolder()
+            Imprimir("Falta el ID del video")
+    elif args.video_thumbnails:
+        if args.video_id:
+            Imprimir(f"Actualizando Thumbnails del Video {args.video_id}")
+            if args.video_file:
+                ActualizarThumbnails(args.video_id, args.video_file)
+            else:
+                ActualizarThumbnails(args.video_id)
+        else:
+            Imprimir("Falta el ID del video")
     else:
         Imprimir("No parametro")
         data = CargarData('Comandos.json')

@@ -105,3 +105,21 @@ def ActualizarDescripcionFolder():
                 video_id = archivo.replace("Zen_", "").replace(".txt", "")
                 print(f"Actualizando {archivo} - Video_ID:{video_id}")
                 ActualizarVideo(video_id, credenciales)
+
+
+def ActualizarThumbnails(video_id, archivo=""):
+    credenciales = CargarCredenciales()
+    if archivo == "":
+        archivo = video_id + ".png"
+    if os.path.exists(archivo):
+        youtube = build("youtube", "v3", credentials=credenciales)
+        Respuesta = youtube.thumbnails().set(
+            videoId=video_id,
+            media_body=archivo
+            ).execute()
+        if Respuesta['items'][0]:
+            print(f"Imagen Actualizada para {video_id} - {Respuesta['items'][0]['maxres']['url']}")
+        else:
+            print("Hubo un problema :(")
+    else:
+        print(f"No existe el archivo {archivo}")
