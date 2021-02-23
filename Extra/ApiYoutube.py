@@ -3,6 +3,7 @@ import pickle
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
+from Extra.FuncionesArchivos import ObtenerDato
 
 ArchivoLocal = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -43,18 +44,25 @@ def CargarCredenciales():
     return credentials
 
 
-def ActualizarDescripcion(video_id, arhivo=""):
+def ActualizarDescripcion(video_id, archivo=""):
     credenciales = CargarCredenciales()
-    DescripcionVideo = ""
-    if not arhivo:
-        arhivo = "Zen_" + video_id + ".txt"
-        print(f"Usando el archivo {arhivo} por defecto")
+    if archivo == "":
+        ActualizarVideo(video_id, credenciales)
+    else:
+        ActualizarVideo(video_id, credenciales, archivo)
 
-    if os.path.exists(arhivo):
-        with open(arhivo, 'r') as linea:
+
+def ActualizarVideo(video_id, credenciales, archivo=""):
+    DescripcionVideo = ""
+    if not archivo:
+        archivo = "Zen_" + video_id + ".txt"
+        print(f"Usando el archivo {archivo} por defecto")
+
+    if os.path.exists(archivo):
+        with open(archivo, 'r') as linea:
             DescripcionVideo = linea.read()
     else:
-        print(f"Erro fatal el archivo {arhivo} no existe")
+        print(f"Erro fatal el archivo {archivo} no existe")
         return
     youtube = build("youtube", "v3", credentials=credenciales)
 
@@ -87,3 +95,13 @@ def ActualizarDescripcion(video_id, arhivo=""):
             print("Hubo un problema?")
     else:
         print(f"No existe el video con ID {video_id}")
+
+
+def ActualizarDescripcionFolder():
+    credenciales = CargarCredenciales()
+    for archivo in os.listdir("."):
+        if archivo.endswith(".txt"):
+            if archivo.startswith("Zen_"):
+                video_id = archivo.replace("Zen_", "").replace(".txt", "")
+                print(f"Actualizando {archivo} - Video_ID:{video_id}")
+                ActualizarVideo(video_id, credenciales)
