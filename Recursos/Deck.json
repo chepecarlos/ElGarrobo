@@ -1,9 +1,9 @@
 [{
   "Nombre": "StreamDeck V2 Viejo",
-  "id": "0001:0003:00",
+  "Serial": "AL47I2C06277",
   "File": "DeckV2.json"
 }, {
   "Nombre": "StreamDeck V1 Nuevo",
-  "id": "0001:0008:00",
+  "Serial": "AL04I1C01204",
   "File": "DeckV1.json"
 }]

@@ -18,14 +18,15 @@ class MiStreanDeck(object):
             DeckActual.set_brightness(50)
             Encontrado = False
             for Data in self.Data:
-                if Data['id'] == DeckActual.id():
+                if Data['Serial'] == DeckActual.get_serial_number():
                     print(f"Abriendo : {DeckActual.DECK_TYPE} -  {DeckActual.get_serial_number()}")
+                    DeckActual.Serial = DeckActual.get_serial_number()
                     DeckActual.set_key_callback(self.ActualizarBoton)
                     ListaDeck.append(DeckActual)
                     Encontrado = True
             if not Encontrado:
-                DeckActual.close()
+                DeckActual = None
         return ListaDeck
 
     def ActualizarBoton(self, Deck, IndiceBoton, estado):
-        print(f"Serial {Deck.id()} Key {IndiceBoton} [{estado}]")
+        print(f"Serial {Deck.id()} {Deck.Serial} Key {IndiceBoton} [{estado}]")
