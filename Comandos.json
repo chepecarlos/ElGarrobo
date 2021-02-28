@@ -1,6 +1,7 @@
 {
   "Fuente": "Recursos/Roboto-Black.ttf",
   "StreamDeck_file": "StreamDeck.json",
+  "Deck_file": "Deck.json",
   "Teclados_file": "Teclados.json",
   "Configuraciones": "Recursos",
   "ico_defecto": "Recursos/Defecto.png",

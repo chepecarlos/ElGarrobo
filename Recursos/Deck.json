@@ -1,0 +1,9 @@
+[{
+  "Nombre": "StreamDeck V2 Viejo",
+  "id": "0001:0003:00",
+  "File": "DeckV2.json"
+}, {
+  "Nombre": "StreamDeck V1 Nuevo",
+  "id": "0001:0008:00",
+  "File": "DeckV1.json"
+}]

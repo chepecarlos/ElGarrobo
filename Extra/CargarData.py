@@ -20,6 +20,8 @@ def CargarData(Direcion):
                 Folder['StreamDeck'] = CargarValores(Recursos + Folder['Nombre'] + "/" + Data['StreamDeck_file'])
     if 'Teclados_file' in Data:
         Data['Teclados'] = CargarValores(Recursos + Data['Teclados_file'])
+    if 'Deck_file' in Data:
+        Data['Deck'] = CargarValores(Recursos + Data['Deck_file'])
     # if 'CargandoRaton' in Data:
     #     Data['teclado'] = CargarValores(Data['CargandoRaton'])
     # if 'CargandoComando' in Data:
