@@ -20,10 +20,6 @@ from Extra.ApiYoutube import ActualizarDescripcion, ActualizarThumbnails, Actual
 
 
 parser = argparse.ArgumentParser(description='Heramienta de creacion de contenido de ALSW')
-parser.add_argument('--master', '-m', help="Cargar servidor de %(prog)s",  action="store_true")
-parser.add_argument('--cliente', '-c', help="Cargando cliente de %(prog)s",  action="store_true")
-parser.add_argument('--deck', '-d', help="Solo usar StreamDeck",  action="store_true")
-parser.add_argument('--ratom', '-r', help="Solo usar Ratom Razer",  action="store_true")
 parser.add_argument('--nodepurar', '-nd', help="Acivar modo sin depuracion", action="store_true")
 parser.add_argument('--proyecto', '-p', help="Configurar folder a proyecto actual", action="store_true")
 parser.add_argument('--noticias', '-n', help="Configurar folder a noticias actual")
@@ -52,24 +48,7 @@ if __name__ == "__main__":
     if args.nodepurar:
         CambiarDepuracion(False)
 
-    if args.master:
-        Imprimir("Modo Master")
-        data = CargarData('Comandos.json')
-        ElGatitos.ElGatito(data)
-        CargarHilo()
-    elif args.cliente:
-        Imprimir("Modo Cliente MQTT")
-    elif args.deck:
-        Imprimir("Modo Solo StreamDeck")
-        data = CargarData('Comandos.json')
-        # CargandoElGato()
-        CargarHilo()
-    elif args.ratom:
-        Imprimir("Modo Solo Raton Razer")
-        data = CargarData('Comandos.json')
-        # CargandoRaton()
-        CargarHilo()
-    elif args.proyecto:
+    if args.proyecto:
         Imprimir("Configurando Folder como Proyecto Actual")
         SalvarProyecto(os.getcwd())
     elif args.noticias:
@@ -79,9 +58,9 @@ if __name__ == "__main__":
         Imprimir("Emezandoa a guardar Chat en Proyecto Actual")
         SalvarChatYoutube(CargarProyecto(), CargarIdVideo())
     elif args.deckdemo:
-        Imprimir("Demo de StreamDeck con nuevas Librerias")
+        Imprimir("Demo de StreamDeck con nuevas funciones")
         data = CargarData('Comandos.json')
-        Deck = MiDecks.MiDeck(data)
+        ElGatitos.ElGatito(data)
         CargarHilo()
     elif args.blenderproxy:
         Imprimir("Empezando a crear proxy")
