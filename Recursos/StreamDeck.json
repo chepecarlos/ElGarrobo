@@ -101,7 +101,7 @@
   }]
 }, {
   "Nombre": "Arduino",
-  "ico": "Recursos/Arduino/Arduino.gif",
+  "ico": "Recursos/Arduino/Arduino.png",
   "Folder": true
 }, {
   "Nombre": "Umaru",
@@ -115,8 +115,4 @@
   "Nombre": "FolderL",
   "Titulo": "Folder L",
   "Folder": true
-}, {
-  "Nombre": "Salir",
-  "Titulo": "Salir",
-  "Opcion": "Exit"
 }]

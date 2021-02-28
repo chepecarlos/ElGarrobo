@@ -31,6 +31,22 @@ Git con la que se activa la tecla
 ```
 
 
+### Configuraciones de StreamDeck
+
+Configurara opciones de StreanDeck que se aplicaran, guardara y cargaran en el carga del programa.
+
+```json
+{
+  "ConfigDeck": "<Opciones>"
+}
+```
+
+**Opciones**
+
+| Nombre      | Descripcion |
+| ----------- | ------------|
+| SubirBrillo | Sube el Brillo de StreanDeck |
+| BajarBrillo | Baja el Brillo de StreanDeck |
 
 ### Estado - Solo StreamDeck
 
@@ -235,6 +251,16 @@ Envia un mensaje por mqtt
   "MQTT": "mensaje",
   "topic": "---",
   "mensaje": "---"
+}
+```
+
+## Comandos Telegram
+
+### Mensaje Simple Telegram
+
+```json
+{
+
 }
 ```
 

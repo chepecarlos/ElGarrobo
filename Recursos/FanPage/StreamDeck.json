@@ -39,4 +39,10 @@
     "json": "FanPage.json",
     "Atributo": "Post"
   }]
+}, {
+  "Nombre": "GuardadTexto",
+  "Titulo": "GuardadTexto",
+  "Archivo": "Salvar",
+  "json": "FanPage.json",
+  "Atributo": "Post"
 }]

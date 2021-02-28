@@ -25,7 +25,11 @@
   "Nombre": "Apoyar",
   "Titulo": "Apoyar",
   "texto": "https://nocheprogramacion.com/apoyar"
-}, {
+},  {
+  "Nombre": "Git",
+  "Titulo": "GIT",
+  "texto": "https://nocheprogramacion.com/git"
+},{
   "Nombre": "Patreon",
   "Titulo": "Patreon",
   "ico": "Recursos/Tutorial/Patreon.png",
@@ -50,10 +54,6 @@
   "Nombre": "AppLinux",
   "Titulo": "AppLinux",
   "texto": "https://nocheprogramacion.com/mas/linuxappuso/"
-}, {
-  "Nombre": "Git",
-  "Titulo": "GIT",
-  "texto": "Te recomiendo ver este video para aprende a usar git y pasarme el codigo https://nocheprogramacion.com/Tutoriales/058_Como_Usar_Git_y_Github_En_Windows_Facil.html"
 }, {
   "Nombre": "FindingTube",
   "Titulo": "FindingTube",

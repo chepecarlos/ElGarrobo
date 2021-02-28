@@ -3,6 +3,7 @@ from Extra.FuncionesArchivos import ObtenerDato
 
 
 def EnviarMQTTSimple(Topic, Mensaje):
+    '''Envia un Mensaje Simple por MQTT'''
     Usuario = ObtenerDato("/Data/MQTT.json", "Usuario")
     Contrasenna = ObtenerDato("/Data/MQTT.json", "Contrasenna")
     MiMQTTSimple = mqtt.Client()

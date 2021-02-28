@@ -13,7 +13,7 @@ def ActualizarDato(Archivo, Valor, Atributo):
     Archivo = ArchivoLocal + Archivo
     if os.path.exists(Archivo):
         with open(Archivo) as f:
-            data = yaml.load(f, Loader=yaml.FullLoader)
+            data = json.load(f)
     else:
         data = []
 

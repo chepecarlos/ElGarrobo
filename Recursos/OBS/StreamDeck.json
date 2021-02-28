@@ -19,7 +19,7 @@
   "OBS": "Fuente",
   "Fuente": "MicUSB",
   "Estado": true,
-  "icon_true": "Recursos/OBS/MicOn.png",
+  "gif_true": "Recursos/OBS/MicOn.gif",
   "icon_false": "Recursos/OBS/MicOff.png"
 }, {
   "Nombre": "Verde",
@@ -34,7 +34,8 @@
   "OBS": "Fuente",
   "Fuente": "Camara",
   "Estado": true,
-  "icon_true": "Recursos/OBS/CamaraOn.png",
+  "icon_true2": "Recursos/OBS/CamaraOn.png",
+  "gif_true": "Recursos/OBS/CamaraOn.gif",
   "icon_false": "Recursos/OBS/CamaraOff.png"
 }, {
   "Nombre": "ChepeCarlos",
@@ -128,7 +129,8 @@
 }, {
   "Nombre": "Local",
   "Titulo": "Local",
-  "ico": "Recursos/OBS/Ryuk.png",
+  "ico2": "Recursos/OBS/Ryuk.png",
+  "gif": "Recursos/OBS/OBS.gif",
   "OBS": "Server",
   "Server": "localhost"
 }, {
