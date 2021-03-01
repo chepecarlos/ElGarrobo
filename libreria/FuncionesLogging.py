@@ -1,16 +1,16 @@
 import logging
-
+import os
+from pathlib import Path
 from datetime import datetime
 
-from libreria.FuncionesArchivos import getFolderLocal
-
-ArchivoLog = ""
+ArchivoLog = ArchivoConfiguracion = os.path.join(Path.home(), '.config/elgatoalsw')
+ArchivoLog = ArchivoLog + '/logs/{:%Y-%m-%d %H:%M:%S}.log'.format(datetime.now())
 
 
 def ConfigurarLogging(logger):
     global ArchivoLog
-    if ArchivoLog == "":
-        ArchivoLog = getFolderLocal() + '/logs/{:%Y-%m-%d %H:%M:%S}.log'.format(datetime.now())
+    # if ArchivoLog == "":
+    #     ArchivoLog = getFolderLocal() + '/logs/{:%Y-%m-%d %H:%M:%S}.log'.format(datetime.now())
     logger.setLevel(logging.DEBUG)
     c_handler = logging.StreamHandler()
     f_handler = logging.FileHandler(ArchivoLog)

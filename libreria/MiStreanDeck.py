@@ -1,9 +1,10 @@
 import logging
 
-from Extra.FuncionesLogging import ConfigurarLogging
+
 from StreamDeck.DeviceManager import DeviceManager
 
-from Extra.FuncionesArchivos import ObtenerDato
+from libreria.FuncionesArchivos import ObtenerDato
+from libreria.FuncionesLogging import ConfigurarLogging
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)

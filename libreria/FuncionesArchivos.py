@@ -5,17 +5,13 @@ import logging
 
 from pathlib import Path
 
-from Extra.FuncionesLogging import ConfigurarLogging
+from libreria.FuncionesLogging import ConfigurarLogging
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
 
 ArchivoLocal = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 ArchivoConfiguracion = os.path.join(Path.home(), '.config/elgatoalsw')
-
-
-def getFolderLocal():
-    return ArchivoConfiguracion
 
 
 def ActualizarDato(Archivo, Valor, Atributo):
