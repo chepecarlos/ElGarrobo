@@ -10,6 +10,10 @@ ArchivoLocal = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 ArchivoConfiguracion = os.path.join(Path.home(), '.config/elgatoalsw')
 
 
+def getFolderLocal():
+    return ArchivoConfiguracion
+
+
 def ActualizarDato(Archivo, Valor, Atributo):
     '''Actualiza Valor de un Atributo Archivo'''
     Archivo = ArchivoLocal + Archivo
