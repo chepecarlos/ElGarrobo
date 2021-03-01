@@ -13,6 +13,7 @@ from Extra.FuncionesProyecto import SalvarProyecto, CargarProyecto, CargarIdVide
 from Extra.News import SalvarArchivoNoticia
 from Extra.Depuracion import Imprimir, CambiarDepuracion
 from Extra.YoutubeChat import SalvarChatYoutube
+from Extra.FuncionesArchivos import ObtenerArchivo
 from Extra.CargarData import CargarData
 from Extra.Hilos import CargarHilo
 from Extra.FuncionesBlender import CrearProxy, RenderizarVideo, BorrarTemporalesBender
@@ -43,6 +44,7 @@ if sys.version_info[0] < 3:
 
 # Principal
 if __name__ == "__main__":
+    # TODO: funciones para configurar para priner aranque
     args = parser.parse_args()
 
     if args.nodepurar:
@@ -59,7 +61,8 @@ if __name__ == "__main__":
         SalvarChatYoutube(CargarProyecto(), CargarIdVideo())
     elif args.deckdemo:
         Imprimir("Demo de StreamDeck con nuevas funciones")
-        data = CargarData('Comandos.json')
+        # TODO Cargar informacion desde #HOME/.config/ElGATOALSW
+        data = ObtenerArchivo('config.json')
         ElGatitos.ElGatito(data)
         CargarHilo()
     elif args.blenderproxy:

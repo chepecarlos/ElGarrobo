@@ -57,7 +57,7 @@ def CargarStrean(Datas):
                 DeckActual.Serial = DeckActual.get_serial_number()
                 DeckActual.Nombre = Data['Nombre']
                 DeckActual.File = Data['File']
-                # DeckActual.set_key_callback(self.ActualizarBoton)
+                DeckActual.set_key_callback(ActualizarBoton)
                 ListaDeck.append(DeckActual)
                 Data['Encontado'] = True
 
@@ -65,3 +65,7 @@ def CargarStrean(Datas):
         if not Data['Encontado']:
             print(f"No se encontro {Data['Serial']}")
     return ListaDeck
+
+
+def ActualizarBoton(Deck, IndiceBoton, estado):
+    print(f"StreanDeck {Deck.Nombre} {Deck.Serial} Key {IndiceBoton} [{estado}]")

@@ -35,12 +35,13 @@ class MiTecladoMacro:
             if event.type == ecodes.EV_KEY:
                 key = categorize(event)
                 if key.keystate == key.key_down:
-                    Encontrado = False
-                    for Boton in self.TeclasActuales:
-                        if 'KEY' in Boton:
-                            if Boton['KEY'] == key.keycode:
-                                Imprimir(f"Teclado {Nombre} - {key.keycode}")
-                                Accion(Boton)
-                                Encontrado = True
-                    if not Encontrado:
-                        Imprimir(f"Teclado {Nombre} - No programado {key.keycode}")
+                    Imprimir(f"Teclado {Nombre} - {key.keycode}")
+                    # Encontrado = False
+                    # for Boton in self.TeclasActuales:
+                    #     if 'KEY' in Boton:
+                    #         if Boton['KEY'] == key.keycode:
+                    #             Imprimir(f"Teclado {Nombre} - {key.keycode}")
+                    #             Accion(Boton)
+                    #             Encontrado = True
+                    # if not Encontrado:
+                    #     Imprimir(f"Teclado {Nombre} - No programado {key.keycode}")

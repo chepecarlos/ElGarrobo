@@ -3,9 +3,11 @@ import os
 import sys
 import yaml
 
+from pathlib import Path
 from Extra.Depuracion import Imprimir
 
 ArchivoLocal = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ArchivoConfiguracion = os.path.join(Path.home(), '.config/elgatoalsw')
 
 
 def ActualizarDato(Archivo, Valor, Atributo):
@@ -54,3 +56,17 @@ def ObtenerLista(Archivo, Atributo, ID):
     if ID < 0 or ID >= len(Lista):
         return "No Lista"
     return Lista[ID]
+
+
+def ObtenerArchivo(Archivo):
+    global ArchivoConfiguracion
+    # print("Empezando a leer Archivo")
+    if Archivo.endswith(".json"):
+        ArchivoActual = ArchivoConfiguracion + "/" + Archivo
+        if os.path.exists(ArchivoActual):
+            with open(ArchivoActual) as f:
+                return yaml.load(f, Loader=yaml.FullLoader)
+        else:
+            print(f"No Eciste {Archivo}")
+    else:
+        print(f"El Archivo {Archivo} no es .json")
