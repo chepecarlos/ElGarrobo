@@ -10,18 +10,18 @@ import logging
 
 
 # Cargar funciones de Archivos
-from Extra.FuncionesLogging import ConfigurarLogging
 from Extra.FuncionesProyecto import SalvarProyecto, CargarProyecto, CargarIdVideo, CrearFolderProyecto
 from Extra.News import SalvarArchivoNoticia
 from Extra.Depuracion import Imprimir, CambiarDepuracion
 from Extra.YoutubeChat import SalvarChatYoutube
-from Extra.FuncionesArchivos import ObtenerArchivo
 from Extra.CargarData import CargarData
 from Extra.Hilos import CargarHilo
 from Extra.FuncionesBlender import CrearProxy, RenderizarVideo, BorrarTemporalesBender
 from Extra.ApiYoutube import ActualizarDescripcion, ActualizarThumbnails, ActualizarDescripcionFolder
 
 from libreria.ElGatito import ElGatito
+from libreria.FuncionesArchivos import ObtenerArchivo
+from libreria.FuncionesLogging import ConfigurarLogging, NivelLogging
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -57,6 +57,7 @@ if __name__ == "__main__":
 
     if args.nodepurar:
         CambiarDepuracion(False)
+        NivelLogging(logging.WARNING)
 
     if args.proyecto:
         Imprimir("Configurando Folder como Proyecto Actual")
@@ -72,7 +73,6 @@ if __name__ == "__main__":
         # TODO Cargar informacion desde #HOME/.config/ElGATOALSW
         data = ObtenerArchivo('config.json')
         ElGatito(data)
-        CargarHilo()
     elif args.blenderproxy:
         Imprimir("Empezando a crear proxy")
         CrearProxy(os.getcwd())

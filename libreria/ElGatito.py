@@ -4,6 +4,7 @@ from libreria.MiStreanDeck import IniciarStreanDeck, MiStreanDeck
 from libreria.MiTecladoMacro import MiTecladoMacro
 from libreria.FuncionesLogging import ConfigurarLogging
 from libreria.FuncionesArchivos import ObtenerArchivo
+from libreria.FuncionesHilos import CargarHilo
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -16,6 +17,7 @@ class ElGatito(object):
         self.CargarData()
         self.CargarTeclados()
         self.CargarStreanDeck()
+        CargarHilo()
 
     def CargarData(self):
         """Cargando Data para Dispisitivo"""
