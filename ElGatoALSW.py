@@ -6,7 +6,6 @@ import os
 import argparse
 import sys
 import Extra.MiDeck as MiDecks
-import Extra.ElGatito as ElGatitos
 import logging
 
 
@@ -22,6 +21,7 @@ from Extra.Hilos import CargarHilo
 from Extra.FuncionesBlender import CrearProxy, RenderizarVideo, BorrarTemporalesBender
 from Extra.ApiYoutube import ActualizarDescripcion, ActualizarThumbnails, ActualizarDescripcionFolder
 
+from libreria.ElGatito import ElGatito
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -46,13 +46,13 @@ parser.add_argument('--video-recursivo', '-vr', help="Archivo a usar para actual
 
 
 if sys.version_info[0] < 3:
-    Imprimir('Tienes que usar Python 3 para este programa')
+    logger.error("Tienes que usar Python 3 para este programa")
     sys.exit(1)
 
 # Principal
 if __name__ == "__main__":
     # TODO: funciones para configurar para priner aranque
-    logger.info("Iniciando ElGatoALSW")
+    logger.info("Iniciando el programa ElGatoALSW")
     args = parser.parse_args()
 
     if args.nodepurar:
@@ -71,7 +71,7 @@ if __name__ == "__main__":
         logger.info("Iniciando con modo Demo")
         # TODO Cargar informacion desde #HOME/.config/ElGATOALSW
         data = ObtenerArchivo('config.json')
-        ElGatitos.ElGatito(data)
+        ElGatito(data)
         CargarHilo()
     elif args.blenderproxy:
         Imprimir("Empezando a crear proxy")
@@ -108,7 +108,7 @@ if __name__ == "__main__":
         else:
             Imprimir("Falta el ID del video")
     else:
-        Imprimir("No parametro")
+        logger.info("Iniciando sin parametros")
         data = CargarData('Comandos.json')
         Deck = MiDecks.MiDeck(data)
         CargarHilo()
