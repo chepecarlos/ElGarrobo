@@ -1,10 +1,14 @@
 import threading
+import logging
 
+from Extra.FuncionesLogging import ConfigurarLogging
 from Extra.Depuracion import Imprimir
 from Extra.Acciones import Accion
 from Extra.CargarData import ExisteArchivo, CargarValores
 from evdev import InputDevice, categorize, ecodes
 
+logger = logging.getLogger(__name__)
+ConfigurarLogging(logger)
 
 class MiTecladoMacro:
     def __init__(self, Nombre, Dispisitivo, File):
@@ -18,9 +22,9 @@ class MiTecladoMacro:
             self.Teclado.grab()
             self.HiloTeclado = threading.Thread(target=self.HiloRaton, args=(self.Teclado, self.Nombre,), daemon=True)
             self.HiloTeclado.start()
-            Imprimir(f"Conectando a Teclado {self.Nombre}")
+            logger.info(f"Conectando: {self.Nombre} - {self.Dispisitivo}")
         except:
-            Imprimir(f"No se encontro el Teclado {self.Nombre}")
+            logger.warning(f"Conectando a Teclado {self.Nombre}")
             return False
         return True
 
@@ -35,7 +39,8 @@ class MiTecladoMacro:
             if event.type == ecodes.EV_KEY:
                 key = categorize(event)
                 if key.keystate == key.key_down:
-                    Imprimir(f"Teclado {Nombre} - {key.keycode}")
+                    logger.debug(f"Evento {Nombre} - {key.keycode}")
+                    # Imprimir(f"Teclado {Nombre} - {key.keycode}")
                     # Encontrado = False
                     # for Boton in self.TeclasActuales:
                     #     if 'KEY' in Boton:

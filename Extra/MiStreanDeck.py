@@ -1,8 +1,13 @@
+import logging
+
+from Extra.FuncionesLogging import ConfigurarLogging
 from StreamDeck.DeviceManager import DeviceManager
 
 from Extra.Depuracion import Imprimir
 from Extra.FuncionesArchivos import ObtenerDato
 
+logger = logging.getLogger(__name__)
+ConfigurarLogging(logger)
 
 class MiStreanDeck(object):
 
@@ -23,7 +28,8 @@ class MiStreanDeck(object):
             Encontrado = False
             for Data in self.Data:
                 if Data['Serial'] == DeckActual.get_serial_number():
-                    print(f"Abriendo : {DeckActual.DECK_TYPE} -  {DeckActual.get_serial_number()}")
+                    logger.info(f"Conectando: {DeckActual.DECK_TYPE} -  {DeckActual.get_serial_number()}")
+                    # print(f"Abriendo : {DeckActual.DECK_TYPE} -  {DeckActual.get_serial_number()}")
                     DeckActual.Serial = DeckActual.get_serial_number()
                     DeckActual.Nombre = Data['Nombre']
                     DeckActual.File = Data['File']
@@ -31,11 +37,13 @@ class MiStreanDeck(object):
                     ListaDeck.append(DeckActual)
                     Encontrado = True
             if not Encontrado:
+
                 print(f"No se encontro {Data['Serial']}")
                 DeckActual = None
         return ListaDeck
 
     def ActualizarBoton(self, Deck, IndiceBoton, estado):
+        logging.debug(f"Serial {Deck.id()} {Deck.Serial} Key {IndiceBoton} [{estado}]")
         print(f"Serial {Deck.id()} {Deck.Serial} Key {IndiceBoton} [{estado}]")
 
 
@@ -53,7 +61,7 @@ def CargarStrean(Datas):
         DeckActual.set_brightness(Brillo)
         for Data in Datas:
             if Data['Serial'] == DeckActual.get_serial_number():
-                print(f"Encontrado: {DeckActual.DECK_TYPE} -  {DeckActual.get_serial_number()}")
+                logger.info(f"Conectando: {Data['Nombre']} - {DeckActual.get_serial_number()}")
                 DeckActual.Serial = DeckActual.get_serial_number()
                 DeckActual.Nombre = Data['Nombre']
                 DeckActual.File = Data['File']
@@ -63,9 +71,10 @@ def CargarStrean(Datas):
 
     for Data in Datas:
         if not Data['Encontado']:
-            print(f"No se encontro {Data['Serial']}")
+            logger.warning(f"No se encontro: {Data['Nombre']} - {Data['Serial']}")
     return ListaDeck
 
 
 def ActualizarBoton(Deck, IndiceBoton, estado):
-    print(f"StreanDeck {Deck.Nombre} {Deck.Serial} Key {IndiceBoton} [{estado}]")
+    logger.debug(f"StreanDeck {Deck.Nombre} {Deck.Serial} Key {IndiceBoton} [{estado}]")
+    # print(f"StreanDeck {Deck.Nombre} {Deck.Serial} Key {IndiceBoton} [{estado}]")
