@@ -1,11 +1,13 @@
 import threading
 import logging
 
-from Extra.FuncionesLogging import ConfigurarLogging
-from Extra.Depuracion import Imprimir
+from evdev import InputDevice, categorize, ecodes
+
+
 from Extra.Acciones import Accion
 from Extra.CargarData import ExisteArchivo, CargarValores
-from evdev import InputDevice, categorize, ecodes
+
+from libreria.FuncionesLogging import ConfigurarLogging
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -30,7 +32,7 @@ class MiTecladoMacro:
 
     def ActualizarTeclas(self, Archivo):
         if ExisteArchivo(Archivo + "/" + self.File, True):
-            Imprimir(f"Cargando Archivo {self.File}")
+            logger.info(f"Cargando Archivo {self.File}")
             self.TeclasActuales = CargarValores(Archivo + "/" + self.File, True)
 
     def HiloRaton(self, Teclado, Nombre):

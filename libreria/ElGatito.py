@@ -1,13 +1,9 @@
 import logging
 
-from Extra.FuncionesLogging import ConfigurarLogging
-from Extra.FuncionesArchivos import ObtenerArchivo
-
-
 from libreria.MiStreanDeck import IniciarStreanDeck, MiStreanDeck
 from libreria.MiTecladoMacro import MiTecladoMacro
-# import libreria.MiTecladoMacro as MiTecladoMacro
-# import libreria.MiStreanDeck as MiStreanDeck
+from libreria.FuncionesLogging import ConfigurarLogging
+from libreria.FuncionesArchivos import ObtenerArchivo
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
