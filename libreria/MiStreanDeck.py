@@ -3,7 +3,7 @@ import logging
 
 from StreamDeck.DeviceManager import DeviceManager
 
-from libreria.FuncionesArchivos import ObtenerDato
+from libreria.FuncionesArchivos import ObtenerValor
 from libreria.FuncionesLogging import ConfigurarLogging
 
 logger = logging.getLogger(__name__)
@@ -33,21 +33,21 @@ def IniciarStreanDeck(Datas):
         DeckActual = deck
         DeckActual.open()
         DeckActual.reset()
-        Brillo = ObtenerDato("/Data/StreanDeck.json", "Brillo")
+        Brillo = ObtenerValor("data/streandeck.json", "brillo")
         DeckActual.set_brightness(Brillo)
         for Data in Datas:
-            if Data['Serial'] == DeckActual.get_serial_number():
-                logger.info(f"Conectando: {Data['Nombre']} - {DeckActual.get_serial_number()}")
+            if Data['serial'] == DeckActual.get_serial_number():
+                logger.info(f"Conectando: {Data['nombre']} - {DeckActual.get_serial_number()}")
                 DeckActual.Serial = DeckActual.get_serial_number()
-                DeckActual.Nombre = Data['Nombre']
-                DeckActual.File = Data['File']
+                DeckActual.Nombre = Data['nombre']
+                DeckActual.File = Data['file']
                 DeckActual.set_key_callback(ActualizarBoton)
                 ListaDeck.append(DeckActual)
-                Data['Encontado'] = True
+                Data['encontado'] = True
 
     for Data in Datas:
-        if not Data['Encontado']:
-            logger.warning(f"No se encontro: {Data['Nombre']} - {Data['Serial']}")
+        if not Data['encontado']:
+            logger.warning(f"No se encontro: {Data['nombre']} - {Data['serial']}")
     return ListaDeck
 
 

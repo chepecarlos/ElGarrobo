@@ -63,9 +63,11 @@ def ObtenerLista(Archivo, Atributo, ID):
 
 
 def ObtenerArchivo(Archivo):
+    """Leer y devuelte la informacion de un archivo"""
     global ArchivoConfiguracion
     if Archivo.endswith(".json"):
         ArchivoActual = ArchivoConfiguracion + "/" + Archivo
+        logger.info(ArchivoActual)
         if os.path.exists(ArchivoActual):
             with open(ArchivoActual) as f:
                 return yaml.load(f, Loader=yaml.FullLoader)
@@ -73,3 +75,42 @@ def ObtenerArchivo(Archivo):
             logger.warning(f"No Eciste {Archivo}")
     else:
         logger.warning(f"El Archivo {Archivo} no es .json")
+
+
+def ObtenerFolder(Directorio):
+    """Devuelve una lista de los folder dentro de Directorio"""
+    global ArchivoConfiguracion
+    FolderActual = os.path.join(ArchivoConfiguracion, Directorio)
+    ListaFolder = []
+    if os.path.exists(FolderActual):
+        for folder in os.listdir(FolderActual):
+            if os.path.isdir(os.path.join(FolderActual, folder)):
+                # ListaFolder.append({"folder": folder})
+                ListaFolder.append(folder)
+        return ListaFolder
+
+
+def ObtenerValor(Archivo, Atributo, local=True):
+    """Obtiene Atributo de un Archivo .json"""
+    if local:
+        Archivo = os.path.join(ArchivoConfiguracion, Archivo)
+    if Archivo.endswith(".json"):
+        if os.path.exists(Archivo):
+            with open(Archivo) as f:
+                data = yaml.load(f, Loader=yaml.FullLoader)
+        else:
+            logger.warning(f"Archivo no Exite {Archivo}")
+            return ""
+    elif Archivo.endswith(".md"):
+        with open(Archivo) as f:
+            try:
+                data = list(yaml.load_all(f, Loader=yaml.SafeLoader))[0]
+            except yaml.YAMLError as exc:
+                logger.warning(f"error con yaml {exc}")
+                return ""
+
+    if Atributo in data:
+        return data[Atributo]
+    else:
+        logger.worning(f"No existe el atributo {Atributo}")
+        return ""
