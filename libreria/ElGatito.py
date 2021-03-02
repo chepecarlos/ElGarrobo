@@ -29,9 +29,11 @@ class ElGatito(object):
             self.Data['teclados'] = ObtenerArchivo(self.Data['teclados_file'])
 
         if 'folder_path' in self.Data:
-            self.CargarFolder(self.Data)
+            self.Keys = {"nombre": self.Data['folder_path'],
+                         "folder_path": self.Data['folder_path']}
+            self.CargarFolder(self.Keys)
 
-        SalvarArchivo("Data.json", self.Data)
+        SalvarArchivo("Data.json", self.Keys)
 
     def CargarFolder(self, Data):
         ListaFolder = ObtenerFolder(Data['folder_path'])
