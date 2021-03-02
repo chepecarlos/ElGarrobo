@@ -123,6 +123,12 @@ class ElGatito(object):
                     return Data
 
     def Evento(self, Evento):
+        NombreEvento = Evento['nombre']
+        if NombreEvento in self.acciones:
+            for accion in self.acciones[NombreEvento]:
+                if accion['key'] == Evento['key']:
+                    logger.debug(f"Intentando hacer accion:{accion['key']}-{accion['nombre']}")
+                    return
         logger.debug(Evento)
 
     def Prueba(self):
