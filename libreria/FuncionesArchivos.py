@@ -93,6 +93,17 @@ def ObtenerFolder(Directorio):
         return ListaFolder
 
 
+def ObtenerArhivos(Directorio):
+    global ArchivoConfiguracion
+    FolderActual = os.path.join(ArchivoConfiguracion, Directorio)
+    ListaArchivos = []
+    if os.path.exists(FolderActual):
+        for archivo in os.listdir(FolderActual):
+            if os.path.isfile(os.path.join(FolderActual, archivo)):
+                ListaArchivos.append(archivo)
+        return ListaArchivos
+
+
 def ObtenerValor(Archivo, Atributo, local=True):
     """Obtiene Atributo de un Archivo .json"""
     if local:

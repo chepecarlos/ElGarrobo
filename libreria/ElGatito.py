@@ -3,7 +3,7 @@ import logging
 from libreria.MiStreanDeck import IniciarStreanDeck, MiStreanDeck
 from libreria.MiTecladoMacro import MiTecladoMacro
 from libreria.FuncionesLogging import ConfigurarLogging
-from libreria.FuncionesArchivos import ObtenerArchivo, ObtenerFolder, UnirPath, SalvarArchivo
+from libreria.FuncionesArchivos import ObtenerArchivo, ObtenerFolder, UnirPath, SalvarArchivo, ObtenerArhivos
 from libreria.FuncionesHilos import CargarHilo
 
 logger = logging.getLogger(__name__)
@@ -30,11 +30,19 @@ class ElGatito(object):
 
         if 'folder_path' in self.Data:
             self.CargarFolder(self.Data)
-            # logger.info(f"Folder cargados {self.Data['folder']}")
-        # SalvarArchivo("dataFolder.json", self.Data)
+
+        SalvarArchivo("Data.json", self.Data)
 
     def CargarFolder(self, Data):
         ListaFolder = ObtenerFolder(Data['folder_path'])
+        ListaArchivos = ObtenerArhivos(Data['folder_path'])
+
+        if len(ListaArchivos) > 0:
+            for Archivo in ListaArchivos:
+                self.CargarArchivos('teclados', Data, Archivo)
+                self.CargarArchivos('global', Data, Archivo)
+                self.CargarArchivos('deck', Data, Archivo)
+
         if len(ListaFolder) > 0:
             Data["folder"] = []
             for Folder in ListaFolder:
@@ -46,6 +54,15 @@ class ElGatito(object):
             if "folder" in Data:
                 for Folder in Data["folder"]:
                     self.CargarFolder(Folder)
+
+    def CargarArchivos(self, Atributo, Data, Archivo):
+        if Atributo in self.Data:
+            for ArchivosTeclado in self.Data[Atributo]:
+                if ArchivosTeclado['file'] == Archivo:
+                    path = UnirPath(Data['folder_path'], Archivo)
+                    DataArchivo = ObtenerArchivo(path)
+                    DataAtributo = ArchivosTeclado['nombre']
+                    Data[DataAtributo] = DataArchivo
 
     def CargarTeclados(self):
         """Confiurando Teclados Macros"""
@@ -62,11 +79,12 @@ class ElGatito(object):
         """configurando StreanDeck"""
         self.ListaDeck = []
         if 'deck' in self.Data:
-            logger.info("Cargando StreamDeck")
-            CargarDeck = IniciarStreanDeck(self.Data['deck'])
-            for Deck in CargarDeck:
-                DeckActual = MiStreanDeck(Deck)
-                self.ListaDeck.append(DeckActual)
+            if 'Dispositivos' in self.Data['deck']:
+                logger.info("Cargando StreamDeck")
+                CargarDeck = IniciarStreanDeck(self.Data['deck'])
+                for Deck in CargarDeck:
+                    DeckActual = MiStreanDeck(Deck)
+                    self.ListaDeck.append(DeckActual)
 
     def ConfigurandoTeclados(self, Directorio):
         for Teclado in self.ListaTeclados:
