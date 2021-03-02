@@ -62,12 +62,15 @@ def ObtenerLista(Archivo, Atributo, ID):
     return Lista[ID]
 
 
+def UnirPath(Path1, Path2):
+    return os.path.join(Path1, Path2)
+
+
 def ObtenerArchivo(Archivo):
     """Leer y devuelte la informacion de un archivo"""
     global ArchivoConfiguracion
     if Archivo.endswith(".json"):
         ArchivoActual = ArchivoConfiguracion + "/" + Archivo
-        logger.info(ArchivoActual)
         if os.path.exists(ArchivoActual):
             with open(ArchivoActual) as f:
                 return yaml.load(f, Loader=yaml.FullLoader)
@@ -114,3 +117,9 @@ def ObtenerValor(Archivo, Atributo, local=True):
     else:
         logger.worning(f"No existe el atributo {Atributo}")
         return ""
+
+
+def SalvarArchivo(Archivo, Data):
+    Archivo = os.path.join(ArchivoConfiguracion, Archivo)
+    with open(Archivo, 'w') as f:
+        json.dump(Data, f, indent=1)

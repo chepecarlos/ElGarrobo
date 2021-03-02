@@ -3,7 +3,7 @@ import logging
 from libreria.MiStreanDeck import IniciarStreanDeck, MiStreanDeck
 from libreria.MiTecladoMacro import MiTecladoMacro
 from libreria.FuncionesLogging import ConfigurarLogging
-from libreria.FuncionesArchivos import ObtenerArchivo, ObtenerFolder
+from libreria.FuncionesArchivos import ObtenerArchivo, ObtenerFolder, UnirPath, SalvarArchivo
 from libreria.FuncionesHilos import CargarHilo
 
 logger = logging.getLogger(__name__)
@@ -29,16 +29,23 @@ class ElGatito(object):
             self.Data['teclados'] = ObtenerArchivo(self.Data['teclados_file'])
 
         if 'folder_path' in self.Data:
-            self.Data['folder'] = []
-            ListaFolder = ObtenerFolder(self.Data['folder_path'])
+            self.CargarFolder(self.Data)
+            # logger.info(f"Folder cargados {self.Data['folder']}")
+        # SalvarArchivo("dataFolder.json", self.Data)
+
+    def CargarFolder(self, Data):
+        ListaFolder = ObtenerFolder(Data['folder_path'])
+        if len(ListaFolder) > 0:
+            Data["folder"] = []
             for Folder in ListaFolder:
-                self.Data['folder'].append({"nombre": Folder, "folder": True})
-            # for Folder in self.Data['folder']:
-                # ListaFolder = ObtenerFolder([Folder['nombre']])
-                # print(ListaFolder)
-            #     # Folder['folder'] = ObtenerFolder(self.Data['folder_path'] + "/" + )
-            #     logger.info(Folder['nombre'])
-            logger.info(f"Folder cargados {self.Data['folder']}")
+                pathActual = UnirPath(Data['folder_path'], Folder)
+                data = {"nombre": Folder,
+                        "folder_path": pathActual,
+                        "folder": True}
+                Data["folder"].append(data)
+            if "folder" in Data:
+                for Folder in Data["folder"]:
+                    self.CargarFolder(Folder)
 
     def CargarTeclados(self):
         """Confiurando Teclados Macros"""
