@@ -17,6 +17,7 @@ class ElGatito(object):
         self.CargarData()
         self.CargarTeclados()
         self.CargarStreanDeck()
+        self.Prueba()
         CargarHilo()
 
     def CargarData(self):
@@ -29,11 +30,11 @@ class ElGatito(object):
             self.Data['teclados'] = ObtenerArchivo(self.Data['teclados_file'])
 
         if 'folder_path' in self.Data:
+            self.PathActual = self.Data['folder_path']
             self.Keys = {"nombre": self.Data['folder_path'],
                          "folder_path": self.Data['folder_path']}
             self.CargarFolder(self.Keys)
 
-        SalvarArchivo("Data.json", self.Keys)
 
     def CargarFolder(self, Data):
         ListaFolder = ObtenerFolder(Data['folder_path'])
@@ -50,8 +51,7 @@ class ElGatito(object):
             for Folder in ListaFolder:
                 pathActual = UnirPath(Data['folder_path'], Folder)
                 data = {"nombre": Folder,
-                        "folder_path": pathActual,
-                        "folder": True}
+                        "folder_path": pathActual}
                 Data["folder"].append(data)
             if "folder" in Data:
                 for Folder in Data["folder"]:
@@ -91,5 +91,29 @@ class ElGatito(object):
         for Teclado in self.ListaTeclados:
             Teclado.ActualizarTeclas(Directorio)
 
+    def BuscarFolder(self, Folder, Data):
+        Folderes = Folder.split('/')
+        if len(Folderes) > 0:
+            return self.BuscarDentroFolder(Folderes, Data)
+
+    def BuscarDentroFolder(self, Folderes, Data):
+        if 'nombre' in Data:
+            if Data['nombre'] == Folderes[0]:
+                Folderes.remove(Data['nombre'])
+                if len(Folderes) > 0:
+                    if 'folder' in Data:
+                        for BuscarFolder in Data['folder']:
+                            Data = self.BuscarDentroFolder(Folderes, BuscarFolder)
+                            if Data is not None:
+                                return Data
+                else:
+                    return Data
+
     def Evento(self, Evento):
         logger.debug(Evento)
+
+    def Prueba(self):
+        self.PathActual = "defaul/news"
+        self.FolderActual = self.BuscarFolder(self.PathActual, self.Keys)
+        logger.debug(f"Que hay Folder {self.FolderActual}")
+        SalvarArchivo("Data.json", self.FolderActual)
