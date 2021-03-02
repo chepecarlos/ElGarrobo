@@ -18,12 +18,8 @@ class MiStreanDeck(object):
         self.Nombre = Deck.Nombre
         self.File = Deck.File
 
-    def ActualizarBoton(self, Deck, IndiceBoton, estado):
-        logging.debug(f"Serial {Deck.id()} {Deck.Serial} Key {IndiceBoton} [{estado}]")
-        print(f"Serial {Deck.id()} {Deck.Serial} Key {IndiceBoton} [{estado}]")
 
-
-def IniciarStreanDeck(Datas):
+def IniciarStreanDeck(Datas, FuncionEvento):
     streamdecks = DeviceManager().enumerate()
     ListaDeck = []
     for Data in Datas:
@@ -41,6 +37,7 @@ def IniciarStreanDeck(Datas):
                 DeckActual.Serial = DeckActual.get_serial_number()
                 DeckActual.Nombre = Data['nombre']
                 DeckActual.File = Data['file']
+                DeckActual.FuncionEvento = FuncionEvento
                 DeckActual.set_key_callback(ActualizarBoton)
                 ListaDeck.append(DeckActual)
                 Data['encontado'] = True
@@ -51,5 +48,8 @@ def IniciarStreanDeck(Datas):
     return ListaDeck
 
 
-def ActualizarBoton(Deck, IndiceBoton, estado):
-    logger.debug(f"StreanDeck {Deck.Nombre} {Deck.Serial} Key {IndiceBoton} [{estado}]")
+def ActualizarBoton(Deck, Key, estado):
+    if estado:
+        data = {"nombre": Deck.Nombre,
+                "key": Key}
+        Deck.FuncionEvento(data)

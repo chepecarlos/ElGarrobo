@@ -4,7 +4,7 @@ import logging
 from evdev import InputDevice, categorize, ecodes
 
 
-from Extra.Acciones import Accion
+# from Extra.Acciones import Accion
 from Extra.CargarData import ExisteArchivo, CargarValores
 
 from libreria.FuncionesLogging import ConfigurarLogging
@@ -12,11 +12,13 @@ from libreria.FuncionesLogging import ConfigurarLogging
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
 
+
 class MiTecladoMacro:
-    def __init__(self, Nombre, Dispisitivo, File):
+    def __init__(self, Nombre, Dispisitivo, File, FuncionEvento):
         self.Nombre = Nombre
         self.Dispisitivo = Dispisitivo
         self.File = File
+        self.FuncionEvento = FuncionEvento
 
     def Conectar(self):
         try:
@@ -41,7 +43,11 @@ class MiTecladoMacro:
             if event.type == ecodes.EV_KEY:
                 key = categorize(event)
                 if key.keystate == key.key_down:
-                    logger.debug(f"Evento {Nombre} - {key.keycode}")
+                    data = {"nombre": Nombre,
+                            "key": key.keycode}
+                    self.FuncionEvento(data)
+                    # logger.debug(f"Evento {Nombre} - {key.keycode}")
+
                     # Imprimir(f"Teclado {Nombre} - {key.keycode}")
                     # Encontrado = False
                     # for Boton in self.TeclasActuales:

@@ -70,7 +70,7 @@ class ElGatito(object):
             logger.info("Cargando Teclados")
             self.ListaTeclados = []
             for Teclado in self.Data['teclados']:
-                TecladoActual = MiTecladoMacro(Teclado['nombre'], Teclado['input'], Teclado['file'])
+                TecladoActual = MiTecladoMacro(Teclado['nombre'], Teclado['input'], Teclado['file'], self.Evento)
                 if TecladoActual.Conectar():
                     self.ListaTeclados.append(TecladoActual)
             # self.ConfigurandoTeclados("")
@@ -79,17 +79,15 @@ class ElGatito(object):
         """configurando StreanDeck"""
         self.ListaDeck = []
         if 'deck' in self.Data:
-            if 'Dispositivos' in self.Data['deck']:
-                logger.info("Cargando StreamDeck")
-                CargarDeck = IniciarStreanDeck(self.Data['deck'])
-                for Deck in CargarDeck:
-                    DeckActual = MiStreanDeck(Deck)
-                    self.ListaDeck.append(DeckActual)
+            logger.info("Cargando StreamDeck")
+            CargarDeck = IniciarStreanDeck(self.Data['deck'], self.Evento)
+            for Deck in CargarDeck:
+                DeckActual = MiStreanDeck(Deck)
+                self.ListaDeck.append(DeckActual)
 
     def ConfigurandoTeclados(self, Directorio):
         for Teclado in self.ListaTeclados:
             Teclado.ActualizarTeclas(Directorio)
 
-    # def ConfigurandoSteanDeck(self, Direcotio):
-    #     for Deck in slef.ListaDeck:
-    #         print()
+    def Evento(self, Evento):
+        logger.debug(Evento)
