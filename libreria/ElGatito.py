@@ -14,6 +14,7 @@ class ElGatito(object):
 
     def __init__(self, Data):
         self.Data = Data
+        self.acciones = dict()
         self.CargarData()
         self.CargarTeclados()
         self.CargarStreanDeck()
@@ -34,7 +35,6 @@ class ElGatito(object):
             self.Keys = {"nombre": self.Data['folder_path'],
                          "folder_path": self.Data['folder_path']}
             self.CargarFolder(self.Keys)
-
 
     def CargarFolder(self, Data):
         ListaFolder = ObtenerFolder(Data['folder_path'])
@@ -75,7 +75,6 @@ class ElGatito(object):
                 TecladoActual = MiTecladoMacro(Teclado['nombre'], Teclado['input'], Teclado['file'], self.Evento)
                 if TecladoActual.Conectar():
                     self.ListaTeclados.append(TecladoActual)
-            # self.ConfigurandoTeclados("")
 
     def CargarStreanDeck(self):
         """configurando StreanDeck"""
@@ -91,10 +90,24 @@ class ElGatito(object):
         for Teclado in self.ListaTeclados:
             Teclado.ActualizarTeclas(Directorio)
 
-    def BuscarFolder(self, Folder, Data):
+    def BuscarFolder(self, Folder):
+        Data = self.Keys
         Folderes = Folder.split('/')
         if len(Folderes) > 0:
-            return self.BuscarDentroFolder(Folderes, Data)
+            Data = self.BuscarDentroFolder(Folderes, Data)
+            if Data is not None:
+                SalvarArchivo("Data.json", Data)
+                self.CargarAcciones('teclados', Data)
+                self.CargarAcciones('global', Data)
+                self.CargarAcciones('deck', Data)
+
+    def CargarAcciones(self, Atributo, Data):
+        for dispositivo in self.Data[Atributo]:
+            nombreDispositivo = dispositivo['nombre']
+            print(dispositivo)
+            if nombreDispositivo in Data:
+                logger.info(f"Encontro Config {Atributo} de {nombreDispositivo}")
+                self.acciones[nombreDispositivo] = Data[nombreDispositivo]
 
     def BuscarDentroFolder(self, Folderes, Data):
         if 'nombre' in Data:
@@ -114,6 +127,5 @@ class ElGatito(object):
 
     def Prueba(self):
         self.PathActual = "defaul/news"
-        self.FolderActual = self.BuscarFolder(self.PathActual, self.Keys)
-        logger.debug(f"Que hay Folder {self.FolderActual}")
-        SalvarArchivo("Data.json", self.FolderActual)
+        self.BuscarFolder(self.PathActual)
+        SalvarArchivo("acciones.json", self.acciones)
