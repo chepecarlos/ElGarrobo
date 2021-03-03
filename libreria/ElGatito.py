@@ -5,6 +5,7 @@ from libreria.MiTecladoMacro import MiTecladoMacro
 from libreria.FuncionesLogging import ConfigurarLogging
 from libreria.FuncionesArchivos import ObtenerArchivo, ObtenerFolder, UnirPath, SalvarArchivo, ObtenerArhivos
 from libreria.FuncionesHilos import CargarHilo
+from libreria.acciones.Acciones import Accion
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -128,6 +129,7 @@ class ElGatito(object):
             for accion in self.acciones[NombreEvento]:
                 if accion['key'] == Evento['key']:
                     logger.debug(f"Intentando hacer accion:{accion['key']}-{accion['nombre']}")
+                    Accion(accion)
                     return
         logger.debug(Evento)
 
