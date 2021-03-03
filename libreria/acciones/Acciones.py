@@ -95,7 +95,7 @@ def Accion(AccionActual):
         AccionesArchivos(AccionActual)
 
     else:
-        logger.worning("Boton - no definida")
+        logger.warning(f"Boton - no definida {AccionActual['nombre']}")
 
 
 def AccionSonido(AccionActual):

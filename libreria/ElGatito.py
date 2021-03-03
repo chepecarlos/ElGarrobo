@@ -105,7 +105,6 @@ class ElGatito(object):
     def CargarAcciones(self, Atributo, Data):
         for dispositivo in self.Data[Atributo]:
             nombreDispositivo = dispositivo['nombre']
-            print(dispositivo)
             if nombreDispositivo in Data:
                 logger.info(f"Encontro Config {Atributo} de {nombreDispositivo}")
                 self.acciones[nombreDispositivo] = Data[nombreDispositivo]
@@ -128,10 +127,10 @@ class ElGatito(object):
         if NombreEvento in self.acciones:
             for accion in self.acciones[NombreEvento]:
                 if accion['key'] == Evento['key']:
-                    logger.debug(f"Intentando hacer accion:{accion['key']}-{accion['nombre']}")
+                    logger.debug(f"Evento {NombreEvento}[{accion['key']}] {accion['nombre']}")
                     Accion(accion)
                     return
-        logger.debug(Evento)
+        logger.info(f"Evento no asignado {NombreEvento}[{Evento['key']}]")
 
     def Prueba(self):
         self.PathActual = "defaul/news"
