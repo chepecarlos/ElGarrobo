@@ -4,7 +4,7 @@ from Extra.FuncionesProyecto import GuardadDato
 from Extra.MiMQTT import EnviarMQTTSimple
 from Extra.Depuracion import Imprimir
 
-colores = ["rojo", "azul", "verde", "blanco", "gris", "aqua", "amarillo", "naranja", "morado"]
+colores = ["rojo", "azul", "verde", "blanco", "gris", "aqua", "amarillo", "naranja", "morado", "rosado"]
 ExprecionColores = '\#[a-fA-f0-9][a-fA-f0-9][a-fA-f0-9][a-fA-f0-9][a-fA-f0-9][a-fA-f0-9]'
 
 
@@ -52,8 +52,9 @@ def SalvarChatYoutube(Directorio, IdVideo):
                     EnviarMQTTSimple("fondo/color", Color)
                 elif FiltrarExprecion(Chat.message, ExprecionColores):
                     Color = FiltrarExprecion(Chat.message, ExprecionColores)
+                    Imprimir(f"Cambiando color HEX gracias a {Chat.author.name} {Color[0]}")
                     GuardadDato(Directorio + "/9.Chat/Comandos.json", ChatData)
-                    EnviarMQTTSimple("fondo/expresion/color", Color[0])
+                    EnviarMQTTSimple("fondo/colorhex", Color[0])
             if Chat.author.isChatSponsor:
                 DatoExtra = {"Miembro": Chat.author.isChatSponsor}
                 ChatData.append(DatoExtra)
