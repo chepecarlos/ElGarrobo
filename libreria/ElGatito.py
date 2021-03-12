@@ -131,6 +131,13 @@ class ElGatito(object):
                         logger.debug(f"Evento {NombreEvento}[{accion['key']}] {accion['nombre']}")
                         Accion(accion)
                         return
+        if 'streandeck' in self.acciones:
+            if 'deck' in Evento:
+                if 'key' in Evento and 'base' in Evento:
+                    valor = Evento['key'] + Evento['base']
+                    logger.debug(f"Evento StreanDeck {valor}")
+                    return
+
         logger.info(f"Evento no asignado {NombreEvento}[{Evento['key']}]")
 
     def Prueba(self):
