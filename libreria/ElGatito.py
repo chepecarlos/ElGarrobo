@@ -126,10 +126,11 @@ class ElGatito(object):
         NombreEvento = Evento['nombre']
         if NombreEvento in self.acciones:
             for accion in self.acciones[NombreEvento]:
-                if accion['key'] == Evento['key']:
-                    logger.debug(f"Evento {NombreEvento}[{accion['key']}] {accion['nombre']}")
-                    Accion(accion)
-                    return
+                if 'key' in accion:
+                    if accion['key'] == Evento['key']:
+                        logger.debug(f"Evento {NombreEvento}[{accion['key']}] {accion['nombre']}")
+                        Accion(accion)
+                        return
         logger.info(f"Evento no asignado {NombreEvento}[{Evento['key']}]")
 
     def Prueba(self):
