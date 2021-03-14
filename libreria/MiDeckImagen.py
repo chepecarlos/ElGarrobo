@@ -19,7 +19,6 @@ ConfigurarLogging(logger)
 def ActualizarIcono(Deck, indice, accion):
     global FuenteIcono
     ImagenBoton = PILHelper.create_image(Deck)
-    logger.info(f"Loger {indice} - {accion}")
 
     if 'gif' in accion:
         return
@@ -27,30 +26,34 @@ def ActualizarIcono(Deck, indice, accion):
     if 'icono' in accion:
         NombreIcono = accion['icono']
 
+        PonerImagen(ImagenBoton, NombreIcono, accion)
+
+    if 'titulo' in accion:
+        PonerTexto(ImagenBoton, accion['titulo'], accion)
+
+    Deck.set_key_image(indice, PILHelper.to_native_format(Deck, ImagenBoton))
+
+
+def PonerImagen(Imagen, NombreIcono, accion):
     DirecionIcono = UnirPath(ObtenerConfig(), NombreIcono)
     if os.path.exists(DirecionIcono):
         Icono = Image.open(DirecionIcono).convert("RGBA")
         if 'titulo' in accion:
-            Icono.thumbnail((ImagenBoton.width, ImagenBoton.height - 20), Image.LANCZOS)
+            Icono.thumbnail((Imagen.width, Imagen.height - 20), Image.LANCZOS)
         else:
-            Icono.thumbnail((ImagenBoton.width, ImagenBoton.height), Image.LANCZOS)
+            Icono.thumbnail((Imagen.width, Imagen.height), Image.LANCZOS)
     else:
         logging.warning(f"No se encontr icono {DirecionIcono}")
         Icono = Image.new(mode="RGBA", size=(256, 256), color=(153, 153, 255))
-        Icono.thumbnail((ImagenBoton.width, ImagenBoton.height), Image.LANCZOS)
+        Icono.thumbnail((Imagen.width, Imagen.height), Image.LANCZOS)
 
-    IconoPosicion = ((ImagenBoton.width - Icono.width) // 2, 0)
-    ImagenBoton.paste(Icono, IconoPosicion, Icono)
-
-    if 'titulo' in accion:
-        PonerTexto(ImagenBoton, accion)
-    Deck.set_key_image(indice, PILHelper.to_native_format(Deck, ImagenBoton))
+    IconoPosicion = ((Imagen.width - Icono.width) // 2, 0)
+    Imagen.paste(Icono, IconoPosicion, Icono)
 
 
-def PonerTexto(Imagen, accion):
+def PonerTexto(Imagen, Texto, accion):
     Tamanno = 20
     dibujo = ImageDraw.Draw(Imagen)
-    Texto = accion['titulo']
 
     if 'titulo_color' in accion:
         Color = accion['titulo_color']

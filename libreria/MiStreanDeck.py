@@ -25,7 +25,6 @@ class MiStreanDeck(object):
     def ActualizarIconos(self, acciones, Unido=False):
         logger.info(f"empezando a actualizar iconos {self.Nombre}")
         if Unido:
-            logger.info(f"Desde {self.Base} hasta {self.Base+self.Cantidad}")
             for i in range(self.Cantidad):
                 AccionAcual = self.AccionDibujar(acciones, i)
                 if AccionAcual is not None:
