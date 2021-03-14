@@ -62,8 +62,8 @@ def ObtenerLista(Archivo, Atributo, ID):
     return Lista[ID]
 
 
-def UnirPath(Path1, Path2):
-    return os.path.join(Path1, Path2)
+def ObtenerConfig():
+    return ArchivoConfiguracion
 
 
 def ObtenerArchivo(Archivo):
@@ -134,3 +134,7 @@ def SalvarArchivo(Archivo, Data):
     Archivo = os.path.join(ArchivoConfiguracion, Archivo)
     with open(Archivo, 'w') as f:
         json.dump(Data, f, indent=1)
+
+
+def UnirPath(Path1, Path2):
+    return os.path.join(Path1, Path2)

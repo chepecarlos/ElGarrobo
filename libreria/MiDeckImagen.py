@@ -17,33 +17,23 @@ ConfigurarLogging(logger)
 
 
 def ActualizarIcono(Deck, indice, accion):
+    global FuenteIcono
     ImagenBoton = PILHelper.create_image(Deck)
     logger.info(f"Loger {indice} - {accion}")
 
     if 'gif' in accion:
         return
 
-    if 'titulo' in accion:
-        TituloBoton = accion['titulo']
-    else:
-        TituloBoton = ''
-
     if 'icono' in accion:
         NombreIcono = accion['icono']
-
-    if 'titulo_color' in accion:
-        ColorTexto = accion['titulo_color']
-    else:
-        ColorTexto = "white"
 
     DirecionIcono = UnirPath(ObtenerConfig(), NombreIcono)
     if os.path.exists(DirecionIcono):
         Icono = Image.open(DirecionIcono).convert("RGBA")
-        if TituloBoton:
+        if 'titulo' in accion:
             Icono.thumbnail((ImagenBoton.width, ImagenBoton.height - 20), Image.LANCZOS)
         else:
             Icono.thumbnail((ImagenBoton.width, ImagenBoton.height), Image.LANCZOS)
-        pass
     else:
         logging.warning(f"No se encontr icono {DirecionIcono}")
         Icono = Image.new(mode="RGBA", size=(256, 256), color=(153, 153, 255))
@@ -52,14 +42,29 @@ def ActualizarIcono(Deck, indice, accion):
     IconoPosicion = ((ImagenBoton.width - Icono.width) // 2, 0)
     ImagenBoton.paste(Icono, IconoPosicion, Icono)
 
-    if TituloBoton:
-        dibujo = ImageDraw.Draw(ImagenBoton)
-        font = ImageFont.truetype(FuenteIcono, 14)
-        label_w, label_h = dibujo.textsize(TituloBoton, font=font)
-        label_pos = ((ImagenBoton.width - label_w) // 2, ImagenBoton.height - 20)
-        dibujo.text(label_pos, text=TituloBoton, font=font, fill=ColorTexto)
-
+    if 'titulo' in accion:
+        PonerTexto(ImagenBoton, accion)
     Deck.set_key_image(indice, PILHelper.to_native_format(Deck, ImagenBoton))
+
+
+def PonerTexto(Imagen, accion):
+    Tamanno = 20
+    dibujo = ImageDraw.Draw(Imagen)
+    Texto = accion['titulo']
+
+    if 'titulo_color' in accion:
+        Color = accion['titulo_color']
+    else:
+        Color = "white"
+
+    while True:
+        fuente = ImageFont.truetype(FuenteIcono, Tamanno)
+        Titulo_ancho, Titulo_alto = dibujo.textsize(Texto, font=fuente)
+        if Titulo_ancho < Imagen.width:
+            break
+        Tamanno -= 1
+    PosicionTexto = ((Imagen.width - Titulo_ancho) // 2, Imagen.height - Titulo_alto - 2)
+    dibujo.text(PosicionTexto, text=Texto, font=fuente, fill=Color)
 
 
 def DefinirFuente(Fuente):
