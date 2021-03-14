@@ -5,6 +5,7 @@ from StreamDeck.DeviceManager import DeviceManager
 
 from libreria.FuncionesArchivos import ObtenerValor
 from libreria.FuncionesLogging import ConfigurarLogging
+from libreria.MiDeckImagen import ActualizarIcono
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -19,6 +20,25 @@ class MiStreanDeck(object):
         self.Serial = Deck.Serial
         self.Nombre = Deck.Nombre
         self.File = Deck.File
+        self.Base = Deck.Base
+
+    def ActualizarIconos(self, acciones, Unido=False):
+        logger.info(f"empezando a actualizar iconos {self.Nombre}")
+        if Unido:
+            logger.info(f"Desde {self.Base} hasta {self.Base+self.Cantidad}")
+            for i in range(self.Cantidad):
+                AccionAcual = self.AccionDibujar(acciones, i)
+                if AccionAcual is not None:
+                    ActualizarIcono(self.Deck, i, AccionAcual)
+        else:
+            pass
+
+    def AccionDibujar(self, acciones, i):
+        for accion in acciones:
+            if 'key' in accion:
+                if accion['key'] == i + self.Base:
+                    return accion
+        return
 
 
 def IniciarStreanDeck(Datas, FuncionEvento):

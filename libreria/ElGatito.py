@@ -1,6 +1,7 @@
 import logging
 
 from libreria.MiStreanDeck import IniciarStreanDeck, MiStreanDeck
+from libreria.MiDeckImagen import DefinirFuente
 from libreria.MiTecladoMacro import MiTecladoMacro
 from libreria.FuncionesLogging import ConfigurarLogging
 from libreria.FuncionesArchivos import ObtenerArchivo, ObtenerFolder, UnirPath, SalvarArchivo, ObtenerArhivos
@@ -86,6 +87,15 @@ class ElGatito(object):
             for Deck in CargarDeck:
                 DeckActual = MiStreanDeck(Deck)
                 self.ListaDeck.append(DeckActual)
+            if 'fuente' in self.Data:
+                DefinirFuente(self.Data['fuente'])
+
+    def ActualizarDeck(self):
+        for Deck in self.ListaDeck:
+            if 'streandeck' in self.acciones:
+                Deck.ActualizarIconos(self.acciones['streandeck'], True)
+            elif Deck.Nombre in self.acciones:
+                Deck.ActualizarIconos(self.acciones[Deck.Nombre])
 
     def ConfigurandoTeclados(self, Directorio):
         for Teclado in self.ListaTeclados:
@@ -149,4 +159,5 @@ class ElGatito(object):
     def Prueba(self):
         self.PathActual = "defaul/news"
         self.BuscarFolder(self.PathActual)
+        self.ActualizarDeck()
         SalvarArchivo("acciones.json", self.acciones)
