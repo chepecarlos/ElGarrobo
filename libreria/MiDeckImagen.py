@@ -18,6 +18,7 @@ ConfigurarLogging(logger)
 
 def ActualizarIcono(Deck, indice, accion):
     global FuenteIcono
+    global ImagenBase
     ImagenBoton = PILHelper.create_image(Deck)
 
     if 'gif' in accion:
@@ -25,8 +26,16 @@ def ActualizarIcono(Deck, indice, accion):
 
     if 'icono' in accion:
         NombreIcono = accion['icono']
+    elif 'regresar' in accion:
+        NombreIcono = ImagenBase['regresar']
+    elif 'siquiente' in accion:
+        NombreIcono = ImagenBase['siquiente']
+    elif 'anterior' in accion:
+        NombreIcono = ImagenBase['anterior']
+    else:
+        NombreIcono = ImagenBase['base']
 
-        PonerImagen(ImagenBoton, NombreIcono, accion)
+    PonerImagen(ImagenBoton, NombreIcono, accion)
 
     if 'titulo' in accion:
         PonerTexto(ImagenBoton, accion['titulo'], accion)
@@ -73,3 +82,8 @@ def PonerTexto(Imagen, Texto, accion):
 def DefinirFuente(Fuente):
     global FuenteIcono
     FuenteIcono = UnirPath(ObtenerConfig(), Fuente)
+
+
+def DefinirImagenes(Data):
+    global ImagenBase
+    ImagenBase = Data
