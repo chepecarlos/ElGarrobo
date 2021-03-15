@@ -26,13 +26,15 @@ def ActualizarIcono(Deck, indice, accion):
 
     if 'icono' in accion:
         NombreIcono = accion['icono']
-    if 'opcion' in accion:
+    elif 'opcion' in accion:
         if accion['opcion'] == 'regresar':
             NombreIcono = ImagenBase['regresar']
         elif accion['opcion'] == 'siquiente':
             NombreIcono = ImagenBase['siquiente']
         elif accion['opcion'] == 'anterior':
             NombreIcono = ImagenBase['anterior']
+        else:
+            NombreIcono = ImagenBase['base']
     else:
         NombreIcono = ImagenBase['base']
 

@@ -199,6 +199,11 @@ class ElGatito(object):
             self.BuscarFolder(self.PathActual)
             self.LimpiarDeck()
             self.ActualizarDeck()
+        elif Opcion == 'folder':
+            self.PathActual = accion['path']
+            self.BuscarFolder(self.PathActual)
+            self.LimpiarDeck()
+            self.ActualizarDeck()
         else:
             logger.warning(f"Opcion No Encontrada: {Opcion}")
 
