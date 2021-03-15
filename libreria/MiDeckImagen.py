@@ -26,12 +26,13 @@ def ActualizarIcono(Deck, indice, accion):
 
     if 'icono' in accion:
         NombreIcono = accion['icono']
-    elif 'regresar' in accion:
-        NombreIcono = ImagenBase['regresar']
-    elif 'siquiente' in accion:
-        NombreIcono = ImagenBase['siquiente']
-    elif 'anterior' in accion:
-        NombreIcono = ImagenBase['anterior']
+    if 'opcion' in accion:
+        if accion['opcion'] == 'regresar':
+            NombreIcono = ImagenBase['regresar']
+        elif accion['opcion'] == 'siquiente':
+            NombreIcono = ImagenBase['siquiente']
+        elif accion['opcion'] == 'anterior':
+            NombreIcono = ImagenBase['anterior']
     else:
         NombreIcono = ImagenBase['base']
 
@@ -87,3 +88,8 @@ def DefinirFuente(Fuente):
 def DefinirImagenes(Data):
     global ImagenBase
     ImagenBase = Data
+
+
+def LimpiarIcono(Deck, indice):
+    ImagenBoton = PILHelper.create_image(Deck)
+    Deck.set_key_image(indice, PILHelper.to_native_format(Deck, ImagenBoton))

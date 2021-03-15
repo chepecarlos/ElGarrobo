@@ -5,7 +5,7 @@ from StreamDeck.DeviceManager import DeviceManager
 
 from libreria.FuncionesArchivos import ObtenerValor
 from libreria.FuncionesLogging import ConfigurarLogging
-from libreria.MiDeckImagen import ActualizarIcono
+from libreria.MiDeckImagen import ActualizarIcono, LimpiarIcono
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -22,11 +22,12 @@ class MiStreanDeck(object):
         self.File = Deck.File
         self.Base = Deck.Base
 
-    def ActualizarIconos(self, acciones, Unido=False):
+    def ActualizarIconos(self, acciones, desface, Unido=False):
         logger.info(f"empezando a actualizar iconos {self.Nombre}")
         if Unido:
             for i in range(self.Cantidad):
-                AccionAcual = self.AccionDibujar(acciones, i)
+                key_desface = i + self.Base + desface
+                AccionAcual = self.AccionDibujar(acciones, key_desface)
                 if AccionAcual is not None:
                     ActualizarIcono(self.Deck, i, AccionAcual)
         else:
@@ -35,9 +36,14 @@ class MiStreanDeck(object):
     def AccionDibujar(self, acciones, i):
         for accion in acciones:
             if 'key' in accion:
-                if accion['key'] == i + self.Base:
+                if accion['key'] == i:
                     return accion
         return
+
+    def Limpiar(self):
+        for i in range(self.Cantidad):
+            LimpiarIcono(self.Deck, i)
+        pass
 
 
 def IniciarStreanDeck(Datas, FuncionEvento):

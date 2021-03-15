@@ -1,12 +1,13 @@
 import logging
+import os
 
 from libreria.MiStreanDeck import IniciarStreanDeck, MiStreanDeck
-from libreria.MiDeckImagen import DefinirFuente
+from libreria.MiDeckImagen import DefinirFuente, DefinirImagenes
 from libreria.MiTecladoMacro import MiTecladoMacro
 from libreria.FuncionesLogging import ConfigurarLogging
 from libreria.FuncionesArchivos import ObtenerArchivo, ObtenerFolder, UnirPath, SalvarArchivo, ObtenerArhivos
 from libreria.FuncionesHilos import CargarHilo
-from libreria.acciones.Acciones import Accion
+from libreria.acciones.Acciones import AccionesExtra
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -89,13 +90,21 @@ class ElGatito(object):
                 self.ListaDeck.append(DeckActual)
             if 'fuente' in self.Data:
                 DefinirFuente(self.Data['fuente'])
+                DefinirImagenes(self.Data['imagenes'])
 
     def ActualizarDeck(self):
         for Deck in self.ListaDeck:
             if 'streandeck' in self.acciones:
-                Deck.ActualizarIconos(self.acciones['streandeck'], True)
+                Deck.ActualizarIconos(self.acciones['streandeck'], self.desfaceDeck, True)
             elif Deck.Nombre in self.acciones:
-                Deck.ActualizarIconos(self.acciones[Deck.Nombre])
+                Deck.ActualizarIconos(self.acciones[Deck.Nombre], self.desfaceDeck)
+
+    def LimpiarDeck(self):
+        for Deck in self.ListaDeck:
+            if 'streandeck' in self.acciones:
+                Deck.Limpiar()
+            elif Deck.Nombre in self.acciones:
+                Deck.Limpiar()
 
     def ConfigurandoTeclados(self, Directorio):
         for Teclado in self.ListaTeclados:
@@ -111,6 +120,9 @@ class ElGatito(object):
                 self.CargarAcciones('teclados', Data)
                 self.CargarAcciones('global', Data)
                 self.CargarAcciones('deck', Data)
+        if 'streandeck' in self.acciones:
+            self.desfaceDeck = 0
+            # TODO Error cuando no entra a streandeck
 
     def CargarAcciones(self, Atributo, Data):
         for dispositivo in self.Data[Atributo]:
@@ -139,22 +151,68 @@ class ElGatito(object):
                 if 'key' in accion:
                     if accion['key'] == Evento['key']:
                         logger.info(f"Evento {NombreEvento}[{accion['key']}] {accion['nombre']}")
-                        Accion(accion)
+                        self.EjecutandoEvento(accion)
                         return
 
         if 'deck' in Evento:
             if 'streandeck' in self.acciones:
-                key_desface = Evento['key'] + Evento['base']
+                key_desface = Evento['key'] + Evento['base'] + self.desfaceDeck
                 for accion in self.acciones['streandeck']:
                     if 'key' in accion:
                         if accion['key'] == key_desface:
                             logger.info(f"Evento StreanDeck[{accion['key']}] {accion['nombre']}")
-                            Accion(accion)
+                            self.EjecutandoEvento(accion)
                             return
                 logger.info(f"Evento no asignado StreanDeck[{key_desface}]")
                 return
+            else:
+                pass
 
         logger.info(f"Evento no asignado {NombreEvento}[{Evento['key']}]")
+
+    def EjecutandoEvento(self, accion):
+        if 'opcion' in accion:
+            self.AccionesOpcion(accion)
+        else:
+            AccionesExtra(accion)
+
+    def AccionesOpcion(self, accion):
+        Opcion = accion['opcion']
+        if Opcion == "salir":
+            logger.info("Saliendo ElGatoALSW - Adios :) ")
+            os._exit(0)
+        elif Opcion == 'siquiente':
+            self.MoverPagina('siquiente')
+            self.LimpiarDeck()
+            self.ActualizarDeck()
+        elif Opcion == 'anterior':
+            self.MoverPagina('anterior')
+            self.LimpiarDeck()
+            self.ActualizarDeck()
+        elif Opcion == 'regresar':
+            logger.info("regresar")
+        else:
+            logger.warning(f"Opcion No Encontrada: {Opcion}")
+
+    def MoverPagina(self, Direcion):
+        if 'streandeck' in self.acciones:
+            UltimoDeck = self.ListaDeck[-1]
+            Cantidad = UltimoDeck.Base + UltimoDeck.Cantidad
+            UltimaAccion = self.acciones['streandeck'][-1]
+            if Direcion == 'siquiente':
+                self.desfaceDeck += Cantidad
+                if self.desfaceDeck >= UltimaAccion['key']:
+                    self.desfaceDeck -= Cantidad
+                    return
+                logger.info("Siquiente")
+            elif Direcion == 'anterior':
+                self.desfaceDeck -= Cantidad
+                if self.desfaceDeck < 0:
+                    self.desfaceDeck = 0
+                    return
+                logger.info("anterior")
+        else:
+            pass
 
     def Prueba(self):
         self.PathActual = "defaul/news"

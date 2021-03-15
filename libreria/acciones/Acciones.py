@@ -17,18 +17,8 @@ logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
 
 
-def AgregarStreanDeck(_Deck):
-    global Deck
-    Deck = _Deck
-
-
-def AgregarOBS(_MiOBS):
-    global MiOBS
-    MiOBS = _MiOBS
-
-
-def Accion(AccionActual):
-    global Deck
+def AccionesExtra(AccionActual):
+    # global Deck
 
     # No Saltar extra
 
@@ -42,28 +32,10 @@ def Accion(AccionActual):
         Delay(AccionActual['delay'])
     elif 'macro' in AccionActual:
         for AccionMacro in AccionActual['Macro']:
-            Accion(AccionMacro)
-    elif 'opcion' in AccionActual:
-        if AccionActual['opcion'] == "salir":
-            logger.info("Saliendo ElGatoALSW - Adios :) ")
-            os._exit(0)
-        else:
-            logger.warning(f"Opcion No Encontrada: {AccionActual['Opcion']}")
+            AccionesExtra(AccionMacro)
+            # TODO Codigo roto para macro
 
     # Viejas acciones
-    elif 'siquiente' in AccionActual:
-        Deck.BotonesSiquiente(True)
-        Deck.ActualizarTodasImagenes(True)
-    elif 'anterior' in AccionActual:
-        Deck.BotonesSiquiente(False)
-        Deck.ActualizarTodasImagenes(True)
-    elif 'regresar' in AccionActual:
-        Deck.BotonActuales = Deck.Data['StreamDeck']
-        # ComandosRaton = data['teclado']
-        Deck.DesfaceBoton = 0
-        Deck.Carpeta = "Base"
-        Deck.ActualizarTodasImagenes(True)
-        Deck.ConfigurandoTeclados("")
     elif 'streamDeck' in AccionActual:
         logger.info("Entenado en folder")
         Deck.BotonActuales = AccionActual['streamDeck']
