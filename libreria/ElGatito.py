@@ -21,7 +21,7 @@ class ElGatito(object):
         self.CargarData()
         self.CargarTeclados()
         self.CargarStreanDeck()
-        self.Prueba()
+        self.IniciarStreanDeck()
         CargarHilo()
 
     def CargarData(self):
@@ -200,6 +200,7 @@ class ElGatito(object):
             self.LimpiarDeck()
             self.ActualizarDeck()
         elif Opcion == 'folder':
+            logger.info(f"Entrando a {accion['path']}")
             self.PathActual = accion['path']
             self.BuscarFolder(self.PathActual)
             self.LimpiarDeck()
@@ -227,8 +228,7 @@ class ElGatito(object):
         else:
             pass
 
-    def Prueba(self):
-        self.PathActual = "defaul/news"
+    def IniciarStreanDeck(self):
+        self.PathActual = "defaul"
         self.BuscarFolder(self.PathActual)
         self.ActualizarDeck()
-        SalvarArchivo("acciones.json", self.acciones)
