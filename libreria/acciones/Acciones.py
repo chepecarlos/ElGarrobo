@@ -6,10 +6,10 @@ from Extra.MiOS import MiOS
 from Extra.FuncionesProyecto import AbirProyecto
 from Extra.FuncionesArchivos import ObtenerDato, ActualizarDato, ObtenerLista
 from Extra.News import CambiarNoticia, AsignarNoticia, LinkNoticia
-from Extra.Sonidos import Reproducir, PararReproducion
 from Extra.MiMQTT import EnviarMQTTSimple
 from libreria.FuncionesLogging import ConfigurarLogging
 
+from libreria.acciones.Sonidos import AccionSonido
 from libreria.acciones.EmularTeclado import ComandoTeclas, ComandoEscribir, PegarTexto, CopiarTexto
 from libreria.acciones.Delay import Delay
 
@@ -18,10 +18,6 @@ ConfigurarLogging(logger)
 
 
 def AccionesExtra(AccionActual):
-    # global Deck
-
-    # No Saltar extra
-
     # Moviendo a liberia
     # TODO Ordenar por importancia
     if 'tecla' in AccionActual:
@@ -34,35 +30,21 @@ def AccionesExtra(AccionActual):
         for AccionMacro in AccionActual['Macro']:
             AccionesExtra(AccionMacro)
             # TODO Codigo roto para macro
+    elif 'sonido' in AccionActual:
+        AccionSonido(AccionActual)
 
-    # Viejas acciones
-    elif 'streamDeck' in AccionActual:
-        logger.info("Entenado en folder")
-        Deck.BotonActuales = AccionActual['streamDeck']
-        Deck.DesfaceBoton = 0
-        Deck.Carpeta = AccionActual['nombre']
-        Deck.ConfigurandoTeclados(AccionActual['nombre'])
-        # if 'teclado' in accion:
-        #     Imprimir("Cargando Teclado")
-        #     ComandosRaton = accion['teclado']
-        Deck.ActualizarTodasImagenes(True)
-
+    # TODO cosas viejas
     elif 'os' in AccionActual:
         MiOS(AccionActual['os'])
-
-
     elif 'Proyecto' in AccionActual:
         AbirProyecto(AccionActual['Proyecto'])
     elif 'OBS' in AccionActual:
         AccionesOBS(AccionActual)
-    elif "configdeck" in AccionActual:
-        AccionesStreanDeck(AccionActual)
     elif 'mqtt' in AccionActual:
         AccionesMQTT(AccionActual)
     elif 'news' in AccionActual:
         AccionesNews(AccionActual)
-    elif 'sonido' in AccionActual:
-        AccionSonido(AccionActual)
+
     elif 'archivo' in AccionActual:
         AccionesArchivos(AccionActual)
 
@@ -70,20 +52,11 @@ def AccionesExtra(AccionActual):
         logger.warning(f"Boton - no definida {AccionActual['nombre']}")
 
 
-def AccionSonido(AccionActual):
-    if AccionActual['Sonido'] == 'Parar':
-        PararReproducion()
-    else:
-        Reproducir(AccionActual['Sonido'])
-
-
-def AccionesStreanDeck(AccionActual):
-    global Deck
-    if AccionActual['ConfigDeck'] == "SubirBrillo":
-        Deck.CambiarBrillo(5)
-    elif AccionActual['ConfigDeck'] == "BajarBrillo":
-        Deck.CambiarBrillo(-5)
-
+# def AccionSonido(AccionActual):
+#     if AccionActual['sonido'] == 'parar':
+#         PararReproducion()
+#     else:
+#         Reproducir(AccionActual['sonido'])
 
 def AccionesMQTT(AccionActual):
     if AccionActual['mqtt'] == "mensaje" and 'topic' in AccionActual and 'mensaje' in AccionActual:

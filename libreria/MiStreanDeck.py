@@ -43,7 +43,9 @@ class MiStreanDeck(object):
     def Limpiar(self):
         for i in range(self.Cantidad):
             LimpiarIcono(self.Deck, i)
-        pass
+
+    def Brillo(self, Brillo):
+        self.Deck.set_brightness(Brillo)
 
 
 def IniciarStreanDeck(Datas, FuncionEvento):
