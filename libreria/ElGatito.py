@@ -183,12 +183,8 @@ class ElGatito(object):
             os._exit(0)
         elif Opcion == 'siquiente':
             self.MoverPagina('siquiente')
-            self.LimpiarDeck()
-            self.ActualizarDeck()
         elif Opcion == 'anterior':
             self.MoverPagina('anterior')
-            self.LimpiarDeck()
-            self.ActualizarDeck()
         elif Opcion == 'regresar':
             Direcion = self.PathActual.split("/")
             self.PathActual = "/".join(Direcion[:-1])
@@ -225,6 +221,8 @@ class ElGatito(object):
                     self.desfaceDeck = 0
                     return
                 logger.info("Anterior Pagina")
+            self.LimpiarDeck()
+            self.ActualizarDeck()
         else:
             pass
 
