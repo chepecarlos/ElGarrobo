@@ -1,6 +1,8 @@
 import logging
 import os
 
+import libreria.acciones.MiOBS as MiOBS
+
 from libreria.MiStreanDeck import IniciarStreanDeck, MiStreanDeck
 from libreria.MiDeckImagen import DefinirFuente, DefinirImagenes
 from libreria.MiTecladoMacro import MiTecladoMacro
@@ -8,6 +10,7 @@ from libreria.FuncionesLogging import ConfigurarLogging
 from libreria.FuncionesArchivos import ObtenerArchivo, ObtenerFolder, UnirPath, SalvarArchivo, ObtenerArhivos, ObtenerValor, SalvarValor
 from libreria.FuncionesHilos import CargarHilo
 from libreria.acciones.Acciones import AccionesExtra
+
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -173,8 +176,10 @@ class ElGatito(object):
     def EjecutandoEvento(self, accion):
         if 'opcion' in accion:
             self.AccionesOpcion(accion)
-        elif'deck' in accion:
+        elif 'deck' in accion:
             self.AccionesDeck(accion)
+        elif 'obs' in accion:
+            self.AccionesOBS(accion)
         else:
             AccionesExtra(accion)
 
@@ -221,6 +226,18 @@ class ElGatito(object):
             SalvarValor("data/streandeck.json", "brillo", Brillo)
             for deck in self.ListaDeck:
                 deck.Brillo(Brillo)
+
+    def AccionesOBS(self, accion):
+        opcion = accion['obs']
+        if opcion == 'conectar':
+            self.OBS = MiOBS.MiOBS()
+            self.OBS.Conectar()
+        elif opcion == 'server':
+            self.OBS = MiOBS.MiOBS()
+            self.OBS.CambiarHost(accion['server'])
+            self.OBS.Conectar()
+        elif opcion == 'cerrar':
+            self.OBS.Desconectar()
 
     def MoverPagina(self, Direcion):
         if 'streandeck' in self.acciones:

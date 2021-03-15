@@ -52,12 +52,6 @@ def AccionesExtra(AccionActual):
         logger.warning(f"Boton - no definida {AccionActual['nombre']}")
 
 
-# def AccionSonido(AccionActual):
-#     if AccionActual['sonido'] == 'parar':
-#         PararReproducion()
-#     else:
-#         Reproducir(AccionActual['sonido'])
-
 def AccionesMQTT(AccionActual):
     if AccionActual['mqtt'] == "mensaje" and 'topic' in AccionActual and 'mensaje' in AccionActual:
         logger.info(f"Enviando Mensaje MQTT {AccionActual['topic']} - {AccionActual['mensaje']}")
