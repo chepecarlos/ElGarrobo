@@ -5,7 +5,7 @@ from libreria.MiStreanDeck import IniciarStreanDeck, MiStreanDeck
 from libreria.MiDeckImagen import DefinirFuente, DefinirImagenes
 from libreria.MiTecladoMacro import MiTecladoMacro
 from libreria.FuncionesLogging import ConfigurarLogging
-from libreria.FuncionesArchivos import ObtenerArchivo, ObtenerFolder, UnirPath, SalvarArchivo, ObtenerArhivos
+from libreria.FuncionesArchivos import ObtenerArchivo, ObtenerFolder, UnirPath, SalvarArchivo, ObtenerArhivos, ObtenerValor, SalvarValor
 from libreria.FuncionesHilos import CargarHilo
 from libreria.acciones.Acciones import AccionesExtra
 
@@ -116,7 +116,7 @@ class ElGatito(object):
         if len(Folderes) > 0:
             Data = self.BuscarDentroFolder(Folderes, Data)
             if Data is not None:
-                SalvarArchivo("Data.json", Data)
+                # SalvarArchivo("Data.json", Data)
                 self.CargarAcciones('teclados', Data)
                 self.CargarAcciones('global', Data)
                 self.CargarAcciones('deck', Data)
@@ -173,6 +173,8 @@ class ElGatito(object):
     def EjecutandoEvento(self, accion):
         if 'opcion' in accion:
             self.AccionesOpcion(accion)
+        elif'deck' in accion:
+            self.AccionesDeck(accion)
         else:
             AccionesExtra(accion)
 
@@ -203,6 +205,22 @@ class ElGatito(object):
             self.ActualizarDeck()
         else:
             logger.warning(f"Opcion No Encontrada: {Opcion}")
+
+    def AccionesDeck(self, accion):
+        opcion = accion['deck']
+        if opcion == "brillo":
+            Brillo = ObtenerValor("data/streandeck.json", "brillo")
+            Brillo += accion['cantidad']
+            if Brillo < 0:
+                Brillo = 0
+                return
+            elif Brillo > 100:
+                Brillo = 100
+                return
+            logger.info(F"Asignando brillo {Brillo} a Decks")
+            SalvarValor("data/streandeck.json", "brillo", Brillo)
+            for deck in self.ListaDeck:
+                deck.Brillo(Brillo)
 
     def MoverPagina(self, Direcion):
         if 'streandeck' in self.acciones:
