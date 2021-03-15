@@ -190,7 +190,15 @@ class ElGatito(object):
             self.LimpiarDeck()
             self.ActualizarDeck()
         elif Opcion == 'regresar':
-            logger.info("regresar")
+            Direcion = self.PathActual.split("/")
+            self.PathActual = "/".join(Direcion[:-1])
+            if self.PathActual == "":
+                self.PathActual = "defaul"
+                return
+            logger.info(f"Regresar Folder {self.PathActual}")
+            self.BuscarFolder(self.PathActual)
+            self.LimpiarDeck()
+            self.ActualizarDeck()
         else:
             logger.warning(f"Opcion No Encontrada: {Opcion}")
 
@@ -204,13 +212,13 @@ class ElGatito(object):
                 if self.desfaceDeck >= UltimaAccion['key']:
                     self.desfaceDeck -= Cantidad
                     return
-                logger.info("Siquiente")
+                logger.info("Siquiente Pagina")
             elif Direcion == 'anterior':
                 self.desfaceDeck -= Cantidad
                 if self.desfaceDeck < 0:
                     self.desfaceDeck = 0
                     return
-                logger.info("anterior")
+                logger.info("Anterior Pagina")
         else:
             pass
 
