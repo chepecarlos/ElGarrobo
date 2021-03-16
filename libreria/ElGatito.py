@@ -232,13 +232,18 @@ class ElGatito(object):
         opcion = accion['obs']
         if opcion == 'conectar':
             self.OBS = MiOBS.MiOBS()
+            self.OBS.DibujarDeck(self.ActualizarDeck)
             self.OBS.Conectar()
         elif opcion == 'server':
             self.OBS = MiOBS.MiOBS()
             self.OBS.CambiarHost(accion['server'])
+            self.OBS.DibujarDeck(self.ActualizarDeck)
             self.OBS.Conectar()
         elif opcion == 'cerrar':
             self.OBS.Desconectar()
+        elif opcion == 'esena':
+            if self.OBS is not None:
+                self.OBS.CambiarEsena(accion['esena'])
 
     def MoverPagina(self, Direcion):
         if 'streandeck' in self.acciones:
@@ -269,3 +274,4 @@ class ElGatito(object):
 
     def Configurar(self):
         SalvarArchivo("data/obs.json", dict())
+        self.OBS = None

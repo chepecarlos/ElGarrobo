@@ -17,6 +17,9 @@ class MiOBS:
     def CambiarHost(self, Host):
         self.host = Host
 
+    def DibujarDeck(self, Funcion):
+        self.Dibujar = Funcion
+
     def Conectar(self):
         try:
             self.OBS = obsws(self.host, self.port)
@@ -28,11 +31,21 @@ class MiOBS:
             self.Conectado = False
             return
         self.SalvarEstadoActual()
+        self.Evento(self.EventoEsena,  events.SwitchScenes)
+        self.Dibujar()
+        # self.Consultas()
 
     def Desconectar(self):
         logger.info(f"Desconectand OBS - {self.host}")
         self.OBS.disconnect()
         self.Conectado = False
+
+    def CambiarEsena(self, Esena):
+        if self.Conectado:
+            self.OBS.call(requests.SetCurrentScene(Esena))
+            logger.info(f"Cambiando a {Esena}")
+        else:
+            logger.warning("OBS no Conectado")
 
     def SalvarEstadoActual(self):
         EsenaActual = self.OBS.call(requests.GetCurrentScene()).datain['name']
@@ -41,5 +54,15 @@ class MiOBS:
         SalvarValor("data/obs.json", "grabando", EstadoActual['recording'])
         SalvarValor("data/obs.json", "envivo", EstadoActual['streaming'])
 
+    def Evento(self, Funcion, Evento):
+        self.OBS.register(Funcion, events.SwitchScenes)
+
+    def EventoEsena(self, Mensaje):
+        EsenaActual = Mensaje.datain['scene-name']
+        SalvarValor("data/obs.json", "esena_actual", EsenaActual)
+        self.Dibujar()
+
     def Consultas(self):
         print(dir(requests))
+        print()
+        print(dir(events))

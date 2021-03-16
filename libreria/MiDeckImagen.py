@@ -112,14 +112,14 @@ def ActualizarImagenOBS(accion):
         else:
             accion['estado'] = False
     elif opcion == 'grabando':
-        EsenaGrabar = ObtenerValor("data/obs.json", "grabando")
-        if EsenaGrabar:
+        Grabar = ObtenerValor("data/obs.json", "grabando")
+        if Grabar:
             accion['estado'] = True
         else:
             accion['estado'] = False
     elif opcion == 'envivo':
-        EsenaEnVivo = ObtenerValor("data/obs.json", "envivo")
-        if EsenaEnVivo:
+        EnVivo = ObtenerValor("data/obs.json", "envivo")
+        if EnVivo:
             accion['estado'] = True
         else:
             accion['estado'] = False
