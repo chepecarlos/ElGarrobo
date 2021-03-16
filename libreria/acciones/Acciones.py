@@ -6,9 +6,10 @@ from Extra.MiOS import MiOS
 from Extra.FuncionesProyecto import AbirProyecto
 from Extra.FuncionesArchivos import ObtenerDato, ActualizarDato, ObtenerLista
 from Extra.News import CambiarNoticia, AsignarNoticia, LinkNoticia
-from Extra.MiMQTT import EnviarMQTTSimple
+# from Extra.MiMQTT import EnviarMQTTSimple
 from libreria.FuncionesLogging import ConfigurarLogging
 
+from libreria.acciones.MiMQTT import EnviarMQTTSimple
 from libreria.acciones.Sonidos import AccionSonido
 from libreria.acciones.EmularTeclado import ComandoTeclas, ComandoEscribir, PegarTexto, CopiarTexto
 from libreria.acciones.Delay import Delay
@@ -32,6 +33,8 @@ def AccionesExtra(AccionActual):
             # TODO Codigo roto para macro
     elif 'sonido' in AccionActual:
         AccionSonido(AccionActual)
+    elif 'mqtt' in AccionActual:
+        AccionesMQTT(AccionActual)
 
     # TODO cosas viejas
     elif 'os' in AccionActual:
@@ -40,8 +43,7 @@ def AccionesExtra(AccionActual):
         AbirProyecto(AccionActual['Proyecto'])
     elif 'OBS' in AccionActual:
         AccionesOBS(AccionActual)
-    elif 'mqtt' in AccionActual:
-        AccionesMQTT(AccionActual)
+
     elif 'news' in AccionActual:
         AccionesNews(AccionActual)
 
