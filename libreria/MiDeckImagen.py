@@ -24,6 +24,8 @@ def ActualizarIcono(Deck, indice, accion):
     if 'gif' in accion:
         return
 
+    NombreIcono = ImagenBase['base']
+
     if 'icono' in accion:
         NombreIcono = accion['icono']
     elif 'opcion' in accion:
@@ -33,10 +35,11 @@ def ActualizarIcono(Deck, indice, accion):
             NombreIcono = ImagenBase['siquiente']
         elif accion['opcion'] == 'anterior':
             NombreIcono = ImagenBase['anterior']
+    elif 'estado' in accion:
+        if accion['estado']:
+            NombreIcono = accion['icono_true']
         else:
-            NombreIcono = ImagenBase['base']
-    else:
-        NombreIcono = ImagenBase['base']
+            NombreIcono = accion['icono_false']
 
     PonerImagen(ImagenBoton, NombreIcono, accion)
 
