@@ -25,6 +25,7 @@ class ElGatito(object):
         self.CargarTeclados()
         self.CargarStreanDeck()
         self.IniciarStreanDeck()
+        self.Configurar()
         CargarHilo()
 
     def CargarData(self):
@@ -265,3 +266,6 @@ class ElGatito(object):
         self.PathActual = "defaul"
         self.BuscarFolder(self.PathActual)
         self.ActualizarDeck()
+
+    def Configurar(self):
+        SalvarArchivo("data/obs.json", dict())

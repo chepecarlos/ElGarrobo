@@ -126,8 +126,8 @@ def ObtenerValor(Archivo, Atributo, local=True):
     if Atributo in data:
         return data[Atributo]
     else:
-        logger.worning(f"No existe el atributo {Atributo}")
-        return ""
+        logger.warning(f"No existe el atributo {Atributo}")
+        return None
 
 
 def SalvarValor(Archivo, Atributo, Valor, local=True):
