@@ -36,6 +36,8 @@ class MiOBS:
         self.OBS.register(self.EventoGrabando, events.RecordingStopping)
         self.OBS.register(self.EventoEnVivo, events.StreamStarted)
         self.OBS.register(self.EventoEnVivo, events.StreamStopping)
+        # self.OBS.register(self.EventoPrueva, events.StreamStatus)
+        self.OBS.register(self.EventoPrueva, events.Heartbeat)
 
         self.Dibujar()
         # self.Consultas()
@@ -85,6 +87,23 @@ class MiOBS:
             SalvarValor("data/obs.json", "envivo", False)
             logger.info(f"OBS Paro EnVivo {Mensaje.datain['stream-timecode']}")
         self.Dibujar()
+
+    def CambiarGrabacion(self):
+        if self.Conectado:
+            logger.info("Cambiando estado Grabacion")
+            self.OBS.call(requests.StartStopRecording())
+        else:
+            logger.info("OBS no Conectado")
+
+    def CambiarEnVivo(self):
+        if self.Conectado:
+            logger.info("Cambiando estado EnVivo")
+            self.OBS.call(requests.StartStopStreaming())
+        else:
+            logger.info("OBS no Conectado")
+
+    def EventoPrueva(self, Mensaje):
+        print(Mensaje)
 
     def Consultas(self):
         # print(dir(requests))

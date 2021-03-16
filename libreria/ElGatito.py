@@ -244,6 +244,12 @@ class ElGatito(object):
         elif opcion == 'esena':
             if self.OBS is not None:
                 self.OBS.CambiarEsena(accion['esena'])
+        elif opcion == 'grabando':
+            if self.OBS is not None:
+                self.OBS.CambiarGrabacion()
+        elif opcion == 'envivo':
+            if self.OBS is not None:
+                self.OBS.CambiarEnVivo()
 
     def MoverPagina(self, Direcion):
         if 'streandeck' in self.acciones:
