@@ -45,9 +45,10 @@ class MiOBS:
 
     def Desconectar(self):
         logger.info(f"Desconectand OBS - {self.host}")
-        SalvarValor("data/obs.json", "conectado", False)
         self.OBS.disconnect()
         self.Conectado = False
+        SalvarArchivo("data/obs.json", dict())
+        self.Dibujar()
 
     def CambiarEsena(self, Esena):
         if self.Conectado:
