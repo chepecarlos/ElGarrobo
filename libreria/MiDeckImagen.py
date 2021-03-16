@@ -10,7 +10,7 @@ from StreamDeck.Transport.Transport import TransportError
 from fractions import Fraction
 
 from libreria.FuncionesLogging import ConfigurarLogging
-from libreria.FuncionesArchivos import ObtenerConfig, UnirPath
+from libreria.FuncionesArchivos import ObtenerConfig, ObtenerValor, UnirPath
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -23,6 +23,9 @@ def ActualizarIcono(Deck, indice, accion):
 
     if 'gif' in accion:
         return
+
+    if 'obs' in accion:
+        ActualizarImagenOBS(accion)
 
     NombreIcono = ImagenBase['base']
 
@@ -98,3 +101,25 @@ def DefinirImagenes(Data):
 def LimpiarIcono(Deck, indice):
     ImagenBoton = PILHelper.create_image(Deck)
     Deck.set_key_image(indice, PILHelper.to_native_format(Deck, ImagenBoton))
+
+
+def ActualizarImagenOBS(accion):
+    opcion = accion['obs']
+    if opcion == 'esena':
+        EsenaActual = ObtenerValor("data/obs.json", "esena_actual")
+        if accion['esena'] == EsenaActual:
+            accion['estado'] = True
+        else:
+            accion['estado'] = False
+    elif opcion == 'grabando':
+        EsenaGrabar = ObtenerValor("data/obs.json", "grabando")
+        if EsenaGrabar:
+            accion['estado'] = True
+        else:
+            accion['estado'] = False
+    elif opcion == 'envivo':
+        EsenaEnVivo = ObtenerValor("data/obs.json", "envivo")
+        if EsenaEnVivo:
+            accion['estado'] = True
+        else:
+            accion['estado'] = False
