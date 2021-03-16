@@ -131,6 +131,7 @@ def ObtenerValor(Archivo, Atributo, local=True):
 
 
 def SalvarValor(Archivo, Atributo, Valor, local=True):
+    data = dict()
     if local:
         Archivo = os.path.join(ArchivoConfiguracion, Archivo)
     if Archivo.endswith(".json"):
@@ -139,14 +140,12 @@ def SalvarValor(Archivo, Atributo, Valor, local=True):
                 data = yaml.load(f, Loader=yaml.FullLoader)
         else:
             logger.warning(f"Archivo no Exite {Archivo}")
-            return
     elif Archivo.endswith(".md"):
         with open(Archivo) as f:
             try:
                 data = list(yaml.load_all(f, Loader=yaml.SafeLoader))[0]
             except yaml.YAMLError as exc:
                 logger.warning(f"error con yaml {exc}")
-                return
 
     data[Atributo] = Valor
 
