@@ -3,7 +3,7 @@ import logging
 
 from obswebsocket import obsws, requests, events
 from libreria.FuncionesLogging import ConfigurarLogging
-from libreria.FuncionesArchivos import SalvarValor
+from libreria.FuncionesArchivos import SalvarValor, SalvarArchivo
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -30,6 +30,7 @@ class MiOBS:
             logger.warning(f"Error Conectando OBS - {self.host} - {e}")
             self.Conectado = False
             return
+        SalvarValor("data/obs.json", "conectado", True)
         self.SalvarEstadoActual()
         self.Evento(self.EventoEsena,  events.SwitchScenes)
         self.OBS.register(self.EventoGrabando, events.RecordingStarted)
@@ -37,13 +38,14 @@ class MiOBS:
         self.OBS.register(self.EventoEnVivo, events.StreamStarted)
         self.OBS.register(self.EventoEnVivo, events.StreamStopping)
         # self.OBS.register(self.EventoPrueva, events.StreamStatus)
-        self.OBS.register(self.EventoPrueva, events.Heartbeat)
+        self.OBS.register(self.EventoSalir, events.Exiting)
 
         self.Dibujar()
         # self.Consultas()
 
     def Desconectar(self):
         logger.info(f"Desconectand OBS - {self.host}")
+        SalvarValor("data/obs.json", "conectado", False)
         self.OBS.disconnect()
         self.Conectado = False
 
@@ -77,6 +79,15 @@ class MiOBS:
         elif Mensaje.name == "RecordingStopping":
             SalvarValor("data/obs.json", "grabando", False)
             logger.info(f"OBS Paro Grabacion {Mensaje.datain['rec-timecode']}")
+        self.Dibujar()
+
+    def EventoSalir(self, Mensaje):
+        logger.info("Se desconecto OBS")
+        try:
+            self.Desconectar()
+        except Exception:
+            pass
+        SalvarArchivo("data/obs.json", dict())
         self.Dibujar()
 
     def EventoEnVivo(self, Mensaje):
