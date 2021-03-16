@@ -32,6 +32,11 @@ class MiOBS:
             return
         self.SalvarEstadoActual()
         self.Evento(self.EventoEsena,  events.SwitchScenes)
+        self.OBS.register(self.EventoGrabando, events.RecordingStarted)
+        self.OBS.register(self.EventoGrabando, events.RecordingStopping)
+        self.OBS.register(self.EventoEnVivo, events.StreamStarted)
+        self.OBS.register(self.EventoEnVivo, events.StreamStopping)
+
         self.Dibujar()
         # self.Consultas()
 
@@ -43,7 +48,7 @@ class MiOBS:
     def CambiarEsena(self, Esena):
         if self.Conectado:
             self.OBS.call(requests.SetCurrentScene(Esena))
-            logger.info(f"Cambiando a {Esena}")
+            logger.info(f"Cambiando a Esena:{Esena}")
         else:
             logger.warning("OBS no Conectado")
 
@@ -60,9 +65,29 @@ class MiOBS:
     def EventoEsena(self, Mensaje):
         EsenaActual = Mensaje.datain['scene-name']
         SalvarValor("data/obs.json", "esena_actual", EsenaActual)
+        logger.info(f"cambiando a esena:{EsenaActual}")
+        self.Dibujar()
+
+    def EventoGrabando(self, Mensaje):
+        if Mensaje.name == "RecordingStarted":
+            SalvarValor("data/obs.json", "grabando", True)
+            logger.info("OBS Grabando")
+        elif Mensaje.name == "RecordingStopping":
+            SalvarValor("data/obs.json", "grabando", False)
+            logger.info(f"OBS Paro Grabacion {Mensaje.datain['rec-timecode']}")
+        self.Dibujar()
+
+    def EventoEnVivo(self, Mensaje):
+        if Mensaje.name == "StreamStarted":
+            SalvarValor("data/obs.json", "envivo", True)
+            logger.info("OBS EnVivo")
+        elif Mensaje.name == "StreamStopping":
+            SalvarValor("data/obs.json", "envivo", False)
+            logger.info(f"OBS Paro EnVivo {Mensaje.datain['stream-timecode']}")
         self.Dibujar()
 
     def Consultas(self):
-        print(dir(requests))
+        # print(dir(requests))
         print()
         print(dir(events))
+        print()
