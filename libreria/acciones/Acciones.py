@@ -1,12 +1,10 @@
 import os
-import Extra.MiOBS as MiOBSs
 import logging
 
 from Extra.MiOS import MiOS
 from Extra.FuncionesProyecto import AbirProyecto
 from Extra.FuncionesArchivos import ObtenerDato, ActualizarDato, ObtenerLista
 from Extra.News import CambiarNoticia, AsignarNoticia, LinkNoticia
-# from Extra.MiMQTT import EnviarMQTTSimple
 from libreria.FuncionesLogging import ConfigurarLogging
 
 from libreria.acciones.MiMQTT import EnviarMQTTSimple
@@ -41,9 +39,6 @@ def AccionesExtra(AccionActual):
         MiOS(AccionActual['os'])
     elif 'Proyecto' in AccionActual:
         AbirProyecto(AccionActual['Proyecto'])
-    elif 'OBS' in AccionActual:
-        AccionesOBS(AccionActual)
-
     elif 'news' in AccionActual:
         AccionesNews(AccionActual)
 
@@ -58,151 +53,6 @@ def AccionesMQTT(AccionActual):
     if AccionActual['mqtt'] == "mensaje" and 'topic' in AccionActual and 'mensaje' in AccionActual:
         logger.info(f"Enviando Mensaje MQTT {AccionActual['topic']} - {AccionActual['mensaje']}")
         EnviarMQTTSimple(AccionActual['topic'], AccionActual['mensaje'])
-
-
-def AccionesOBS(AccionActual):
-    '''Acciones que puede enviarse a OBS_WebSoket'''
-    global MiOBS
-    global Deck
-    if AccionActual['obs'] == "Server" and 'Server' in AccionActual:
-        AgregarOBS(MiOBSs.MiObsWS(Deck.Carpeta))
-        MiOBS.CambiarHost(AccionActual['Server'])
-        MiOBS.Conectar()
-        MiOBS.RegistarEvento(EventoOBS2)
-        Deck.OBSConectado = True
-    elif Deck.OBSConectado:
-        if AccionActual['obs'] == "Cerrar":
-            CerrarOBS()
-        elif AccionActual['obs'] == "Grabar":
-            MiOBS.CambiarGrabacion()
-        elif AccionActual['obs'] == "Live":
-            MiOBS.CambiarStriming()
-        elif AccionActual['obs'] == "Esena":
-            MiOBS.CambiarEsena(AccionActual['Esena'])
-        elif AccionActual['obs'] == "Fuente":
-            MiOBS.CambiarFuente(AccionActual['Fuente'], not AccionActual['Estado'])
-        elif AccionActual['obs'] == "Filtro":
-            MiOBS.CambiarFiltro(AccionActual['Fuente'], AccionActual['Filtro'], not AccionActual['Estado'])
-        else:
-            logger.warning("No encontramos esta Opcion de OBS")
-    else:
-        logger.warning("OBS no Conectado")
-
-
-def CerrarOBS():
-    global MiOBS
-    global Deck
-    if Deck.OBSConectado:
-        Deck.OBSConectado = False
-        MiOBS.DesregistarEvento(EventoOBS2)
-        MiOBS.Cerrar()
-
-
-def EventoOBS2(Mensaje):
-    '''Mensajes de OBS '''
-    global Deck
-    # TODO: Buscar Esena Actual al conectarse al Servidor de OBS
-    # TODO: Eliminar funciones CambiarEstadoBoton
-    # Imprimir(f"Evento OBS {Mensaje}")
-    if(Mensaje.name == 'SwitchScenes'):
-        logger.info(f"Cambiando a Esena OBS - {Mensaje.datain['scene-name']}")
-        ActualizarDato("/Data/OBS.json", Mensaje.datain['scene-name'], "EsenaActual")
-        Deck.ActualizarTodasImagenes()
-    elif Mensaje.name == 'RecordingStopped':
-        logger.info('Parado la grabacion en OBS')
-        ActualizarDato("/Data/OBS.json", False, "EstadoGrabando")
-        Deck.ActualizarTodasImagenes()
-    elif Mensaje.name == 'RecordingStarted':
-        logger.info('Iniciado la grabacion en OBS ')
-        ActualizarDato("/Data/OBS.json", True, "EstadoGrabando")
-        Deck.ActualizarTodasImagenes()
-    elif(Mensaje.name == 'StreamStopped'):
-        logger.info("Parando la trasmicion")
-        ActualizarDato("/Data/OBS.json", False, "EstadoLive")
-    elif(Mensaje.name == 'StreamStarted'):
-        logger.info("Empezando la trasmicion")
-        ActualizarDato("/Data/OBS.json", True, "EstadoLive")
-    elif(Mensaje.name == 'SceneItemVisibilityChanged'):
-        NombreIten = Mensaje.datain['item-name']
-        EstadoItem = Mensaje.datain['item-visible']
-        logger.info(f"Se cambio fuente {NombreIten} - {EstadoItem}")
-        # TODO: Guardas Estado de Fuente
-        Deck.ActualizarTodasImagenes()
-    elif(Mensaje.name == 'SourceFilterVisibilityChanged'):
-        NombreFiltro = Mensaje.datain['filterName']
-        NombreFuente = Mensaje.datain['sourceName']
-        EstadoFiltro = Mensaje.datain['filterEnabled']
-        logger.info(f"Se cambio el filtro {NombreFiltro} de {NombreFuente} a {EstadoFiltro}")
-        # Todo: Guardas Estado del Filtro
-        Deck.ActualizarTodasImagenes()
-    else:
-        logger.warning(f"Evento no procesado de OBS: {Mensaje.name}")
-
-
-def EventoOBS(Mensaje):
-    '''Escucha y Reaciona a eventos de OBS'''
-    logger.info(Mensaje.name)
-    global MiOBS
-    global Deck
-    IdOBS = Deck.BuscarCarpeta(MiOBS.Carpeta)
-    if Mensaje.name == "Exiting":
-        try:
-            logger.info("Cerrando OBS - Evento")
-            CerrarOBS()
-        except Exception as e:
-            logger.warning(f"No se pudo conectar a OBS - {e}")
-            MiOBS.OBSConectado = False
-    elif Mensaje.name == 'RecordingStopped':
-        logger.info(f'Parado la grabacion - {MiOBS.Carpeta}')
-        IdGrabar = Deck.BuscarBoton(IdOBS, 'Rec')
-        if IdGrabar != -1:
-            Deck.CambiarEstadoBoton(IdOBS, IdGrabar, False)
-            Deck.ActualizarTodasImagenes()
-    elif Mensaje.name == 'RecordingStarted':
-        logger.info(f'Iniciado la grabacion - {MiOBS.Carpeta}')
-        IdGrabar = Deck.BuscarBoton(IdOBS, 'Rec')
-        if IdGrabar != -1:
-            Deck.CambiarEstadoBoton(IdOBS, IdGrabar, True)
-            Deck.ActualizarTodasImagenes()
-    elif(Mensaje.name == 'StreamStopped'):
-        logger.info("Parando la trasmicion")
-        IdLive = Deck.BuscarBoton(IdOBS, 'Live')
-        if IdLive != -1:
-            Deck.CambiarEstadoBoton(IdOBS, IdLive, False)
-            Deck.ActualizarTodasImagenes()
-    elif(Mensaje.name == 'StreamStarted'):
-        logger.info("Empezando la trasmicion")
-        IdLive = Deck.BuscarBoton(IdOBS, 'Live')
-        if IdLive != -1:
-            Deck.CambiarEstadoBoton(IdOBS, IdLive, True)
-            Deck.ActualizarTodasImagenes()
-    elif(Mensaje.name == 'SwitchScenes'):
-        logger.info(f"Cambia a Esena - {Mensaje.datain['scene-name']}")
-        IdEsena = Deck.BuscarBoton(IdOBS, Mensaje.datain['scene-name'])
-        for Boton in range(len(Deck.Data['StreamDeck'][IdOBS]['StreamDeck'])):
-            if Deck.EsEsena(IdOBS, Boton):
-                if IdEsena == Boton:
-                    Deck.CambiarEstadoBoton(IdOBS, Boton, True)
-                else:
-                    Deck.CambiarEstadoBoton(IdOBS, Boton, False)
-        Deck.ActualizarTodasImagenes()
-    elif(Mensaje.name == 'SceneItemVisibilityChanged'):
-        NombreIten = Mensaje.datain['item-name']
-        EstadoItem = Mensaje.datain['item-visible']
-        IdItem = Deck.BuscarBoton(IdOBS, NombreIten)
-        logger.info(f"Se cambio fuente {NombreIten} - {EstadoItem}")
-        Deck.CambiarEstadoBoton(IdOBS, IdItem, EstadoItem)
-        Deck.ActualizarTodasImagenes()
-    elif(Mensaje.name == 'SourceFilterVisibilityChanged'):
-        NombreFiltro = Mensaje.datain['filterName']
-        NombreFuente = Mensaje.datain['sourceName']
-        EstadoFiltro = Mensaje.datain['filterEnabled']
-        logger.info(f"Se cambio el filtro {NombreFiltro} de {NombreFuente} a {EstadoFiltro}")
-        IdItem = Deck.BuscarBoton(IdOBS, NombreFiltro)
-        Deck.CambiarEstadoBoton(IdOBS, IdItem, EstadoFiltro)
-        Deck.ActualizarTodasImagenes()
-    else:
-        logger.warning(f"Evento no procesado de OBS: {Mensaje.name}")
 
 
 def AccionesNews(AccionActual):
