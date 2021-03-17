@@ -24,7 +24,7 @@ class MiTecladoMacro:
         try:
             self.Teclado = InputDevice(self.Dispisitivo)
             self.Teclado.grab()
-            self.HiloTeclado = threading.Thread(target=self.HiloRaton, args=(self.Teclado, self.Nombre,), daemon=True)
+            self.HiloTeclado = threading.Thread(name="teclados", target=self.HiloRaton, args=(self.Teclado, self.Nombre,), daemon=True)
             self.HiloTeclado.start()
             logger.info(f"Conectando: {self.Nombre} - {self.Dispisitivo}")
         except:
