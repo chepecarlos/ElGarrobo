@@ -8,7 +8,6 @@ from libreria.MiDeckImagen import DefinirFuente, DefinirImagenes
 from libreria.MiTecladoMacro import MiTecladoMacro
 from libreria.FuncionesLogging import ConfigurarLogging
 from libreria.FuncionesArchivos import ObtenerArchivo, ObtenerFolder, UnirPath, SalvarArchivo, ObtenerArhivos, ObtenerValor, SalvarValor
-from libreria.FuncionesHilos import CargarHilo
 from libreria.acciones.Acciones import AccionesExtra
 
 
@@ -26,7 +25,6 @@ class ElGatito(object):
         self.CargarStreanDeck()
         self.IniciarStreanDeck()
         self.Configurar()
-        CargarHilo()
 
     def CargarData(self):
         """Cargando Data para Dispisitivo"""
@@ -244,6 +242,9 @@ class ElGatito(object):
         elif opcion == 'esena':
             if self.OBS is not None:
                 self.OBS.CambiarEsena(accion['esena'])
+        elif opcion == 'fuente':
+            if self.OBS is not None:
+                self.OBS.CambiarFuente(accion['fuente'], not accion['estado'])
         elif opcion == 'grabando':
             if self.OBS is not None:
                 self.OBS.CambiarGrabacion()
@@ -280,4 +281,5 @@ class ElGatito(object):
 
     def Configurar(self):
         SalvarArchivo("data/obs.json", dict())
+        SalvarArchivo("data/fuente_obs.json", dict())
         self.OBS = None

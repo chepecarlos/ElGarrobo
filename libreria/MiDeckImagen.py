@@ -111,6 +111,14 @@ def ActualizarImagenOBS(accion):
             accion['estado'] = True
         else:
             accion['estado'] = False
+    elif opcion == 'fuente':
+        EstadoFuente = ObtenerValor("data/fuente_obs.json", accion['fuente'])
+        if EstadoFuente is not None:
+            accion['estado'] = EstadoFuente
+        else:
+            accion['estado'] = False
+    elif opcion == 'filtro':
+        pass
     elif opcion == 'grabando':
         ActualizarEstado(accion, "grabando")
     elif opcion == 'envivo':
