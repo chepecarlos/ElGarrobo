@@ -53,7 +53,7 @@ class MiOBS:
     def CambiarEsena(self, Esena):
         if self.Conectado:
             self.OBS.call(requests.SetCurrentScene(Esena))
-            logger.info(f"Cambiando a Esena:{Esena}")
+            logger.info(f"Cambiando a Esena: {Esena}")
         else:
             logger.warning("OBS no Conectado")
 
@@ -84,6 +84,7 @@ class MiOBS:
                         Refrectar = True
                 else:
                     SalvarValor("data/fuente_obs.json", NombreFuente, EstadoFuenteActual)
+                    Refrectar = True
 
         if Refrectar:
             self.Dibujar()
@@ -94,8 +95,9 @@ class MiOBS:
     def EventoEsena(self, Mensaje):
         EsenaActual = Mensaje.datain['scene-name']
         SalvarValor("data/obs.json", "esena_actual", EsenaActual)
-        logger.info(f"cambiando a esena: {EsenaActual}")
+        logger.info(f"Evento a esena: {EsenaActual}")
         self.SalvarFuente()
+        self.Dibujar()
 
     def EventoGrabando(self, Mensaje):
         if Mensaje.name == "RecordingStarted":
