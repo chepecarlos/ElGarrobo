@@ -122,12 +122,18 @@ def ObtenerValor(Archivo, Atributo, local=True):
             except yaml.YAMLError as exc:
                 logger.warning(f"error con yaml {exc}")
                 return ""
-
-    if Atributo in data:
-        return data[Atributo]
+    Tipo = type(Atributo)
+    if Tipo is list:
+        if len(Atributo) >= 2:
+            if Atributo[0] in data:
+                if Atributo[1] in data[Atributo[0]]:
+                    return data[Atributo[0]][Atributo[1]]
     else:
-        logger.warning(f"No existe el atributo {Atributo}")
-        return None
+        if Atributo in data:
+            return data[Atributo]
+
+    logger.warning(f"No existe el atributo {Atributo}")
+    return None
 
 
 def SalvarValor(Archivo, Atributo, Valor, local=True):
@@ -147,7 +153,15 @@ def SalvarValor(Archivo, Atributo, Valor, local=True):
             except yaml.YAMLError as exc:
                 logger.warning(f"error con yaml {exc}")
 
-    data[Atributo] = Valor
+    Tipo = type(Atributo)
+    if Tipo is list:
+        # TODO Buscar como insertar para mas de nos niveles
+        if len(Atributo) >= 2:
+            if not Atributo[0] in data:
+                data[Atributo[0]] = dict()
+            data[Atributo[0]][Atributo[1]] = Valor
+    else:
+        data[Atributo] = Valor
 
     with open(Archivo, 'w') as f:
         json.dump(data, f, indent=2)

@@ -38,7 +38,8 @@ class MiOBS:
         self.OBS.register(self.EventoGrabando, events.RecordingStopping)
         self.OBS.register(self.EventoEnVivo, events.StreamStarted)
         self.OBS.register(self.EventoEnVivo, events.StreamStopping)
-        self.OBS.register(self.EventoVisibilidad, events.SceneItemVisibilityChanged)
+        self.OBS.register(self.EventoVisibilidadIten, events.SceneItemVisibilityChanged)
+        self.OBS.register(self.EventoVisibilidadFiltro, events.SourceFilterVisibilityChanged)
         self.OBS.register(self.EventoSalir, events.Exiting)
         self.Dibujar()
 
@@ -116,13 +117,26 @@ class MiOBS:
             pass
         SalvarArchivo("data/obs.json", dict())
         SalvarArchivo("data/fuente_obs.json", dict())
+        SalvarArchivo("data/filtro_obs.json", dict())
         self.Dibujar()
 
-    def EventoVisibilidad(self, Mensaje):
-        NombreEsena = Mensaje.datain['item-name']
+    def EventoVisibilidadIten(self, Mensaje):
+        NombreFuente = Mensaje.datain['item-name']
         Visibilidad = Mensaje.datain['item-visible']
-        logger.info(f"Cambiano Visibilidad {NombreEsena} - {Visibilidad}")
-        SalvarValor("data/fuente_obs.json", NombreEsena, Visibilidad)
+        logger.info(f"Cambiano Visibilidad {NombreFuente} - {Visibilidad}")
+        SalvarValor("data/fuente_obs.json", NombreFuente, Visibilidad)
+        self.Dibujar()
+
+    def EventoVisibilidadFiltro(self, Mensaje):
+        NombreFiltro = Mensaje.datain['filterName']
+        NombreFuente = Mensaje.datain['sourceName']
+        Visibilidad = Mensaje.datain['filterEnabled']
+        logger.info(f"Cambiando Visibilidad {NombreFuente}[{NombreFiltro}] - {Visibilidad}")
+        Data = list()
+        Data.append(NombreFuente)
+        Data.append(NombreFiltro)
+        SalvarValor("data/filtro_obs.json", Data, Visibilidad)
+        # SalvarValor()
         self.Dibujar()
 
     def EventoEnVivo(self, Mensaje):
@@ -138,6 +152,14 @@ class MiOBS:
         if self.Conectado:
             logger.info(f"Cambiando Fuente {Fuente} - {Estado}")
             self.OBS.call(requests.SetSceneItemProperties(Fuente, visible=Estado))
+        else:
+            logger.info("OBS no Conectado")
+
+    def CambiarFiltro(self, Fuente, Filtro, Estado):
+        '''Funcion que cambia el estado de un filtro'''
+        if self.Conectado:
+            logger.info(f"Cambiando Filtro {Filtro} de {Fuente} a {Estado}")
+            self.OBS.call(requests.SetSourceFilterVisibility(Fuente, Filtro, Estado))
         else:
             logger.info("OBS no Conectado")
 

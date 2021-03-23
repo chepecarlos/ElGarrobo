@@ -242,6 +242,9 @@ class ElGatito(object):
         elif opcion == 'esena':
             if self.OBS is not None:
                 self.OBS.CambiarEsena(accion['esena'])
+        elif opcion == 'filtro':
+            if self.OBS is not None:
+                self.OBS.CambiarFiltro(accion['fuente'], accion['filtro'], not accion['estado'])
         elif opcion == 'fuente':
             if self.OBS is not None:
                 self.OBS.CambiarFuente(accion['fuente'], not accion['estado'])
@@ -282,4 +285,5 @@ class ElGatito(object):
     def Configurar(self):
         SalvarArchivo("data/obs.json", dict())
         SalvarArchivo("data/fuente_obs.json", dict())
+        SalvarArchivo("data/filtro_obs.json", dict())
         self.OBS = None
