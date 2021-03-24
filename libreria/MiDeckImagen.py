@@ -27,24 +27,28 @@ def ActualizarIcono(Deck, indice, accion):
     if 'obs' in accion:
         ActualizarImagenOBS(accion)
 
-    NombreIcono = ImagenBase['base']
+    if 'texto' in accion:
+        Texto = ObtenerValor(accion['texto']['archivo'], accion['texto']['atributo'])
+        PonerTexto(ImagenBoton, Texto, accion, True)
+    else:
+        NombreIcono = ImagenBase['base']
 
-    if 'icono' in accion:
-        NombreIcono = accion['icono']
-    elif 'opcion' in accion:
-        if accion['opcion'] == 'regresar':
-            NombreIcono = ImagenBase['regresar']
-        elif accion['opcion'] == 'siquiente':
-            NombreIcono = ImagenBase['siquiente']
-        elif accion['opcion'] == 'anterior':
-            NombreIcono = ImagenBase['anterior']
-    elif 'estado' in accion:
-        if accion['estado']:
-            NombreIcono = accion['icono_true']
-        else:
-            NombreIcono = accion['icono_false']
+        if 'icono' in accion:
+            NombreIcono = accion['icono']
+        elif 'opcion' in accion:
+            if accion['opcion'] == 'regresar':
+                NombreIcono = ImagenBase['regresar']
+            elif accion['opcion'] == 'siquiente':
+                NombreIcono = ImagenBase['siquiente']
+            elif accion['opcion'] == 'anterior':
+                NombreIcono = ImagenBase['anterior']
+        elif 'estado' in accion:
+            if accion['estado']:
+                NombreIcono = accion['icono_true']
+            else:
+                NombreIcono = accion['icono_false']
 
-    PonerImagen(ImagenBoton, NombreIcono, accion)
+        PonerImagen(ImagenBoton, NombreIcono, accion)
 
     if 'titulo' in accion:
         PonerTexto(ImagenBoton, accion['titulo'], accion)
@@ -69,7 +73,8 @@ def PonerImagen(Imagen, NombreIcono, accion):
     Imagen.paste(Icono, IconoPosicion, Icono)
 
 
-def PonerTexto(Imagen, Texto, accion):
+def PonerTexto(Imagen, Texto, accion, centrar=False):
+    Texto = str(Texto)
     Tamanno = 20
     dibujo = ImageDraw.Draw(Imagen)
 
@@ -84,7 +89,12 @@ def PonerTexto(Imagen, Texto, accion):
         if Titulo_ancho < Imagen.width:
             break
         Tamanno -= 1
-    PosicionTexto = ((Imagen.width - Titulo_ancho) // 2, Imagen.height - Titulo_alto - 2)
+
+    if centrar:
+        PosicionTexto = ((Imagen.width - Titulo_ancho) // 2, (Imagen.height - Titulo_alto - 20) // 2)
+    else:
+        PosicionTexto = ((Imagen.width - Titulo_ancho) // 2, Imagen.height - Titulo_alto - 2)
+
     dibujo.text(PosicionTexto, text=Texto, font=fuente, fill=Color)
 
 
