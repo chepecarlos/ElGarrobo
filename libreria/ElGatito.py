@@ -173,6 +173,9 @@ class ElGatito(object):
         logger.info(f"Evento no asignado {NombreEvento}[{Evento['key']}]")
 
     def EjecutandoEvento(self, accion):
+        if 'macro' in accion:
+            for Comando in accion['macro']:
+                self.EjecutandoEvento(Comando)
         if 'opcion' in accion:
             self.AccionesOpcion(accion)
         elif 'deck' in accion:
