@@ -11,6 +11,7 @@ from libreria.acciones.MiMQTT import EnviarMQTTSimple
 from libreria.acciones.Sonidos import AccionSonido
 from libreria.acciones.EmularTeclado import ComandoTeclas, ComandoEscribir, PegarTexto, CopiarTexto
 from libreria.acciones.Delay import Delay
+from libreria.acciones.Data_Archivo import AccionDataArchivo
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -25,16 +26,15 @@ def AccionesExtra(accion):
         ComandoEscribir(accion['texto'])
     elif 'delay' in accion:
         Delay(accion['delay'])
-    elif 'macro' in accion:
-        for AccionMacro in accion['Macro']:
-            AccionesExtra(AccionMacro)
-            # TODO Codigo roto para macro
     elif 'sonido' in accion:
         AccionSonido(accion)
     elif 'mqtt' in accion:
         AccionesMQTT(accion)
     elif 'os' in accion:
         AccionOS(accion['os'])
+    elif 'data_archivo' in accion:
+        print("probando ")
+        AccionDataArchivo(accion)
     # TODO cosas viejas
 
     elif 'Proyecto' in accion:

@@ -27,8 +27,8 @@ class MiTecladoMacro:
             self.HiloTeclado = threading.Thread(name="teclados", target=self.HiloRaton, args=(self.Teclado, self.Nombre,), daemon=True)
             self.HiloTeclado.start()
             logger.info(f"Conectando: {self.Nombre} - {self.Dispisitivo}")
-        except:
-            logger.warning(f"Conectando a Teclado {self.Nombre}")
+        except Exception:
+            logger.warning(f"Error con Teclado {self.Nombre}")
             return False
         return True
 

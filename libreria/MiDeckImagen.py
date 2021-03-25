@@ -27,8 +27,8 @@ def ActualizarIcono(Deck, indice, accion):
     if 'obs' in accion:
         ActualizarImagenOBS(accion)
 
-    if 'texto' in accion:
-        Texto = ObtenerValor(accion['texto']['archivo'], accion['texto']['atributo'])
+    if 'icono_texto' in accion:
+        Texto = ObtenerValor(accion['icono_texto']['archivo'], accion['icono_texto']['atributo'])
         PonerTexto(ImagenBoton, Texto, accion, True)
     else:
         NombreIcono = ImagenBase['base']
@@ -77,6 +77,9 @@ def PonerTexto(Imagen, Texto, accion, centrar=False):
     Texto = str(Texto)
     Tamanno = 20
     dibujo = ImageDraw.Draw(Imagen)
+
+    if centrar:
+        Tamanno = 40
 
     if 'titulo_color' in accion:
         Color = accion['titulo_color']
