@@ -9,6 +9,7 @@ from libreria.MiTecladoMacro import MiTecladoMacro
 from libreria.FuncionesLogging import ConfigurarLogging
 from libreria.FuncionesArchivos import ObtenerArchivo, ObtenerFolder, UnirPath, SalvarArchivo, ObtenerArhivos, ObtenerValor, SalvarValor
 from libreria.acciones.Acciones import AccionesExtra
+from libreria.acciones.Data_Archivo import AccionDataArchivo
 
 
 logger = logging.getLogger(__name__)
@@ -77,9 +78,10 @@ class ElGatito(object):
             logger.info("Cargando Teclados")
             self.ListaTeclados = []
             for Teclado in self.Data['teclados']:
-                TecladoActual = MiTecladoMacro(Teclado['nombre'], Teclado['input'], Teclado['file'], self.Evento)
-                if TecladoActual.Conectar():
-                    self.ListaTeclados.append(TecladoActual)
+                if 'nombre' in Teclado and 'input' in Teclado and 'file' in Teclado:
+                    TecladoActual = MiTecladoMacro(Teclado['nombre'], Teclado['input'], Teclado['file'], self.Evento)
+                    if TecladoActual.Conectar():
+                        self.ListaTeclados.append(TecladoActual)
 
     def CargarStreanDeck(self):
         """configurando StreanDeck"""
@@ -182,6 +184,9 @@ class ElGatito(object):
             self.AccionesDeck(accion)
         elif 'obs' in accion:
             self.AccionesOBS(accion)
+        elif 'data_archivo' in accion:
+            AccionDataArchivo(accion)
+            self.ActualizarDeck()
         else:
             AccionesExtra(accion)
 
