@@ -12,7 +12,6 @@ import logging
 # Cargar funciones de Archivos
 from Extra.FuncionesProyecto import SalvarProyecto, CargarProyecto, CargarIdVideo, CrearFolderProyecto
 from Extra.News import SalvarArchivoNoticia
-from Extra.Depuracion import Imprimir, CambiarDepuracion
 from Extra.YoutubeChat import SalvarChatYoutube
 from Extra.CargarData import CargarData
 from Extra.Hilos import CargarHilo
@@ -45,7 +44,7 @@ parser.add_argument("--video-descripcion", '-vd', help="ID del video a actualiza
 
 parser.add_argument('--video-id', '-vi', help="ID del video a actualizar Youtube")
 parser.add_argument('--video-file', '-vf', help="Archivo a usar para actualizar Youtube")
-parser.add_argument('--video-recursivo', '-vr', help="Archivo a usar para actualizar Youtube")
+parser.add_argument("--full", '-f', help="Actualiza con todos los archivos disponibles",  action="store_true")
 
 
 if sys.version_info[0] < 3:
@@ -59,14 +58,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.nodepurar:
-        CambiarDepuracion(False)
         NivelLogging(logging.WARNING)
 
     if args.proyecto:
-        Imprimir("Configurando Folder como Proyecto Actual")
+        logger.info("Configurando Folder como Proyecto Actual")
         SalvarProyecto(os.getcwd())
     elif args.noticias:
-        Imprimir("Configurar Folder para Noticias Actual")
+        logger.info("Configurar Folder para Noticias Actual")
         SalvarArchivoNoticia(os.getcwd() + "/" + args.noticias)
     elif args.news:
         logger.info("Configurar Folder de Noticias Actual")
@@ -75,7 +73,7 @@ if __name__ == "__main__":
         SalvarValor("data/news.json", "id", 0)
         pass
     elif args.salvaryoutube:
-        Imprimir("Emezandoa a guardar Chat en Proyecto Actual")
+        logger.info("Emezandoa a guardar Chat en Proyecto Actual")
         SalvarChatYoutube(CargarProyecto(), CargarIdVideo())
     elif args.mododemo:
         logger.info("Iniciando con modo Demo")
@@ -86,39 +84,39 @@ if __name__ == "__main__":
         logger.info("Iniciando la APP Grafica")
         # gui()
     elif args.blenderproxy:
-        Imprimir("Empezando a crear proxy")
+        logger.info("Empezando a crear proxy")
         CrearProxy(os.getcwd())
     elif args.blenderrenderizar:
-        Imprimir("Empezando a Renderizar video")
+        logger.info("Empezando a Renderizar video")
         RenderizarVideo(args.blenderrenderizar)
     elif args.blenderborrar:
-        Imprimir("Borrar temporales de Blender")
+        logger.info("Borrar temporales de Blender")
         BorrarTemporalesBender('BL_proxy')
         BorrarTemporalesBender('bpsrender')
     elif args.folderproyecto:
-        Imprimir(f"Creando folder de Proyecto {args.folderproyecto}")
+        logger.info(f"Creando folder de Proyecto {args.folderproyecto}")
         CrearFolderProyecto(args.folderproyecto)
     elif args.video_descripcion:
         if args.video_id:
-            Imprimir(f"Actualizando descripcion del Video {args.video_id}")
+            logger.info(f"Actualizando descripcion del Video {args.video_id}")
             if args.video_file:
                 ActualizarDescripcion(args.video_id, args.video_file)
             else:
                 ActualizarDescripcion(args.video_id)
-        elif args.video_recursivo:
-            Imprimir(f"Actualizando descripciones de Youtube desde folder")
+        elif args.full:
+            logger.info("Empezando recursivo")
             ActualizarDescripcionFolder()
         else:
-            Imprimir("Falta el ID del video")
+            logger.info("Falta el ID del video")
     elif args.video_thumbnails:
         if args.video_id:
-            Imprimir(f"Actualizando Thumbnails del Video {args.video_id}")
+            logger.info(f"Actualizando Thumbnails del Video {args.video_id}")
             if args.video_file:
                 ActualizarThumbnails(args.video_id, args.video_file)
             else:
                 ActualizarThumbnails(args.video_id)
         else:
-            Imprimir("Falta el ID del video")
+            logger.info("Falta el ID del video")
     else:
         logger.info("Iniciando sin parametros")
         data = CargarData('Comandos.json')
