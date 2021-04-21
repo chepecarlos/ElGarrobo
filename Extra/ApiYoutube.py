@@ -1,9 +1,15 @@
 import os
 import pickle
+import logging
+
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from Extra.FuncionesArchivos import ObtenerDato
+from libreria.FuncionesLogging import ConfigurarLogging, NivelLogging
+
+logger = logging.getLogger(__name__)
+ConfigurarLogging(logger)
 
 ArchivoLocal = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -56,13 +62,13 @@ def ActualizarVideo(video_id, credenciales, archivo=""):
     DescripcionVideo = ""
     if not archivo:
         archivo = "Zen_" + video_id + ".txt"
-        print(f"Usando el archivo {archivo} por defecto")
+        logger.info(f"Usando el archivo {archivo} por defecto")
 
     if os.path.exists(archivo):
         with open(archivo, 'r') as linea:
             DescripcionVideo = linea.read()
     else:
-        print(f"Erro fatal el archivo {archivo} no existe")
+        logger.warning(f"Erro fatal el archivo {archivo} no existe")
         return
     youtube = build("youtube", "v3", credentials=credenciales)
 
@@ -76,8 +82,8 @@ def ActualizarVideo(video_id, credenciales, archivo=""):
         SnippetVideo = DataVideo["items"][0]["snippet"]
 
         if DescripcionVideo == SnippetVideo["description"]:
-            print(f"Descripcion del video {video_id} ya esta actualizada")
-            return
+            logger.info("Ya Actualizado")
+            return 0
 
         SnippetVideo["description"] = DescripcionVideo
 
@@ -90,21 +96,30 @@ def ActualizarVideo(video_id, credenciales, archivo=""):
 
         RespuestaYoutube = SolisituActualizar.execute()
         if len(RespuestaYoutube['snippet']) > 0:
-            print("Actualizacion Completa")
+            logger.info("Actualizacion Completa")
+            return 1
         else:
-            print("Hubo un problema?")
+            logger.warning("Hubo un problema?")
+            return -1
     else:
-        print(f"No existe el video con ID {video_id}")
+        logger.warning(f"No existe el video con ID {video_id}")
+        return -1
 
 
 def ActualizarDescripcionFolder():
     credenciales = CargarCredenciales()
+    contador = 0
+    total = len(os.listdir("."))
+    Actualizados = 0
     for archivo in os.listdir("."):
         if archivo.endswith(".txt"):
-            if archivo.startswith("Zen_"):
-                video_id = archivo.replace("Zen_", "").replace(".txt", "")
-                print(f"Actualizando {archivo} - Video_ID:{video_id}")
-                ActualizarVideo(video_id, credenciales)
+            contador += 1
+            video_id = archivo.replace(".txt", "")
+            logger.info(f"Verificando ({contador}/{total}) - Video_ID:{video_id}")
+            Resultado = ActualizarVideo(video_id, credenciales, archivo)
+            if Resultado == 1:
+                Actualizados += 1
+    logger.info(f"Se actualizo {Actualizados}/{total} descripciones de video")
 
 
 def ActualizarThumbnails(video_id, archivo=""):
