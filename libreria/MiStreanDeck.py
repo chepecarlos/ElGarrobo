@@ -94,11 +94,11 @@ def IniciarStreanDeck(Datas, FuncionEvento):
     return ListaDeck
 
 
-def ActualizarBoton(Deck, Key, estado):
-    if estado:
-        data = {"nombre": Deck.Nombre,
-                "key": Key,
-                "deck": True,
-                "base": Deck.Base
-                }
-        Deck.FuncionEvento(data)
+def ActualizarBoton(Deck, Key, Estado):
+    data = {"nombre": Deck.Nombre,
+            "key": Key,
+            "deck": True,
+            "base": Deck.Base,
+            "estado": Estado
+            }
+    Deck.FuncionEvento(data)
