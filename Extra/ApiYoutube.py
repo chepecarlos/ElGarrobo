@@ -5,8 +5,8 @@ import logging
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
-from Extra.FuncionesArchivos import ObtenerDato
-from libreria.FuncionesLogging import ConfigurarLogging, NivelLogging
+# from Extra.FuncionesArchivos import ObtenerDato
+from libreria.FuncionesLogging import ConfigurarLogging
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -19,16 +19,16 @@ def CargarCredenciales():
     credentials = None
     ArchivoPickle = ArchivoLocal + "/Data/token.pickle"
     if os.path.exists(ArchivoPickle):
-        print('Cargando credenciales el Archivo pickle...')
+        logger.info('Cargando credenciales API Youtube, del Archivo pickle...')
         with open(ArchivoPickle, 'rb') as token:
             credentials = pickle.load(token)
 
     if not credentials or not credentials.valid:
         if credentials and credentials.expired and credentials.refresh_token:
-            print('Recargando credenciales...')
+            logger.info('Recargando credenciales...')
             credentials.refresh(Request())
         else:
-            print('Opteniendo nuevas credenciales...')
+            logger.info('Opteniendo nuevas credenciales...')
             client_secrets = ArchivoLocal + "/Data/client_secrets.json"
             flow = InstalledAppFlow.from_client_secrets_file(
                 client_secrets,
@@ -44,7 +44,7 @@ def CargarCredenciales():
             credentials = flow.credentials
 
             with open(ArchivoPickle, 'wb') as f:
-                print('Salvando credenciales para el futuro en archivo pickle...')
+                logger.info('Salvando credenciales para el futuro en archivo pickle...')
                 pickle.dump(credentials, f)
 
     return credentials
@@ -69,7 +69,7 @@ def ActualizarVideo(video_id, credenciales, archivo=""):
             DescripcionVideo = linea.read()
     else:
         logger.warning(f"Erro fatal el archivo {archivo} no existe")
-        return
+        return -1
     youtube = build("youtube", "v3", credentials=credenciales)
 
     SolisitudVideo = youtube.videos().list(
@@ -111,6 +111,7 @@ def ActualizarDescripcionFolder():
     contador = 0
     total = len(os.listdir("."))
     Actualizados = 0
+    Error = 0
     for archivo in os.listdir("."):
         if archivo.endswith(".txt"):
             contador += 1
@@ -119,7 +120,12 @@ def ActualizarDescripcionFolder():
             Resultado = ActualizarVideo(video_id, credenciales, archivo)
             if Resultado == 1:
                 Actualizados += 1
+                logger.info(f"Link: https://youtu.be/{video_id}")
+            elif Resultado == -1:
+                Error += 1
     logger.info(f"Se actualizo {Actualizados}/{total} descripciones de video")
+    if Error > 0:
+        logger.info(f"Hubo error {Error}/{total}")
 
 
 def ActualizarThumbnails(video_id, archivo=""):
@@ -133,8 +139,8 @@ def ActualizarThumbnails(video_id, archivo=""):
             media_body=archivo
             ).execute()
         if Respuesta['items'][0]:
-            print(f"Imagen Actualizada para {video_id} - {Respuesta['items'][0]['maxres']['url']}")
+            logger.info(f"Imagen Actualizada para {video_id} - {Respuesta['items'][0]['maxres']['url']}")
         else:
-            print("Hubo un problema :(")
+            logger.warning("Hubo un problema :(")
     else:
-        print(f"No existe el archivo {archivo}")
+        logger.warning(f"No existe el archivo {archivo}")
