@@ -19,8 +19,9 @@ from Extra.FuncionesBlender import CrearProxy, RenderizarVideo, BorrarTemporales
 from Extra.ApiYoutube import ActualizarDescripcion, ActualizarThumbnails, ActualizarDescripcionFolder
 
 from libreria.ElGatito import ElGatito
-from libreria.FuncionesArchivos import ObtenerArchivo
+from libreria.FuncionesArchivos import SalvarValor, ObtenerArchivo, UnirPath
 from libreria.FuncionesLogging import ConfigurarLogging, NivelLogging
+# from libreria.MiGUI import gui
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -28,9 +29,11 @@ ConfigurarLogging(logger)
 parser = argparse.ArgumentParser(description='Heramienta de creacion de contenido de ALSW')
 parser.add_argument('--nodepurar', '-nd', help="Acivar modo sin depuracion", action="store_true")
 parser.add_argument('--proyecto', '-p', help="Configurar folder a proyecto actual", action="store_true")
+parser.add_argument('--news', '-nn', help="Configurar folder a noticias actual")
 parser.add_argument('--noticias', '-n', help="Configurar folder a noticias actual")
 parser.add_argument('--salvaryoutube', '-sy', help="Salva el chat en un archivo", action="store_true")
 parser.add_argument('--mododemo', '-dd', help="Sistema modo demo",  action="store_true")
+parser.add_argument('--gui', '-g', help="Sistema interface grafica",  action="store_true")
 parser.add_argument('--blenderproxy', '-bp', help="Creando proxy de Blender",  action="store_true")
 parser.add_argument('--blenderrenderizar', '-br', help="Empezando a Renderizar Video")
 parser.add_argument('--blenderborrar', '-bb', help="Borrar Temporales", action="store_true")
@@ -63,6 +66,12 @@ if __name__ == "__main__":
     elif args.noticias:
         logger.info("Configurar Folder para Noticias Actual")
         SalvarArchivoNoticia(os.getcwd() + "/" + args.noticias)
+    elif args.news:
+        logger.info("Configurar Folder de Noticias Actual")
+        archivo = UnirPath(os.getcwd(), args.news)
+        SalvarValor("data/news.json", "archivo", archivo)
+        SalvarValor("data/news.json", "id", 0)
+        pass
     elif args.salvaryoutube:
         logger.info("Emezandoa a guardar Chat en Proyecto Actual")
         SalvarChatYoutube(CargarProyecto(), CargarIdVideo())
@@ -71,6 +80,9 @@ if __name__ == "__main__":
         # TODO Cargar informacion desde #HOME/.config/ElGATOALSW
         data = ObtenerArchivo('config.json')
         ElGatito(data)
+    elif args.gui:
+        logger.info("Iniciando la APP Grafica")
+        # gui()
     elif args.blenderproxy:
         logger.info("Empezando a crear proxy")
         CrearProxy(os.getcwd())

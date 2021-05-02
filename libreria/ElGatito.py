@@ -10,6 +10,7 @@ from libreria.FuncionesLogging import ConfigurarLogging
 from libreria.FuncionesArchivos import ObtenerArchivo, ObtenerFolder, UnirPath, SalvarArchivo, ObtenerArhivos, ObtenerValor, SalvarValor
 from libreria.acciones.Acciones import AccionesExtra
 from libreria.acciones.Data_Archivo import AccionDataArchivo
+from libreria.acciones.EmularTeclado import ComandoPrecionar
 
 
 logger = logging.getLogger(__name__)
@@ -154,8 +155,8 @@ class ElGatito(object):
             for accion in self.acciones[NombreEvento]:
                 if 'key' in accion:
                     if accion['key'] == Evento['key']:
-                        logger.info(f"Evento {NombreEvento}[{accion['key']}] {accion['nombre']}")
-                        self.EjecutandoEvento(accion)
+                        logger.info(f"Evento {NombreEvento}[{accion['key']}] {accion['nombre']} -  {Evento['estado']}")
+                        self.EjecutandoEvento(accion, Evento['estado'])
                         return
 
         if 'deck' in Evento:
@@ -164,8 +165,8 @@ class ElGatito(object):
                 for accion in self.acciones['streandeck']:
                     if 'key' in accion:
                         if accion['key'] == key_desface:
-                            logger.info(f"Evento StreanDeck[{accion['key']}] {accion['nombre']}")
-                            self.EjecutandoEvento(accion)
+                            logger.info(f"Evento StreanDeck[{accion['key']}] {accion['nombre']} -  {Evento['estado']}")
+                            self.EjecutandoEvento(accion, Evento['estado'])
                             return
                 logger.info(f"Evento no asignado StreanDeck[{key_desface}]")
                 return
@@ -174,21 +175,29 @@ class ElGatito(object):
 
         logger.info(f"Evento no asignado {NombreEvento}[{Evento['key']}]")
 
-    def EjecutandoEvento(self, accion):
-        if 'macro' in accion:
-            for Comando in accion['macro']:
-                self.EjecutandoEvento(Comando)
-        if 'opcion' in accion:
-            self.AccionesOpcion(accion)
-        elif 'deck' in accion:
-            self.AccionesDeck(accion)
-        elif 'obs' in accion:
-            self.AccionesOBS(accion)
-        elif 'data_archivo' in accion:
-            AccionDataArchivo(accion)
-            self.ActualizarDeck()
+    def EjecutandoEvento(self, accion, estado):
+        if estado:
+            if 'macro' in accion:
+                for Comando in accion['macro']:
+                    self.EjecutandoEvento(Comando)
+            if 'opcion' in accion:
+                self.AccionesOpcion(accion)
+            elif 'deck' in accion:
+                self.AccionesDeck(accion)
+            elif 'obs' in accion:
+                self.AccionesOBS(accion)
+            elif 'data_archivo' in accion:
+                AccionDataArchivo(accion)
+                self.ActualizarDeck()
+            elif 'tecla_on' in accion:
+                ComandoPrecionar(accion['tecla_on'], estado)
+            else:
+                AccionesExtra(accion)
         else:
-            AccionesExtra(accion)
+            if 'tecla_off' in accion:
+                ComandoPrecionar(accion['tecla_off'], estado)
+            elif 'tecla_on' in accion:
+                ComandoPrecionar(accion['tecla_on'], estado)
 
     def AccionesOpcion(self, accion):
         Opcion = accion['opcion']
