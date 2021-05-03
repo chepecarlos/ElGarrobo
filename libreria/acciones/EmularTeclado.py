@@ -14,6 +14,15 @@ def ComandoTeclas(Teclas):
         pyautogui.keyUp(tecla)
 
 
+def ComandoPrecionar(Teclas, Estado=True):
+    if Estado:
+        for tecla in Teclas:
+            pyautogui.keyDown(tecla)
+    else:
+        for tecla in reversed(Teclas):
+            pyautogui.keyUp(tecla)
+
+
 def PegarTexto(Texto):
     pyperclip.copy(Texto)
     pyautogui.hotkey('ctrl', 'v', interval=0.15)

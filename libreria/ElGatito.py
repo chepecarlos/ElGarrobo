@@ -179,7 +179,7 @@ class ElGatito(object):
         if estado:
             if 'macro' in accion:
                 for Comando in accion['macro']:
-                    self.EjecutandoEvento(Comando)
+                    self.EjecutandoEvento(Comando, estado)
             if 'opcion' in accion:
                 self.AccionesOpcion(accion)
             elif 'deck' in accion:
