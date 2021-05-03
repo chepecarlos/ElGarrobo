@@ -3,7 +3,7 @@ import os
 
 import libreria.acciones.MiOBS as MiOBS
 
-from libreria.MiStreanDeck import IniciarStreanDeck, MiStreanDeck
+from libreria.MiStreamDeck import IniciarStreamDeck, MiStreamDeck
 from libreria.MiDeckImagen import DefinirFuente, DefinirImagenes
 from libreria.MiTecladoMacro import MiTecladoMacro
 from libreria.FuncionesLogging import ConfigurarLogging
@@ -24,8 +24,8 @@ class ElGatito(object):
         self.acciones = dict()
         self.CargarData()
         self.CargarTeclados()
-        self.CargarStreanDeck()
-        self.IniciarStreanDeck()
+        self.CargarStreamDeck()
+        self.IniciarStreamDeck()
         self.Configurar()
 
     def CargarData(self):
@@ -84,14 +84,14 @@ class ElGatito(object):
                     if TecladoActual.Conectar():
                         self.ListaTeclados.append(TecladoActual)
 
-    def CargarStreanDeck(self):
-        """configurando StreanDeck"""
+    def CargarStreamDeck(self):
+        """configurando streamdeck"""
         self.ListaDeck = []
         if 'deck' in self.Data:
             logger.info("Cargando StreamDeck")
-            CargarDeck = IniciarStreanDeck(self.Data['deck'], self.Evento)
+            CargarDeck = IniciarStreamDeck(self.Data['deck'], self.Evento)
             for Deck in CargarDeck:
-                DeckActual = MiStreanDeck(Deck)
+                DeckActual = MiStreamDeck(Deck)
                 self.ListaDeck.append(DeckActual)
             if 'fuente' in self.Data:
                 DefinirFuente(self.Data['fuente'])
@@ -99,14 +99,14 @@ class ElGatito(object):
 
     def ActualizarDeck(self):
         for Deck in self.ListaDeck:
-            if 'streandeck' in self.acciones:
-                Deck.ActualizarIconos(self.acciones['streandeck'], self.desfaceDeck, True)
+            if 'streamdeck' in self.acciones:
+                Deck.ActualizarIconos(self.acciones['streamdeck'], self.desfaceDeck, True)
             elif Deck.Nombre in self.acciones:
                 Deck.ActualizarIconos(self.acciones[Deck.Nombre], self.desfaceDeck)
 
     def LimpiarDeck(self):
         for Deck in self.ListaDeck:
-            if 'streandeck' in self.acciones:
+            if 'streamdeck' in self.acciones:
                 Deck.Limpiar()
             elif Deck.Nombre in self.acciones:
                 Deck.Limpiar()
@@ -125,9 +125,9 @@ class ElGatito(object):
                 self.CargarAcciones('teclados', Data)
                 self.CargarAcciones('global', Data)
                 self.CargarAcciones('deck', Data)
-        if 'streandeck' in self.acciones:
+        if 'streamdeck' in self.acciones:
             self.desfaceDeck = 0
-            # TODO Error cuando no entra a streandeck
+            # TODO Error cuando no entra a streamdeck
 
     def CargarAcciones(self, Atributo, Data):
         for dispositivo in self.Data[Atributo]:
@@ -160,15 +160,15 @@ class ElGatito(object):
                         return
 
         if 'deck' in Evento:
-            if 'streandeck' in self.acciones:
+            if 'streamdeck' in self.acciones:
                 key_desface = Evento['key'] + Evento['base'] + self.desfaceDeck
-                for accion in self.acciones['streandeck']:
+                for accion in self.acciones['streamdeck']:
                     if 'key' in accion:
                         if accion['key'] == key_desface:
-                            logger.info(f"Evento StreanDeck[{accion['key']}] {accion['nombre']} -  {Evento['estado']}")
+                            logger.info(f"Evento streamdeck[{accion['key']}] {accion['nombre']} -  {Evento['estado']}")
                             self.EjecutandoEvento(accion, Evento['estado'])
                             return
-                logger.info(f"Evento no asignado StreanDeck[{key_desface}]")
+                logger.info(f"Evento no asignado streamdeck[{key_desface}]")
                 return
             else:
                 pass
@@ -230,7 +230,7 @@ class ElGatito(object):
     def AccionesDeck(self, accion):
         opcion = accion['deck']
         if opcion == "brillo":
-            Brillo = ObtenerValor("data/streandeck.json", "brillo")
+            Brillo = ObtenerValor("data/streamdeck.json", "brillo")
             Brillo += accion['cantidad']
             if Brillo < 0:
                 Brillo = 0
@@ -239,7 +239,7 @@ class ElGatito(object):
                 Brillo = 100
                 return
             logger.info(F"Asignando brillo {Brillo} a Decks")
-            SalvarValor("data/streandeck.json", "brillo", Brillo)
+            SalvarValor("data/streamdeck.json", "brillo", Brillo)
             for deck in self.ListaDeck:
                 deck.Brillo(Brillo)
 
@@ -273,10 +273,10 @@ class ElGatito(object):
                 self.OBS.CambiarEnVivo()
 
     def MoverPagina(self, Direcion):
-        if 'streandeck' in self.acciones:
+        if 'streamdeck' in self.acciones:
             UltimoDeck = self.ListaDeck[-1]
             Cantidad = UltimoDeck.Base + UltimoDeck.Cantidad
-            UltimaAccion = self.acciones['streandeck'][-1]
+            UltimaAccion = self.acciones['streamdeck'][-1]
             if Direcion == 'siquiente':
                 self.desfaceDeck += Cantidad
                 if self.desfaceDeck >= UltimaAccion['key']:
@@ -294,7 +294,7 @@ class ElGatito(object):
         else:
             pass
 
-    def IniciarStreanDeck(self):
+    def IniciarStreamDeck(self):
         self.PathActual = "defaul"
         self.BuscarFolder(self.PathActual)
         self.ActualizarDeck()

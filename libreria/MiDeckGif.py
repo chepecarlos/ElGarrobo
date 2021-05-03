@@ -21,7 +21,7 @@ class DeckGif(threading.Thread):
         self.Deck = Deck
         self.lock = threading.RLock()
         self.ListaGif = []
-        self.EsperaGif = Fraction(1, ObtenerValor("data/streandeck.json", "gif_fps"))
+        self.EsperaGif = Fraction(1, ObtenerValor("data/streamdeck.json", "gif_fps"))
         self.SiquienteFrame = Fraction(time.monotonic())
         super(DeckGif, self).__init__()
 

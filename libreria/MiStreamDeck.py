@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
 
 
-class MiStreanDeck(object):
+class MiStreamDeck(object):
 
     def __init__(self, Deck):
         self.Deck = Deck
@@ -55,7 +55,7 @@ class MiStreanDeck(object):
         self.Deck.set_brightness(Brillo)
 
 
-def IniciarStreanDeck(Datas, FuncionEvento):
+def IniciarStreamDeck(Datas, FuncionEvento):
     streamdecks = DeviceManager().enumerate()
     logger.info(f"Cargando StreamDeck - {len(streamdecks) if len(streamdecks) > 0 else 'No Conectado'}")
     ListaDeck = []
@@ -66,7 +66,7 @@ def IniciarStreanDeck(Datas, FuncionEvento):
         DeckActual = deck
         DeckActual.open()
         DeckActual.reset()
-        Brillo = ObtenerValor("data/streandeck.json", "brillo")
+        Brillo = ObtenerValor("data/streamdeck.json", "brillo")
         DeckActual.set_brightness(Brillo)
 
         for Data in Datas:
