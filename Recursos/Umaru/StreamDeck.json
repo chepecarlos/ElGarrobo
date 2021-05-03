@@ -1,9 +1,0 @@
-[{
-  "Nombre": "Invertir",
-  "Titulo": "Invertir",
-  "mqtt": "xrandr --output eDP-1-1 --rotate inverted"
-}, {
-  "Nombre": "Normal",
-  "Titulo": "Normal",
-  "mqtt": "xrandr --output eDP-1-1 --rotate normal"
-}]
