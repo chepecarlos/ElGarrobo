@@ -43,6 +43,10 @@ def ActualizarIcono(Deck, indice, accion):
             elif accion['opcion'] == 'anterior':
                 NombreIcono = ImagenBase['anterior']
         elif 'estado' in accion:
+            EstadoArchivo = ObtenerValor("data/estado.json", accion['nombre'], Depurar=False)
+            if EstadoArchivo is not None:
+                accion['estado'] = EstadoArchivo
+
             if accion['estado']:
                 NombreIcono = accion['icono_true']
             else:
