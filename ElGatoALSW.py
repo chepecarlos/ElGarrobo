@@ -5,19 +5,16 @@
 import os
 import argparse
 import sys
-import Extra.MiDeck as MiDecks
 import logging
 
 
 # Cargar funciones de Archivos
 from Extra.FuncionesProyecto import SalvarProyecto, CargarProyecto, CargarIdVideo, CrearFolderProyecto
-from Extra.News import SalvarArchivoNoticia
-from Extra.YoutubeChat import SalvarChatYoutube
-from Extra.CargarData import CargarData
-from Extra.Hilos import CargarHilo
-from Extra.FuncionesBlender import CrearProxy, RenderizarVideo, BorrarTemporalesBender
-from Extra.ApiYoutube import ActualizarDescripcion, ActualizarThumbnails, ActualizarDescripcionFolder
 
+from Extra.YoutubeChat import SalvarChatYoutube
+from Extra.FuncionesBlender import CrearProxy, RenderizarVideo, BorrarTemporalesBender
+
+from libreria.acciones.News import SalvarArchivoNoticia
 from libreria.ElGatito import ElGatito
 from libreria.FuncionesArchivos import SalvarValor, ObtenerArchivo, UnirPath
 from libreria.FuncionesLogging import ConfigurarLogging, NivelLogging
@@ -39,13 +36,6 @@ parser.add_argument('--blenderrenderizar', '-br', help="Empezando a Renderizar V
 parser.add_argument('--blenderborrar', '-bb', help="Borrar Temporales", action="store_true")
 parser.add_argument('--folderproyecto', '-fp', help="Creando folder proyecto de video")
 
-parser.add_argument('--video-thumbnails', '-vt', help="Archivo de Thumbnails  en Youtube",  action="store_true")
-parser.add_argument("--video-descripcion", '-vd', help="ID del video a actualizar descripcipn en Youtube",  action="store_true")
-
-parser.add_argument('--video-id', '-vi', help="ID del video a actualizar Youtube")
-parser.add_argument('--video-file', '-vf', help="Archivo a usar para actualizar Youtube")
-parser.add_argument("--full", '-f', help="Actualiza con todos los archivos disponibles",  action="store_true")
-
 
 if sys.version_info[0] < 3:
     logger.error("Tienes que usar Python 3 para este programa")
@@ -64,8 +54,8 @@ if __name__ == "__main__":
         logger.info("Configurando Folder como Proyecto Actual")
         SalvarProyecto(os.getcwd())
     elif args.noticias:
-        logger.info("Configurar Folder para Noticias Actual")
-        SalvarArchivoNoticia(os.getcwd() + "/" + args.noticias)
+        logger.info("Configurando Noticia Actual")
+        SalvarArchivoNoticia(args.noticias)
     elif args.news:
         logger.info("Configurar Folder de Noticias Actual")
         archivo = UnirPath(os.getcwd(), args.news)
@@ -96,29 +86,7 @@ if __name__ == "__main__":
     elif args.folderproyecto:
         logger.info(f"Creando folder de Proyecto {args.folderproyecto}")
         CrearFolderProyecto(args.folderproyecto)
-    elif args.video_descripcion:
-        if args.video_id:
-            logger.info(f"Actualizando descripcion del Video {args.video_id}")
-            if args.video_file:
-                ActualizarDescripcion(args.video_id, args.video_file)
-            else:
-                ActualizarDescripcion(args.video_id)
-        elif args.full:
-            logger.info("Empezando recursivo")
-            ActualizarDescripcionFolder()
-        else:
-            logger.info("Falta el ID del video")
-    elif args.video_thumbnails:
-        if args.video_id:
-            logger.info(f"Actualizando Thumbnails del Video {args.video_id}")
-            if args.video_file:
-                ActualizarThumbnails(args.video_id, args.video_file)
-            else:
-                ActualizarThumbnails(args.video_id)
-        else:
-            logger.info("Falta el ID del video")
     else:
         logger.info("Iniciando sin parametros")
-        data = CargarData('Comandos.json')
-        Deck = MiDecks.MiDeck(data)
-        CargarHilo()
+        data = ObtenerArchivo('config.json')
+        ElGatito(data)
