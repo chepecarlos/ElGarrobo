@@ -1,17 +1,16 @@
 import logging
 
-# from Extra.MiOS import MiOS
 from Extra.FuncionesProyecto import AbirProyecto
 from Extra.FuncionesArchivos import ObtenerDato, ActualizarDato, ObtenerLista
-from Extra.News import CambiarNoticia, AsignarNoticia, LinkNoticia
 
 from libreria.FuncionesLogging import ConfigurarLogging
+from libreria.FuncionesArchivos import SalvarValor
 from libreria.acciones.MiOS import AccionOS
 from libreria.acciones.MiMQTT import EnviarMQTTSimple
 from libreria.acciones.Sonidos import AccionSonido
-from libreria.acciones.EmularTeclado import ComandoTeclas, ComandoEscribir, PegarTexto, CopiarTexto
+from libreria.acciones.EmularTeclado import ComandoTeclas, ComandoEscribir, CopiarTexto
 from libreria.acciones.Delay import Delay
-from libreria.acciones.Data_Archivo import AccionDataArchivo
+from libreria.acciones.News import CantidadNoticias, LinkNoticia
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -32,16 +31,12 @@ def AccionesExtra(accion):
         AccionesMQTT(accion)
     elif 'os' in accion:
         AccionOS(accion['os'])
-    elif 'data_archivo' in accion:
-        print("probando ")
-        AccionDataArchivo(accion)
+    elif 'news' in accion:
+        AccionesNews(accion)
     # TODO cosas viejas
 
     elif 'Proyecto' in accion:
         AbirProyecto(accion['Proyecto'])
-    elif 'news' in accion:
-        AccionesNews(accion)
-
     elif 'archivo' in accion:
         AccionesArchivos(accion)
 
@@ -56,21 +51,41 @@ def AccionesMQTT(accion):
 
 
 def AccionesNews(accion):
-    if accion['News'] == "Siquiente":
-        logger.info("Siquiente Noticia")
-        CambiarNoticia()
-    elif accion['News'] == "Anterior":
-        logger.info("Anterior Noticia")
-        CambiarNoticia(False)
-    elif accion['News'] == "Reiniciar":
-        logger.info("Reiniciar Noticia")
-        AsignarNoticia(0)
-    elif accion['News'] == "Link":
-        logger.info("Pegar Link de Noticia")
-        Link = LinkNoticia()
-        ComandoEscribir(Link)
+    opcion = accion['news']
+
+    if opcion == "actualizar":
+        logger.info("Actualizando Info de Noticias")
+        SalvarValor("data/news.json", "max", CantidadNoticias())
+        LinkActual = LinkNoticia()
+        if LinkActual is None:
+            SalvarValor("data/estado.json", "LinkNews", False)
+        else:
+            print(LinkActual)
+            SalvarValor("data/estado.json", "LinkNews", True)
+    elif opcion == "asignar":
+        logger.info(f"Asignando Noticia - {accion['valor']}")
+        SalvarValor("data/news.json", "id", accion["valor"])
+    elif opcion == "pegar":
+        LinkActual = LinkNoticia()
+        if LinkActual is None:
+            ComandoEscribir("No Link")
+        else:
+            ComandoEscribir(LinkActual)
     else:
         logger.warning("No accion de News")
+    # if accion['News'] == "Siquiente":
+    #     logger.info("Siquiente Noticia")
+    #     CambiarNoticia()
+    # elif accion['News'] == "Anterior":
+    #     logger.info("Anterior Noticia")
+    #     CambiarNoticia(False)
+    # elif accion['News'] == "Reiniciar":
+    #     logger.info("Reiniciar Noticia")
+    #     AsignarNoticia(0)
+    # elif accion['News'] == "Link":
+    #     logger.info("Pegar Link de Noticia")
+    #     Link = LinkNoticia()
+    #     ComandoEscribir(Link)
 
 
 def AccionesArchivos(accion):
@@ -81,13 +96,16 @@ def AccionesArchivos(accion):
     if accion['Archivo'] == "Siquiente":
         if 'json' in accion and 'Atributo' in accion:
             CantidadActual = ObtenerDato("/Data/" + accion['json'], accion['Atributo']) + 1
-            logger.info(f"Incrementando {accion['Atributo']} a {CantidadActual}")
-            ActualizarDato("/Data/" + accion['json'], CantidadActual, accion['Atributo'])
+            logger.info(
+                f"Incrementando {accion['Atributo']} a {CantidadActual}")
+            ActualizarDato(
+                "/Data/" + accion['json'], CantidadActual, accion['Atributo'])
     if accion['Archivo'] == "Anterior":
         if 'json' in accion and 'Atributo' in accion:
             CantidadActual = ObtenerDato("/Data/" + accion['json'], accion['Atributo']) - 1
             logger.info(f"Bajando {accion['Atributo']} a {CantidadActual}")
-            ActualizarDato("/Data/" + accion['json'], CantidadActual, accion['Atributo'])
+            ActualizarDato(
+                "/Data/" + accion['json'], CantidadActual, accion['Atributo'])
     if accion['Archivo'] == "Lista":
         if 'json' in accion and 'Lista' in accion and 'ID' in accion:
             CantidadActual = ObtenerDato("/Data/" + accion['json'], accion['ID'])
@@ -97,7 +115,7 @@ def AccionesArchivos(accion):
     if accion['Archivo'] == "Pegar":
         if 'json' in accion and 'Atributo' in accion:
             Texto = ObtenerDato("/Data/" + accion['json'], accion['Atributo'])
-            PegarTexto(Texto)
+            ComandoEscribir(Texto)
     elif accion['Archivo'] == "Salvar":
         if 'json' in accion and 'Atributo' in accion:
             Texto = CopiarTexto()
