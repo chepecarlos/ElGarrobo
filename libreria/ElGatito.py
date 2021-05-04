@@ -188,7 +188,6 @@ class ElGatito(object):
                 self.AccionesOBS(accion)
             elif 'data_archivo' in accion:
                 AccionDataArchivo(accion)
-                self.ActualizarDeck()
             elif 'tecla_on' in accion:
                 ComandoPrecionar(accion['tecla_on'], estado)
             else:
@@ -223,6 +222,8 @@ class ElGatito(object):
             self.PathActual = accion['path']
             self.BuscarFolder(self.PathActual)
             self.LimpiarDeck()
+            self.ActualizarDeck()
+        elif Opcion == 'actualizar':
             self.ActualizarDeck()
         else:
             logger.warning(f"Opcion No Encontrada: {Opcion}")
