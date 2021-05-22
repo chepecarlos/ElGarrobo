@@ -2,6 +2,7 @@ import logging
 import os
 
 import libreria.acciones.MiOBS as MiOBS
+import libreria.MiMQTT as MiMQTT
 
 from libreria.MiStreamDeck import IniciarStreamDeck, MiStreamDeck
 from libreria.MiDeckImagen import DefinirFuente, DefinirImagenes
@@ -26,6 +27,7 @@ class ElGatito(object):
         self.CargarTeclados()
         self.CargarStreamDeck()
         self.IniciarStreamDeck()
+        self.IniciarMQTT()
         self.Configurar()
 
     def CargarData(self):
@@ -299,6 +301,13 @@ class ElGatito(object):
         self.PathActual = "defaul"
         self.BuscarFolder(self.PathActual)
         self.ActualizarDeck()
+
+    def IniciarMQTT(self):
+        if 'broker_mqtt' in self.Data:
+            self.MQTT = MiMQTT.MiMQTT(self.Data['broker_mqtt'])
+        else:
+            self.MQTT = MiMQTT.MiMQTT()
+        self.MQTT.Conectar()
 
     def Configurar(self):
         SalvarArchivo("data/obs.json", dict())
