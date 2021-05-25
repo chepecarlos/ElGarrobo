@@ -157,7 +157,8 @@ class ElGatito(object):
             for accion in self.acciones[NombreEvento]:
                 if 'key' in accion:
                     if accion['key'] == Evento['key']:
-                        logger.info(f"Evento {NombreEvento}[{accion['key']}] {accion['nombre']} -  {Evento['estado']}")
+                        if Evento['estado']:
+                            logger.info(f"Evento {NombreEvento}[{accion['key']}] {accion['nombre']}")
                         self.EjecutandoEvento(accion, Evento['estado'])
                         return
 
@@ -167,7 +168,8 @@ class ElGatito(object):
                 for accion in self.acciones['streamdeck']:
                     if 'key' in accion:
                         if accion['key'] == key_desface:
-                            logger.info(f"Evento streamdeck[{accion['key']}] {accion['nombre']} -  {Evento['estado']}")
+                            if Evento['estado']:
+                                logger.info(f"Evento streamdeck[{accion['key']}] {accion['nombre']}")
                             self.EjecutandoEvento(accion, Evento['estado'])
                             return
                 logger.info(f"Evento no asignado streamdeck[{key_desface}]")
