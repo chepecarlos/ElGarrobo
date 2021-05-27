@@ -206,7 +206,10 @@ class ElGatito(object):
         Opcion = accion['opcion']
         if Opcion == "salir":
             logger.info("Saliendo ElGatoALSW - Adios :) ")
+            self.LimpiarDeck()
             os._exit(0)
+        elif Opcion == 'recargar':
+            pass
         elif Opcion == 'siquiente':
             self.MoverPagina('siquiente')
         elif Opcion == 'anterior':
