@@ -1,4 +1,10 @@
+import logging
 import paho.mqtt.client as mqtt
+
+from libreria.FuncionesLogging import ConfigurarLogging
+
+logger = logging.getLogger(__name__)
+ConfigurarLogging(logger)
 
 
 class MiMQTT():
@@ -13,19 +19,19 @@ class MiMQTT():
         self.Puerto = 1883
 
     def Conectar(self):
-        print("Conectado a MQTT")
+        logger.info("Conectado a MQTT")
         self.cliente.connect(self.Broker, port=self.Puerto, keepalive=60)
         # self.cliente.enable_logger(logger=logging.INFO)
         self.cliente.loop_forever()
 
     def ConectarMQTT(self, client, userdata, flags, rc):
-        print("Se conecto con mqtt "+str(rc))
+        logger.info("Se conecto con mqtt "+str(rc))
         client.subscribe("ALSW/#")
 
     def MensajeMQTT(self, client, userdata, msg):
         if msg.topic == "ALSW/temp":
-            print(f"Temperatura es {str(msg.payload)}")
-        print(msg.topic+" "+str(msg.payload))
+            logger.info(f"Temperatura es {str(msg.payload)}")
+        logger.info(msg.topic+" "+str(msg.payload))
 
 
 # client = mqtt.Client()
