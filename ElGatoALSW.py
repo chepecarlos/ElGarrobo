@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/home/chepecarlos/5.Programas/2.Heramientas/1.ElGatoALSW/env/bin/python
 # -*- coding: utf-8 -*-
 
 # Librerias
@@ -29,9 +29,9 @@ parser.add_argument('--proyecto', '-p', help="Configurar folder a proyecto actua
 parser.add_argument('--news', '-n', help="Configurar folder a noticias actual")
 parser.add_argument('--striming', '-s', help="Configurar folder a noticias actual")
 parser.add_argument('--salvaryoutube', '-sy', help="Salva el chat en un archivo", action="store_true")
-parser.add_argument('--mododemo', '-dd', help="Sistema modo demo",  action="store_true")
-parser.add_argument('--gui', '-g', help="Sistema interface grafica",  action="store_true")
-parser.add_argument('--blenderproxy', '-bp', help="Creando proxy de Blender",  action="store_true")
+parser.add_argument('--mododemo', '-dd', help="Sistema modo demo", action="store_true")
+parser.add_argument('--gui', '-g', help="Sistema interface grafica", action="store_true")
+parser.add_argument('--blenderproxy', '-bp', help="Creando proxy de Blender", action="store_true")
 parser.add_argument('--blenderrenderizar', '-br', help="Empezando a Renderizar Video")
 parser.add_argument('--blenderborrar', '-bb', help="Borrar Temporales", action="store_true")
 parser.add_argument('--folderproyecto', '-fp', help="Creando folder proyecto de video")
