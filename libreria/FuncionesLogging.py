@@ -3,23 +3,27 @@ import os
 from pathlib import Path
 from datetime import datetime
 
-ArchivoLog = ArchivoConfiguracion = os.path.join(Path.home(), '.config/elgatoalsw')
-ArchivoLog = ArchivoLog + '/logs/{:%Y-%m-%d %H:%M:%S}.log'.format(datetime.now())
-
 NivelLog = logging.DEBUG
 
-
 def NivelLogging(Nivel):
-    # TODO aun no funciona
+    # TODO aun no funciona niveles de log
     global NivelLog
     NivelLog = Nivel
-    pass
 
 
 def ConfigurarLogging(logger):
-    global ArchivoLog
     global NivelLog
     logger.setLevel(NivelLog)
+
+    ArchivoLog = '.config/elgatoalsw'
+    ArchivoLog = ArchivoConfiguracion = os.path.join(Path.home(), ArchivoLog)
+    ArchivoLog = os.path.join(ArchivoLog, 'logs')
+
+    if not os.path.isdir(ArchivoLog):
+        os.makedirs(ArchivoLog)
+
+    ArchivoLog = ArchivoLog + '/{:%Y-%m-%d %H:%M:%S}.log'.format(datetime.now())
+
     c_handler = logging.StreamHandler()
     f_handler = logging.FileHandler(ArchivoLog)
     c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
