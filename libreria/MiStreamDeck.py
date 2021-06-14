@@ -1,3 +1,5 @@
+# https://python-elgato-streamdeck.readthedocs.io/en/stable/index.html
+
 import logging
 
 from StreamDeck.DeviceManager import DeviceManager
