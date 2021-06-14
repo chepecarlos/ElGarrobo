@@ -1,4 +1,4 @@
-#!/home/chepecarlos/5.Programas/2.Heramientas/1.ElGatoALSW/env/bin/python
+#!/home/chepecarlos/5.Programas/2.Heramientas/1.ElGatoALSW/venv/bin/python
 # -*- coding: utf-8 -*-
 
 # Librerias
