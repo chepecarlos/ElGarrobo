@@ -26,8 +26,8 @@ ConfigurarLogging(logger)
 parser = argparse.ArgumentParser(description='Heramienta de creacion de contenido de ALSW')
 parser.add_argument('--nodepurar', '-nd', help="Acivar modo sin depuracion", action="store_true")
 parser.add_argument('--proyecto', '-p', help="Configurar folder a proyecto actual", action="store_true")
-parser.add_argument('--news', '-nn', help="Configurar folder a noticias actual")
-parser.add_argument('--noticias', '-n', help="Configurar folder a noticias actual")
+parser.add_argument('--news', '-n', help="Configurar folder a noticias actual")
+parser.add_argument('--striming', '-s', help="Configurar folder a noticias actual")
 parser.add_argument('--salvaryoutube', '-sy', help="Salva el chat en un archivo", action="store_true")
 parser.add_argument('--mododemo', '-dd', help="Sistema modo demo",  action="store_true")
 parser.add_argument('--gui', '-g', help="Sistema interface grafica",  action="store_true")
@@ -39,7 +39,7 @@ parser.add_argument('--folderproyecto', '-fp', help="Creando folder proyecto de 
 
 if sys.version_info[0] < 3:
     logger.error("Tienes que usar Python 3 para este programa")
-    sys.exit(1)
+    os._exit(0)
 
 # Principal
 if __name__ == "__main__":
@@ -53,8 +53,8 @@ if __name__ == "__main__":
     if args.proyecto:
         logger.info("Configurando Folder como Proyecto Actual")
         SalvarProyecto(os.getcwd())
-    elif args.noticias:
-        logger.info("Configurando Noticia Actual")
+    elif args.striming:
+        logger.info("Configurando striming Actual")
         SalvarArchivoNoticia(args.noticias)
     elif args.news:
         logger.info("Configurar Folder de Noticias Actual")
