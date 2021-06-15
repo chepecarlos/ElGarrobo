@@ -48,9 +48,9 @@ def ObtenerValor(Archivo, Atributo, local=True, Depurar=True):
 
 
 def SalvarArchivo(Archivo, Data):
-    """Salvar un Data en Archivo."""
+    """Sobre escribe data en archivo."""
     Archivo = os.path.join(ArchivoConfig, Archivo)
-    with open(Archivo, 'w') as f:
+    with open(Archivo, 'w+') as f:
         json.dump(Data, f, indent=1)
 
 

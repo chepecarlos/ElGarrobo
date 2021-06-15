@@ -15,8 +15,10 @@ ConfigurarLogging(logger)
 
 
 class MiStreamDeck(object):
+    """Clase para manejar StreamDeck."""
 
     def __init__(self, Deck):
+        """Inicializa manejo de StreamDeck."""
         self.Deck = Deck
         self.ID = Deck.ID
         self.Cantidad = Deck.key_count()
@@ -28,6 +30,7 @@ class MiStreamDeck(object):
         self.DeckGif.start()
 
     def ActualizarIconos(self, acciones, desface, Unido=False):
+        """Refesca iconos, tomando en cuenta pagina actual."""
         logger.info(f"empezando a actualizar iconos {self.Nombre}")
         if Unido:
             for i in range(self.Cantidad):
@@ -42,18 +45,21 @@ class MiStreamDeck(object):
             pass
 
     def AccionDibujar(self, acciones, i):
+        """Devuelve la accion i del conjuto de acciones."""
         for accion in acciones:
             if 'key' in accion:
                 if accion['key'] == i:
                     return accion
-        return
+        return None
 
     def Limpiar(self):
+        """Borra iconos de todo los botones de StreamDeck."""
         self.DeckGif.Limpiar()
         for i in range(self.Cantidad):
             LimpiarIcono(self.Deck, i)
 
     def Brillo(self, Brillo):
+        """Cambia brillo de StreamDeck."""
         self.Deck.set_brightness(Brillo)
 
 

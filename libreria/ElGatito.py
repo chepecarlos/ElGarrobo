@@ -1,14 +1,15 @@
 import logging
 import os
 
-import libreria.acciones.MiOBS as MiOBS
-import libreria.MiMQTT as MiMQTT
+# Importanto Clases
+from libreria.acciones.MiOBS import MiOBS
+from libreria.MiMQTT import MiMQTT
 
 from libreria.MiStreamDeck import IniciarStreamDeck, MiStreamDeck
 from libreria.MiDeckImagen import DefinirFuente, DefinirImagenes
 from libreria.MiTecladoMacro import MiTecladoMacro
 from libreria.FuncionesLogging import ConfigurarLogging
-from libreria.FuncionesArchivos import ObtenerArchivo, ObtenerFolder, UnirPath, SalvarArchivo, ObtenerArhivos, ObtenerValor, SalvarValor
+from libreria.FuncionesArchivos import ObtenerArchivo, ObtenerFolder, UnirPath, ObtenerArhivos, ObtenerValor, SalvarValor
 from libreria.acciones.Acciones import AccionesExtra
 from libreria.acciones.Data_Archivo import AccionDataArchivo
 from libreria.acciones.EmularTeclado import ComandoPrecionar
@@ -19,15 +20,17 @@ ConfigurarLogging(logger)
 
 
 class ElGatito(object):
+    """Clase base de Sistema de Macro ElGatoALSW."""
+
     def __init__(self, Data):
         self.Data = Data
         self.acciones = dict()
+        self.OBS = MiOBS()
         self.CargarData()
         self.CargarTeclados()
         self.CargarStreamDeck()
         self.IniciarStreamDeck()
         self.IniciarMQTT()
-        self.Configurar()
 
     def CargarData(self):
         """Cargando Data para Dispisitivo."""
@@ -82,6 +85,7 @@ class ElGatito(object):
             for Teclado in self.Data['teclados']:
                 if 'nombre' in Teclado and 'input' in Teclado and 'file' in Teclado:
                     TecladoActual = MiTecladoMacro(Teclado['nombre'], Teclado['input'], Teclado['file'], self.Evento)
+                    # TecladoActual.start()
                     if TecladoActual.Conectar():
                         self.ListaTeclados.append(TecladoActual)
 
@@ -251,33 +255,34 @@ class ElGatito(object):
                 deck.Brillo(Brillo)
 
     def AccionesOBS(self, accion):
+        """Acciones para controlar OBS Websocket."""
         opcion = accion['obs']
         if opcion == 'conectar':
-            self.OBS = MiOBS.MiOBS()
+            self.OBS = MiOBS()
             self.OBS.DibujarDeck(self.ActualizarDeck)
             self.OBS.Conectar()
         elif opcion == 'server':
-            self.OBS = MiOBS.MiOBS()
+            self.OBS = MiOBS()
             self.OBS.CambiarHost(accion['server'])
             self.OBS.DibujarDeck(self.ActualizarDeck)
             self.OBS.Conectar()
         elif opcion == 'cerrar':
             self.OBS.Desconectar()
-        elif opcion == 'esena':
-            if self.OBS is not None:
+        elif self.OBS.Conectado:
+            if opcion == 'esena':
                 self.OBS.CambiarEsena(accion['esena'])
-        elif opcion == 'filtro':
-            if self.OBS is not None:
+            elif opcion == 'filtro':
                 self.OBS.CambiarFiltro(accion['fuente'], accion['filtro'], not accion['estado'])
-        elif opcion == 'fuente':
-            if self.OBS is not None:
+            elif opcion == 'fuente':
                 self.OBS.CambiarFuente(accion['fuente'], not accion['estado'])
-        elif opcion == 'grabando':
-            if self.OBS is not None:
+            elif opcion == 'grabando':
                 self.OBS.CambiarGrabacion()
-        elif opcion == 'envivo':
-            if self.OBS is not None:
+            elif opcion == 'envivo':
                 self.OBS.CambiarEnVivo()
+            else:
+                logger.warning("Opcion no encontrada")
+        else:
+            logger.warning("OBS Websocket no conectado")
 
     def MoverPagina(self, Direcion):
         if 'streamdeck' in self.acciones:
@@ -308,13 +313,7 @@ class ElGatito(object):
 
     def IniciarMQTT(self):
         if 'broker_mqtt' in self.Data:
-            self.MQTT = MiMQTT.MiMQTT(self.Data['broker_mqtt'])
+            self.MQTT = MiMQTT(self.Data['broker_mqtt'])
         else:
-            self.MQTT = MiMQTT.MiMQTT()
+            self.MQTT = MiMQTT()
         self.MQTT.Conectar()
-
-    def Configurar(self):
-        SalvarArchivo("data/obs.json", dict())
-        SalvarArchivo("data/fuente_obs.json", dict())
-        SalvarArchivo("data/filtro_obs.json", dict())
-        self.OBS = None
