@@ -16,8 +16,10 @@ ConfigurarLogging(logger)
 
 
 class DeckGif(threading.Thread):
+    """Clase de Gif para StreamDeck."""
 
     def __init__(self, Deck):
+        """Carga Configuraciones para usar gif."""
         self.Deck = Deck
         self.lock = threading.RLock()
         self.ListaGif = []
@@ -26,33 +28,35 @@ class DeckGif(threading.Thread):
         super(DeckGif, self).__init__()
 
     def run(self):
+        """Dibuja un frame de cada gif y espera a siquiente frame."""
         while True:
             with self.lock:
                 for Gif in self.ListaGif:
-                    if 'git_cargado' in Gif:
+                    if 'gif_cargado' in Gif:
                         self.DibujarGif(Gif)
                 self.SiquienteFrame += self.EsperaGif
                 TiempoEspera = float(self.SiquienteFrame) - time.monotonic()
                 if TiempoEspera >= 0:
                     time.sleep(TiempoEspera)
 
+    def DibujarGif(self, accion):
+        """Dibuja el siquiente frame de gif en StreamDeck."""
+        self.Deck.set_key_image(accion['indice'], next(accion['gif_cargado']))
+
     def Limpiar(self):
+        """Borra lista de gif actuales."""
         self.ListaGif = []
 
-    def LimpiarGif(self, i):
-        pass
-
-    def DibujarGif(self, accion):
-        self.Deck.set_key_image(accion['indice'], next(accion['git_cargado']))
-
     def ActualizarGif(self, indice, accion):
+        """Carga los frame si no estas precargado y lo agrega a lista actual gifs."""
         if not('gif_cargado' in accion):
             accion['indice'] = indice
             self.CargarGif(accion)
         self.ListaGif.append(accion)
 
     def CargarGif(self, accion):
-        # TODO agregar titulo a git
+        """Extra frame de un gif y los guarda en una lista."""
+        # TODO agregar titulo a gif
         Gif = list()
         GitPath = accion['gif']
         GitPath = UnirPath(ObtenerConfig(), GitPath)
@@ -62,6 +66,6 @@ class DeckGif(threading.Thread):
                 Gif_frame = PILHelper.create_scaled_image(self.Deck, frame)
                 ImagenNativa = PILHelper.to_native_format(self.Deck, Gif_frame)
                 Gif.append(ImagenNativa)
-            accion['git_cargado'] = itertools.cycle(Gif)
+            accion['gif_cargado'] = itertools.cycle(Gif)
         else:
             logger.warning(f"No existe el gif {GitPath}")
