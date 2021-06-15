@@ -9,7 +9,7 @@ ConfigurarLogging(logger)
 
 
 def AccionDataArchivo(accion):
-    # print(accion)
+    """Acciones de Archivo."""
     accion = accion['data_archivo']
     Opcion = accion['opcion']
     if Opcion == "asignar":
