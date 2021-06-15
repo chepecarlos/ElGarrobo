@@ -2,27 +2,34 @@ import logging
 import os
 from pathlib import Path
 from datetime import datetime
+import sys
 
 NivelLog = logging.DEBUG
 
+
 def NivelLogging(Nivel):
+    """Nivel de depuracion."""
     # TODO aun no funciona niveles de log
     global NivelLog
     NivelLog = Nivel
 
 
 def ConfigurarLogging(logger):
+    """Configura el archivo de depuracion."""
     global NivelLog
     logger.setLevel(NivelLog)
 
-    ArchivoLog = '.config/elgatoalsw'
-    ArchivoLog = ArchivoConfiguracion = os.path.join(Path.home(), ArchivoLog)
+    Programa = os.path.basename(sys.argv[0]).lower()
+    Programa = os.path.splitext(Programa)[0]
+
+    ArchivoLog = os.path.join('.config', Programa)
+    ArchivoLog = os.path.join(Path.home(), ArchivoLog)
     ArchivoLog = os.path.join(ArchivoLog, 'logs')
 
     if not os.path.isdir(ArchivoLog):
         os.makedirs(ArchivoLog)
 
-    ArchivoLog = ArchivoLog + '/{:%Y-%m-%d %H:%M:%S}.log'.format(datetime.now())
+    ArchivoLog = ArchivoLog + '/{:%Y-%m-%d_%H:%M:%S}.log'.format(datetime.now())
 
     c_handler = logging.StreamHandler()
     f_handler = logging.FileHandler(ArchivoLog)
