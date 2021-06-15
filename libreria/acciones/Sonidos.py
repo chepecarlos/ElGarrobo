@@ -1,8 +1,10 @@
-# https://simpleaudio.readthedocs.io/en/latest/installation.html#installation-ref
+# https://github.com/jiaaro/pydub
+
+from pydub import AudioSegment
+from pydub.playback import play
 
 import multiprocessing
 import logging
-import simpleaudio as sa
 from libreria.FuncionesLogging import ConfigurarLogging
 from libreria.FuncionesArchivos import UnirPath, ObtenerConfig
 
@@ -13,6 +15,7 @@ ListaSonidos = []
 
 
 def AccionSonido(AccionActual):
+    """Acciones de Sonido."""
     if AccionActual['sonido'] == 'parar':
         PararReproducion()
     else:
@@ -20,17 +23,21 @@ def AccionSonido(AccionActual):
 
 
 def Sonido(Archivo):
+    """Reproducir sonido."""
     try:
-        sound = sa.WaveObject.from_wave_file(Archivo)
-        Repoductor = sound.play()
+        if Archivo.endswith(".wav"):
+            sound = AudioSegment.from_file(Archivo, format="wav")
+        elif Archivo.endswith(".mp3"):
+            sound = AudioSegment.from_file(Archivo, format="mp3")
         logger.info(f"Empezar a repoducir {Archivo}")
-        Repoductor.wait_done()
+        play(sound)
         logger.info(f"Terminando de repoducir {Archivo}")
     except FileNotFoundError:
         logger.warning(f"No se encontro {Archivo}")
 
 
 def Reproducir(Archivo):
+    """Crear un susproceso para Reproduccion."""
     global ListaSonidos
     logger.info(f"Repoduciendo {Archivo}")
     Archivo = UnirPath(ObtenerConfig(), Archivo)
@@ -40,6 +47,7 @@ def Reproducir(Archivo):
 
 
 def PararReproducion():
+    """Parar susprocesos de repoduccion de sonido."""
     global ListaSonidos
     logger.info("Parar Reproducion de Sonidos")
     for Sonido in ListaSonidos:
