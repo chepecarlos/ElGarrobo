@@ -1,5 +1,6 @@
-# https://github.com/jiaaro/pydub
+"""Modulo para acciones de produccion de sonido."""
 
+# https://github.com/jiaaro/pydub
 from pydub import AudioSegment
 from pydub.playback import play
 
@@ -19,10 +20,10 @@ def AccionSonido(AccionActual):
     if AccionActual['sonido'] == 'parar':
         PararReproducion()
     else:
-        Reproducir(AccionActual['sonido'])
+        Reproducir(AccionActual)
 
 
-def Sonido(Archivo):
+def Sonido(Archivo, Ganancia):
     """Reproducir sonido."""
     try:
         if Archivo.endswith(".wav"):
@@ -30,18 +31,23 @@ def Sonido(Archivo):
         elif Archivo.endswith(".mp3"):
             sound = AudioSegment.from_file(Archivo, format="mp3")
         logger.info(f"Empezar a repoducir {Archivo}")
-        play(sound)
+        play(sound + Ganancia)
         logger.info(f"Terminando de repoducir {Archivo}")
     except FileNotFoundError:
         logger.warning(f"No se encontro {Archivo}")
 
 
-def Reproducir(Archivo):
+def Reproducir(AccionActual):
     """Crear un susproceso para Reproduccion."""
     global ListaSonidos
+    Archivo = AccionActual['sonido']
+    Ganancia = 0
+    if 'ganancia' in AccionActual:
+        Ganancia = AccionActual['ganancia']
+    # TODO recorde del audio
     logger.info(f"Repoduciendo {Archivo}")
     Archivo = UnirPath(ObtenerConfig(), Archivo)
-    PSonido = multiprocessing.Process(target=Sonido, args=[Archivo])
+    PSonido = multiprocessing.Process(target=Sonido, args=[Archivo, Ganancia])
     PSonido.start()
     ListaSonidos.append(PSonido)
 
