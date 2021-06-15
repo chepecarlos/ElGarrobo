@@ -12,21 +12,18 @@ ConfigurarLogging(logger)
 
 ArchivoConfig = os.path.join(Path.home(), '.config/elgatoalsw')
 
-# Funciones de Obtener
-
 
 def ObtenerValor(Archivo, Atributo, local=True, Depurar=True):
-    """Obtiene Atributo de un Archivo .json"""
+    """Obtiene un Atributo de un Archivo."""
     global ArchivoConfig
     if local:
         Archivo = os.path.join(ArchivoConfig, Archivo)
+    if not os.path.exists(Archivo):
+        logger.warning(f"Archivo no Exite {Archivo}")
+        return ""
     if Archivo.endswith(".json"):
-        if os.path.exists(Archivo):
-            with open(Archivo) as f:
-                data = yaml.load(f, Loader=yaml.FullLoader)
-        else:
-            logger.warning(f"Archivo no Exite {Archivo}")
-            return ""
+        with open(Archivo) as f:
+            data = yaml.load(f, Loader=yaml.FullLoader)
     elif Archivo.endswith(".md"):
         with open(Archivo) as f:
             try:
@@ -49,18 +46,16 @@ def ObtenerValor(Archivo, Atributo, local=True, Depurar=True):
         logger.warning(f"No existe el atributo {Atributo}")
     return None
 
-# Funciones de Salvar
-
 
 def SalvarArchivo(Archivo, Data):
-    '''Salvar un Data en Archivo'''
+    """Salvar un Data en Archivo."""
     Archivo = os.path.join(ArchivoConfig, Archivo)
     with open(Archivo, 'w') as f:
         json.dump(Data, f, indent=1)
 
 
 def SalvarValor(Archivo, Atributo, Valor, local=True):
-    '''Salvar un Valor en Archivo'''
+    """Salvar un Valor en Archivo."""
     data = dict()
     if local:
         Archivo = os.path.join(ArchivoConfig, Archivo)
@@ -92,7 +87,7 @@ def SalvarValor(Archivo, Atributo, Valor, local=True):
 
 
 def UnirPath(Path1, Path2):
-    '''Une dos direciones'''
+    """Une dos direciones."""
     return os.path.join(Path1, Path2)
 
 

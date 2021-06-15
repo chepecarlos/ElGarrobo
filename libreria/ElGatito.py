@@ -19,7 +19,6 @@ ConfigurarLogging(logger)
 
 
 class ElGatito(object):
-
     def __init__(self, Data):
         self.Data = Data
         self.acciones = dict()
@@ -31,7 +30,7 @@ class ElGatito(object):
         self.Configurar()
 
     def CargarData(self):
-        """Cargando Data para Dispisitivo"""
+        """Cargando Data para Dispisitivo."""
         logger.info("Cargando Data")
         if 'deck_file' in self.Data:
             self.Data['deck'] = ObtenerArchivo(self.Data['deck_file'])
@@ -76,7 +75,7 @@ class ElGatito(object):
                     Data[DataAtributo] = DataArchivo
 
     def CargarTeclados(self):
-        """Confiurando Teclados Macros"""
+        """Confiurando Teclados Macros."""
         if 'teclados' in self.Data:
             logger.info("Cargando Teclados")
             self.ListaTeclados = []
@@ -87,7 +86,7 @@ class ElGatito(object):
                         self.ListaTeclados.append(TecladoActual)
 
     def CargarStreamDeck(self):
-        """configurando streamdeck"""
+        """Configurando streamdeck."""
         self.ListaDeck = []
         if 'deck' in self.Data:
             logger.info("Cargando StreamDeck")

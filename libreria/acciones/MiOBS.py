@@ -11,6 +11,8 @@ ConfigurarLogging(logger)
 
 
 class MiOBS:
+    """Coneccion con OBS."""
+
     def __init__(self):
         self.host = "localhost"
         self.port = 4444

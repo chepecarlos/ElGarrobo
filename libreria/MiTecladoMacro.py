@@ -15,6 +15,8 @@ ConfigurarLogging(logger)
 
 
 class MiTecladoMacro:
+    """Clase de Teclado Macro."""
+
     def __init__(self, Nombre, Dispisitivo, File, FuncionEvento):
         self.Nombre = Nombre
         self.Dispisitivo = Dispisitivo
@@ -39,7 +41,7 @@ class MiTecladoMacro:
             self.TeclasActuales = CargarValores(Archivo + "/" + self.File, True)
 
     def HiloRaton(self, Teclado, Nombre):
-        '''Hila del teclado del Teclado'''
+        """Hila del teclado del Teclado."""
         for event in Teclado.read_loop():
             if event.type == ecodes.EV_KEY:
                 key = categorize(event)

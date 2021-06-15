@@ -8,6 +8,8 @@ ConfigurarLogging(logger)
 
 
 class MiMQTT():
+    """Clase de conexion con MQTT."""
+
     def __init__(self, Broker=None):
         self.cliente = mqtt.Client()
         self.cliente.on_connect = self.ConectarMQTT

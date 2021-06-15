@@ -1,8 +1,9 @@
 # Data Temrporal
 Data/*
 
-# Carpeta de Demos
-demo
+# Demos de prueba
+demo/*
+
 # Archivos de Audio
 *.mp3
 *.wav

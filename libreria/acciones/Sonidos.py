@@ -1,3 +1,5 @@
+# https://simpleaudio.readthedocs.io/en/latest/installation.html#installation-ref
+
 import multiprocessing
 import logging
 import simpleaudio as sa

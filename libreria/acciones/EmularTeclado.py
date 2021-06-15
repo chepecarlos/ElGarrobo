@@ -1,3 +1,5 @@
+# https://pyautogui.readthedocs.io/en/latest/install.html
+
 import pyautogui
 import pyperclip
 
