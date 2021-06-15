@@ -10,6 +10,7 @@ from Extra.Delay import Delay
 
 
 def ComandoTeclas(Teclas):
+    """Preciona una combinacion de tecla."""
     for tecla in Teclas:
         pyautogui.keyDown(tecla)
     for tecla in reversed(Teclas):
@@ -17,6 +18,7 @@ def ComandoTeclas(Teclas):
 
 
 def ComandoPrecionar(Teclas, Estado=True):
+    """Preciona una combinacion de teclas con estado."""
     if Estado:
         for tecla in Teclas:
             pyautogui.keyDown(tecla)
@@ -26,15 +28,18 @@ def ComandoPrecionar(Teclas, Estado=True):
 
 
 def PegarTexto(Texto):
+    """Pegar texto en papelera."""
     pyperclip.copy(Texto)
     pyautogui.hotkey('ctrl', 'v', interval=0.15)
 
 
 def ComandoEscribir(Texto, Velocidad=0.01):
+    """Escribe un texto letra por letra."""
     pyautogui.write(Texto, interval=Velocidad)
 
 
 def CopiarTexto():
+    """Copia texto a papelera."""
     pyautogui.hotkey('ctrl', 'c')
     Delay(10)
     return pyperclip.paste()
