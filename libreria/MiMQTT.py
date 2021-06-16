@@ -1,7 +1,11 @@
+"""Modulo de comunicacion con MQTT."""
+
 import logging
+# https://github.com/Elektordi/obs-websocket-py
 import paho.mqtt.client as mqtt
 
 from libreria.FuncionesLogging import ConfigurarLogging
+from Extra.FuncionesArchivos import ObtenerDato
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -11,8 +15,9 @@ class MiMQTT():
     """Clase de conexion con MQTT."""
 
     def __init__(self, Broker=None):
+        """Inicializa coneccion con MQTT."""
         self.cliente = mqtt.Client()
-        self.cliente.on_connect = self.ConectarMQTT
+        self.cliente.on_connect = self.EventoConectar
         self.cliente.on_message = self.MensajeMQTT
         if Broker is not None:
             self.Broker = "test.mosquitto.org"
@@ -21,23 +26,33 @@ class MiMQTT():
         self.Puerto = 1883
 
     def Conectar(self):
+        """Conectar a Broker MQTT."""
         logger.info("Conectado a MQTT")
         self.cliente.connect(self.Broker, port=self.Puerto, keepalive=60)
         # self.cliente.enable_logger(logger=logging.INFO)
         self.cliente.loop_forever()
 
-    def ConectarMQTT(self, client, userdata, flags, rc):
-        logger.info("Se conecto con mqtt "+str(rc))
+    def EventoConectar(self, client, userdata, flags, rc):
+        """Respuesta de conecion y subcripcion a topicos."""
+        logger.info("Se conecto con mqtt " + str(rc))
         client.subscribe("ALSW/#")
 
     def MensajeMQTT(self, client, userdata, msg):
+        """Recibe mensaje por MQTT."""
         if msg.topic == "ALSW/temp":
             logger.info(f"Temperatura es {str(msg.payload)}")
-        logger.info(msg.topic+" "+str(msg.payload))
+        logger.info(msg.topic + " " + str(msg.payload))
+
+    def EnviarMQTT(self, Topic, Mensaje):
+        """Envia dato por MQTT."""
+        self.cliente.publish(Topic, Mensaje)
 
 
-# client = mqtt.Client()
-# client.on_connect = on_connect
-# client.on_message = on_message
-
-# client.connect("test.mosquitto.org", 1883, 60)
+def EnviarMQTTSimple(Topic, Mensaje):
+    """Envia un Mensaje Simple por MQTT."""
+    Usuario = ObtenerDato("/Data/MQTT.json", "Usuario")
+    Contrasenna = ObtenerDato("/Data/MQTT.json", "Contrasenna")
+    MiMQTTSimple = mqtt.Client()
+    MiMQTTSimple.username_pw_set(Usuario, Contrasenna)
+    MiMQTTSimple.connect("public.cloud.shiftr.io", 1883)
+    MiMQTTSimple.publish(Topic, Mensaje)
