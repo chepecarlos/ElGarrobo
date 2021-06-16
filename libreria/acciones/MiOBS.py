@@ -71,7 +71,7 @@ class MiOBS:
         Refrescar = False
         for Fuente in DataEsenaActual['sources']:
             NombreFuente = Fuente['name']
-            EstadoFuente = ObtenerValor("data/fuente_obs.json", NombreFuente)
+            EstadoFuente = ObtenerValor("data/fuente_obs.json", NombreFuente, Depurar=False)
             EstadoFuenteActual = self.OBS.call(requests.GetSceneItemProperties(NombreFuente)).datain
             if 'visible' in EstadoFuenteActual:
                 EstadoFuenteActual = EstadoFuenteActual['visible']

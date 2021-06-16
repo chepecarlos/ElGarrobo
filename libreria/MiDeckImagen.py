@@ -1,13 +1,8 @@
 import os
-import itertools
-import time
-import threading
 import logging
 
-from PIL import Image, ImageDraw, ImageFont, ImageSequence
+from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.ImageHelpers import PILHelper
-from StreamDeck.Transport.Transport import TransportError
-from fractions import Fraction
 
 from libreria.FuncionesLogging import ConfigurarLogging
 from libreria.FuncionesArchivos import ObtenerConfig, ObtenerValor, UnirPath
@@ -123,13 +118,13 @@ def LimpiarIcono(Deck, indice):
 def ActualizarImagenOBS(accion):
     opcion = accion['obs']
     if opcion == 'esena':
-        EsenaActual = ObtenerValor("data/obs.json", "esena_actual")
+        EsenaActual = ObtenerValor("data/obs.json", "esena_actual", Depurar=False)
         if accion['esena'] == EsenaActual:
             accion['estado'] = True
         else:
             accion['estado'] = False
     elif opcion == 'fuente':
-        EstadoFuente = ObtenerValor("data/fuente_obs.json", accion['fuente'])
+        EstadoFuente = ObtenerValor("data/fuente_obs.json", accion['fuente'], Depurar=False)
         if EstadoFuente is not None:
             accion['estado'] = EstadoFuente
         else:
@@ -138,7 +133,7 @@ def ActualizarImagenOBS(accion):
         Data = list()
         Data.append(accion['fuente'])
         Data.append(accion['filtro'])
-        EstadoFiltro = ObtenerValor("data/filtro_obs.json", Data)
+        EstadoFiltro = ObtenerValor("data/filtro_obs.json", Data, Depurar=False)
         if EstadoFiltro is not None:
             accion['estado'] = EstadoFiltro
         else:
@@ -152,7 +147,7 @@ def ActualizarImagenOBS(accion):
 
 
 def ActualizarEstado(accion, atributo):
-    Estado = ObtenerValor("data/obs.json", atributo)
+    Estado = ObtenerValor("data/obs.json", atributo, Depurar=False)
     if Estado:
         accion['estado'] = True
     else:
