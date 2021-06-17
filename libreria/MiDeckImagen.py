@@ -47,7 +47,10 @@ def ActualizarIcono(Deck, indice, accion):
             else:
                 NombreIcono = accion['icono_false']
 
-        PonerImagen(ImagenBoton, NombreIcono, accion)
+        if 'solo_titulo' in accion and 'titulo' in accion:
+            pass
+        else:
+            PonerImagen(ImagenBoton, NombreIcono, accion)
 
     if 'titulo' in accion:
         PonerTexto(ImagenBoton, accion['titulo'], accion)
@@ -73,18 +76,21 @@ def PonerImagen(Imagen, NombreIcono, accion):
 
 
 def PonerTexto(Imagen, Texto, accion, centrar=False):
+    """Agrega Texto a Botones de StreamDeck."""
     Texto = str(Texto)
     Tamanno = 20
     dibujo = ImageDraw.Draw(Imagen)
 
-    if centrar:
+    if 'solo_titulo' in accion:
         Tamanno = 40
+        centrar = True
 
     if 'titulo_color' in accion:
         Color = accion['titulo_color']
     else:
         Color = "white"
 
+    # TODO: hacer funcion
     while True:
         fuente = ImageFont.truetype(FuenteIcono, Tamanno)
         Titulo_ancho, Titulo_alto = dibujo.textsize(Texto, font=fuente)
@@ -93,7 +99,7 @@ def PonerTexto(Imagen, Texto, accion, centrar=False):
         Tamanno -= 1
 
     if centrar:
-        PosicionTexto = ((Imagen.width - Titulo_ancho) // 2, (Imagen.height - Titulo_alto - 20) // 2)
+        PosicionTexto = ((Imagen.width - Titulo_ancho) // 2, (Imagen.height - Titulo_alto - Tamanno/2) // 2)
     else:
         PosicionTexto = ((Imagen.width - Titulo_ancho) // 2, Imagen.height - Titulo_alto - 2)
 
