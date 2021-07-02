@@ -1,19 +1,17 @@
 import logging
 import os
 
-# Importanto Clases
-from libreria.acciones.MiOBS import MiOBS
-from libreria.MiMQTT import MiMQTT
-
-from libreria.MiStreamDeck import IniciarStreamDeck, MiStreamDeck
-from libreria.MiDeckImagen import DefinirFuente, DefinirImagenes
-from libreria.MiTecladoMacro import MiTecladoMacro
-from libreria.FuncionesLogging import ConfigurarLogging
-from libreria.FuncionesArchivos import ObtenerArchivo, ObtenerFolder, UnirPath, ObtenerArhivos, ObtenerValor, SalvarValor
-from libreria.acciones.Acciones import AccionesExtra
-from libreria.acciones.Data_Archivo import AccionDataArchivo
-from libreria.acciones.EmularTeclado import ComandoPrecionar
-
+from .acciones.Acciones import AccionesExtra
+from .acciones.Data_Archivo import AccionDataArchivo
+from .acciones.EmularTeclado import ComandoPrecionar
+from .acciones.MiOBS import MiOBS
+from .FuncionesArchivos import (ObtenerArchivo, ObtenerArhivos, ObtenerFolder,
+                                ObtenerValor, SalvarValor, UnirPath)
+from .FuncionesLogging import ConfigurarLogging
+from .MiDeckImagen import DefinirFuente, DefinirImagenes
+from .MiMQTT import MiMQTT
+from .MiStreamDeck import IniciarStreamDeck, MiStreamDeck
+from .MiTecladoMacro import MiTecladoMacro
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -22,8 +20,8 @@ ConfigurarLogging(logger)
 class ElGatito(object):
     """Clase base de Sistema de Macro ElGatoALSW."""
 
-    def __init__(self, Data):
-        self.Data = Data
+    def __init__(self):
+        self.Data = ObtenerArchivo('config.json')
         self.acciones = dict()
         self.OBS = MiOBS()
         self.CargarData()
@@ -253,6 +251,9 @@ class ElGatito(object):
             SalvarValor("data/streamdeck.json", "brillo", Brillo)
             for deck in self.ListaDeck:
                 deck.Brillo(Brillo)
+        elif opcion == "reiniciar":
+            logger.info("Reiniciar todo el Sistema ElGatoALSW")
+            self.Reiniciar()
 
     def AccionesOBS(self, accion):
         """Acciones para controlar OBS Websocket."""
@@ -312,8 +313,15 @@ class ElGatito(object):
         self.ActualizarDeck()
 
     def IniciarMQTT(self):
+        """Iniciar coneccion con Broker MQTT."""
         if 'broker_mqtt' in self.Data:
             self.MQTT = MiMQTT(self.Data['broker_mqtt'])
         else:
             self.MQTT = MiMQTT()
         self.MQTT.Conectar()
+
+    def Reiniciar(self):
+        self.Data = ObtenerArchivo('config.json')
+        self.acciones = dict()
+        self.CargarData()
+        self.IniciarStreamDeck()

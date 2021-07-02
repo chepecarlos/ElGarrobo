@@ -1,23 +1,21 @@
 #!/home/chepecarlos/5.Programas/2.Heramientas/1.ElGatoALSW/venv/bin/python
 # -*- coding: utf-8 -*-
 
-# Librerias
-import os
 import argparse
-import sys
 import logging
+import os
+import sys
 
-
-# Cargar funciones de Archivos
-from Extra.FuncionesProyecto import SalvarProyecto, CargarProyecto, CargarIdVideo, CrearFolderProyecto
-
+from Extra.FuncionesBlender import (BorrarTemporalesBender, CrearProxy,
+                                    RenderizarVideo)
+from Extra.FuncionesProyecto import (CargarIdVideo, CargarProyecto,
+                                     CrearFolderProyecto, SalvarProyecto)
 from Extra.YoutubeChat import SalvarChatYoutube
-from Extra.FuncionesBlender import CrearProxy, RenderizarVideo, BorrarTemporalesBender
-
 from libreria.acciones.News import SalvarArchivoNoticia
 from libreria.ElGatito import ElGatito
-from libreria.FuncionesArchivos import SalvarValor, ObtenerArchivo, UnirPath
+from libreria.FuncionesArchivos import ObtenerArchivo, SalvarValor, UnirPath
 from libreria.FuncionesLogging import ConfigurarLogging, NivelLogging
+
 # from libreria.MiGUI import gui
 
 logger = logging.getLogger(__name__)
@@ -36,12 +34,11 @@ parser.add_argument('--blenderrenderizar', '-br', help="Empezando a Renderizar V
 parser.add_argument('--blenderborrar', '-bb', help="Borrar Temporales", action="store_true")
 parser.add_argument('--folderproyecto', '-fp', help="Creando folder proyecto de video")
 
-
 if sys.version_info[0] < 3:
     logger.error("Tienes que usar Python 3 para este programa")
     os._exit(0)
 
-# Principal
+
 if __name__ == "__main__":
     # TODO: funciones para configurar para priner aranque
     logger.info("Iniciando el programa ElGatoALSW")
@@ -67,9 +64,7 @@ if __name__ == "__main__":
         SalvarChatYoutube(CargarProyecto(), CargarIdVideo())
     elif args.mododemo:
         logger.info("Iniciando con modo Demo")
-        # TODO Cargar informacion desde #HOME/.config/ElGATOALSW
-        data = ObtenerArchivo('config.json')
-        ElGatito(data)
+        ElGatito()
     elif args.gui:
         logger.info("Iniciando la APP Grafica")
         # gui()
@@ -88,5 +83,4 @@ if __name__ == "__main__":
         CrearFolderProyecto(args.folderproyecto)
     else:
         logger.info("Iniciando sin parametros")
-        data = ObtenerArchivo('config.json')
-        ElGatito(data)
+        ElGatito()
