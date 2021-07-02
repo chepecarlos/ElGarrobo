@@ -103,8 +103,11 @@ class ElGatito(object):
     def ActualizarDeck(self):
         for Deck in self.ListaDeck:
             if 'streamdeck' in self.acciones:
+                Deck.CambiarFolder(self.PathActual)
                 Deck.ActualizarIconos(self.acciones['streamdeck'], self.desfaceDeck, True)
+
             elif Deck.Nombre in self.acciones:
+                Deck.CambiarFolder(self.PathActual)
                 Deck.ActualizarIconos(self.acciones[Deck.Nombre], self.desfaceDeck)
 
     def LimpiarDeck(self):
@@ -310,6 +313,7 @@ class ElGatito(object):
     def IniciarStreamDeck(self):
         self.PathActual = "defaul"
         self.BuscarFolder(self.PathActual)
+        self.LimpiarDeck()
         self.ActualizarDeck()
 
     def IniciarMQTT(self):
@@ -321,6 +325,7 @@ class ElGatito(object):
         self.MQTT.Conectar()
 
     def Reiniciar(self):
+        """Reinicia data de los Botones Actuales."""
         self.Data = ObtenerArchivo('config.json')
         self.acciones = dict()
         self.CargarData()

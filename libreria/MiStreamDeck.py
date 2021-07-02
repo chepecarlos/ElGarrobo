@@ -62,6 +62,9 @@ class MiStreamDeck(object):
         """Cambia brillo de StreamDeck."""
         self.Deck.set_brightness(Brillo)
 
+    def CambiarFolder(self, Folder):
+        self.Deck.Folder = Folder
+
 
 def IniciarStreamDeck(Datas, FuncionEvento):
     streamdecks = DeviceManager().enumerate()

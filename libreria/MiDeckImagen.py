@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.ImageHelpers import PILHelper
 
 from libreria.FuncionesLogging import ConfigurarLogging
-from libreria.FuncionesArchivos import ObtenerConfig, ObtenerValor, UnirPath
+from libreria.FuncionesArchivos import ObtenerConfig, ObtenerValor, UnirPath, ObtenerPath
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -50,7 +50,7 @@ def ActualizarIcono(Deck, indice, accion):
         if 'solo_titulo' in accion and 'titulo' in accion:
             pass
         else:
-            PonerImagen(ImagenBoton, NombreIcono, accion)
+            PonerImagen(ImagenBoton, NombreIcono, accion, Deck.Folder)
 
     if 'titulo' in accion:
         PonerTexto(ImagenBoton, accion['titulo'], accion)
@@ -58,8 +58,10 @@ def ActualizarIcono(Deck, indice, accion):
     Deck.set_key_image(indice, PILHelper.to_native_format(Deck, ImagenBoton))
 
 
-def PonerImagen(Imagen, NombreIcono, accion):
+def PonerImagen(Imagen, NombreIcono, accion, Folder):
+    NombreIcono = ObtenerPath(NombreIcono, Folder)
     DirecionIcono = UnirPath(ObtenerConfig(), NombreIcono)
+
     if os.path.exists(DirecionIcono):
         Icono = Image.open(DirecionIcono).convert("RGBA")
         if 'titulo' in accion:

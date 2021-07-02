@@ -91,6 +91,13 @@ def UnirPath(Path1, Path2):
     return os.path.join(Path1, Path2)
 
 
+def ObtenerPath(Path, FolderActual):
+    """Convierte Direcion relativas en absolutas."""
+    if Path.startswith("./"):
+        return UnirPath(FolderActual, Path)
+    return Path
+
+
 # Lo que ya no uso
 
 #
@@ -147,7 +154,7 @@ def ObtenerConfig():
 
 
 def ObtenerArchivo(Archivo):
-    """Leer y devuelte la informacion de un archivo"""
+    """Leer y devuelte la informacion de un archivo."""
     global ArchivoConfig
     if Archivo.endswith(".json"):
         ArchivoActual = ArchivoConfig + "/" + Archivo
@@ -161,7 +168,7 @@ def ObtenerArchivo(Archivo):
 
 
 def ObtenerFolder(Directorio):
-    """Devuelve una lista de los folder dentro de Directorio"""
+    """Devuelve una lista de los folder dentro de Directorio."""
     global ArchivoConfig
     FolderActual = os.path.join(ArchivoConfig, Directorio)
     ListaFolder = []
