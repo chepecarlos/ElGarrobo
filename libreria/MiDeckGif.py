@@ -9,7 +9,7 @@ from StreamDeck.ImageHelpers import PILHelper
 from fractions import Fraction
 
 from libreria.FuncionesLogging import ConfigurarLogging
-from libreria.FuncionesArchivos import ObtenerValor, UnirPath, ObtenerConfig, ObtenerPath
+from libreria.FuncionesArchivos import ObtenerValor, UnirPath, ObtenerConfig, RelativoAbsoluto
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -59,7 +59,7 @@ class DeckGif(threading.Thread):
         # TODO agregar titulo a gif
         Gif = list()
         GitPath = accion['gif']
-        GitPath = ObtenerPath(GitPath, self.Deck.Folder)
+        GitPath = RelativoAbsoluto(GitPath, self.Deck.Folder)
         GitPath = UnirPath(ObtenerConfig(), GitPath)
         if os.path.exists(GitPath):
             GifArchivo = Image.open(GitPath)

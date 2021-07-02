@@ -91,12 +91,15 @@ def UnirPath(Path1, Path2):
     return os.path.join(Path1, Path2)
 
 
-def ObtenerPath(Path, FolderActual):
+def RelativoAbsoluto(Path, FolderActual):
     """Convierte Direcion relativas en absolutas."""
     if Path.startswith("./"):
-        return UnirPath(FolderActual, Path)
+        return UnirPath(FolderActual, QuitarInicio(Path, "./"))
     return Path
 
+
+def QuitarInicio(text, prefix):
+    return text[text.startswith(prefix) and len(prefix):]
 
 # Lo que ya no uso
 

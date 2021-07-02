@@ -6,7 +6,7 @@ from .acciones.Data_Archivo import AccionDataArchivo
 from .acciones.EmularTeclado import ComandoPrecionar
 from .acciones.MiOBS import MiOBS
 from .FuncionesArchivos import (ObtenerArchivo, ObtenerArhivos, ObtenerFolder,
-                                ObtenerValor, SalvarValor, UnirPath)
+                                ObtenerValor, SalvarValor, UnirPath, RelativoAbsoluto)
 from .FuncionesLogging import ConfigurarLogging
 from .MiDeckImagen import DefinirFuente, DefinirImagenes
 from .MiMQTT import MiMQTT
@@ -230,7 +230,7 @@ class ElGatito(object):
             self.ActualizarDeck()
         elif Opcion == 'folder':
             logger.info(f"Entrando a {accion['path']}")
-            self.PathActual = accion['path']
+            self.PathActual = RelativoAbsoluto(accion['path'], self.PathActual)
             self.BuscarFolder(self.PathActual)
             self.LimpiarDeck()
             self.ActualizarDeck()

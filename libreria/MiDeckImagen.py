@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.ImageHelpers import PILHelper
 
 from libreria.FuncionesLogging import ConfigurarLogging
-from libreria.FuncionesArchivos import ObtenerConfig, ObtenerValor, UnirPath, ObtenerPath
+from libreria.FuncionesArchivos import ObtenerConfig, ObtenerValor, UnirPath, RelativoAbsoluto
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -59,7 +59,7 @@ def ActualizarIcono(Deck, indice, accion):
 
 
 def PonerImagen(Imagen, NombreIcono, accion, Folder):
-    NombreIcono = ObtenerPath(NombreIcono, Folder)
+    NombreIcono = RelativoAbsoluto(NombreIcono, Folder)
     DirecionIcono = UnirPath(ObtenerConfig(), NombreIcono)
 
     if os.path.exists(DirecionIcono):
