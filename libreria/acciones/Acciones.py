@@ -1,22 +1,22 @@
 import logging
 
+from Extra.FuncionesArchivos import ActualizarDato, ObtenerDato, ObtenerLista
 from Extra.FuncionesProyecto import AbirProyecto
-from Extra.FuncionesArchivos import ObtenerDato, ActualizarDato, ObtenerLista
-
+from libreria.FuncionesArchivos import ObtenerValor, SalvarArchivo, SalvarValor
 from libreria.FuncionesLogging import ConfigurarLogging
-from libreria.FuncionesArchivos import SalvarValor
-from libreria.acciones.MiOS import AccionOS
-from libreria.acciones.MiMQTT import EnviarMQTTSimple
-from libreria.acciones.Sonidos import AccionSonido
-from libreria.acciones.EmularTeclado import ComandoTeclas, ComandoEscribir, CopiarTexto
-from libreria.acciones.Delay import Delay
-from libreria.acciones.News import CantidadNoticias, LinkNoticia
+from libreria.MiMQTT import EnviarMQTTSimple
+
+from .Delay import Delay
+from .EmularTeclado import ComandoEscribir, ComandoTeclas, CopiarTexto
+from .MiOS import AccionOS
+from .News import ActualizarNoticias, BuscarEnNoticia, CantidadNoticias
+from .Sonidos import AccionSonido
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
 
 
-def AccionesExtra(accion):
+def AccionesExtra(accion, Folder):
     # Moviendo a liberia
     # TODO Ordenar por importancia
     if 'tecla' in accion:
@@ -26,7 +26,7 @@ def AccionesExtra(accion):
     elif 'delay' in accion:
         Delay(accion['delay'])
     elif 'sonido' in accion:
-        AccionSonido(accion)
+        AccionSonido(accion, Folder)
     elif 'mqtt' in accion:
         AccionesMQTT(accion)
     elif 'os' in accion:
@@ -55,18 +55,12 @@ def AccionesNews(accion):
 
     if opcion == "actualizar":
         logger.info("Actualizando Info de Noticias")
-        SalvarValor("data/news.json", "max", CantidadNoticias())
-        LinkActual = LinkNoticia()
-        if LinkActual is None:
-            SalvarValor("data/estado.json", "LinkNews", False)
-        else:
-            print(LinkActual)
-            SalvarValor("data/estado.json", "LinkNews", True)
+        ActualizarNoticias()
     elif opcion == "asignar":
         logger.info(f"Asignando Noticia - {accion['valor']}")
         SalvarValor("data/news.json", "id", accion["valor"])
     elif opcion == "pegar":
-        LinkActual = LinkNoticia()
+        LinkActual = BuscarEnNoticia('url')
         if LinkActual is None:
             ComandoEscribir("No Link")
         else:

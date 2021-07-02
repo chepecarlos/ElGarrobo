@@ -1,13 +1,13 @@
 """Modulo para acciones de produccion de sonido."""
 
 # https://github.com/jiaaro/pydub
+import logging
+import multiprocessing
+
+from libreria.FuncionesArchivos import ObtenerConfig, UnirPath, RelativoAbsoluto
+from libreria.FuncionesLogging import ConfigurarLogging
 from pydub import AudioSegment
 from pydub.playback import play
-
-import multiprocessing
-import logging
-from libreria.FuncionesLogging import ConfigurarLogging
-from libreria.FuncionesArchivos import UnirPath, ObtenerConfig
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -15,12 +15,12 @@ ConfigurarLogging(logger)
 ListaSonidos = []
 
 
-def AccionSonido(AccionActual):
+def AccionSonido(AccionActual, Folder):
     """Acciones de Sonido."""
     if AccionActual['sonido'] == 'parar':
         PararReproducion()
     else:
-        Reproducir(AccionActual)
+        Reproducir(AccionActual, Folder)
 
 
 def Sonido(Archivo, Ganancia):
@@ -37,7 +37,7 @@ def Sonido(Archivo, Ganancia):
         logger.warning(f"No se encontro {Archivo}")
 
 
-def Reproducir(AccionActual):
+def Reproducir(AccionActual, Folder):
     """Crear un susproceso para Reproduccion."""
     global ListaSonidos
     Archivo = AccionActual['sonido']
@@ -46,7 +46,9 @@ def Reproducir(AccionActual):
         Ganancia = AccionActual['ganancia']
     # TODO recorde del audio
     logger.info(f"Repoduciendo {Archivo}")
+    Archivo = RelativoAbsoluto(Archivo, Folder)
     Archivo = UnirPath(ObtenerConfig(), Archivo)
+    
     PSonido = multiprocessing.Process(target=Sonido, args=[Archivo, Ganancia])
     PSonido.start()
     ListaSonidos.append(PSonido)
@@ -55,6 +57,7 @@ def Reproducir(AccionActual):
 def PararReproducion():
     """Parar susprocesos de repoduccion de sonido."""
     global ListaSonidos
-    logger.info("Parar Reproducion de Sonidos")
+    logger.info(f"Parar Reproducion de Sonidos {len(ListaSonidos)}")
     for Sonido in ListaSonidos:
         Sonido.terminate()
+    ListaSonidos = []

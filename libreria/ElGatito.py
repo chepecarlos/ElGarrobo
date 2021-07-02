@@ -199,7 +199,7 @@ class ElGatito(object):
             elif 'tecla_on' in accion:
                 ComandoPrecionar(accion['tecla_on'], estado)
             else:
-                AccionesExtra(accion)
+                AccionesExtra(accion, self.PathActual)
         else:
             if 'tecla_off' in accion:
                 ComandoPrecionar(accion['tecla_off'], estado)
