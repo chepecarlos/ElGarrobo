@@ -60,7 +60,7 @@ if __name__ == "__main__":
         SalvarValor("data/news.json", "id", 0)
         pass
     elif args.salvaryoutube:
-        logger.info("Emezandoa a guardar Chat en Proyecto Actual")
+        logger.info(f"Emezandoa a guardar Chat en Proyecto Actual {CargarProyecto()} {CargarIdVideo()}")
         SalvarChatYoutube(CargarProyecto(), CargarIdVideo())
     elif args.mododemo:
         logger.info("Iniciando con modo Demo")

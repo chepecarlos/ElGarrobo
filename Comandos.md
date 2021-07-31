@@ -6,7 +6,8 @@ Informacion Minima de cada tecla
 
 ```json
 {
-  "Nombre": "---",
+  "nombre": "---",
+  "key": "---"
 }
 ```
 
@@ -16,7 +17,7 @@ Imagen con la que se activara la tecla, si no se define una una por defecto
 
 ```json
 {
-  "ico": "folder/imagen.png"
+  "icono": "folder/imagen.png"
 }
 ```
 
@@ -33,7 +34,7 @@ Git con la que se activa la tecla
 
 ### Configuraciones de StreamDeck
 
-Configurara opciones de StreanDeck que se aplicaran, guardara y cargaran en el carga del programa.
+Configurara opciones de streamdeck que se aplicaran, guardara y cargaran en el carga del programa.
 
 ```json
 {
@@ -45,8 +46,8 @@ Configurara opciones de StreanDeck que se aplicaran, guardara y cargaran en el c
 
 | Nombre      | Descripcion |
 | ----------- | ------------|
-| SubirBrillo | Sube el Brillo de StreanDeck |
-| BajarBrillo | Baja el Brillo de StreanDeck |
+| SubirBrillo | Sube el Brillo de streamdeck |
+| BajarBrillo | Baja el Brillo de streamdeck |
 
 ### Estado - Solo StreamDeck
 

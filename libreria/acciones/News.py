@@ -4,8 +4,9 @@ import logging
 # TODO: Contador de ID Noticia Actual / Total Noticias
 # TODO: Macro Sonido de Siquiente Noticia
 
-from libreria.FuncionesArchivos import SalvarValor, ObtenerValor, UnirPath
+from libreria.FuncionesArchivos import SalvarValor, SalvarArchivo, ObtenerValor, UnirPath
 from libreria.FuncionesLogging import ConfigurarLogging
+
 
 logger = logging.getLogger(__name__)
 ConfigurarLogging(logger)
@@ -31,7 +32,37 @@ def LinkNoticia():
     Noticias = ObtenerValor(Archivo, "news")
 
     if ID <= len(Noticias):
-        print(ID, Noticias[ID])
         if 'url' in Noticias[ID]:
             return Noticias[ID]['url']
     return None
+
+
+def BuscarEnNoticia(Atributo):
+    Archivo = ObtenerValor("data/news.json", "archivo")
+    ID = ObtenerValor("data/news.json", "id")
+    Noticias = ObtenerValor(Archivo, "news")
+
+    if ID <= len(Noticias):
+        if Atributo in Noticias[ID]:
+            return Noticias[ID][Atributo]
+    return None
+
+
+def ActualizarNoticias():
+    SalvarValor("data/news.json", "max", CantidadNoticias())
+    LinkActual = BuscarEnNoticia('url')
+    if LinkActual is None:
+        SalvarValor("data/estado.json", "LinkNews", False)
+    else:
+        print(LinkActual)
+        SalvarValor("data/estado.json", "LinkNews", True)
+    TituloActual = BuscarEnNoticia('title')
+    ArchivoNews = ObtenerValor("data/news.json", "titulo_news")
+    if TituloActual is not None and ArchivoNews is not None:
+        SalvarArchivo(ArchivoNews, TituloActual)
+    AuthorActual = BuscarEnNoticia('author')
+    ArchivoAuthor = ObtenerValor("data/news.json", "author_news")
+    if AuthorActual is not None and ArchivoAuthor is not None and 'name' in AuthorActual:
+        SalvarArchivo(ArchivoAuthor, AuthorActual['name'])
+    else:
+        SalvarArchivo(ArchivoAuthor, "")
