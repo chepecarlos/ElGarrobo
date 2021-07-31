@@ -83,9 +83,8 @@ class ElGatito(object):
             for Teclado in self.Data['teclados']:
                 if 'nombre' in Teclado and 'input' in Teclado and 'file' in Teclado:
                     TecladoActual = MiTecladoMacro(Teclado['nombre'], Teclado['input'], Teclado['file'], self.Evento)
-                    # TecladoActual.start()
-                    if TecladoActual.Conectar():
-                        self.ListaTeclados.append(TecladoActual)
+                    TecladoActual.Conectar()
+                    self.ListaTeclados.append(TecladoActual)
 
     def CargarStreamDeck(self):
         """Configurando streamdeck."""
