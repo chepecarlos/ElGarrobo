@@ -1,9 +1,6 @@
-import logging
-
 from Extra.FuncionesArchivos import ActualizarDato, ObtenerDato, ObtenerLista
 from Extra.FuncionesProyecto import AbirProyecto
 from libreria.FuncionesArchivos import ObtenerValor, SalvarArchivo, SalvarValor
-from libreria.FuncionesLogging import ConfigurarLogging
 from libreria.MiMQTT import EnviarMQTTSimple
 
 from .Delay import Delay
@@ -12,9 +9,9 @@ from .MiOS import AccionOS
 from .News import ActualizarNoticias, BuscarEnNoticia, CantidadNoticias
 from .Sonidos import AccionSonido
 
-logger = logging.getLogger(__name__)
-ConfigurarLogging(logger)
+import MiLibrerias
 
+logger = MiLibrerias.ConfigurarLogging(__name__)
 
 def AccionesExtra(accion, Folder):
     # Moviendo a liberia

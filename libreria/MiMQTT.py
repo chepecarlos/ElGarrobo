@@ -1,14 +1,13 @@
 """Modulo de comunicacion con MQTT."""
 
-import logging
 # https://github.com/Elektordi/obs-websocket-py
 import paho.mqtt.client as mqtt
 
-from libreria.FuncionesLogging import ConfigurarLogging
 from Extra.FuncionesArchivos import ObtenerDato
 
-logger = logging.getLogger(__name__)
-ConfigurarLogging(logger)
+import MiLibrerias
+
+logger = MiLibrerias.ConfigurarLogging(__name__)
 
 
 class MiMQTT():
@@ -38,9 +37,9 @@ class MiMQTT():
         client.subscribe("ALSW/#")
 
     def MensajeMQTT(self, client, userdata, msg):
-        """Recibe mensaje por MQTT."""
-        if msg.topic == "ALSW/temp":
-            logger.info(f"Temperatura es {str(msg.payload)}")
+        # """Recibe mensaje por MQTT."""
+        # if msg.topic == "ALSW/temp":
+        #     logger.info(f"Temperatura es {str(msg.payload)}")
         logger.info(msg.topic + " " + str(msg.payload))
 
     def EnviarMQTT(self, Topic, Mensaje):

@@ -1,6 +1,5 @@
 # https://python-evdev.readthedocs.io/en/latest/
 import threading
-import logging
 import time
 
 from evdev import InputDevice, categorize, ecodes
@@ -9,10 +8,9 @@ from evdev.eventio import EvdevError
 
 from Extra.CargarData import ExisteArchivo, CargarValores
 
-from libreria.FuncionesLogging import ConfigurarLogging
+import MiLibrerias
 
-logger = logging.getLogger(__name__)
-ConfigurarLogging(logger)
+logger = MiLibrerias.ConfigurarLogging(__name__)
 
 
 # TODO  Hacer con clase threading

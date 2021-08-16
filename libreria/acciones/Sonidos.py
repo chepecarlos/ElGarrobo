@@ -1,16 +1,15 @@
 """Modulo para acciones de produccion de sonido."""
 
 # https://github.com/jiaaro/pydub
-import logging
 import multiprocessing
 
-from libreria.FuncionesArchivos import ObtenerConfig, UnirPath, RelativoAbsoluto
-from libreria.FuncionesLogging import ConfigurarLogging
+from libreria.FuncionesArchivos import ObtenerFolderConfig, UnirPath, RelativoAbsoluto
 from pydub import AudioSegment
 from pydub.playback import play
 
-logger = logging.getLogger(__name__)
-ConfigurarLogging(logger)
+import MiLibrerias
+
+logger = MiLibrerias.ConfigurarLogging(__name__)
 
 ListaSonidos = []
 
@@ -47,7 +46,7 @@ def Reproducir(AccionActual, Folder):
     # TODO recorde del audio
     logger.info(f"Repoduciendo {Archivo}")
     Archivo = RelativoAbsoluto(Archivo, Folder)
-    Archivo = UnirPath(ObtenerConfig(), Archivo)
+    Archivo = UnirPath(ObtenerFolderConfig(), Archivo)
     
     PSonido = multiprocessing.Process(target=Sonido, args=[Archivo, Ganancia])
     PSonido.start()

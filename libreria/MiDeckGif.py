@@ -2,19 +2,18 @@ import threading
 import itertools
 import time
 import os
-import logging
 
 from PIL import Image, ImageSequence
 from StreamDeck.ImageHelpers import PILHelper
 from fractions import Fraction
 
-from libreria.FuncionesLogging import ConfigurarLogging
-from libreria.FuncionesArchivos import ObtenerValor, UnirPath, ObtenerConfig, RelativoAbsoluto
+from libreria.FuncionesArchivos import ObtenerValor, UnirPath, ObtenerFolderConfig, RelativoAbsoluto
 
-logger = logging.getLogger(__name__)
-ConfigurarLogging(logger)
+import MiLibrerias
 
+logger = MiLibrerias.ConfigurarLogging(__name__)
 
+# TODO: Cargar Gif en hilo aparte para no para procesos
 class DeckGif(threading.Thread):
     """Clase de Gif para StreamDeck."""
 
@@ -30,6 +29,7 @@ class DeckGif(threading.Thread):
     def run(self):
         """Dibuja un frame de cada gif y espera a siquiente frame."""
         while True:
+            # if self.Deck.connected():
             with self.lock:
                 for Gif in self.ListaGif:
                     if 'gif_cargado' in Gif:
@@ -60,7 +60,7 @@ class DeckGif(threading.Thread):
         Gif = list()
         GitPath = accion['gif']
         GitPath = RelativoAbsoluto(GitPath, self.Deck.Folder)
-        GitPath = UnirPath(ObtenerConfig(), GitPath)
+        GitPath = UnirPath(ObtenerFolderConfig(), GitPath)
         if os.path.exists(GitPath):
             GifArchivo = Image.open(GitPath)
             for frame in ImageSequence.Iterator(GifArchivo):

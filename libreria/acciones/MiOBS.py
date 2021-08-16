@@ -1,14 +1,12 @@
 # https://github.com/Elektordi/obs-websocket-py
-import logging
 import threading
 
 from obswebsocket import obsws, requests, events
-from libreria.FuncionesLogging import ConfigurarLogging
 from libreria.FuncionesArchivos import SalvarValor, SalvarArchivo, ObtenerValor
 
+import MiLibrerias
 
-logger = logging.getLogger(__name__)
-ConfigurarLogging(logger)
+logger = MiLibrerias.ConfigurarLogging(__name__)
 
 
 class MiOBS:

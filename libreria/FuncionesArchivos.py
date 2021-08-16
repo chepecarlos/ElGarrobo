@@ -1,36 +1,51 @@
 import json
 import os
 import yaml
-import logging
+import sys
 
 from pathlib import Path
 
-from libreria.FuncionesLogging import ConfigurarLogging
+import MiLibrerias
 
-logger = logging.getLogger(__name__)
-ConfigurarLogging(logger)
-
-ArchivoConfig = os.path.join(Path.home(), '.config/elgatoalsw')
+logger = MiLibrerias.ConfigurarLogging(__name__)
 
 
-def ObtenerValor(Archivo, Atributo, local=True, Depurar=True):
-    """Obtiene un Atributo de un Archivo."""
-    global ArchivoConfig
-    if local:
-        Archivo = os.path.join(ArchivoConfig, Archivo)
-    if not os.path.exists(Archivo):
-        logger.warning(f"Archivo no Exite {Archivo}")
-        return ""
+def ObtenerFolderConfig():
+    """Devuelte ruta donde esta el folder de configuracion"""
+    Programa = os.path.basename(sys.argv[0]).lower()
+    Programa = os.path.splitext(Programa)[0]
+
+    Folder = UnirPath('.config', Programa)
+    Folder = UnirPath(Path.home(), Folder)
+
+    return Folder
+
+
+
+def ObtenerArchivo(Archivo):
+    """Leer y devuelte la informacion de un archivo dentro del folde de configuraciones."""
+    ArchivoConfig = ObtenerFolderConfig()
     if Archivo.endswith(".json"):
-        with open(Archivo) as f:
-            data = yaml.load(f, Loader=yaml.FullLoader)
+        ArchivoActual = UnirPath(ArchivoConfig, Archivo)
+        if os.path.exists(ArchivoActual):
+            with open(ArchivoActual) as f:
+                return json.load(f)
     elif Archivo.endswith(".md"):
         with open(Archivo) as f:
             try:
-                data = list(yaml.load_all(f, Loader=yaml.SafeLoader))[0]
+                return list(yaml.load_all(f, Loader=yaml.SafeLoader))[0]
             except yaml.YAMLError as exc:
                 logger.warning(f"error con yaml {exc}")
-                return ""
+    return None
+
+def ObtenerValor(Archivo, Atributo, Depurar=True):
+    """Obtiene un Atributo de un Archivo."""
+
+    data = ObtenerArchivo(Archivo)
+
+    if data is None:
+        logger.warning(f"Archivo no Exite {Archivo}")
+        return None
 
     Tipo = type(Atributo)
     if Tipo is list:
@@ -49,7 +64,8 @@ def ObtenerValor(Archivo, Atributo, local=True, Depurar=True):
 
 def SalvarArchivo(Archivo, Data):
     """Sobre escribe data en archivo."""
-    Archivo = os.path.join(ArchivoConfig, Archivo)
+    ArchivoConfig = ObtenerFolderConfig()
+    Archivo = UnirPath(ArchivoConfig, Archivo)
     with open(Archivo, 'w+') as f:
         json.dump(Data, f, indent=1)
 
@@ -57,8 +73,9 @@ def SalvarArchivo(Archivo, Data):
 def SalvarValor(Archivo, Atributo, Valor, local=True):
     """Salvar un Valor en Archivo."""
     data = dict()
+    ArchivoConfig = ObtenerFolderConfig()
     if local:
-        Archivo = os.path.join(ArchivoConfig, Archivo)
+        Archivo = UnirPath(ArchivoConfig, Archivo)
     if Archivo.endswith(".json"):
         if os.path.exists(Archivo):
             with open(Archivo) as f:
@@ -94,85 +111,17 @@ def UnirPath(Path1, Path2):
 def RelativoAbsoluto(Path, FolderActual):
     """Convierte Direcion relativas en absolutas."""
     if Path.startswith("./"):
-        return UnirPath(FolderActual, QuitarInicio(Path, "./"))
+        return UnirPath(FolderActual, QuitarPrefixInicio(Path, "./"))
     return Path
 
 
-def QuitarInicio(text, prefix):
+def QuitarPrefixInicio(text, prefix):
+    """Quita un Prefijo o patron del inicio de una cadena"""
     return text[text.startswith(prefix) and len(prefix):]
 
-# Lo que ya no uso
-
-#
-# def ActualizarDato(Archivo, Valor, Atributo):
-#     '''Actualiza Valor de un Atributo Archivo'''
-#     Archivo = ArchivoLocal + Archivo
-#     if os.path.exists(Archivo):
-#         with open(Archivo) as f:
-#             data = json.load(f)
-#     else:
-#         data = []
-#
-#     data[Atributo] = Valor
-#
-#     with open(Archivo, 'w') as f:
-#         json.dump(data, f, indent=4)
-
-#
-# def ObtenerDato(Archivo, Atributo, local=True):
-#     '''Obtiene Atributo de un Archivo .json'''
-#     if local:
-#         Archivo = ArchivoLocal + Archivo
-#     if Archivo.endswith(".json"):
-#         if os.path.exists(Archivo):
-#             with open(Archivo) as f:
-#                 data = yaml.load(f, Loader=yaml.FullLoader)
-#         else:
-#             logger.warning(f"Archivo no Exite {Archivo}")
-#             return ""
-#     elif Archivo.endswith(".md"):
-#         with open(Archivo) as f:
-#             try:
-#                 data = list(yaml.load_all(f, Loader=yaml.SafeLoader))[0]
-#             except yaml.YAMLError as exc:
-#                 logger.warning(f"error con yaml {exc}")
-#                 return ""
-#
-#     if Atributo in data:
-#         return data[Atributo]
-#     else:
-#         return ""
-
-#
-# def ObtenerLista(Archivo, Atributo, ID):
-#     Lista = ObtenerDato(Archivo, Atributo)
-#     print(len(Lista))
-#     if ID < 0 or ID >= len(Lista):
-#         return "No Lista"
-#     return Lista[ID]
-
-
-def ObtenerConfig():
-    return ArchivoConfig
-
-
-def ObtenerArchivo(Archivo):
-    """Leer y devuelte la informacion de un archivo."""
-    global ArchivoConfig
-    if Archivo.endswith(".json"):
-        ArchivoActual = ArchivoConfig + "/" + Archivo
-        if os.path.exists(ArchivoActual):
-            with open(ArchivoActual) as f:
-                return yaml.load(f, Loader=yaml.FullLoader)
-        else:
-            logger.warning(f"No Eciste {Archivo}")
-    else:
-        logger.warning(f"El Archivo {Archivo} no es .json")
-
-
-def ObtenerFolder(Directorio):
+def ObtenerListaFolder(Directorio):
     """Devuelve una lista de los folder dentro de Directorio."""
-    global ArchivoConfig
+    ArchivoConfig = ObtenerFolderConfig()
     FolderActual = os.path.join(ArchivoConfig, Directorio)
     ListaFolder = []
     if os.path.exists(FolderActual):
@@ -181,10 +130,11 @@ def ObtenerFolder(Directorio):
                 # ListaFolder.append({"folder": folder})
                 ListaFolder.append(folder)
         return ListaFolder
+    return None
 
 
-def ObtenerArhivos(Directorio):
-    global ArchivoConfig
+def ObtenerListaArhivos(Directorio):
+    ArchivoConfig = ObtenerFolderConfig()
     FolderActual = os.path.join(ArchivoConfig, Directorio)
     ListaArchivos = []
     if os.path.exists(FolderActual):

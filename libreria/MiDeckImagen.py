@@ -1,14 +1,13 @@
 import os
-import logging
 
 from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.ImageHelpers import PILHelper
 
-from libreria.FuncionesLogging import ConfigurarLogging
-from libreria.FuncionesArchivos import ObtenerConfig, ObtenerValor, UnirPath, RelativoAbsoluto
+from libreria.FuncionesArchivos import ObtenerFolderConfig,ObtenerValor, UnirPath, RelativoAbsoluto
 
-logger = logging.getLogger(__name__)
-ConfigurarLogging(logger)
+import MiLibrerias
+
+logger = MiLibrerias.ConfigurarLogging(__name__)
 
 
 def ActualizarIcono(Deck, indice, accion):
@@ -60,7 +59,7 @@ def ActualizarIcono(Deck, indice, accion):
 
 def PonerImagen(Imagen, NombreIcono, accion, Folder):
     NombreIcono = RelativoAbsoluto(NombreIcono, Folder)
-    DirecionIcono = UnirPath(ObtenerConfig(), NombreIcono)
+    DirecionIcono = UnirPath(ObtenerFolderConfig(), NombreIcono)
 
     if os.path.exists(DirecionIcono):
         Icono = Image.open(DirecionIcono).convert("RGBA")
@@ -110,7 +109,7 @@ def PonerTexto(Imagen, Texto, accion, centrar=False):
 
 def DefinirFuente(Fuente):
     global FuenteIcono
-    FuenteIcono = UnirPath(ObtenerConfig(), Fuente)
+    FuenteIcono = UnirPath(ObtenerFolderConfig(), Fuente)
 
 
 def DefinirImagenes(Data):

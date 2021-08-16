@@ -1,12 +1,9 @@
-import logging
-
 from libreria.FuncionesArchivos import ObtenerValor, SalvarValor
-from libreria.FuncionesLogging import ConfigurarLogging
 from libreria.acciones.EmularTeclado import ComandoEscribir
 
-logger = logging.getLogger(__name__)
-ConfigurarLogging(logger)
+import MiLibrerias
 
+logger = MiLibrerias.ConfigurarLogging(__name__)
 
 def AccionDataArchivo(accion):
     """Acciones de Archivo."""
