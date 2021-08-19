@@ -1,20 +1,18 @@
-import logging
 import os
 
 from .acciones.Acciones import AccionesExtra
 from .acciones.Data_Archivo import AccionDataArchivo
 from .acciones.EmularTeclado import ComandoPrecionar
 from .acciones.MiOBS import MiOBS
-from .FuncionesArchivos import (ObtenerArchivo, ObtenerArhivos, ObtenerFolder,
-                                ObtenerValor, SalvarValor, UnirPath, RelativoAbsoluto)
-from .FuncionesLogging import ConfigurarLogging
+from .FuncionesArchivos import *
 from .MiDeckImagen import DefinirFuente, DefinirImagenes
 from .MiMQTT import MiMQTT
-from .MiStreamDeck import IniciarStreamDeck, MiStreamDeck
+from .MiStreamDeck import IniciarStreamDeck, MiStreamDeck, MiStreamDeck2
 from .MiTecladoMacro import MiTecladoMacro
 
-logger = logging.getLogger(__name__)
-ConfigurarLogging(logger)
+import MiLibrerias
+
+logger = MiLibrerias.ConfigurarLogging(__name__)
 
 
 class ElGatito(object):
@@ -46,8 +44,8 @@ class ElGatito(object):
             self.CargarFolder(self.Keys)
 
     def CargarFolder(self, Data):
-        ListaFolder = ObtenerFolder(Data['folder_path'])
-        ListaArchivos = ObtenerArhivos(Data['folder_path'])
+        ListaFolder = ObtenerListaFolder(Data['folder_path'])
+        ListaArchivos = ObtenerListaArhivos(Data['folder_path'])
 
         if len(ListaArchivos) > 0:
             for Archivo in ListaArchivos:
@@ -77,9 +75,9 @@ class ElGatito(object):
 
     def CargarTeclados(self):
         """Confiurando Teclados Macros."""
+        self.ListaTeclados = []
         if 'teclados' in self.Data:
             logger.info("Cargando Teclados")
-            self.ListaTeclados = []
             for Teclado in self.Data['teclados']:
                 if 'nombre' in Teclado and 'input' in Teclado and 'file' in Teclado:
                     TecladoActual = MiTecladoMacro(Teclado['nombre'], Teclado['input'], Teclado['file'], self.Evento)
@@ -89,21 +87,28 @@ class ElGatito(object):
     def CargarStreamDeck(self):
         """Configurando streamdeck."""
         self.ListaDeck = []
+        if 'fuente' in self.Data:
+            DefinirFuente(self.Data['fuente'])
+            DefinirImagenes(self.Data['imagenes'])
         if 'deck' in self.Data:
             logger.info("Cargando StreamDeck")
-            CargarDeck = IniciarStreamDeck(self.Data['deck'], self.Evento)
-            for Deck in CargarDeck:
-                DeckActual = MiStreamDeck(Deck)
+            Cantidad_Base = 0
+            for InfoDeck in self.Data['deck']:
+                DeckActual = MiStreamDeck2(InfoDeck, self.Evento, Cantidad_Base)
+                DeckActual.Conectar()
+                Cantidad_Base += DeckActual.Cantidad
                 self.ListaDeck.append(DeckActual)
-            if 'fuente' in self.Data:
-                DefinirFuente(self.Data['fuente'])
-                DefinirImagenes(self.Data['imagenes'])
+            self.ListaDeck.sort(key=lambda x: x.ID, reverse=False)
+            #     self.ListaDeck.append(DeckActual)
+            # CargarDeck = IniciarStreamDeck(self.Data['deck'], self.Evento)
+            # for Deck in CargarDeck:
+            #     DeckActual = MiStreamDeck(Deck)
 
     def ActualizarDeck(self):
         for Deck in self.ListaDeck:
             if 'streamdeck' in self.acciones:
                 Deck.CambiarFolder(self.PathActual)
-                Deck.ActualizarIconos(self.acciones['streamdeck'], self.desfaceDeck, True)
+                Deck.ActualizarIconos(self.acciones['streamdeck'], self.desfaceDeck, Unido=True)
 
             elif Deck.Nombre in self.acciones:
                 Deck.CambiarFolder(self.PathActual)
