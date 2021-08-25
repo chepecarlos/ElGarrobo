@@ -218,9 +218,10 @@ class MiOBS:
     def Desconectar(self):
         """Deconectar de OBS websocket."""
         logger.info(f"Desconectand OBS - {self.host}")
+        if self.Conectado:
+            self.OBS.disconnect()
+            self.LimpiarTemporales()
         self.Conectado = False
-        self.LimpiarTemporales()
-        self.OBS.disconnect()
         self.Dibujar()
 
     def __del__(self):

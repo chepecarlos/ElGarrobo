@@ -22,6 +22,7 @@ class ElGatito(object):
         self.Data = ObtenerArchivo('config.json')
         self.acciones = dict()
         self.OBS = MiOBS()
+        self.OBS.DibujarDeck(self.ActualizarDeckIcono)
         self.CargarData()
         self.CargarTeclados()
         self.CargarStreamDeck()
@@ -115,6 +116,18 @@ class ElGatito(object):
 
             elif Deck.Nombre in self.acciones:
                 Deck.CambiarFolder(self.PathActual)
+                Deck.ActualizarIconos(
+                    self.acciones[Deck.Nombre], self.desfaceDeck)
+
+    def ActualizarDeckIcono(self):
+
+        # TODO: Problemar cuando funcion se llama muchas veces el gifs empieza a fallar
+        for Deck in self.ListaDeck:
+            if 'streamdeck' in self.acciones:
+                Deck.ActualizarIconos(
+                    self.acciones['streamdeck'], self.desfaceDeck, Unido=True)
+
+            elif Deck.Nombre in self.acciones:
                 Deck.ActualizarIconos(
                     self.acciones[Deck.Nombre], self.desfaceDeck)
 
@@ -275,12 +288,12 @@ class ElGatito(object):
         opcion = accion['obs']
         if opcion == 'conectar':
             self.OBS = MiOBS()
-            self.OBS.DibujarDeck(self.ActualizarDeck)
+            self.OBS.DibujarDeck(self.ActualizarDeckIcono)
             self.OBS.Conectar()
         elif opcion == 'server':
             self.OBS = MiOBS()
             self.OBS.CambiarHost(accion['server'])
-            self.OBS.DibujarDeck(self.ActualizarDeck)
+            self.OBS.DibujarDeck(self.ActualizarDeckIcono)
             self.OBS.Conectar()
         elif opcion == 'cerrar':
             self.OBS.Desconectar()
