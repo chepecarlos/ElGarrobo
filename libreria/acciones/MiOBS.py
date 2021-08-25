@@ -75,11 +75,12 @@ class MiOBS:
                 EstadoFuenteActual = EstadoFuenteActual['visible']
                 if EstadoFuente is not None:
                     if EstadoFuente != EstadoFuenteActual:
-                        self.CambiarFuente(NombreFuente, EstadoFuente)
+                        self.CambiarFuente(NombreFuente)
                         Refrescar = True
                 else:
                     SalvarValor("data/fuente_obs.json", NombreFuente, EstadoFuenteActual)
                     Refrescar = True
+            self.SalvarFiltroFuente(NombreFuente)
 
         if Refrescar:
             self.Dibujar()
@@ -146,6 +147,17 @@ class MiOBS:
         SalvarValor("data/filtro_obs.json", Data, Visibilidad)
         self.Dibujar()
 
+    def SalvarFiltroFuente(self, Fuente):
+        """Salva el estado de los filtros de una fuente."""
+        #TODO: USAR el poder de los data de filtro para configurar pantalla verde
+        DataFuente = self.OBS.call(requests.GetSourceFilters(Fuente))
+
+        ListaFiltros = DataFuente.datain['filters']
+        if ListaFiltros is not None:
+            for Filtro in ListaFiltros:
+                Data = [Fuente, Filtro['name']]
+                SalvarValor("data/filtro_obs.json", Data, Filtro['enabled'])
+
     def CambiarEsena(self, Esena):
         """Envia solisitud de cambiar de Esena."""
         if self.Conectado:
@@ -154,19 +166,30 @@ class MiOBS:
         else:
             logger.warning("OBS no Conectado")
 
-    def CambiarFuente(self, Fuente, Estado):
-        """Envia solisitud de cambiar estado de fuente."""
+    def CambiarFuente(self, Fuente):
+        """Envia solisitud de Cambia el estado de una fuente."""
         if self.Conectado:
-            logger.info(f"Cambiando Fuente {Fuente} - {Estado}")
-            self.OBS.call(requests.SetSceneItemProperties(Fuente, visible=Estado))
+            Estado = ObtenerValor("data/fuente_obs.json", Fuente)
+            
+            if Estado is not None:
+                Estado = not Estado
+                logger.info(f"Cambiando Fuente {Fuente} - {Estado}")
+                self.OBS.call(requests.SetSceneItemProperties(Fuente, visible=Estado))
+            else:
+                logger.warning(f"No se encontro {Fuente[0]} o {Fuente[1]} en OBS")
+
         else:
             logger.info("OBS no Conectado")
 
-    def CambiarFiltro(self, Fuente, Filtro, Estado):
+    def CambiarFiltro(self, Filtro):
         """Envia solisitud de cambiar estado de filtro."""
         if self.Conectado:
-            logger.info(f"Cambiando Filtro {Filtro} de {Fuente} a {Estado}")
-            self.OBS.call(requests.SetSourceFilterVisibility(Fuente, Filtro, Estado))
+            Estado = ObtenerValor("data/filtro_obs.json", Filtro)
+            
+            if Estado is not None:
+                Estado = not Estado
+                logger.info(f"Cambiando Filtro {Filtro[0]} de {Filtro[1]} a {Estado}")
+                self.OBS.call(requests.SetSourceFilterVisibility(Filtro[0], Filtro[1], Estado))
         else:
             logger.info("OBS no Conectado")
 

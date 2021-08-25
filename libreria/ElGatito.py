@@ -80,7 +80,8 @@ class ElGatito(object):
             logger.info("Cargando Teclados")
             for Teclado in self.Data['teclados']:
                 if 'nombre' in Teclado and 'input' in Teclado and 'file' in Teclado:
-                    TecladoActual = MiTecladoMacro(Teclado['nombre'], Teclado['input'], Teclado['file'], self.Evento)
+                    TecladoActual = MiTecladoMacro(
+                        Teclado['nombre'], Teclado['input'], Teclado['file'], self.Evento)
                     TecladoActual.Conectar()
                     self.ListaTeclados.append(TecladoActual)
 
@@ -94,7 +95,8 @@ class ElGatito(object):
             logger.info("Cargando StreamDeck")
             Cantidad_Base = 0
             for InfoDeck in self.Data['deck']:
-                DeckActual = MiStreamDeck2(InfoDeck, self.Evento, Cantidad_Base)
+                DeckActual = MiStreamDeck2(
+                    InfoDeck, self.Evento, Cantidad_Base)
                 DeckActual.Conectar()
                 Cantidad_Base += DeckActual.Cantidad
                 self.ListaDeck.append(DeckActual)
@@ -108,11 +110,13 @@ class ElGatito(object):
         for Deck in self.ListaDeck:
             if 'streamdeck' in self.acciones:
                 Deck.CambiarFolder(self.PathActual)
-                Deck.ActualizarIconos(self.acciones['streamdeck'], self.desfaceDeck, Unido=True)
+                Deck.ActualizarIconos(
+                    self.acciones['streamdeck'], self.desfaceDeck, Unido=True)
 
             elif Deck.Nombre in self.acciones:
                 Deck.CambiarFolder(self.PathActual)
-                Deck.ActualizarIconos(self.acciones[Deck.Nombre], self.desfaceDeck)
+                Deck.ActualizarIconos(
+                    self.acciones[Deck.Nombre], self.desfaceDeck)
 
     def LimpiarDeck(self):
         for Deck in self.ListaDeck:
@@ -143,7 +147,8 @@ class ElGatito(object):
         for dispositivo in self.Data[Atributo]:
             nombreDispositivo = dispositivo['nombre']
             if nombreDispositivo in Data:
-                logger.info(f"Encontro Config {Atributo} de {nombreDispositivo}")
+                logger.info(
+                    f"Encontro Config {Atributo} de {nombreDispositivo}")
                 self.acciones[nombreDispositivo] = Data[nombreDispositivo]
 
     def BuscarDentroFolder(self, Folderes, Data):
@@ -153,7 +158,8 @@ class ElGatito(object):
                 if len(Folderes) > 0:
                     if 'folder' in Data:
                         for BuscarFolder in Data['folder']:
-                            Data = self.BuscarDentroFolder(Folderes, BuscarFolder)
+                            Data = self.BuscarDentroFolder(
+                                Folderes, BuscarFolder)
                             if Data is not None:
                                 return Data
                 else:
@@ -166,7 +172,8 @@ class ElGatito(object):
                 if 'key' in accion:
                     if accion['key'] == Evento['key']:
                         if Evento['estado']:
-                            logger.info(f"Evento {NombreEvento}[{accion['key']}] {accion['nombre']}")
+                            logger.info(
+                                f"Evento {NombreEvento}[{accion['key']}] {accion['nombre']}")
                         self.EjecutandoEvento(accion, Evento['estado'])
                         return
 
@@ -177,7 +184,8 @@ class ElGatito(object):
                     if 'key' in accion:
                         if accion['key'] == key_desface:
                             if Evento['estado']:
-                                logger.info(f"Evento streamdeck[{accion['key']}] {accion['nombre']}")
+                                logger.info(
+                                    f"Evento streamdeck[{accion['key']}] {accion['nombre']}")
                             self.EjecutandoEvento(accion, Evento['estado'])
                             return
                 logger.info(f"Evento no asignado streamdeck[{key_desface}]")
@@ -279,10 +287,11 @@ class ElGatito(object):
         elif self.OBS.Conectado:
             if opcion == 'esena':
                 self.OBS.CambiarEsena(accion['esena'])
-            elif opcion == 'filtro':
-                self.OBS.CambiarFiltro(accion['fuente'], accion['filtro'], not accion['estado'])
             elif opcion == 'fuente':
-                self.OBS.CambiarFuente(accion['fuente'], not accion['estado'])
+                self.OBS.CambiarFuente(accion['fuente'])
+            elif opcion == 'filtro':
+                Filtro = [accion['fuente'], accion['filtro']]
+                self.OBS.CambiarFiltro(Filtro)
             elif opcion == 'grabando':
                 self.OBS.CambiarGrabacion()
             elif opcion == 'envivo':
