@@ -1,16 +1,18 @@
+import logging
 import os
 
 from .acciones.Acciones import AccionesExtra
 from .acciones.Data_Archivo import AccionDataArchivo
 from .acciones.EmularTeclado import ComandoPrecionar
 from .acciones.MiOBS import MiOBS
-from .FuncionesArchivos import *
 from .MiDeckImagen import DefinirFuente, DefinirImagenes
 from .MiMQTT import MiMQTT
 from .MiStreamDeck import IniciarStreamDeck, MiStreamDeck, MiStreamDeck2
 from .MiTecladoMacro import MiTecladoMacro
 
+from MiLibrerias import UnirPath, ObtenerValor, ObtenerArchivo, RelativoAbsoluto, ObtenerListaFolder, ObtenerListaArhivos
 import MiLibrerias
+
 
 logger = MiLibrerias.ConfigurarLogging(__name__)
 
@@ -20,9 +22,12 @@ class ElGatito(object):
 
     def __init__(self):
         self.Data = ObtenerArchivo('config.json')
+        if self.Data is None:
+            logger.error("No existe archivo config.json")
+            os._exit(0)
         self.acciones = dict()
-        self.OBS = MiOBS()
-        self.OBS.DibujarDeck(self.ActualizarDeckIcono)
+   
+        self.CargarOBS()
         self.CargarData()
         self.CargarTeclados()
         self.CargarStreamDeck()
@@ -33,10 +38,20 @@ class ElGatito(object):
         """Cargando Data para Dispisitivo."""
         logger.info("Cargando Data")
         if 'deck_file' in self.Data:
-            self.Data['deck'] = ObtenerArchivo(self.Data['deck_file'])
+            self.Data['deck'] = ObtenerArchivo(
+                self.Data['deck_file'])
+            if self.Data['deck'] is None:
+                logger.error(
+                    f"Archivo de config de Strean Deck[{self.Data['teclados_file']}] no exste")
+                self.Data.pop('deck')
 
         if 'teclados_file' in self.Data:
-            self.Data['teclados'] = ObtenerArchivo(self.Data['teclados_file'])
+            self.Data['teclados'] = ObtenerArchivo(
+                self.Data['teclados_file'])
+            if self.Data['teclados'] is None:
+                logger.error(
+                    f"Archivo de config de Teclado[{self.Data['teclados_file']}] no exste")
+                self.Data.pop('teclados')
 
         if 'folder_path' in self.Data:
             self.PathActual = self.Data['folder_path']
@@ -356,3 +371,7 @@ class ElGatito(object):
         self.acciones = dict()
         self.CargarData()
         self.IniciarStreamDeck()
+
+    def CargarOBS(self):
+        self.OBS = MiOBS()
+        self.OBS.DibujarDeck(self.ActualizarDeckIcono)
