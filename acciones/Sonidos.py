@@ -3,13 +3,13 @@
 # https://github.com/jiaaro/pydub
 import multiprocessing
 
-from libreria.FuncionesArchivos import ObtenerFolderConfig, UnirPath, RelativoAbsoluto
 from pydub import AudioSegment
 from pydub.playback import play
 
-import MiLibrerias
+from MiLibrerias import ConfigurarLogging
+from MiLibrerias import ObtenerFolderConfig, UnirPath, RelativoAbsoluto
 
-logger = MiLibrerias.ConfigurarLogging(__name__)
+logger = ConfigurarLogging(__name__)
 
 ListaSonidos = []
 
