@@ -7,13 +7,14 @@ from PIL import Image, ImageSequence
 from StreamDeck.ImageHelpers import PILHelper
 from fractions import Fraction
 
-from libreria.FuncionesArchivos import ObtenerValor, UnirPath, ObtenerFolderConfig, RelativoAbsoluto
+from MiLibrerias import ConfigurarLogging
+from MiLibrerias import ObtenerValor, UnirPath, ObtenerFolderConfig, RelativoAbsoluto
 
-import MiLibrerias
-
-logger = MiLibrerias.ConfigurarLogging(__name__)
+logger = ConfigurarLogging(__name__)
 
 # TODO: Cargar Gif en hilo aparte para no para procesos
+
+
 class DeckGif(threading.Thread):
     """Clase de Gif para StreamDeck."""
 
@@ -22,7 +23,8 @@ class DeckGif(threading.Thread):
         self.Deck = Deck
         self.lock = threading.RLock()
         self.ListaGif = []
-        self.EsperaGif = Fraction(1, ObtenerValor("data/streamdeck.json", "gif_fps"))
+        self.EsperaGif = Fraction(1, ObtenerValor(
+            "data/streamdeck.json", "gif_fps"))
         self.SiquienteFrame = Fraction(time.monotonic())
         super(DeckGif, self).__init__()
 

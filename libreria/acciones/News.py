@@ -3,11 +3,11 @@ import os
 # TODO: Contador de ID Noticia Actual / Total Noticias
 # TODO: Macro Sonido de Siquiente Noticia
 
-from libreria.FuncionesArchivos import SalvarValor, SalvarArchivo, ObtenerValor, UnirPath
+from MiLibrerias import ConfigurarLogging
+from MiLibrerias import SalvarValor, SalvarArchivo, ObtenerValor, UnirPath
 
-import MiLibrerias
 
-logger = MiLibrerias.ConfigurarLogging(__name__)
+logger = ConfigurarLogging(__name__)
 
 
 def SalvarArchivoNoticia(Archivo):

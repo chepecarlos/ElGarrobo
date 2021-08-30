@@ -1,18 +1,15 @@
 # https://python-elgato-streamdeck.readthedocs.io/en/stable/index.html
 
-
-
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Transport.Transport import TransportError
 
 import libreria.MiDeckGif as DeckGif
-
-from libreria.FuncionesArchivos import ObtenerValor
 from libreria.MiDeckImagen import ActualizarIcono, LimpiarIcono
 
-import MiLibrerias
+from MiLibrerias import ConfigurarLogging
+from MiLibrerias import ObtenerValor
 
-logger = MiLibrerias.ConfigurarLogging(__name__)
+logger = ConfigurarLogging(__name__)
 
 class MiStreamDeck2(object):
 

@@ -3,7 +3,7 @@
 import pyautogui
 import pyperclip
 
-from Extra.Delay import Delay
+from libreria.acciones import Delay
 # Implementar press y onrelles
 # TODO: Añadir ñ en las funciones
 # TODO: Agregar funcionMover Raton a posicion
@@ -41,5 +41,5 @@ def ComandoEscribir(Texto, Velocidad=0.01):
 def CopiarTexto():
     """Copia texto a papelera."""
     pyautogui.hotkey('ctrl', 'c')
-    Delay(10)
+    Delay(10/1000)
     return pyperclip.paste()

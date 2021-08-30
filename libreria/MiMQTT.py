@@ -3,11 +3,10 @@
 # https://github.com/Elektordi/obs-websocket-py
 import paho.mqtt.client as mqtt
 
-from Extra.FuncionesArchivos import ObtenerDato
+from MiLibrerias import ObtenerValor
+from MiLibrerias import ConfigurarLogging
 
-import MiLibrerias
-
-logger = MiLibrerias.ConfigurarLogging(__name__)
+logger = ConfigurarLogging(__name__)
 
 
 class MiMQTT():
@@ -49,8 +48,8 @@ class MiMQTT():
 
 def EnviarMQTTSimple(Topic, Mensaje):
     """Envia un Mensaje Simple por MQTT."""
-    Usuario = ObtenerDato("/Data/MQTT.json", "Usuario")
-    Contrasenna = ObtenerDato("/Data/MQTT.json", "Contrasenna")
+    Usuario = ObtenerValor("/Data/MQTT.json", "Usuario")
+    Contrasenna = ObtenerValor("/Data/MQTT.json", "Contrasenna")
     MiMQTTSimple = mqtt.Client()
     MiMQTTSimple.username_pw_set(Usuario, Contrasenna)
     MiMQTTSimple.connect("public.cloud.shiftr.io", 1883)

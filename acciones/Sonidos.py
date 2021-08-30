@@ -3,13 +3,13 @@
 # https://github.com/jiaaro/pydub
 import multiprocessing
 
+from libreria.FuncionesArchivos import ObtenerFolderConfig, UnirPath, RelativoAbsoluto
 from pydub import AudioSegment
 from pydub.playback import play
 
-from MiLibrerias import ConfigurarLogging
-from MiLibrerias import ObtenerFolderConfig, UnirPath, RelativoAbsoluto
+import MiLibrerias
 
-logger = ConfigurarLogging(__name__)
+logger = MiLibrerias.ConfigurarLogging(__name__)
 
 ListaSonidos = []
 
@@ -36,24 +36,30 @@ def Sonido(Archivo, Ganancia):
         logger.warning(f"No se encontro {Archivo}")
 
 
-def Reproducir(AccionActual, Folder):
+# def Reproducir(AccionActual, Folder):
+def Reproducir(opciones):
     """Crear un susproceso para Reproduccion."""
     global ListaSonidos
-    Archivo = AccionActual['sonido']
-    Ganancia = 0
-    if 'ganancia' in AccionActual:
-        Ganancia = AccionActual['ganancia']
-    # TODO recorde del audio
-    logger.info(f"Repoduciendo {Archivo}")
-    Archivo = RelativoAbsoluto(Archivo, Folder)
-    Archivo = UnirPath(ObtenerFolderConfig(), Archivo)
-    
-    PSonido = multiprocessing.Process(target=Sonido, args=[Archivo, Ganancia])
-    PSonido.start()
-    ListaSonidos.append(PSonido)
+    if 'sonido' in opciones:
+        Archivo = opciones['sonido']
+
+        Ganancia = 0
+        if 'ganancia' in opciones:
+            Ganancia = opciones['ganancia']
+
+        if 'folder' in opciones:
+            Folder = opciones['folder']
+        # TODO recorde del audio
+        logger.info(f"Repoduciendo {Archivo}")
+        Archivo = RelativoAbsoluto(Archivo, Folder)
+        Archivo = UnirPath(ObtenerFolderConfig(), Archivo)
+        
+        PSonido = multiprocessing.Process(target=Sonido, args=[Archivo, Ganancia])
+        PSonido.start()
+        ListaSonidos.append(PSonido)
 
 
-def PararReproducion():
+def PararReproducion(opciones):
     """Parar susprocesos de repoduccion de sonido."""
     global ListaSonidos
     logger.info(f"Parar Reproducion de Sonidos {len(ListaSonidos)}")

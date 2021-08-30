@@ -10,23 +10,26 @@ from .MiMQTT import MiMQTT
 from .MiStreamDeck import IniciarStreamDeck, MiStreamDeck, MiStreamDeck2
 from .MiTecladoMacro import MiTecladoMacro
 
+from acciones import CargarAcciones
+
+from MiLibrerias import ConfigurarLogging
 from MiLibrerias import UnirPath, ObtenerValor, ObtenerArchivo, RelativoAbsoluto, ObtenerListaFolder, ObtenerListaArhivos
-import MiLibrerias
 
-
-logger = MiLibrerias.ConfigurarLogging(__name__)
+logger = ConfigurarLogging(__name__)
 
 
 class ElGatito(object):
     """Clase base de Sistema de Macro ElGatoALSW."""
 
     def __init__(self):
+        self.ListaAcciones = CargarAcciones()
+
         self.Data = ObtenerArchivo('config.json')
         if self.Data is None:
             logger.error("No existe archivo config.json")
             os._exit(0)
         self.acciones = dict()
-   
+
         self.CargarOBS()
         self.CargarData()
         self.CargarTeclados()
@@ -153,10 +156,6 @@ class ElGatito(object):
             elif Deck.Nombre in self.acciones:
                 Deck.Limpiar()
 
-    def ConfigurandoTeclados(self, Directorio):
-        for Teclado in self.ListaTeclados:
-            Teclado.ActualizarTeclas(Directorio)
-
     def BuscarFolder(self, Folder):
         Data = self.Keys
         Folderes = Folder.split('/')
@@ -224,6 +223,11 @@ class ElGatito(object):
         logger.info(f"Evento no asignado {NombreEvento}[{Evento['key']}]")
 
     def EjecutandoEvento(self, accion, estado):
+        if 'accion' in accion:
+            accion['opciones']['presionado'] = estado
+            # TODO: Ver como pasar estado entre macros
+            self.BuscarAccion(accion)
+
         if estado:
             if 'macro' in accion:
                 for Comando in accion['macro']:
@@ -245,6 +249,12 @@ class ElGatito(object):
                 ComandoPrecionar(accion['tecla_off'], estado)
             elif 'tecla_on' in accion:
                 ComandoPrecionar(accion['tecla_on'], estado)
+
+    def BuscarAccion(self, accion):
+        NombreAccion = accion['accion']
+        if NombreAccion in self.ListaAcciones:
+            OpcionesAccion = accion['opciones']
+            self.ListaAcciones[NombreAccion](OpcionesAccion)
 
     def AccionesOpcion(self, accion):
         Opcion = accion['opcion']

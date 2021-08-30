@@ -2,11 +2,11 @@
 import threading
 
 from obswebsocket import obsws, requests, events
-# from libreria.FuncionesArchivos import SalvarValor, SalvarArchivo, ObtenerValor
 
-import MiLibrerias
+from MiLibrerias import ConfigurarLogging
+from MiLibrerias import SalvarValor, SalvarArchivo, ObtenerValor
 
-logger = MiLibrerias.ConfigurarLogging(__name__)
+logger = ConfigurarLogging(__name__)
 
 class MiOBS:
     """Coneccion con OBS."""
@@ -38,7 +38,7 @@ class MiOBS:
             self.LimpiarTemporales()
             self.Conectado = False
             return
-        MiLibrerias.SalvarValor("data/obs.json", "conectado", True)
+        SalvarValor("data/obs.json", "conectado", True)
         self.SalvarEstadoActual()
         self.AgregarEvento(self.EventoEsena, events.SwitchScenes)
         self.AgregarEvento(self.EventoGrabando, events.RecordingStarted)
@@ -54,9 +54,9 @@ class MiOBS:
         """Salta estado inicial de OBS para StreamDeck."""
         DataEsenaActual = self.OBS.call(requests.GetCurrentScene()).datain
         EstadoActual = self.OBS.call(requests.GetStreamingStatus()).datain
-        MiLibrerias.SalvarValor("data/obs.json", "esena_actual", DataEsenaActual['name'])
-        MiLibrerias.SalvarValor("data/obs.json", "grabando", EstadoActual['recording'])
-        MiLibrerias.SalvarValor("data/obs.json", "envivo", EstadoActual['streaming'])
+        SalvarValor("data/obs.json", "esena_actual", DataEsenaActual['name'])
+        SalvarValor("data/obs.json", "grabando", EstadoActual['recording'])
+        SalvarValor("data/obs.json", "envivo", EstadoActual['streaming'])
         self.SalvarFuente()
 
     def SalvarFuente(self):
@@ -68,7 +68,7 @@ class MiOBS:
         Refrescar = False
         for Fuente in DataEsenaActual['sources']:
             NombreFuente = Fuente['name']
-            EstadoFuente = MiLibrerias.ObtenerValor("data/fuente_obs.json", NombreFuente, Depurar=False)
+            EstadoFuente = ObtenerValor("data/fuente_obs.json", NombreFuente, Depurar=False)
             EstadoFuenteActual = self.OBS.call(requests.GetSceneItemProperties(NombreFuente)).datain
             if 'visible' in EstadoFuenteActual:
                 EstadoFuenteActual = EstadoFuenteActual['visible']
@@ -77,7 +77,7 @@ class MiOBS:
                         self.CambiarFuente(NombreFuente)
                         Refrescar = True
                 else:
-                    MiLibrerias.SalvarValor("data/fuente_obs.json", NombreFuente, EstadoFuenteActual)
+                    SalvarValor("data/fuente_obs.json", NombreFuente, EstadoFuenteActual)
                     Refrescar = True
             self.SalvarFiltroFuente(NombreFuente)
 
@@ -91,7 +91,7 @@ class MiOBS:
     def EventoEsena(self, Mensaje):
         """Recive nueva esena actual."""
         EsenaActual = Mensaje.datain['scene-name']
-        MiLibrerias.SalvarValor("data/obs.json", "esena_actual", EsenaActual)
+        SalvarValor("data/obs.json", "esena_actual", EsenaActual)
         logger.info(f"Evento a esena: {EsenaActual}")
         self.SalvarFuente()
         self.Dibujar()
@@ -99,20 +99,20 @@ class MiOBS:
     def EventoGrabando(self, Mensaje):
         """Recive estado de grabacion."""
         if Mensaje.name == "RecordingStarted":
-            MiLibrerias.SalvarValor("data/obs.json", "grabando", True)
+            SalvarValor("data/obs.json", "grabando", True)
             logger.info("OBS Grabando")
         elif Mensaje.name == "RecordingStopping":
-            MiLibrerias.SalvarValor("data/obs.json", "grabando", False)
+            SalvarValor("data/obs.json", "grabando", False)
             logger.info(f"OBS Paro Grabacion {Mensaje.datain['rec-timecode']}")
         self.Dibujar()
 
     def EventoEnVivo(self, Mensaje):
         """Recive estado del Striming."""
         if Mensaje.name == "StreamStarted":
-            MiLibrerias.SalvarValor("data/obs.json", "envivo", True)
+            SalvarValor("data/obs.json", "envivo", True)
             logger.info("OBS EnVivo")
         elif Mensaje.name == "StreamStopping":
-            MiLibrerias.SalvarValor("data/obs.json", "envivo", False)
+            SalvarValor("data/obs.json", "envivo", False)
             logger.info(f"OBS Paro EnVivo {Mensaje.datain['stream-timecode']}")
         self.Dibujar()
 
@@ -131,7 +131,7 @@ class MiOBS:
         NombreFuente = Mensaje.datain['item-name']
         Visibilidad = Mensaje.datain['item-visible']
         logger.info(f"Cambiano Visibilidad {NombreFuente} - {Visibilidad}")
-        MiLibrerias.SalvarValor("data/fuente_obs.json", NombreFuente, Visibilidad)
+        SalvarValor("data/fuente_obs.json", NombreFuente, Visibilidad)
         self.Dibujar()
 
     def EventoVisibilidadFiltro(self, Mensaje):
@@ -143,7 +143,7 @@ class MiOBS:
         Data = list()
         Data.append(NombreFuente)
         Data.append(NombreFiltro)
-        MiLibrerias.SalvarValor("data/filtro_obs.json", Data, Visibilidad)
+        SalvarValor("data/filtro_obs.json", Data, Visibilidad)
         self.Dibujar()
 
     def SalvarFiltroFuente(self, Fuente):
@@ -154,10 +154,10 @@ class MiOBS:
         if ListaFiltros is not None:
             for Filtro in ListaFiltros:
                 Data = [Fuente, Filtro['name'], "enabled"]
-                MiLibrerias.SalvarValor("data/filtro_obs.json", Data, Filtro['enabled'])
+                SalvarValor("data/filtro_obs.json", Data, Filtro['enabled'])
                 
                 Data = [Fuente, Filtro['name'], "type"]
-                MiLibrerias.SalvarValor("data/filtro_obs.json", Data, Filtro['type'])
+                SalvarValor("data/filtro_obs.json", Data, Filtro['type'])
                 self.SalvarFiltroConfiguraciones(Data[:-1], Filtro['settings'])
               
 
@@ -165,7 +165,7 @@ class MiOBS:
         for elemento in lista:
             Data = Filtro.copy()
             Data.append(elemento)
-            MiLibrerias.SalvarValor("data/filtro_obs.json", Data, lista[elemento])
+            SalvarValor("data/filtro_obs.json", Data, lista[elemento])
 
     def CambiarEsena(self, Esena):
         """Envia solisitud de cambiar de Esena."""
@@ -178,7 +178,7 @@ class MiOBS:
     def CambiarFuente(self, Fuente):
         """Envia solisitud de Cambia el estado de una fuente."""
         if self.Conectado:
-            Estado = MiLibrerias.ObtenerValor("data/fuente_obs.json", Fuente)
+            Estado = ObtenerValor("data/fuente_obs.json", Fuente)
             
             if Estado is not None:
                 Estado = not Estado
@@ -193,7 +193,7 @@ class MiOBS:
     def CambiarFiltro(self, Filtro):
         """Envia solisitud de cambiar estado de filtro."""
         if self.Conectado:
-            Estado = MiLibrerias.ObtenerValor("data/filtro_obs.json", Filtro)
+            Estado = ObtenerValor("data/filtro_obs.json", Filtro)
             
             if Estado is not None:
                 Estado = not Estado
@@ -220,9 +220,9 @@ class MiOBS:
 
     def LimpiarTemporales(self):
         """Limpia los archivos con informacion temporal de OBS."""
-        MiLibrerias.SalvarArchivo("data/obs.json", dict())
-        MiLibrerias.SalvarArchivo("data/fuente_obs.json", dict())
-        MiLibrerias.SalvarArchivo("data/filtro_obs.json", dict())
+        SalvarArchivo("data/obs.json", dict())
+        SalvarArchivo("data/fuente_obs.json", dict())
+        SalvarArchivo("data/filtro_obs.json", dict())
 
     def Desconectar(self):
         """Deconectar de OBS websocket."""

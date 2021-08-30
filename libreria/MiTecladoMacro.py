@@ -5,15 +5,14 @@ import time
 from evdev import InputDevice, categorize, ecodes
 from evdev.eventio import EvdevError
 
+from MiLibrerias import ConfigurarLogging
+from MiLibrerias import UnirPath
 
-from Extra.CargarData import ExisteArchivo, CargarValores
-
-import MiLibrerias
-
-logger = MiLibrerias.ConfigurarLogging(__name__)
-
+logger = ConfigurarLogging(__name__)
 
 # TODO  Hacer con clase threading
+
+
 class MiTecladoMacro(threading.Thread):
     """Clase de Teclado Macro para Linux."""
 
@@ -36,17 +35,13 @@ class MiTecladoMacro(threading.Thread):
     def Conectar(self):
         """Conecta con un teclado para escuchas botones precionados."""
         print(f"Activando Hilo de Teclado {self.Nombre}")
-        self.HiloTeclado = threading.Thread(name="teclados-" + self.Nombre, target=self.HiloRaton, daemon=True)
+        self.HiloTeclado = threading.Thread(
+            name="teclados-" + self.Nombre, target=self.HiloRaton, daemon=True)
         self.HiloTeclado.start()
-
-    def ActualizarTeclas(self, Archivo):
-        if ExisteArchivo(Archivo + "/" + self.File, True):
-            logger.info(f"Cargando Archivo {self.File}")
-            self.TeclasActuales = CargarValores(Archivo + "/" + self.File, True)
 
     def HiloRaton(self):
         """Hilo del estado del Teclado."""
-        while True:    
+        while True:
             if self.Conectado:
                 try:
                     for event in self.Teclado.read_loop():
@@ -64,16 +59,21 @@ class MiTecladoMacro(threading.Thread):
                             self.FuncionEvento(data)
                 except Exception as error:
                     self.Conectado = False
-                    print(f"Se desconecto Teclado {self.Nombre} Error: {error.errno}")
+                    print(
+                        f"Se desconecto Teclado {self.Nombre} Error: {error.errno}")
             else:
                 try:
-                    logger.info(f"Intentando conectarse: {self.Nombre} - {self.Dispisitivo}")
+                    logger.info(
+                        f"Intentando conectarse: {self.Nombre} - {self.Dispisitivo}")
                     self.Teclado = InputDevice(self.Dispisitivo)
                     self.Teclado.grab()
                     self.Conectado = True
-                    logger.info(f"Conectando Teclado: {self.Nombre} - {self.Dispisitivo}")
+                    logger.info(
+                        f"Conectando Teclado: {self.Nombre} - {self.Dispisitivo}")
                 except Exception as error:
-                    logger.warning(f"No se puedo conectar con teclado {self.Nombre} Error {error.errno}")
-                    logger.info(f"Ïntentado Reconecar con Teclado {self.Nombre} en {self.EsperaReconectar} Segundos")
+                    logger.warning(
+                        f"No se puedo conectar con teclado {self.Nombre} Error {error.errno}")
+                    logger.info(
+                        f"Ïntentado Reconecar con Teclado {self.Nombre} en {self.EsperaReconectar} Segundos")
                     time.sleep(self.EsperaReconectar)
                     self.Conectado = False

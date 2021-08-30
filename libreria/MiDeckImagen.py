@@ -3,11 +3,11 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.ImageHelpers import PILHelper
 
-from libreria.FuncionesArchivos import ObtenerFolderConfig,ObtenerValor, UnirPath, RelativoAbsoluto
+from MiLibrerias import ObtenerFolderConfig, ObtenerValor, UnirPath, RelativoAbsoluto
 
-import MiLibrerias
+from MiLibrerias import ConfigurarLogging
 
-logger = MiLibrerias.ConfigurarLogging(__name__)
+logger = ConfigurarLogging(__name__)
 
 
 def ActualizarIcono(Deck, indice, accion):
@@ -22,7 +22,8 @@ def ActualizarIcono(Deck, indice, accion):
         ActualizarImagenOBS(accion)
 
     if 'icono_texto' in accion:
-        Texto = ObtenerValor(accion['icono_texto']['archivo'], accion['icono_texto']['atributo'])
+        Texto = ObtenerValor(
+            accion['icono_texto']['archivo'], accion['icono_texto']['atributo'])
         PonerTexto(ImagenBoton, Texto, accion, True)
     else:
         NombreIcono = ImagenBase['base']
@@ -37,7 +38,8 @@ def ActualizarIcono(Deck, indice, accion):
             elif accion['opcion'] == 'anterior':
                 NombreIcono = ImagenBase['anterior']
         elif 'estado' in accion:
-            EstadoArchivo = ObtenerValor("data/estado.json", accion['nombre'], Depurar=False)
+            EstadoArchivo = ObtenerValor(
+                "data/estado.json", accion['nombre'], Depurar=False)
             if EstadoArchivo is not None:
                 accion['estado'] = EstadoArchivo
 
@@ -68,7 +70,7 @@ def PonerImagen(Imagen, NombreIcono, accion, Folder):
         else:
             Icono.thumbnail((Imagen.width, Imagen.height), Image.LANCZOS)
     else:
-        logging.warning(f"No se encontr icono {DirecionIcono}")
+        logger.warning(f"No se encontr icono {NombreIcono} {DirecionIcono}")
         Icono = Image.new(mode="RGBA", size=(256, 256), color=(153, 153, 255))
         Icono.thumbnail((Imagen.width, Imagen.height), Image.LANCZOS)
 
@@ -100,9 +102,11 @@ def PonerTexto(Imagen, Texto, accion, centrar=False):
         Tamanno -= 1
 
     if centrar:
-        PosicionTexto = ((Imagen.width - Titulo_ancho) // 2, (Imagen.height - Titulo_alto - Tamanno/2) // 2)
+        PosicionTexto = ((Imagen.width - Titulo_ancho) // 2,
+                         (Imagen.height - Titulo_alto - Tamanno/2) // 2)
     else:
-        PosicionTexto = ((Imagen.width - Titulo_ancho) // 2, Imagen.height - Titulo_alto - 2)
+        PosicionTexto = ((Imagen.width - Titulo_ancho) //
+                         2, Imagen.height - Titulo_alto - 2)
 
     dibujo.text(PosicionTexto, text=Texto, font=fuente, fill=Color)
 
@@ -125,13 +129,15 @@ def LimpiarIcono(Deck, indice):
 def ActualizarImagenOBS(accion):
     opcion = accion['obs']
     if opcion == 'esena':
-        EsenaActual = ObtenerValor("data/obs.json", "esena_actual", Depurar=False)
+        EsenaActual = ObtenerValor(
+            "data/obs.json", "esena_actual", Depurar=False)
         if accion['esena'] == EsenaActual:
             accion['estado'] = True
         else:
             accion['estado'] = False
     elif opcion == 'fuente':
-        EstadoFuente = ObtenerValor("data/fuente_obs.json", accion['fuente'], Depurar=False)
+        EstadoFuente = ObtenerValor(
+            "data/fuente_obs.json", accion['fuente'], Depurar=False)
         if EstadoFuente is not None:
             accion['estado'] = EstadoFuente
         else:
@@ -140,7 +146,8 @@ def ActualizarImagenOBS(accion):
         Data = list()
         Data.append(accion['fuente'])
         Data.append(accion['filtro'])
-        EstadoFiltro = ObtenerValor("data/filtro_obs.json", Data, Depurar=False)
+        EstadoFiltro = ObtenerValor(
+            "data/filtro_obs.json", Data, Depurar=False)
         if EstadoFiltro is not None:
             accion['estado'] = EstadoFiltro
         else:
