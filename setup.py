@@ -1,20 +1,26 @@
 from setuptools import find_packages
 from setuptools import setup
 
-with open(file="README.md", mode="r") as readme_handle:
-    long_description = readme_handle.read()
+with open("VERSION", 'r') as f:
+    version = f.read().strip()
+
+with open("README.md", 'r') as f:
+    long_description = f.read()
 
 setup(
     name='elgatoalsw',
-    version='0.0.5',
+    version=version,
     description='Heramienta Macros de ALSW',
     long_description=long_description,
     author='ChepeCarlos',
-    author_email='chepecarlos@alswblog.org',
+    author_email='chepecarlos@alsw.net',
     url='https://github.com/chepecarlos/ElGatoALSW',
     install_requires=[],
     packages=find_packages(where='src', exclude=('tests*', 'testing*')),
     package_dir={"": "src"},
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    python_requires='>=3.8',
     entry_points={
         'console_scripts': [
             'elgatoalsw-cli = elgatoalsw.main:main'

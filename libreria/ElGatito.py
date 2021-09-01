@@ -13,7 +13,8 @@ from .MiTecladoMacro import MiTecladoMacro
 from acciones import CargarAcciones
 
 from MiLibrerias import ConfigurarLogging
-from MiLibrerias import UnirPath, ObtenerValor, ObtenerArchivo, RelativoAbsoluto, ObtenerListaFolder, ObtenerListaArhivos
+from MiLibrerias import UnirPath, RelativoAbsoluto, ObtenerListaFolder, ObtenerListaArhivos
+from MiLibrerias import SalvarValor, ObtenerValor, ObtenerArchivo
 
 logger = ConfigurarLogging(__name__)
 
@@ -22,7 +23,8 @@ class ElGatito(object):
     """Clase base de Sistema de Macro ElGatoALSW."""
 
     def __init__(self):
-        self.ListaAcciones = CargarAcciones()
+        
+        self.IniciarAcciones()
 
         self.Data = ObtenerArchivo('config.json')
         if self.Data is None:
@@ -32,10 +34,15 @@ class ElGatito(object):
 
         self.CargarOBS()
         self.CargarData()
-        self.CargarTeclados()
         self.CargarStreamDeck()
+        self.CargarTeclados()
         self.IniciarStreamDeck()
         self.IniciarMQTT()
+
+    def IniciarAcciones(self):
+        logger.info("Cargando Acciones")
+        self.ListaAcciones = CargarAcciones()
+        self.ListaAcciones['macro'] = self.AccionesMacros
 
     def CargarData(self):
         """Cargando Data para Dispisitivo."""
@@ -223,16 +230,16 @@ class ElGatito(object):
         logger.info(f"Evento no asignado {NombreEvento}[{Evento['key']}]")
 
     def EjecutandoEvento(self, accion, estado):
-        if 'accion' in accion:
-            accion['opciones']['presionado'] = estado
-            # TODO: Ver como pasar estado entre macros
-            self.BuscarAccion(accion)
-
         if estado:
-            if 'macro' in accion:
+            if 'accion' in accion:
+                # accion['opciones']['presionado'] = estado
+                accion['precionado'] = estado
+                # TODO: Ver como pasar estado entre macros
+                self.BuscarAccion(accion)
+            elif 'macro' in accion:
                 for Comando in accion['macro']:
                     self.EjecutandoEvento(Comando, estado)
-            if 'opcion' in accion:
+            elif 'opcion' in accion:
                 self.AccionesOpcion(accion)
             elif 'deck' in accion:
                 self.AccionesDeck(accion)
@@ -253,8 +260,22 @@ class ElGatito(object):
     def BuscarAccion(self, accion):
         NombreAccion = accion['accion']
         if NombreAccion in self.ListaAcciones:
+            logger.info(f"Accion[{NombreAccion}]")
             OpcionesAccion = accion['opciones']
-            self.ListaAcciones[NombreAccion](OpcionesAccion)
+            return self.ListaAcciones[NombreAccion](OpcionesAccion)
+        else:
+            logger.info(f"No Accion[{NombreAccion}]")
+        return None
+    
+    def AccionesMacros(self, ListaComando):
+        respuesta = None
+        for Comando in ListaComando:
+            if respuesta is not None:
+                Opciones = Comando['opciones']
+                if 'data_in' in Opciones:
+                    DataIn = Opciones['data_in']
+                    Opciones[DataIn] = respuesta
+            respuesta = self.BuscarAccion(Comando)
 
     def AccionesOpcion(self, accion):
         Opcion = accion['opcion']

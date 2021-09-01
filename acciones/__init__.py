@@ -3,6 +3,7 @@ from .delay import Delay
 from .emular_teclado import ComandoTeclas, ComandoEscribir, ComandoPegar
 from .Sonidos import PararReproducion, Reproducir
 from .accion_os import AccionOS
+from .Archivos import LeerValor, EscrivirValor
 
 
 def CargarAcciones():
@@ -15,5 +16,7 @@ def CargarAcciones():
         "comando_pegar": ComandoPegar,
         "reproducion": Reproducir,
         "parar_reproducion": PararReproducion,
-        "os": AccionOS
+        "os": AccionOS,
+        "leer_valor": LeerValor,
+        "escrivir_valor": EscrivirValor
     }

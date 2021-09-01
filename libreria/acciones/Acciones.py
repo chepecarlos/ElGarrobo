@@ -1,4 +1,4 @@
-from libreria.MiMQTT import EnviarMQTTSimple
+# from libreria.MiMQTT import EnviarMQTTSimple
 
 from .Delay import Delay
 from .EmularTeclado import ComandoEscribir, ComandoTeclas, CopiarTexto
@@ -9,6 +9,7 @@ from .Sonidos import AccionSonido
 import MiLibrerias
 from MiLibrerias import ConfigurarLogging
 from MiLibrerias import ObtenerValor, SalvarArchivo, SalvarValor
+from MiLibrerias import EnviarMensajeMQTT
 
 # from Extra.FuncionesProyecto import AbirProyecto
 # from Extra.FuncionesArchivos import ActualizarDato, ObtenerDato, ObtenerLista
@@ -48,7 +49,7 @@ def AccionesMQTT(accion):
     if accion['mqtt'] == "mensaje" and 'topic' in accion and 'mensaje' in accion:
         logger.info(
             f"Enviando Mensaje MQTT {accion['topic']} - {accion['mensaje']}")
-        EnviarMQTTSimple(accion['topic'], accion['mensaje'])
+        EnviarMensajeMQTT(accion['topic'], accion['mensaje'])
 
 
 def AccionesNews(accion):
