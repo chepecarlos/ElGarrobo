@@ -9,10 +9,10 @@ from .delay import Delay
 # TODO: Agregar funcionMover Raton a posicion
 
 
-def ComandoTeclas(opciones):
+def ComandoTeclas(Opciones):
     """Preciona una combinacion de tecla."""
-    if 'teclas' in opciones:
-        Teclas = opciones['teclas']
+    if 'teclas' in Opciones:
+        Teclas = Opciones['teclas']
 
         for tecla in Teclas:
             pyautogui.keyDown(tecla)
@@ -20,36 +20,36 @@ def ComandoTeclas(opciones):
             pyautogui.keyUp(tecla)
 
 
-def ComandoPegar(opciones):
+def ComandoPegar(Opciones):
     """Pegar texto en papelera."""
-    if 'teclas' in opciones:
-        Texto = opciones['Texto']
+    if 'teclas' in Opciones:
+        Texto = Opciones['Texto']
 
         intervalo = 0.15
-        if 'intervalo' in opciones:
-            intervalo = opciones['intervalo']
+        if 'intervalo' in Opciones:
+            intervalo = Opciones['intervalo']
 
         pyperclip.copy(Texto)
         pyautogui.hotkey('ctrl', 'v', interval=intervalo)
 
 
-def ComandoEscribir(opciones):
+def ComandoEscribir(Opciones):
     """Escribe un texto letra por letra."""
-    if 'texto' in opciones:
-        Texto = opciones['texto']
+    if 'texto' in Opciones:
+        Texto = Opciones['texto']
 
         intervalo = 0.01
-        if 'intervalo' in opciones:
-            intervalo = opciones['intervalo']
+        if 'intervalo' in Opciones:
+            intervalo = Opciones['intervalo']
 
         pyautogui.write(Texto, interval=intervalo)
 
 
-def ComandoPrecionar(opciones):
+def ComandoPrecionar(Opciones):
     """Preciona una combinacion de teclas con estado."""
-    if 'teclas' in opciones:
-        Teclas = opciones['teclas']
-        Estado = opciones['presionado']
+    if 'teclas' in Opciones:
+        Teclas = Opciones['teclas']
+        Estado = Opciones['presionado']
 
         if Estado:
             for tecla in Teclas:
@@ -60,7 +60,7 @@ def ComandoPrecionar(opciones):
 
 
 def CopiarTexto():
-    """Copia texto a papelera."""
+    """Copia texto de papelera."""
     pyautogui.hotkey('ctrl', 'c')
-    Delay({"tiempo": 10/1000})
+    Delay({"tiempo": 0.1})
     return pyperclip.paste()

@@ -2,7 +2,7 @@
 from notifypy import Notify
 from MiLibrerias import UnirPath, ObtenerFolderConfig
 
-def Notificacion(opciones):
+def Notificacion(Opciones):
     """
 
         texto -> str
@@ -16,21 +16,21 @@ def Notificacion(opciones):
 
     """
 
-    if 'texto' in opciones:
-        Texto = opciones['texto']
+    if 'texto' in Opciones:
+        Texto = Opciones['texto']
 
         Noti = Notify()
         Noti.message = Texto
 
-        if 'titulo' in opciones:
-            Noti.title = opciones['titulo']
+        if 'titulo' in Opciones:
+            Noti.title = Opciones['titulo']
         else:
             Noti.title = "ElGatoALSW"
 
-        if 'icono' in opciones:
-            DirecionIcono = opciones['icono']
-            if 'icono_relativo' in opciones:
-                if opciones['icono_relativo']:
+        if 'icono' in Opciones:
+            DirecionIcono = Opciones['icono']
+            if 'icono_relativo' in Opciones:
+                if Opciones['icono_relativo']:
                     DirecionIcono = UnirPath(ObtenerFolderConfig, DirecionIcono)
 
             Noti.icon = DirecionIcono

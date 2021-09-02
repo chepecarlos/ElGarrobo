@@ -13,6 +13,9 @@ class MiOBS:
 
     def __init__(self):
         """Crea coneccion basica con OBS Websocket."""
+        self.Reiniciar()
+    
+    def Reiniciar(self):
         self.host = "localhost"
         self.port = 4444
         self.Conectado = False
@@ -26,7 +29,7 @@ class MiOBS:
         """Guarda Funcion para refrescar iconos StringDeck."""
         self.Dibujar = Funcion
 
-    def Conectar(self):
+    def Conectar(self, Opciones):
         """Se conecta a OBS Websocket y inicializa los eventos."""
         try:
             self.OBS = obsws(self.host, self.port)
@@ -202,7 +205,7 @@ class MiOBS:
         else:
             logger.info("OBS no Conectado")
 
-    def CambiarGrabacion(self):
+    def CambiarGrabacion(self, Opciones=None):
         """Envia solisitud de cambiar estado de Grabacion."""
         if self.Conectado:
             logger.info("Cambiando estado Grabacion")
@@ -210,7 +213,7 @@ class MiOBS:
         else:
             logger.info("OBS no Conectado")
 
-    def CambiarEnVivo(self):
+    def CambiarEnVivo(self, Opciones=None):
         """Envia solisitud de cambiar estado del Streaming ."""
         if self.Conectado:
             logger.info("Cambiando estado EnVivo")

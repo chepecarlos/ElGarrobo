@@ -11,6 +11,7 @@ from MiLibrerias import ObtenerValor
 
 logger = ConfigurarLogging(__name__)
 
+
 class MiStreamDeck2(object):
 
     def __init__(self, Data, Evento, Base):
@@ -20,7 +21,7 @@ class MiStreamDeck2(object):
         self.File = Data['file']
         self.Conectado = False
         self.Deck = None
-        self.DeckGif= None
+        self.DeckGif = None
         self.Cantidad = 0
         self.Base = Base
         self.Evento = Evento
@@ -34,7 +35,6 @@ class MiStreamDeck2(object):
                 self.Deck.open()
                 self.Deck.reset()
                 if self.Deck.get_serial_number() == self.Serial:
-                    print(f"Conectado con {self.Nombre} - {self.Serial}")
                     self.Conectado = True
                     self.Cantidad = self.Deck.key_count()
                     Brillo = ObtenerValor("data/streamdeck.json", "brillo")
@@ -45,7 +45,7 @@ class MiStreamDeck2(object):
                     return
                 else:
                     self.Deck.close()
-                
+
             except TransportError as err:
                 self.Conectado = False
                 self.Deck = None
@@ -56,21 +56,27 @@ class MiStreamDeck2(object):
                 print(f"Error 2 {error}")
 
     def ActualizarIconos(self, acciones, desface, Unido=False):
-            """Refesca iconos, tomando en cuenta pagina actual."""
-            if self.Conectado:
-                logger.info(f"empezando a actualizar iconos {self.Nombre}")
-                if Unido:
-                    for i in range(self.Cantidad):
-                        key_desface = i + self.Base + desface
-                        # print(key_desface)
-                        AccionAcual = self.AccionDibujar(acciones, key_desface)
-                        if AccionAcual is not None:
-                            if 'gif' in AccionAcual:
+        """Refesca iconos, tomando en cuenta pagina actual."""
+        if self.Conectado:
+            logger.info(f"Actualizar Deck[{self.Nombre}]")
+            if Unido:
+                for i in range(self.Cantidad):
+                    key_desface = i + self.Base + desface
+                    AccionAcual = self.AccionDibujar(acciones, key_desface)
+                    # TODO: Cargar primer los Gifs
+                    if AccionAcual is not None:
+                        if 'imagen' in AccionAcual:
+                            DirecionImagen = AccionAcual['imagen']
+                            if DirecionImagen.endswith(".gif"):
                                 self.DeckGif.ActualizarGif(i, AccionAcual)
                             else:
                                 ActualizarIcono(self.Deck, i, AccionAcual)
-                else:
-                    pass
+                        if 'gif' in AccionAcual:
+                            self.DeckGif.ActualizarGif(i, AccionAcual)
+                        else:
+                            ActualizarIcono(self.Deck, i, AccionAcual)
+            else:
+                pass
 
     def AccionDibujar(self, acciones, i):
         """Devuelve la accion i del conjuto de acciones."""
@@ -95,7 +101,6 @@ class MiStreamDeck2(object):
     def CambiarFolder(self, Folder):
         if self.Conectado:
             self.Deck.Folder = Folder
-    
 
     def ActualizarBoton(self, Deck, Key, Estado):
         data = {"nombre": self.Nombre,
@@ -107,66 +112,62 @@ class MiStreamDeck2(object):
         self.Evento(data)
 
 
+# class MiStreamDeck(object):
+#     """Clase para manejar StreamDeck."""
 
+#     def __init__(self, Deck):
+#         """Inicializa manejo de StreamDeck."""
+#         self.Deck = Deck
+#         self.ID = Deck.ID
+#         self.Cantidad = Deck.key_count()
+#         self.Serial = Deck.Serial
+#         self.Nombre = Deck.Nombre
+#         self.File = Deck.File
+#         self.Base = Deck.Base
+#         self.DeckGif = DeckGif.DeckGif(self.Deck)
+#         self.DeckGif.start()
 
+#     def ActualizarIconos(self, acciones, desface, Unido=False):
+#         """Refesca iconos, tomando en cuenta pagina actual."""
+#         logger.info(f"empezando a actualizar iconos {self.Nombre}")
+#         if Unido:
+#             for i in range(self.Cantidad):
+#                 key_desface = i + self.Base + desface
+#                 AccionAcual = self.AccionDibujar(acciones, key_desface)
+#                 if AccionAcual is not None:
+#                     if 'gif' in AccionAcual:
+#                         self.DeckGif.ActualizarGif(i, AccionAcual)
+#                     else:
+#                         ActualizarIcono(self.Deck, i, AccionAcual)
+#         else:
+#             pass
 
+#     def AccionDibujar(self, acciones, i):
+#         """Devuelve la accion i del conjuto de acciones."""
+#         for accion in acciones:
+#             if 'key' in accion:
+#                 if accion['key'] == i:
+#                     return accion
+#         return None
 
+#     def Limpiar(self):
+#         """Borra iconos de todo los botones de StreamDeck."""
+#         self.DeckGif.Limpiar()
+#         for i in range(self.Cantidad):
+#             LimpiarIcono(self.Deck, i)
 
-class MiStreamDeck(object):
-    """Clase para manejar StreamDeck."""
+#     def Brillo(self, Brillo):
+#         """Cambia brillo de StreamDeck."""
+#         self.Deck.set_brightness(Brillo)
 
-    def __init__(self, Deck):
-        """Inicializa manejo de StreamDeck."""
-        self.Deck = Deck
-        self.ID = Deck.ID
-        self.Cantidad = Deck.key_count()
-        self.Serial = Deck.Serial
-        self.Nombre = Deck.Nombre
-        self.File = Deck.File
-        self.Base = Deck.Base
-        self.DeckGif = DeckGif.DeckGif(self.Deck)
-        self.DeckGif.start()
-
-    def ActualizarIconos(self, acciones, desface, Unido=False):
-        """Refesca iconos, tomando en cuenta pagina actual."""
-        logger.info(f"empezando a actualizar iconos {self.Nombre}")
-        if Unido:
-            for i in range(self.Cantidad):
-                key_desface = i + self.Base + desface
-                AccionAcual = self.AccionDibujar(acciones, key_desface)
-                if AccionAcual is not None:
-                    if 'gif' in AccionAcual:
-                        self.DeckGif.ActualizarGif(i, AccionAcual)
-                    else:
-                        ActualizarIcono(self.Deck, i, AccionAcual)
-        else:
-            pass
-
-    def AccionDibujar(self, acciones, i):
-        """Devuelve la accion i del conjuto de acciones."""
-        for accion in acciones:
-            if 'key' in accion:
-                if accion['key'] == i:
-                    return accion
-        return None
-
-    def Limpiar(self):
-        """Borra iconos de todo los botones de StreamDeck."""
-        self.DeckGif.Limpiar()
-        for i in range(self.Cantidad):
-            LimpiarIcono(self.Deck, i)
-
-    def Brillo(self, Brillo):
-        """Cambia brillo de StreamDeck."""
-        self.Deck.set_brightness(Brillo)
-
-    def CambiarFolder(self, Folder):
-        self.Deck.Folder = Folder
+#     def CambiarFolder(self, Folder):
+#         self.Deck.Folder = Folder
 
 
 def IniciarStreamDeck(Datas, FuncionEvento):
     streamdecks = DeviceManager().enumerate()
-    logger.info(f"Cargando StreamDeck - {len(streamdecks) if len(streamdecks) > 0 else 'No Conectado'}")
+    logger.info(
+        f"Cargando StreamDeck - {len(streamdecks) if len(streamdecks) > 0 else 'No Conectado'}")
     ListaDeck = []
     for Data in Datas:
         Data['Encontado'] = False
@@ -180,7 +181,8 @@ def IniciarStreamDeck(Datas, FuncionEvento):
 
         for Data in Datas:
             if Data['serial'] == DeckActual.get_serial_number():
-                logger.info(f"Conectando: {Data['nombre']} - {DeckActual.get_serial_number()}")
+                logger.info(
+                    f"Conectando: {Data['nombre']} - {DeckActual.get_serial_number()}")
                 DeckActual.Serial = DeckActual.get_serial_number()
                 DeckActual.Cantidad = DeckActual.key_count()
                 DeckActual.ID = Data['id']
@@ -199,7 +201,8 @@ def IniciarStreamDeck(Datas, FuncionEvento):
 
     for Data in Datas:
         if not Data['encontado']:
-            logger.warning(f"No se encontro: {Data['nombre']} - {Data['serial']}")
+            logger.warning(
+                f"No se encontro: {Data['nombre']} - {Data['serial']}")
     return ListaDeck
 
 

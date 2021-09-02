@@ -29,14 +29,13 @@ def Sonido(Archivo, Ganancia):
             sound = AudioSegment.from_file(Archivo, format="wav")
         elif Archivo.endswith(".mp3"):
             sound = AudioSegment.from_file(Archivo, format="mp3")
-        logger.info(f"Empezar a repoducir {Archivo}")
+        logger.info(f"Reproducir[{Archivo}]")
         play(sound + Ganancia)
-        logger.info(f"Terminando de repoducir {Archivo}")
+        logger.info(f"Termino[{Archivo}]")
     except FileNotFoundError:
         logger.warning(f"No se encontro {Archivo}")
 
 
-# def Reproducir(AccionActual, Folder):
 def Reproducir(opciones):
     """Crear un susproceso para Reproduccion."""
     global ListaSonidos
@@ -49,12 +48,14 @@ def Reproducir(opciones):
 
         if 'folder' in opciones:
             Folder = opciones['folder']
+        else:
+            Folder = ObtenerFolderConfig()
         # TODO recorde del audio
-        logger.info(f"Repoduciendo {Archivo}")
-        Archivo = RelativoAbsoluto(Archivo, Folder)
-        Archivo = UnirPath(ObtenerFolderConfig(), Archivo)
-        
-        PSonido = multiprocessing.Process(target=Sonido, args=[Archivo, Ganancia])
+        # Archivo = RelativoAbsoluto(Archivo, Folder)
+        Archivo = UnirPath(Folder, Archivo)
+
+        PSonido = multiprocessing.Process(
+            target=Sonido, args=[Archivo, Ganancia])
         PSonido.start()
         ListaSonidos.append(PSonido)
 

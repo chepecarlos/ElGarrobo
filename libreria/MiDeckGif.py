@@ -51,24 +51,36 @@ class DeckGif(threading.Thread):
 
     def ActualizarGif(self, indice, accion):
         """Carga los frame si no estas precargado y lo agrega a lista actual gifs."""
-        if not('gif_cargado' in accion):
+        if 'gif_cargado' not in accion:
             accion['indice'] = indice
             self.CargarGif(accion)
-        self.ListaGif.append(accion)
+
+        Encontrado = list(filter(lambda Gif: Gif['nombre'] == accion['nombre'], self.ListaGif))
+        if not Encontrado:
+            self.ListaGif.append(accion)
 
     def CargarGif(self, accion):
         """Extra frame de un gif y los guarda en una lista."""
-        # TODO agregar titulo a gif
+        # TODO: agregar titulo a gif
         Gif = list()
-        GitPath = accion['gif']
-        GitPath = RelativoAbsoluto(GitPath, self.Deck.Folder)
-        GitPath = UnirPath(ObtenerFolderConfig(), GitPath)
-        if os.path.exists(GitPath):
-            GifArchivo = Image.open(GitPath)
+        if 'imagen' in accion:
+            DirecionGif = accion['imagen']
+        elif 'gif' in accion:
+            DirecionGif = accion['gif']
+        else:
+            return
+
+        if not DirecionGif.endswith('gif'):
+            return
+
+        DirecionGif = RelativoAbsoluto(DirecionGif, self.Deck.Folder)
+        DirecionGif = UnirPath(ObtenerFolderConfig(), DirecionGif)
+        if os.path.exists(DirecionGif):
+            GifArchivo = Image.open(DirecionGif)
             for frame in ImageSequence.Iterator(GifArchivo):
                 Gif_frame = PILHelper.create_scaled_image(self.Deck, frame)
                 ImagenNativa = PILHelper.to_native_format(self.Deck, Gif_frame)
                 Gif.append(ImagenNativa)
             accion['gif_cargado'] = itertools.cycle(Gif)
         else:
-            logger.warning(f"No existe el gif {GitPath}")
+            logger.warning(f"No existe el gif {DirecionGif}")

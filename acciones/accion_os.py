@@ -2,8 +2,8 @@
 import os
 
 
-def AccionOS(opciones):
+def AccionOS(Opciones):
     """Ejecuta acciones del OS."""
-    if 'comando' in opciones:
-        Comando = opciones['comando']
+    if 'comando' in Opciones:
+        Comando = Opciones['comando']
         os.system(Comando)

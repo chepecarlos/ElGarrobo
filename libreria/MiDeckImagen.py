@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.ImageHelpers import PILHelper
 
 from MiLibrerias import ObtenerFolderConfig, ObtenerValor, UnirPath, RelativoAbsoluto
+from MiLibrerias import ObtenerArchivo
 
 from MiLibrerias import ConfigurarLogging
 
@@ -13,7 +14,21 @@ logger = ConfigurarLogging(__name__)
 def ActualizarIcono(Deck, indice, accion):
     global FuenteIcono
     global ImagenBase
+    global ListaImagenes
+
     ImagenBoton = PILHelper.create_image(Deck)
+
+    DirecionImagen = ListaImagenes['base']
+
+    if 'imagen' in accion:
+        DirecionImagen = accion['imagen']
+        if DirecionImagen.endswith(".gif"):
+            # TODO: Meter proceso gif adentro
+            return
+    elif 'accion' in accion:
+        NombreAccion = accion['accion']
+        if NombreAccion in ListaImagenes:
+            DirecionImagen = ListaImagenes[NombreAccion]
 
     if 'gif' in accion:
         return
@@ -26,32 +41,29 @@ def ActualizarIcono(Deck, indice, accion):
             accion['icono_texto']['archivo'], accion['icono_texto']['atributo'])
         PonerTexto(ImagenBoton, Texto, accion, True)
     else:
-        NombreIcono = ImagenBase['base']
+        # DirecionImagen = ImagenBase['base']
 
         if 'icono' in accion:
-            NombreIcono = accion['icono']
+            DirecionImagen = accion['icono']
         elif 'opcion' in accion:
             if accion['opcion'] == 'regresar':
-                NombreIcono = ImagenBase['regresar']
+                DirecionImagen = ImagenBase['regresar']
             elif accion['opcion'] == 'siquiente':
-                NombreIcono = ImagenBase['siquiente']
+                DirecionImagen = ImagenBase['siquiente']
             elif accion['opcion'] == 'anterior':
-                NombreIcono = ImagenBase['anterior']
+                DirecionImagen = ImagenBase['anterior']
         elif 'estado' in accion:
-            EstadoArchivo = ObtenerValor(
-                "data/estado.json", accion['nombre'], Depurar=False)
+            EstadoArchivo = ObtenerValor("data/estado.json", accion['nombre'])
             if EstadoArchivo is not None:
                 accion['estado'] = EstadoArchivo
 
             if accion['estado']:
-                NombreIcono = accion['icono_true']
+                DirecionImagen = accion['icono_true']
             else:
-                NombreIcono = accion['icono_false']
+                DirecionImagen = accion['icono_false']
 
-        if 'solo_titulo' in accion and 'titulo' in accion:
-            pass
-        else:
-            PonerImagen(ImagenBoton, NombreIcono, accion, Deck.Folder)
+    if not 'solo_titulo' in accion:
+        PonerImagen(ImagenBoton, DirecionImagen, accion, Deck.Folder)
 
     if 'titulo' in accion:
         PonerTexto(ImagenBoton, accion['titulo'], accion)
@@ -82,18 +94,31 @@ def PonerTexto(Imagen, Texto, accion, centrar=False):
     """Agrega Texto a Botones de StreamDeck."""
     Texto = str(Texto)
     Tamanno = 20
+    Color = "white"
+    Centrado = False
     dibujo = ImageDraw.Draw(Imagen)
 
-    if 'solo_titulo' in accion:
-        Tamanno = 40
-        centrar = True
+    if 'titulo_opciones' in accion:
+        Opciones = accion['titulo_opciones']
+        if 'color' in Opciones:
+            Color = Opciones['color']
+        if 'centrado' in Opciones:
+            Tamanno = 40
+            Centrado = Opciones['centrado']
+        if 'tamanno' in Opciones:
+            Tamanno = Opciones['tamanno']
+        if 'borde' in Opciones:
+            Borde = Opciones['borde']
 
-    if 'titulo_color' in accion:
-        Color = accion['titulo_color']
     else:
-        Color = "white"
+        if 'solo_titulo' in accion:
+            Tamanno = 40
+            Centrado = True
 
-    # TODO: hacer funcion
+        if 'titulo_color' in accion:
+            Color = accion['titulo_color']
+
+    # TODO: hacer funcion mas limpia
     while True:
         fuente = ImageFont.truetype(FuenteIcono, Tamanno)
         Titulo_ancho, Titulo_alto = dibujo.textsize(Texto, font=fuente)
@@ -101,7 +126,7 @@ def PonerTexto(Imagen, Texto, accion, centrar=False):
             break
         Tamanno -= 1
 
-    if centrar:
+    if Centrado:
         PosicionTexto = ((Imagen.width - Titulo_ancho) // 2,
                          (Imagen.height - Titulo_alto - Tamanno/2) // 2)
     else:
@@ -117,8 +142,10 @@ def DefinirFuente(Fuente):
 
 
 def DefinirImagenes(Data):
+    global ListaImagenes
     global ImagenBase
     ImagenBase = Data
+    ListaImagenes = ObtenerArchivo("imagenes_base.json")
 
 
 def LimpiarIcono(Deck, indice):
@@ -129,15 +156,13 @@ def LimpiarIcono(Deck, indice):
 def ActualizarImagenOBS(accion):
     opcion = accion['obs']
     if opcion == 'esena':
-        EsenaActual = ObtenerValor(
-            "data/obs.json", "esena_actual", Depurar=False)
+        EsenaActual = ObtenerValor("data/obs.json", "esena_actual")
         if accion['esena'] == EsenaActual:
             accion['estado'] = True
         else:
             accion['estado'] = False
     elif opcion == 'fuente':
-        EstadoFuente = ObtenerValor(
-            "data/fuente_obs.json", accion['fuente'], Depurar=False)
+        EstadoFuente = ObtenerValor("data/fuente_obs.json", accion['fuente'])
         if EstadoFuente is not None:
             accion['estado'] = EstadoFuente
         else:
@@ -146,8 +171,7 @@ def ActualizarImagenOBS(accion):
         Data = list()
         Data.append(accion['fuente'])
         Data.append(accion['filtro'])
-        EstadoFiltro = ObtenerValor(
-            "data/filtro_obs.json", Data, Depurar=False)
+        EstadoFiltro = ObtenerValor("data/filtro_obs.json", Data)
         if EstadoFiltro is not None:
             accion['estado'] = EstadoFiltro
         else:
@@ -161,7 +185,7 @@ def ActualizarImagenOBS(accion):
 
 
 def ActualizarEstado(accion, atributo):
-    Estado = ObtenerValor("data/obs.json", atributo, Depurar=False)
+    Estado = ObtenerValor("data/obs.json", atributo)
     if Estado:
         accion['estado'] = True
     else:
