@@ -6,6 +6,14 @@ Logger = ConfigurarLogging(__name__)
 
 
 def LeerValor(Opciones):
+    """
+        Lee un Atributo de un Archivo y lo devuelve
+
+        archivo -> stl
+            Nombre del archivo
+        atributo -> stl
+            Nombre del atributo 
+    """
     Archivo = None
     Atributo = None
     if 'archivo' in Opciones:
@@ -15,7 +23,17 @@ def LeerValor(Opciones):
     Logger.info(f"Leer[{Atributo}]:{Archivo}")
     return ObtenerValor(Archivo, Atributo)
 
+
 def EscrivirValor(Opciones):
+    """
+        Escribe un Atributo de un Archivo
+
+        archivo -> stl
+            Nombre del archivo
+        atributo -> stl
+            Nombre del atributo 
+        valor -> everything
+    """
     Archivo = None
     Atributo = None
     Valor = None
@@ -26,5 +44,3 @@ def EscrivirValor(Opciones):
     if 'valor' in Opciones:
         Valor = Opciones['valor']
     SalvarValor(Archivo, Atributo, Valor)
-    pass
-

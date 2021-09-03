@@ -4,6 +4,7 @@ from MiLibrerias import UnirPath, ObtenerFolderConfig
 
 def Notificacion(Opciones):
     """
+        Muestra una notificacion de Escritorio 
 
         texto -> str
             Texto de la notificacion
@@ -13,9 +14,7 @@ def Notificacion(Opciones):
             direcion del icono
         icono_relativo -> bool
             direcion del icono dentro de folder config
-
     """
-
     if 'texto' in Opciones:
         Texto = Opciones['texto']
 

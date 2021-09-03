@@ -10,7 +10,12 @@ from .delay import Delay
 
 
 def ComandoTeclas(Opciones):
-    """Preciona una combinacion de tecla."""
+    """
+        Preciona una combinacion de tecla.
+
+        teclas -> list
+            combinaciones de teclas
+    """
     if 'teclas' in Opciones:
         Teclas = Opciones['teclas']
 
@@ -21,9 +26,16 @@ def ComandoTeclas(Opciones):
 
 
 def ComandoPegar(Opciones):
-    """Pegar texto en papelera."""
-    if 'teclas' in Opciones:
-        Texto = Opciones['Texto']
+    """
+        Guarda texto en papelera.
+
+        texto -> stl
+            texto a guardas
+        intervalo -> float
+            tiempo de espera
+    """
+    if 'texto' in Opciones:
+        Texto = Opciones['texto']
 
         intervalo = 0.15
         if 'intervalo' in Opciones:
@@ -34,7 +46,14 @@ def ComandoPegar(Opciones):
 
 
 def ComandoEscribir(Opciones):
-    """Escribe un texto letra por letra."""
+    """
+        Escribe un texto letra por letra.
+        
+        texto -> stl
+            texto a guardas
+        intervalo -> float
+            tiempo de espera
+    """
     if 'texto' in Opciones:
         Texto = Opciones['texto']
 
@@ -46,21 +65,32 @@ def ComandoEscribir(Opciones):
 
 
 def ComandoPrecionar(Opciones):
-    """Preciona una combinacion de teclas con estado."""
+    """
+        Preciona una combinacion de teclas con estado.
+
+        tecla -> list
+            combinaciones de teclas
+        precionado -> bool
+            estado de la tecla
+        
+    """
     if 'teclas' in Opciones:
         Teclas = Opciones['teclas']
+    if 'precionado' in Opciones:
         Estado = Opciones['presionado']
 
-        if Estado:
-            for tecla in Teclas:
-                pyautogui.keyDown(tecla)
-        else:
-            for tecla in reversed(Teclas):
-                pyautogui.keyUp(tecla)
+    if Estado:
+        for tecla in Teclas:
+            pyautogui.keyDown(tecla)
+    else:
+        for tecla in reversed(Teclas):
+            pyautogui.keyUp(tecla)
 
 
 def CopiarTexto():
-    """Copia texto de papelera."""
+    """
+        Copia texto de papelera.
+    """
     pyautogui.hotkey('ctrl', 'c')
     Delay({"tiempo": 0.1})
     return pyperclip.paste()

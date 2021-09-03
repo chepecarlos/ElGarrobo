@@ -6,14 +6,15 @@ from MiLibrerias import ConfigurarLogging
 
 Logger = ConfigurarLogging(__name__)
 
-def Delay(opciones):
+
+def Delay(Opciones):
     """
-    Hace una pequeña espera en segundos.
-    
-    tiempo -> float 
-        tiempo de espera en segundos
+        Hace una pequeña espera en segundos.
+
+        tiempo -> float 
+            tiempo de espera en segundos
     """
-    if 'tiempo' in opciones:
-        tiempo = opciones['tiempo']
+    if 'tiempo' in Opciones:
+        tiempo = Opciones['tiempo']
         Logger.info(f"Emperando {tiempo}")
         time.sleep(tiempo)

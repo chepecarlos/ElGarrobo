@@ -3,6 +3,16 @@ def constrain(n, minn, maxn): return max(min(maxn, n), minn)
 
 
 def OperacionConstrain(Opciones):
+    """
+        limita un numero para que no salga de un rando
+
+        numero -> float
+            numero a limitar
+        minimo -> float
+            rando inferior
+        maximo -> float
+            rando superior
+    """
     Numero = 0
     Minimo = 0
     Maximo = 0
