@@ -18,7 +18,7 @@ def ActualizarIcono(Deck, indice, accion):
 
     ImagenBoton = PILHelper.create_image(Deck)
 
-    DirecionImagen = ListaImagenes['base']
+    DirecionImagen = None
 
     if 'imagen' in accion:
         DirecionImagen = accion['imagen']
@@ -39,9 +39,8 @@ def ActualizarIcono(Deck, indice, accion):
     if 'icono_texto' in accion:
         Texto = ObtenerValor(
             accion['icono_texto']['archivo'], accion['icono_texto']['atributo'])
-        PonerTexto(ImagenBoton, Texto, accion, True)
+        PonerTexto(ImagenBoton, Texto, accion)
     else:
-        # DirecionImagen = ImagenBase['base']
 
         if 'icono' in accion:
             DirecionImagen = accion['icono']
@@ -62,16 +61,17 @@ def ActualizarIcono(Deck, indice, accion):
             else:
                 DirecionImagen = accion['icono_false']
 
-    if not 'solo_titulo' in accion:
-        PonerImagen(ImagenBoton, DirecionImagen, accion, Deck.Folder)
+    PonerImagen(ImagenBoton, DirecionImagen, accion, Deck.Folder)
 
     if 'titulo' in accion:
-        PonerTexto(ImagenBoton, accion['titulo'], accion)
+        PonerTexto(ImagenBoton, DirecionImagen, accion)
 
     Deck.set_key_image(indice, PILHelper.to_native_format(Deck, ImagenBoton))
 
 
 def PonerImagen(Imagen, NombreIcono, accion, Folder):
+    if NombreIcono is None:
+        return
     NombreIcono = RelativoAbsoluto(NombreIcono, Folder)
     DirecionIcono = UnirPath(ObtenerFolderConfig(), NombreIcono)
 
@@ -90,16 +90,23 @@ def PonerImagen(Imagen, NombreIcono, accion, Folder):
     Imagen.paste(Icono, IconoPosicion, Icono)
 
 
-def PonerTexto(Imagen, Texto, accion, centrar=False):
+def PonerTexto(Imagen,  DirecionImagen, accion):
     """Agrega Texto a Botones de StreamDeck."""
+    Texto = accion['titulo']
     Texto = str(Texto)
-    Tamanno = 20
     Color = "white"
-    Centrado = False
+    Tamanno = 40
+    Alinear = "centrar"
+    if DirecionImagen is not None:
+        Alinear = "abajo"
+        Tamanno = 20
+
     dibujo = ImageDraw.Draw(Imagen)
 
     if 'titulo_opciones' in accion:
         Opciones = accion['titulo_opciones']
+        if 'alinear' in Opciones:
+            Alinear = Opciones['alinear']
         if 'color' in Opciones:
             Color = Opciones['color']
         if 'centrado' in Opciones:
@@ -109,11 +116,10 @@ def PonerTexto(Imagen, Texto, accion, centrar=False):
             Tamanno = Opciones['tamanno']
         if 'borde' in Opciones:
             Borde = Opciones['borde']
-
     else:
         if 'solo_titulo' in accion:
             Tamanno = 40
-            Centrado = True
+            Alinear = "abajo"
 
         if 'titulo_color' in accion:
             Color = accion['titulo_color']
@@ -126,7 +132,7 @@ def PonerTexto(Imagen, Texto, accion, centrar=False):
             break
         Tamanno -= 1
 
-    if Centrado:
+    if Alinear == "centrar":
         PosicionTexto = ((Imagen.width - Titulo_ancho) // 2,
                          (Imagen.height - Titulo_alto - Tamanno/2) // 2)
     else:
