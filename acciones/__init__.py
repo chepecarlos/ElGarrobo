@@ -6,13 +6,18 @@ from .accion_os import AccionOS
 from .Archivos import LeerValor, EscrivirValor
 from .operaciones import OperacionConstrain
 from .Ventanas import CerrarVentana, MostarVentana
+from .mqtt import MensajeMQTT
 
 
 def CargarAcciones():
+    """
+        Carga las acciones en una dic con nombre de accion y funcion asociada.
+    """
 
     return {
         'delay': Delay,
         "contrain": OperacionConstrain,
+        "mqtt": MensajeMQTT,
         # OS
         "os": AccionOS,
         'notification': Notificacion,
