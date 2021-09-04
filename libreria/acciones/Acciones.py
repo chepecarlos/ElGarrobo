@@ -9,7 +9,6 @@ from .Sonidos import AccionSonido
 import MiLibrerias
 from MiLibrerias import ConfigurarLogging
 from MiLibrerias import ObtenerValor, SalvarArchivo, SalvarValor
-from MiLibrerias import EnviarMensajeMQTT
 
 # from Extra.FuncionesProyecto import AbirProyecto
 # from Extra.FuncionesArchivos import ActualizarDato, ObtenerDato, ObtenerLista
@@ -28,8 +27,6 @@ def AccionesExtra(accion, Folder):
         Delay(accion['delay'])
     elif 'sonido' in accion:
         AccionSonido(accion, Folder)
-    elif 'mqtt' in accion:
-        AccionesMQTT(accion)
     elif 'os' in accion:
         AccionOS(accion['os'])
     elif 'news' in accion:
@@ -43,13 +40,6 @@ def AccionesExtra(accion, Folder):
 
     else:
         logger.warning(f"Boton - no definida {accion['nombre']}")
-
-
-def AccionesMQTT(accion):
-    if accion['mqtt'] == "mensaje" and 'topic' in accion and 'mensaje' in accion:
-        logger.info(
-            f"Enviando Mensaje MQTT {accion['topic']} - {accion['mensaje']}")
-        EnviarMensajeMQTT(accion['topic'], accion['mensaje'])
 
 
 def AccionesNews(accion):
