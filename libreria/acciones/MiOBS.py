@@ -35,9 +35,9 @@ class MiOBS:
             self.OBS = obsws(self.host, self.port)
             self.OBS.connect()
             self.Conectado = True
-            logger.info(f"Conectado OBS - {self.host}")
-        except Exception as e:
-            logger.warning(f"Error Conectando OBS - {self.host} - {e}")
+            logger.info(f"OBS[Conectado] {self.host}")
+        except Exception as error:
+            logger.warning(f"OBS[Error] {error}")
             self.LimpiarTemporales()
             self.Conectado = False
             return
@@ -106,7 +106,7 @@ class MiOBS:
             logger.info("OBS Grabando")
         elif Mensaje.name == "RecordingStopping":
             SalvarValor("data/obs.json", "grabando", False)
-            logger.info(f"OBS Paro Grabacion {Mensaje.datain['rec-timecode']}")
+            logger.info(f"OBS Grabo[{Mensaje.datain['rec-timecode']}]")
         self.Dibujar()
 
     def EventoEnVivo(self, Mensaje):
@@ -124,8 +124,8 @@ class MiOBS:
         logger.info("Se desconecto OBS")
         try:
             self.Desconectar()
-        except Exception:
-            pass
+        except Exception as Error:
+            logger.error(f"OBS[Error] {Error}")
         self.LimpiarTemporales()
         self.Dibujar()
 
@@ -208,10 +208,11 @@ class MiOBS:
     def CambiarGrabacion(self, Opciones=None):
         """Envia solisitud de cambiar estado de Grabacion."""
         if self.Conectado:
-            logger.info("Cambiando estado Grabacion")
+            logger.info("Cambiando[Grabacion]")
             self.OBS.call(requests.StartStopRecording())
         else:
             logger.info("OBS no Conectado")
+        return
 
     def CambiarEnVivo(self, Opciones=None):
         """Envia solisitud de cambiar estado del Streaming ."""

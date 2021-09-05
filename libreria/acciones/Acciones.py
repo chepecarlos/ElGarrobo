@@ -1,5 +1,3 @@
-# from libreria.MiMQTT import EnviarMQTTSimple
-
 from .Delay import Delay
 from .EmularTeclado import ComandoEscribir, ComandoTeclas, CopiarTexto
 from .MiOS import AccionOS

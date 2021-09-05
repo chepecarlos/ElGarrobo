@@ -1,13 +1,15 @@
-import logging
 import os
+
+
+from .MiDeck.MiStreamDeck import IniciarStreamDeck, MiStreamDeck2
+from .MiDeck.MiDeckImagen import DefinirImagenes
+from .MiDeck.MiDeckExtras import DefinirFuente
 
 from .acciones.Acciones import AccionesExtra
 from .acciones.Data_Archivo import AccionDataArchivo
 from .acciones.EmularTeclado import ComandoPrecionar
 from .acciones.MiOBS import MiOBS
-from .MiDeckImagen import DefinirFuente, DefinirImagenes
 from .MiMQTT import MiMQTT
-from .MiStreamDeck import IniciarStreamDeck, MiStreamDeck2
 from .MiTecladoMacro import MiTecladoMacro
 
 from acciones import CargarAcciones
@@ -36,13 +38,16 @@ class ElGatito(object):
         self.CargarStreamDeck()
         self.CargarTeclados()
         self.IniciarStreamDeck()
-        self.IniciarMQTT()
+        # self.IniciarMQTT()
 
     def IniciarAcciones(self):
+        """
+            Inicializa las acciones del Sistema en dict nombre de la accion y la funcion asociada
+        """
         logger.info("Cargando Acciones")
         ListaAcciones = CargarAcciones()
 
-        # Acciones Macro 
+        # Acciones Macro
         ListaAcciones['macro'] = self.AccionesMacros
 
         # Acciones Sistema
@@ -146,7 +151,8 @@ class ElGatito(object):
             logger.info("Cargando StreamDeck2")
             Cantidad_Base = 0
             for InfoDeck in self.Data['deck']:
-                DeckActual = MiStreamDeck2(InfoDeck, self.Evento, Cantidad_Base)
+                DeckActual = MiStreamDeck2(
+                    InfoDeck, self.Evento, Cantidad_Base)
                 DeckActual.Conectar()
                 Cantidad_Base += DeckActual.Cantidad
                 self.ListaDeck.append(DeckActual)
@@ -242,8 +248,8 @@ class ElGatito(object):
                     if 'key' in accion:
                         if accion['key'] == key_desface:
                             # if Evento['estado']:
-                                # logger.info(
-                                    # f"Evento streamdeck[{accion['key']}] {accion['nombre']}")
+                            # logger.info(
+                            # f"Evento streamdeck[{accion['key']}] {accion['nombre']}")
                             self.EjecutandoEvento(accion, Evento['estado'])
                             return
                 logger.info(f"Evento no asignado streamdeck[{key_desface}]")
@@ -256,10 +262,10 @@ class ElGatito(object):
     def EjecutandoEvento(self, accion, estado):
         if estado:
             if 'accion' in accion:
-                # accion['opciones']['presionado'] = estado
                 accion['precionado'] = estado
                 # TODO: Ver como pasar estado entre macros
                 self.BuscarAccion(accion)
+
             elif 'macro' in accion:
                 for Comando in accion['macro']:
                     self.EjecutandoEvento(Comando, estado)
@@ -299,6 +305,12 @@ class ElGatito(object):
         return None
 
     def AccionesMacros(self, ListaComando):
+        """
+            Ejecuta acciones una por una de una lista y si existe data la pasa a la siquiente accion
+
+            ListaComandos -> list
+                Acciones a realizar
+        """
         respuesta = None
         for Comando in ListaComando:
             if respuesta is not None:
@@ -307,14 +319,23 @@ class ElGatito(object):
                     DataIn = Opciones['data_in']
                     Opciones[DataIn] = respuesta
             respuesta = self.BuscarAccion(Comando)
+    #     ProcesoAccion = multiprocessing.Process(target=self.HacerMacro, args=[ListaComando])
+    #     ProcesoAccion.start()
 
-    def Salir(self, Opciones):
-        logger.info("Saliendo ElGatoALSW - Adios :) ")
-        self.OBS.Desconectar()
-        self.LimpiarDeck()
-        os._exit(0)
+    # def HacerMacro(self, ListaComando):
+    #     respuesta = None
+    #     for Comando in ListaComando:
+    #         if respuesta is not None:
+    #             Opciones = Comando['opciones']
+    #             if 'data_in' in Opciones:
+    #                 DataIn = Opciones['data_in']
+    #                 Opciones[DataIn] = respuesta
+    #         respuesta = self.BuscarAccion(Comando)
 
     def Reiniciar(self, Opciones):
+        """
+            Reinicia la data del programa.
+        """
         logger.info("Reiniciar data ElGatoALSW")
         self.ReiniciarData()
 
@@ -483,12 +504,40 @@ class ElGatito(object):
         self.MQTT.Conectar()
 
     def ReiniciarData(self):
-        """Reinicia data de los Botones Actuales."""
+        """
+            Reinicia data de los Botones Actuales.
+        """
         self.Data = ObtenerArchivo('config.json')
         self.acciones = dict()
         self.CargarData()
         self.IniciarStreamDeck()
 
     def CargarOBS(self):
+        """
+            Inicialioza el Objeto de OBS
+        """
         self.OBS = MiOBS()
         self.OBS.DibujarDeck(self.ActualizarDeckIcono)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        print("Hora de matar todo XD")
+        # for file in self.files:
+        #     os.unlink(file)
+
+    def __del__(self):
+        print("I'm being automatically destroyed. Goodbye!")
+
+    def Salir(self, Opciones):
+        """
+            Cierra el programa.
+        """
+        logger.info("Saliendo ElGatoALSW - Adios :) ")
+        self.OBS.Desconectar()
+        # self.MQTT.Desconectar()
+        for Teclado in self.ListaTeclados:
+            Teclado.Desconectar()
+        for deck in self.ListaDeck:
+            deck.Desconectar()
+        # self.LimpiarDeck()
+        # raise SystemExit
+        os._exit(0)

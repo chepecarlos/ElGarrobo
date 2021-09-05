@@ -3,8 +3,8 @@
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Transport.Transport import TransportError
 
-import libreria.MiDeckGif as DeckGif
-from libreria.MiDeckImagen import ActualizarIcono, LimpiarIcono
+import libreria.MiDeck.MiDeckGif as DeckGif
+from .MiDeckImagen import ActualizarIcono, LimpiarIcono
 
 from MiLibrerias import ConfigurarLogging
 from MiLibrerias import ObtenerValor
@@ -46,14 +46,14 @@ class MiStreamDeck2(object):
                 else:
                     self.Deck.close()
 
-            except TransportError as err:
+            except TransportError as error:
                 self.Conectado = False
                 self.Deck = None
-                print(f"Error 1 {err}")
+                logger.error(f"Error 1 {error}")
             except Exception as error:
                 self.Conectado = False
                 self.Deck = None
-                print(f"Error 2 {error}")
+                logger.error(f"Error 2 {error}")
 
     def ActualizarIconos(self, acciones, desface, Unido=False):
         """Refesca iconos, tomando en cuenta pagina actual."""
@@ -110,6 +110,14 @@ class MiStreamDeck2(object):
                 "estado": Estado
                 }
         self.Evento(data)
+    
+    def Desconectar(self):
+        if self.Conectado:
+            logger.info(f"Deck[Desconectando] - {self.Nombre}")
+            self.DeckGif.Desconectar()
+            self.Conectado = False
+            self.Deck.reset()
+            self.Deck.close()
 
 
 # class MiStreamDeck(object):

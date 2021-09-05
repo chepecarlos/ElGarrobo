@@ -25,7 +25,6 @@ def MostarVentana(Opciones):
         Titulo = Opciones['titulo']
     Comando = f'xdotool search --onlyvisible "{Titulo}" windowactivate'
     Logger.info(f"Buscando ventana[{Titulo}]")
-    print(Comando)
     AccionOS({"comando": Comando})
     # Agregar mensaje si no esta la venta
 

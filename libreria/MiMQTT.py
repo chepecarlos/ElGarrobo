@@ -1,6 +1,6 @@
 """Modulo de comunicacion con MQTT."""
 
-# https://github.com/Elektordi/obs-websocket-py
+# https://pypi.org/project/paho-mqtt/
 import paho.mqtt.client as mqtt
 
 from MiLibrerias import ObtenerValor
@@ -14,6 +14,7 @@ class MiMQTT():
 
     def __init__(self, Broker=None):
         """Inicializa coneccion con MQTT."""
+        self.Conectado = False
         self.cliente = mqtt.Client()
         self.cliente.on_connect = self.EventoConectar
         self.cliente.on_message = self.MensajeMQTT
@@ -25,32 +26,27 @@ class MiMQTT():
 
     def Conectar(self):
         """Conectar a Broker MQTT."""
-        logger.info("Conectado a MQTT")
+        logger.info("MQTT[Conectando]")
         self.cliente.connect(self.Broker, port=self.Puerto, keepalive=60)
         # self.cliente.enable_logger(logger=logging.INFO)
         self.cliente.loop_forever()
 
     def EventoConectar(self, client, userdata, flags, rc):
         """Respuesta de conecion y subcripcion a topicos."""
-        logger.info("Se conecto con mqtt " + str(rc))
+        logger.info("MQTT[Conectado]")
+        # logger.info("Se conecto con mqtt " + str(rc))
+        self.Conectado = True
         client.subscribe("ALSW/#")
 
     def MensajeMQTT(self, client, userdata, msg):
         # """Recibe mensaje por MQTT."""
-        # if msg.topic == "ALSW/temp":
-        #     logger.info(f"Temperatura es {str(msg.payload)}")
-        logger.info(msg.topic + " " + str(msg.payload))
+        logger.info(f"MQTT[{msg.topic}] {str(msg.payload)}")
 
     def EnviarMQTT(self, Topic, Mensaje):
         """Envia dato por MQTT."""
         self.cliente.publish(Topic, Mensaje)
 
-
-def EnviarMQTTSimple(Topic, Mensaje):
-    """Envia un Mensaje Simple por MQTT."""
-    Usuario = ObtenerValor("/Data/MQTT.json", "Usuario")
-    Contrasenna = ObtenerValor("/Data/MQTT.json", "Contrasenna")
-    MiMQTTSimple = mqtt.Client()
-    MiMQTTSimple.username_pw_set(Usuario, Contrasenna)
-    MiMQTTSimple.connect("public.cloud.shiftr.io", 1883)
-    MiMQTTSimple.publish(Topic, Mensaje)
+    def Desconectar(self):
+        if self.Conectado:
+            logger.info("MQTT[Desconectado]")
+            self.cliente.disconnect()
