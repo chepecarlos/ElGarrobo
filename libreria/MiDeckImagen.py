@@ -18,48 +18,12 @@ def ActualizarIcono(Deck, indice, accion):
 
     ImagenBoton = PILHelper.create_image(Deck)
 
-    DirecionImagen = None
-
-    if 'imagen' in accion:
-        DirecionImagen = accion['imagen']
-        if DirecionImagen.endswith(".gif"):
-            # TODO: Meter proceso gif adentro
-            return
-    elif 'accion' in accion:
-        NombreAccion = accion['accion']
-        if NombreAccion in ListaImagenes:
-            DirecionImagen = ListaImagenes[NombreAccion]
-
-    if 'gif' in accion:
-        return
-
-    if 'obs' in accion:
-        ActualizarImagenOBS(accion)
+    DirecionImagen = BuscarDirecionImagen(accion)
 
     if 'icono_texto' in accion:
         Texto = ObtenerValor(
             accion['icono_texto']['archivo'], accion['icono_texto']['atributo'])
         PonerTexto(ImagenBoton, Texto, accion)
-    else:
-
-        if 'icono' in accion:
-            DirecionImagen = accion['icono']
-        elif 'opcion' in accion:
-            if accion['opcion'] == 'regresar':
-                DirecionImagen = ImagenBase['regresar']
-            elif accion['opcion'] == 'siquiente':
-                DirecionImagen = ImagenBase['siquiente']
-            elif accion['opcion'] == 'anterior':
-                DirecionImagen = ImagenBase['anterior']
-        elif 'estado' in accion:
-            EstadoArchivo = ObtenerValor("data/estado.json", accion['nombre'])
-            if EstadoArchivo is not None:
-                accion['estado'] = EstadoArchivo
-
-            if accion['estado']:
-                DirecionImagen = accion['icono_true']
-            else:
-                DirecionImagen = accion['icono_false']
 
     PonerImagen(ImagenBoton, DirecionImagen, accion, Deck.Folder)
 
@@ -67,6 +31,46 @@ def ActualizarIcono(Deck, indice, accion):
         PonerTexto(ImagenBoton, DirecionImagen, accion)
 
     Deck.set_key_image(indice, PILHelper.to_native_format(Deck, ImagenBoton))
+
+
+def BuscarDirecionImagen(accion):
+    if 'imagen' in accion:
+        DirecionImagen = accion['imagen']
+        if DirecionImagen.endswith(".gif"):
+            # TODO: Meter proceso gif adentro
+            return None
+        return DirecionImagen
+    elif 'accion' in accion:
+        NombreAccion = accion['accion']
+        if NombreAccion in ListaImagenes:
+            return ListaImagenes[NombreAccion]
+
+    if 'gif' in accion:
+        return None
+
+    if 'obs' in accion:
+        ActualizarImagenOBS(accion)
+
+    if 'icono' in accion:
+        return accion['icono']
+    elif 'opcion' in accion:
+        if accion['opcion'] == 'regresar':
+            return ImagenBase['regresar']
+        elif accion['opcion'] == 'siquiente':
+            return ImagenBase['siquiente']
+        elif accion['opcion'] == 'anterior':
+            return ImagenBase['anterior']
+    elif 'estado' in accion:
+        EstadoArchivo = ObtenerValor("data/estado.json", accion['nombre'])
+        if EstadoArchivo is not None:
+            accion['estado'] = EstadoArchivo
+
+        if accion['estado']:
+            return accion['icono_true']
+        else:
+            return accion['icono_false']
+
+    return None
 
 
 def PonerImagen(Imagen, NombreIcono, accion, Folder):
@@ -92,11 +96,12 @@ def PonerImagen(Imagen, NombreIcono, accion, Folder):
 
 def PonerTexto(Imagen,  DirecionImagen, accion):
     """Agrega Texto a Botones de StreamDeck."""
-    Texto = accion['titulo']
-    Texto = str(Texto)
-    Color = "white"
+    Titulo = str(accion['titulo'])
+    Titulo_Color = "white"
     Tamanno = 40
-    Alinear = "centrar"
+    Alinear = "centro"
+    Borde_Color = 'black'
+    Borde_Grosor = 5
     if DirecionImagen is not None:
         Alinear = "abajo"
         Tamanno = 20
@@ -105,41 +110,37 @@ def PonerTexto(Imagen,  DirecionImagen, accion):
 
     if 'titulo_opciones' in accion:
         Opciones = accion['titulo_opciones']
+        if 'tamanno' in Opciones:
+            Tamanno = Opciones['tamanno']
         if 'alinear' in Opciones:
             Alinear = Opciones['alinear']
         if 'color' in Opciones:
-            Color = Opciones['color']
-        if 'centrado' in Opciones:
-            Tamanno = 40
-            Centrado = Opciones['centrado']
-        if 'tamanno' in Opciones:
-            Tamanno = Opciones['tamanno']
-        if 'borde' in Opciones:
-            Borde = Opciones['borde']
-    else:
-        if 'solo_titulo' in accion:
-            Tamanno = 40
-            Alinear = "abajo"
-
-        if 'titulo_color' in accion:
-            Color = accion['titulo_color']
+            Titulo_Color = Opciones['color']
+        if 'borde_color' in Opciones:
+            Borde_Color = Opciones['borde_color']
+        if 'borde_grosor' in Opciones:
+            Borde_Grosor = Opciones['borde_grosor']
 
     # TODO: hacer funcion mas limpia
     while True:
         fuente = ImageFont.truetype(FuenteIcono, Tamanno)
-        Titulo_ancho, Titulo_alto = dibujo.textsize(Texto, font=fuente)
+        Titulo_ancho, Titulo_alto = dibujo.textsize(Titulo, font=fuente)
         if Titulo_ancho < Imagen.width:
             break
         Tamanno -= 1
 
-    if Alinear == "centrar":
-        PosicionTexto = ((Imagen.width - Titulo_ancho) // 2,
-                         (Imagen.height - Titulo_alto - Tamanno/2) // 2)
-    else:
-        PosicionTexto = ((Imagen.width - Titulo_ancho) //
-                         2, Imagen.height - Titulo_alto - 2)
+    Horizontal = (Imagen.width - Titulo_ancho) // 2
 
-    dibujo.text(PosicionTexto, text=Texto, font=fuente, fill=Color)
+    if Alinear == "centro":
+        Vertical = (Imagen.height - Titulo_alto - Tamanno/2) // 2
+    elif Alinear == "ariba":
+        Vertical = 0
+    else:
+        Vertical = Imagen.height - Titulo_alto - 2
+    PosicionTexto = (Horizontal, Vertical)
+
+    dibujo.text(PosicionTexto, text=Titulo, font=fuente,
+                fill=Titulo_Color, stroke_width=Borde_Grosor, stroke_fill=Borde_Color)
 
 
 def DefinirFuente(Fuente):
