@@ -33,7 +33,7 @@ def Sonido(Archivo, Ganancia):
         play(sound + Ganancia)
         logger.info(f"Terminando de repoducir {Archivo}")
     except FileNotFoundError:
-        logger.warning(f"No se encontro {Archivo}")
+        logger.exception(f"No se encontro {Archivo}")
 
 
 def Reproducir(AccionActual, Folder):

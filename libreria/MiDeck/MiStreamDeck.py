@@ -29,6 +29,7 @@ class MiStreamDeck2(object):
     def Conectar(self):
         streamdecks = DeviceManager().enumerate()
 
+        # TODO: Cambiar metodo para cargar StreanDeks
         for index, deck in enumerate(streamdecks):
             try:
                 self.Deck = deck
@@ -49,11 +50,11 @@ class MiStreamDeck2(object):
             except TransportError as error:
                 self.Conectado = False
                 self.Deck = None
-                logger.error(f"Error 1 {error}")
+                logger.exception(f"Error 1 {error}")
             except Exception as error:
                 self.Conectado = False
                 self.Deck = None
-                logger.error(f"Error 2 {error}")
+                logger.exception(f"Error 2 {error}")
 
     def ActualizarIconos(self, acciones, desface, Unido=False):
         """Refesca iconos, tomando en cuenta pagina actual."""

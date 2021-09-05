@@ -14,6 +14,7 @@ def Delay(Opciones):
         tiempo -> float 
             tiempo de espera en segundos
     """
+    # TODO: Permitir Tiempo en horas, minutos y segundos
     if 'tiempo' in Opciones:
         tiempo = Opciones['tiempo']
         Logger.info(f"Emperando {tiempo}")

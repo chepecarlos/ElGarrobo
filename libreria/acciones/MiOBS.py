@@ -125,7 +125,7 @@ class MiOBS:
         try:
             self.Desconectar()
         except Exception as Error:
-            logger.error(f"OBS[Error] {Error}")
+            logger.warning(f"OBS[Error] {Error}")
         self.LimpiarTemporales()
         self.Dibujar()
 

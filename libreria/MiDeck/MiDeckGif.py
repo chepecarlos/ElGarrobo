@@ -45,7 +45,7 @@ class DeckGif(threading.Thread):
                 if TiempoEspera >= 0:
                     time.sleep(TiempoEspera)
             except Exception as error:
-                logger.error(f"Gif[Error] {error} {self.Activo}")
+                logger.exception(f"Gif[Error] {error} {self.Activo}")
 
     def DibujarGif(self, accion):
         """Dibuja el siquiente frame de gif en StreamDeck."""

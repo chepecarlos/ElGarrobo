@@ -63,7 +63,10 @@ def main():
         # gui()
     else:
         logger.info("Iniciando sin parametros")
-        ElGatito()
+        try:
+            ElGatito()
+        except Exception as error:
+            logger.exception(f"Errro[{error}]")
 
 
 if __name__ == "__main__":

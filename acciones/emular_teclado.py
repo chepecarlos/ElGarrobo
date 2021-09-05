@@ -18,6 +18,7 @@ def ComandoTeclas(Opciones):
     """
     if 'teclas' in Opciones:
         Teclas = Opciones['teclas']
+        
 
         for tecla in Teclas:
             pyautogui.keyDown(tecla)
