@@ -22,7 +22,7 @@ setup(
     python_requires='>=3.8',
     entry_points={
         'console_scripts': [
-            'elgatoalsw-cli = elgatoalsw.main:main'
+            'elgatoalsw-cli = elgatoalsw.elgatoalsw:main'
         ]
-    },
+    }
 )

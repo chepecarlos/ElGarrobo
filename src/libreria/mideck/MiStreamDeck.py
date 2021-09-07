@@ -3,7 +3,7 @@
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Transport.Transport import TransportError
 
-import libreria.MiDeck.MiDeckGif as DeckGif
+from .MiDeckGif import DeckGif
 from .MiDeckImagen import ActualizarIcono, LimpiarIcono
 
 from MiLibrerias import ConfigurarLogging
@@ -12,7 +12,7 @@ from MiLibrerias import ObtenerValor
 logger = ConfigurarLogging(__name__)
 
 
-class MiStreamDeck2(object):
+class MiStreamDeck(object):
 
     def __init__(self, Data, Evento, Base):
         self.ID = Data['id']
@@ -40,7 +40,7 @@ class MiStreamDeck2(object):
                     self.Cantidad = self.Deck.key_count()
                     Brillo = ObtenerValor("data/streamdeck.json", "brillo")
                     self.Deck.set_brightness(Brillo)
-                    self.DeckGif = DeckGif.DeckGif(self.Deck)
+                    self.DeckGif = DeckGif(self.Deck)
                     self.DeckGif.start()
                     self.Deck.set_key_callback(self.ActualizarBoton)
                     return
@@ -114,59 +114,6 @@ class MiStreamDeck2(object):
             self.Conectado = False
             self.Deck.reset()
             self.Deck.close()
-
-
-# class MiStreamDeck(object):
-#     """Clase para manejar StreamDeck."""
-
-#     def __init__(self, Deck):
-#         """Inicializa manejo de StreamDeck."""
-#         self.Deck = Deck
-#         self.ID = Deck.ID
-#         self.Cantidad = Deck.key_count()
-#         self.Serial = Deck.Serial
-#         self.Nombre = Deck.Nombre
-#         self.File = Deck.File
-#         self.Base = Deck.Base
-#         self.DeckGif = DeckGif.DeckGif(self.Deck)
-#         self.DeckGif.start()
-
-#     def ActualizarIconos(self, acciones, desface, Unido=False):
-#         """Refesca iconos, tomando en cuenta pagina actual."""
-#         logger.info(f"empezando a actualizar iconos {self.Nombre}")
-#         if Unido:
-#             for i in range(self.Cantidad):
-#                 key_desface = i + self.Base + desface
-#                 AccionAcual = self.AccionDibujar(acciones, key_desface)
-#                 if AccionAcual is not None:
-#                     if 'gif' in AccionAcual:
-#                         self.DeckGif.ActualizarGif(i, AccionAcual)
-#                     else:
-#                         ActualizarIcono(self.Deck, i, AccionAcual)
-#         else:
-#             pass
-
-#     def AccionDibujar(self, acciones, i):
-#         """Devuelve la accion i del conjuto de acciones."""
-#         for accion in acciones:
-#             if 'key' in accion:
-#                 if accion['key'] == i:
-#                     return accion
-#         return None
-
-#     def Limpiar(self):
-#         """Borra iconos de todo los botones de StreamDeck."""
-#         self.DeckGif.Limpiar()
-#         for i in range(self.Cantidad):
-#             LimpiarIcono(self.Deck, i)
-
-#     def Brillo(self, Brillo):
-#         """Cambia brillo de StreamDeck."""
-#         self.Deck.set_brightness(Brillo)
-
-#     def CambiarFolder(self, Folder):
-#         self.Deck.Folder = Folder
-
 
 def IniciarStreamDeck(Datas, FuncionEvento):
     streamdecks = DeviceManager().enumerate()

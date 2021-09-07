@@ -1,9 +1,9 @@
 import os
 
 
-from .MiDeck.MiStreamDeck import IniciarStreamDeck, MiStreamDeck2
-from .MiDeck.MiDeckImagen import DefinirImagenes
-from .MiDeck.MiDeckExtras import DefinirFuente
+from .mideck.MiStreamDeck import IniciarStreamDeck, MiStreamDeck
+from .mideck.MiDeckImagen import DefinirImagenes
+from .mideck.MiDeckExtras import DefinirFuente
 
 from .acciones.Acciones import AccionesExtra
 from .acciones.Data_Archivo import AccionDataArchivo
@@ -151,7 +151,7 @@ class ElGatito(object):
             logger.info("StreamDeck[Cargando]")
             Cantidad_Base = 0
             for InfoDeck in self.Data['deck']:
-                DeckActual = MiStreamDeck2(
+                DeckActual = MiStreamDeck(
                     InfoDeck, self.Evento, Cantidad_Base)
                 DeckActual.Conectar()
                 Cantidad_Base += DeckActual.Cantidad
