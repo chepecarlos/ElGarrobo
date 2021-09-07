@@ -59,13 +59,14 @@ class MiStreamDeck2(object):
     def ActualizarIconos(self, acciones, desface, Unido=False):
         """Refesca iconos, tomando en cuenta pagina actual."""
         if self.Conectado:
-            logger.info(f"Actualizar Deck[{self.Nombre}]")
+            logger.info(f"Deck[Dibujar] {self.Nombre}")
             if Unido:
                 for i in range(self.Cantidad):
                     key_desface = i + self.Base + desface
-                    AccionAcual = self.AccionDibujar(acciones, key_desface)
+                    Dibujar = list(filter(lambda accion: accion['key'] == key_desface, acciones))
                     # TODO: Cargar primer los Gifs
-                    if AccionAcual is not None:
+                    if Dibujar:
+                        AccionAcual = Dibujar[0]
                         if 'imagen' in AccionAcual:
                             DirecionImagen = AccionAcual['imagen']
                             if DirecionImagen.endswith(".gif"):
@@ -78,14 +79,6 @@ class MiStreamDeck2(object):
                             ActualizarIcono(self.Deck, i, AccionAcual)
             else:
                 pass
-
-    def AccionDibujar(self, acciones, i):
-        """Devuelve la accion i del conjuto de acciones."""
-        for accion in acciones:
-            if 'key' in accion:
-                if accion['key'] == i:
-                    return accion
-        return None
 
     def Limpiar(self):
         """Borra iconos de todo los botones de StreamDeck."""

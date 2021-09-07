@@ -11,7 +11,6 @@ setup(
     name='elgatoalsw',
     version=version,
     description='Heramienta Macros de ALSW',
-    long_description=long_description,
     author='ChepeCarlos',
     author_email='chepecarlos@alsw.net',
     url='https://github.com/chepecarlos/ElGatoALSW',

@@ -35,8 +35,8 @@ class ElGatito(object):
         self.CargarOBS()
         self.IniciarAcciones()
         self.CargarData()
-        self.CargarStreamDeck()
         self.CargarTeclados()
+        self.CargarStreamDeck()
         self.IniciarStreamDeck()
         # self.IniciarMQTT()
 
@@ -44,7 +44,7 @@ class ElGatito(object):
         """
             Inicializa las acciones del Sistema en dict nombre de la accion y la funcion asociada
         """
-        logger.info("Cargando Acciones")
+        logger.info("Acciones[Cargando]")
         ListaAcciones = CargarAcciones()
 
         # Acciones Macro
@@ -133,7 +133,7 @@ class ElGatito(object):
         """Confiurando Teclados Macros."""
         self.ListaTeclados = []
         if 'teclados' in self.Data:
-            logger.info("Cargando Teclados")
+            logger.info("Teclados[Cargando]")
             for Teclado in self.Data['teclados']:
                 if 'nombre' in Teclado and 'input' in Teclado and 'file' in Teclado:
                     TecladoActual = MiTecladoMacro(
@@ -148,7 +148,7 @@ class ElGatito(object):
             DefinirFuente(self.Data['fuente'])
             DefinirImagenes(self.Data['imagenes'])
         if 'deck' in self.Data:
-            logger.info("Cargando StreamDeck2")
+            logger.info("StreamDeck[Cargando]")
             Cantidad_Base = 0
             for InfoDeck in self.Data['deck']:
                 DeckActual = MiStreamDeck2(
@@ -211,8 +211,7 @@ class ElGatito(object):
         for dispositivo in self.Data[Atributo]:
             nombreDispositivo = dispositivo['nombre']
             if nombreDispositivo in Data:
-                logger.info(
-                    f"Encontro Config {Atributo} de {nombreDispositivo}")
+                logger.info(f"Folder[Configurado] {nombreDispositivo}")
                 self.acciones[nombreDispositivo] = Data[nombreDispositivo]
 
     def BuscarDentroFolder(self, Folderes, Data):
@@ -247,17 +246,16 @@ class ElGatito(object):
                 for accion in self.acciones['streamdeck']:
                     if 'key' in accion:
                         if accion['key'] == key_desface:
-                            # if Evento['estado']:
-                            # logger.info(
-                            # f"Evento streamdeck[{accion['key']}] {accion['nombre']}")
                             self.EjecutandoEvento(accion, Evento['estado'])
                             return
-                logger.info(f"Evento no asignado streamdeck[{key_desface}]")
+                logger.info(f"Evento[No asignado] streamdeck[{key_desface}]")
                 return
             else:
                 pass
+        else:
+            pass
 
-        logger.info(f"Evento no asignado {NombreEvento}[{Evento['key']}]")
+        logger.info(f"Evento[No asignado] {NombreEvento}[{Evento['key']}]")
 
     def EjecutandoEvento(self, accion, estado):
         if estado:

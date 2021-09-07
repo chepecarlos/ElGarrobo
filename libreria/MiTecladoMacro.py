@@ -25,7 +25,7 @@ class MiTecladoMacro():
         self.Conectado = False
         self.Activo = True
         self.EsperaReconectar = 5
-        super(MiTecladoMacro, self).__init__()
+        # super(MiTecladoMacro, self).__init__()
 
     # def run(self):
     #     """Dibuja un frame de cada gif y espera a siquiente frame."""
@@ -35,16 +35,12 @@ class MiTecladoMacro():
 
     def Conectar(self):
         """Conecta con un teclado para escuchas botones precionados."""
-        logger.info(f"Teclado[Conectando] {self.Nombre}")
-        # self.HiloTeclado = threading.Thread(
-        #     name="teclados-" + self.Nombre, target=self.HiloRaton, daemon=True)
         self.HiloTeclado = threading.Thread(
             name="teclados-" + self.Nombre, target=self.HiloRaton)
         self.HiloTeclado.start()
 
     def HiloRaton(self):
         """Hilo del estado del Teclado."""
-        print("Cargando Hilo Teclado")
         while self.Activo:
             if self.Conectado:
                 try:
@@ -67,13 +63,11 @@ class MiTecladoMacro():
                         f"Teclado[Desconectado] {self.Nombre} Error[{error.errno}]")
             else:
                 try:
-                    logger.info(
-                        f"Teclado[Conectandose] {self.Nombre}")
+                    logger.info(f"Teclado[Conectandose] {self.Nombre}")
                     self.Teclado = InputDevice(self.Dispisitivo)
                     self.Teclado.grab()
                     self.Conectado = True
-                    logger.info(
-                        f"Teclado[Conectado] {self.Nombre}")
+                    logger.info(f"Teclado[Conectado] {self.Nombre}")
                 except Exception as error:
                     logger.warning(
                         f"Teclado[No Conectado] {self.Nombre} Error {error.errno}")
