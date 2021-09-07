@@ -1,13 +1,21 @@
 """Modulo de Tiempo."""
+import MiLibrerias
 import time
 
+from MiLibrerias import ConfigurarLogging
 
-def Delay(opciones):
+Logger = ConfigurarLogging(__name__)
+
+
+def Delay(Opciones):
     """
-    Hace una pequeña espera en segundos.
-    
-    tiempo -> float 
-        tiempo de espera en segundos
+        Hace una pequeña espera en segundos.
+
+        tiempo -> float 
+            tiempo de espera en segundos
     """
-    if 'tiempo' in opciones:
-        time.sleep(opciones['tiempo'])
+    # TODO: Permitir Tiempo en horas, minutos y segundos
+    if 'tiempo' in Opciones:
+        tiempo = Opciones['tiempo']
+        Logger.info(f"Emperando {tiempo}")
+        time.sleep(tiempo)

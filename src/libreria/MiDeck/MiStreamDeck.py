@@ -64,7 +64,9 @@ class MiStreamDeck2(object):
                 for i in range(self.Cantidad):
                     key_desface = i + self.Base + desface
                     Dibujar = list(filter(lambda accion: accion['key'] == key_desface, acciones))
-                    # TODO: Cargar primer los Gifs
+                    # TODO: Cargar primer los Gifs # if AccionAcual is not None:
+                    # if AccionAcual is not None:
+                   
                     if Dibujar:
                         AccionAcual = Dibujar[0]
                         if 'imagen' in AccionAcual:
