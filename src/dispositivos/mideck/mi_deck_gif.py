@@ -74,20 +74,24 @@ class DeckGif(threading.Thread):
         Gif = list()
         if 'imagen' in accion:
             DirecionGif = accion['imagen']
-        elif 'gif' in accion:
-            DirecionGif = accion['gif']
         else:
             return
 
         if not DirecionGif.endswith('gif'):
             return
 
+        ColorFondo = 'black'
+        if "imagen_opciones" in accion:
+            Opciones = accion['imagen_opciones']
+            if 'fondo' in Opciones:
+                ColorFondo = Opciones['fondo']
+        
         DirecionGif = RelativoAbsoluto(DirecionGif, self.Deck.Folder)
         DirecionGif = UnirPath(ObtenerFolderConfig(), DirecionGif)
         if os.path.exists(DirecionGif):
             GifArchivo = Image.open(DirecionGif)
             for frame in ImageSequence.Iterator(GifArchivo):
-                Gif_frame = PILHelper.create_scaled_image(self.Deck, frame)
+                Gif_frame = PILHelper.create_scaled_image(self.Deck, frame, background=ColorFondo)
                 if 'titulo' in accion:
                     PonerTexto(Gif_frame, accion, True)
                 ImagenNativa = PILHelper.to_native_format(self.Deck, Gif_frame)

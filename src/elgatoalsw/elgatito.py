@@ -1,16 +1,14 @@
 import os
 
+# from .MiMQTT import MiMQTT
+# from .acciones.Acciones import AccionesExtra
+# from .acciones.Data_Archivo import AccionDataArchivo
+# from .acciones.EmularTeclado import ComandoPrecionar
+# from .acciones.MiOBS import MiOBS
 
-# from .mideck.MiStreamDeck import IniciarStreamDeck, MiStreamDeck
-# from .mideck.MiDeckImagen import DefinirImagenes
-# from .mideck.MiDeckExtras import DefinirFuente
-
-from .acciones.Acciones import AccionesExtra
-from .acciones.Data_Archivo import AccionDataArchivo
-from .acciones.EmularTeclado import ComandoPrecionar
-from .acciones.MiOBS import MiOBS
-from .MiMQTT import MiMQTT
 # from .MiTecladoMacro import MiTecladoMacro
+
+from extras.mi_obs import MiOBS
 
 from dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro
 from dispositivos.mideck.mi_streamdeck import MiStreamDeck
@@ -263,33 +261,14 @@ class ElGatito(object):
 
         logger.info(f"Evento[No asignado] {NombreEvento}[{Evento['key']}]")
 
-    def EjecutandoEvento(self, accion, estado):
+    def EjecutandoEvento(self, evento, estado):
         if estado:
-            if 'accion' in accion:
-                accion['precionado'] = estado
+            if 'accion' in evento:
+                evento['precionado'] = estado
                 # TODO: Ver como pasar estado entre macros
-                self.BuscarAccion(accion)
-
-            elif 'macro' in accion:
-                for Comando in accion['macro']:
-                    self.EjecutandoEvento(Comando, estado)
-            elif 'opcion' in accion:
-                self.AccionesOpcion(accion)
-            elif 'deck' in accion:
-                self.AccionesDeck(accion)
-            elif 'obs' in accion:
-                self.AccionesOBS(accion)
-            elif 'data_archivo' in accion:
-                AccionDataArchivo(accion)
-            elif 'tecla_on' in accion:
-                ComandoPrecionar(accion['tecla_on'], estado)
+                self.BuscarAccion(evento)
             else:
-                AccionesExtra(accion, self.PathActual)
-        else:
-            if 'tecla_off' in accion:
-                ComandoPrecionar(accion['tecla_off'], estado)
-            elif 'tecla_on' in accion:
-                ComandoPrecionar(accion['tecla_on'], estado)
+                logger.info("Evento[no accion]")
 
     def BuscarAccion(self, accion):
         NombreAccion = accion['accion']
@@ -355,11 +334,18 @@ class ElGatito(object):
         self.ActualizarDeck()
 
     def Entrar_Folder(self, opciones):
+        """
+            Entra en folder
+
+            folder -> str
+                folder a entrar
+        """
         if 'folder' in opciones:
             Folder = opciones['folder']
         else:
+            logger.warning(f"Folder[no encontrado]")
             return
-        logger.info(f"Entrando[{Folder}]")
+        logger.info(f"Folder[{Folder}]")
         self.PathActual = RelativoAbsoluto(Folder, self.PathActual)
         self.BuscarFolder(self.PathActual)
         self.LimpiarDeck()
@@ -374,39 +360,6 @@ class ElGatito(object):
     def Anterior_Pagina(self, Opciones):
         self.MoverPagina('anterior')
 
-    def AccionesOpcion(self, accion):
-        Opcion = accion['opcion']
-        if Opcion == "salir":
-            logger.info("Saliendo ElGatoALSW - Adios :) ")
-            self.LimpiarDeck()
-            os._exit(0)
-        elif Opcion == 'recargar':
-            pass
-        elif Opcion == 'siquiente':
-            self.MoverPagina('siquiente')
-        elif Opcion == 'anterior':
-            self.MoverPagina('anterior')
-        elif Opcion == 'regresar':
-            Direcion = self.PathActual.split("/")
-            self.PathActual = "/".join(Direcion[:-1])
-            if self.PathActual == "":
-                self.PathActual = "defaul"
-                return
-            logger.info(f"Regresar Folder {self.PathActual}")
-            self.BuscarFolder(self.PathActual)
-            self.LimpiarDeck()
-            self.ActualizarDeck()
-        elif Opcion == 'folder':
-            logger.info(f"Entrando a {accion['path']}")
-            self.PathActual = RelativoAbsoluto(accion['path'], self.PathActual)
-            self.BuscarFolder(self.PathActual)
-            self.LimpiarDeck()
-            self.ActualizarDeck()
-        elif Opcion == 'actualizar':
-            self.ActualizarDeck()
-        else:
-            logger.warning(f"Opcion No Encontrada: {Opcion}")
-
     def DeckBrillo(self, Opciones):
         Brillo = ObtenerValor("data/streamdeck.json", "brillo")
         def constrain(n, minn, maxn): return max(min(maxn, n), minn)
@@ -420,56 +373,6 @@ class ElGatito(object):
         SalvarValor("data/streamdeck.json", "brillo", Brillo)
         for deck in self.ListaDeck:
             deck.Brillo(Brillo)
-
-    def AccionesDeck(self, accion):
-        opcion = accion['deck']
-        if opcion == "brillo":
-            Brillo = ObtenerValor("data/streamdeck.json", "brillo")
-            Brillo += accion['cantidad']
-            if Brillo < 0:
-                Brillo = 0
-                return
-            elif Brillo > 100:
-                Brillo = 100
-                return
-            logger.info(F"Asignando brillo {Brillo} a Decks")
-            SalvarValor("data/streamdeck.json", "brillo", Brillo)
-            for deck in self.ListaDeck:
-                deck.Brillo(Brillo)
-        elif opcion == "reiniciar":
-            logger.info("Reiniciar todo el Sistema ElGatoALSW")
-            self.Reiniciar()
-
-    def AccionesOBS(self, accion):
-        """Acciones para controlar OBS Websocket."""
-        opcion = accion['obs']
-        if opcion == 'conectar':
-            self.OBS.Reiniciar()
-            # self.OBS.DibujarDeck(self.ActualizarDeckIcono)
-            self.OBS.Conectar()
-        elif opcion == 'server':
-            self.OBS.Reiniciar()
-            self.OBS.CambiarHost(accion['server'])
-            # self.OBS.DibujarDeck(self.ActualizarDeckIcono)
-            self.OBS.Conectar()
-        elif opcion == 'cerrar':
-            self.OBS.Desconectar()
-        elif self.OBS.Conectado:
-            if opcion == 'esena':
-                self.OBS.CambiarEsena(accion['esena'])
-            elif opcion == 'fuente':
-                self.OBS.CambiarFuente(accion['fuente'])
-            elif opcion == 'filtro':
-                Filtro = [accion['fuente'], accion['filtro']]
-                self.OBS.CambiarFiltro(Filtro)
-            elif opcion == 'grabando':
-                self.OBS.CambiarGrabacion()
-            elif opcion == 'envivo':
-                self.OBS.CambiarEnVivo()
-            else:
-                logger.warning("Opcion no encontrada")
-        else:
-            logger.warning("OBS Websocket no conectado")
 
     def MoverPagina(self, Direcion):
         if 'streamdeck' in self.acciones:

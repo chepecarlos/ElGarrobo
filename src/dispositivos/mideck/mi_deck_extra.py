@@ -4,7 +4,7 @@ from StreamDeck.ImageHelpers import PILHelper
 from MiLibrerias import ObtenerFolderConfig, UnirPath
 
 
-def PonerTexto(Imagen,  accion, DirecionImagen=None):
+def PonerTexto(Imagen, accion, DirecionImagen=None):
     """Agrega Texto a Botones de StreamDeck."""
     Titulo = str(accion['titulo'])
     Titulo_Color = "white"
@@ -51,6 +51,16 @@ def PonerTexto(Imagen,  accion, DirecionImagen=None):
 
     dibujo.text(PosicionTexto, text=Titulo, font=fuente,
                 fill=Titulo_Color, stroke_width=Borde_Grosor, stroke_fill=Borde_Color)
+
+
+def PonerFondo(Imagen, accion):
+    if "imagen_opciones" in accion:
+        Opciones = accion['imagen_opciones']
+        if 'fondo' in Opciones:
+            ColorFondo = Opciones['fondo']
+            dibujo = ImageDraw.Draw(Imagen)
+            Tamanno = [(0, 0), (Imagen.width, Imagen.height)]
+            dibujo.rectangle(Tamanno, fill=ColorFondo)
 
 
 def DefinirFuente(Fuente):

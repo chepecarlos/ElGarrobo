@@ -4,9 +4,12 @@ import pyautogui
 import pyperclip
 
 from .delay import Delay
+from MiLibrerias import ConfigurarLogging
 # Implementar press y onrelles
 # TODO: Añadir ñ en las funciones
 # TODO: Agregar funcionMover Raton a posicion
+
+logger = ConfigurarLogging(__name__)
 
 
 def ComandoTeclas(Opciones):
@@ -18,12 +21,14 @@ def ComandoTeclas(Opciones):
     """
     if 'teclas' in Opciones:
         Teclas = Opciones['teclas']
-        
 
+        logger.info(f"Teclas{Teclas}")
         for tecla in Teclas:
             pyautogui.keyDown(tecla)
         for tecla in reversed(Teclas):
             pyautogui.keyUp(tecla)
+    else:
+        logger.info("Teclas[no asignadas]")
 
 
 def ComandoPegar(Opciones):
@@ -49,7 +54,7 @@ def ComandoPegar(Opciones):
 def ComandoEscribir(Opciones):
     """
         Escribe un texto letra por letra.
-        
+
         texto -> stl
             texto a guardas
         intervalo -> float
@@ -73,7 +78,7 @@ def ComandoPrecionar(Opciones):
             combinaciones de teclas
         precionado -> bool
             estado de la tecla
-        
+
     """
     if 'teclas' in Opciones:
         Teclas = Opciones['teclas']

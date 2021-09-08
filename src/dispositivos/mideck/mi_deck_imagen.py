@@ -18,10 +18,15 @@ def ActualizarIcono(Deck, indice, accion):
     global ImagenBase
     global ListaImagenes
 
-    ImagenBoton = PILHelper.create_image(Deck)
+    ColorFondo = 'black'
+    if "imagen_opciones" in accion:
+        Opciones = accion['imagen_opciones']
+        if 'fondo' in Opciones:
+            ColorFondo = Opciones['fondo']
+
+    ImagenBoton = PILHelper.create_image(Deck, background=ColorFondo)
 
     DirecionImagen = BuscarDirecionImagen(accion)
-
 
     PonerImagen(ImagenBoton, DirecionImagen, accion, Deck.Folder)
 

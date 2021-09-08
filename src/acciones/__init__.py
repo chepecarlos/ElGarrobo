@@ -15,14 +15,14 @@ def CargarAcciones():
     """
 
     return {
-        'delay': Delay,
+        "delay": Delay,
         "contrain": OperacionConstrain,
         "mqtt": MensajeMQTT,
         # OS
         "os": AccionOS,
-        'notification': Notificacion,
+        "notification": Notificacion,
         # Precionas teclas
-        'teclas': ComandoTeclas,
+        "teclas": ComandoTeclas,
         "escribir": ComandoEscribir,
         "pegar": ComandoPegar,
         "copiar": CopiarTexto,

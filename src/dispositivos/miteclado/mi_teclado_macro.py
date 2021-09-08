@@ -16,12 +16,12 @@ logger = ConfigurarLogging(__name__)
 class MiTecladoMacro():
     """Clase de Teclado Macro para Linux."""
 
-    def __init__(self, Nombre, Dispisitivo, File, FuncionEvento):
+    def __init__(self, Nombre, Dispisitivo, File, Evento):
         """ ."""
         self.Nombre = Nombre
         self.Dispisitivo = Dispisitivo
         self.File = File
-        self.FuncionEvento = FuncionEvento
+        self.Evento = Evento
         self.Conectado = False
         self.Activo = True
         self.EsperaReconectar = 5
@@ -56,7 +56,7 @@ class MiTecladoMacro():
                                 data = {"nombre": self.Nombre,
                                         "key": key.keycode,
                                         "estado": False}
-                            self.FuncionEvento(data)
+                            self.Evento(data)
                 except Exception as error:
                     self.Conectado = False
                     logger.info(

@@ -6,8 +6,9 @@ import argparse
 import os
 import sys
 
+from .elgatito import ElGatito
+
 from libreria.acciones.News import SalvarArchivoNoticia
-from libreria.ElGatito import ElGatito
 
 from MiLibrerias import ConfigurarLogging
 from MiLibrerias import UnirPath, SalvarValor
