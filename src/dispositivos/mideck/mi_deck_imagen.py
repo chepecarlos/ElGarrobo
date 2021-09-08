@@ -3,7 +3,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.ImageHelpers import PILHelper
 
-from .MiDeckExtras import PonerTexto
+from .mi_deck_extra import PonerTexto
 
 from MiLibrerias import ObtenerFolderConfig, ObtenerValor, UnirPath, RelativoAbsoluto
 from MiLibrerias import ObtenerArchivo

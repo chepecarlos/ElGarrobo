@@ -1,16 +1,22 @@
 import os
 
 
-from .mideck.MiStreamDeck import IniciarStreamDeck, MiStreamDeck
-from .mideck.MiDeckImagen import DefinirImagenes
-from .mideck.MiDeckExtras import DefinirFuente
+# from .mideck.MiStreamDeck import IniciarStreamDeck, MiStreamDeck
+# from .mideck.MiDeckImagen import DefinirImagenes
+# from .mideck.MiDeckExtras import DefinirFuente
 
 from .acciones.Acciones import AccionesExtra
 from .acciones.Data_Archivo import AccionDataArchivo
 from .acciones.EmularTeclado import ComandoPrecionar
 from .acciones.MiOBS import MiOBS
 from .MiMQTT import MiMQTT
-from .MiTecladoMacro import MiTecladoMacro
+# from .MiTecladoMacro import MiTecladoMacro
+
+from dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro
+from dispositivos.mideck.mi_streamdeck import MiStreamDeck
+from dispositivos.mideck.mi_deck_extra import DefinirFuente
+from dispositivos.mideck.mi_deck_imagen import DefinirImagenes
+
 
 from acciones import CargarAcciones
 

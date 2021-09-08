@@ -3,8 +3,8 @@
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Transport.Transport import TransportError
 
-from .MiDeckGif import DeckGif
-from .MiDeckImagen import ActualizarIcono, LimpiarIcono
+from .mi_deck_gif import DeckGif
+from .mi_deck_imagen import ActualizarIcono, LimpiarIcono
 
 from MiLibrerias import ConfigurarLogging
 from MiLibrerias import ObtenerValor

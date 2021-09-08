@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageSequence
 from StreamDeck.ImageHelpers import PILHelper
 from fractions import Fraction
 
-from .MiDeckExtras import PonerTexto
+from .mi_deck_extra import PonerTexto
 
 from MiLibrerias import ConfigurarLogging
 from MiLibrerias import ObtenerValor, UnirPath, ObtenerFolderConfig, RelativoAbsoluto
