@@ -30,6 +30,9 @@ class ElGatito(object):
 
     def __init__(self):
 
+        
+        logger.info(f"Cargando[config.json]")
+
         self.Data = ObtenerArchivo('config.json')
         if self.Data is None:
             logger.error("No existe archivo config.json")

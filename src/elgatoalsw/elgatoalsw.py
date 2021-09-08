@@ -42,7 +42,7 @@ def Parametros():
 
 def main():
     # TODO: funciones para configurar para priner aranque
-    logger.info("Iniciando el programa ElGatoALSW")
+    logger.info("ElGatoALSW[Iniciando]")
     args = Parametros()
 
     if args.proyecto:
@@ -63,7 +63,7 @@ def main():
         logger.info("Iniciando la APP Grafica")
         # gui()
     else:
-        logger.info("Iniciando sin parametros")
+        logger.info("ElGatoALSW[sin parametros]")
         try:
             ElGatito()
         except Exception as error:
