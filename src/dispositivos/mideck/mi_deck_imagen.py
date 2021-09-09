@@ -42,6 +42,23 @@ def ActualizarIcono(Deck, indice, accion):
 
 
 def BuscarDirecionImagen(accion):
+
+    if 'imagen_estado' in accion:
+        ImagenEstado = accion['imagen_estado']
+        NombreAccion = accion['accion']
+        if 'opciones' in accion:
+            OpcionesAccion = accion['opciones'] 
+        else:
+            OpcionesAccion = None
+        
+        if NombreAccion.startswith('obs'):
+            EstadoImagen = BuscarImagenOBS(NombreAccion, OpcionesAccion)
+            if EstadoImagen:
+                DirecionImagen = ImagenEstado['imagen_true']
+            else:
+                DirecionImagen = ImagenEstado['imagen_false']
+
+            return DirecionImagen
     if 'imagen' in accion:
         DirecionImagen = accion['imagen']
         if DirecionImagen.endswith(".gif"):
@@ -101,6 +118,28 @@ def PonerImagen(Imagen, NombreIcono, accion, Folder):
     IconoPosicion = ((Imagen.width - Icono.width) // 2, 0)
     Imagen.paste(Icono, IconoPosicion, Icono)
 
+
+def BuscarImagenOBS(NombreAccion, OpcionesAccion):
+    Estado = None
+    ListaBasicas = ["obs_conectar", "obs_grabar", "obs_envivo",]
+    for Basica in ListaBasicas:
+        if NombreAccion == Basica:
+            Estado = ObtenerValor("data/obs.json", Basica)
+    # if NombreAccion == "obs_conectar":
+    #     Estado = ObtenerValor("data/obs.json", "obs_conectar")
+    if NombreAccion == "obs_escena":
+        if 'escena' in OpcionesAccion:
+            EscenaActual = OpcionesAccion['escena']
+            EscenaActiva = ObtenerValor("data/obs.json", "obs_escena")
+            if EscenaActual == EscenaActiva:
+                Estado = True
+            else:
+                Estado = False
+
+    if Estado is None:
+        Estado = False
+
+    return Estado
 
 # def PonerTexto(Imagen,  DirecionImagen, accion):
 #     """Agrega Texto a Botones de StreamDeck."""
