@@ -44,7 +44,7 @@ class MiOBS:
             return
         SalvarValor("data/obs.json", "conectado", True)
         self.SalvarEstadoActual()
-        self.AgregarEvento(self.EventoEsena, events.SwitchScenes)
+        self.AgregarEvento(self.EventoEscena, events.SwitchScenes)
         self.AgregarEvento(self.EventoGrabando, events.RecordingStarted)
         self.AgregarEvento(self.EventoGrabando, events.RecordingStopping)
         self.AgregarEvento(self.EventoEnVivo, events.StreamStarted)
@@ -56,9 +56,9 @@ class MiOBS:
 
     def SalvarEstadoActual(self):
         """Salta estado inicial de OBS para StreamDeck."""
-        DataEsenaActual = self.OBS.call(requests.GetCurrentScene()).datain
+        DataEscenaActual = self.OBS.call(requests.GetCurrentScene()).datain
         EstadoActual = self.OBS.call(requests.GetStreamingStatus()).datain
-        SalvarValor("data/obs.json", "esena_actual", DataEsenaActual['name'])
+        SalvarValor("data/obs.json", "escena_actual", DataEscenaActual['name'])
         SalvarValor("data/obs.json", "grabando", EstadoActual['recording'])
         SalvarValor("data/obs.json", "envivo", EstadoActual['streaming'])
         self.SalvarFuente()
@@ -68,9 +68,9 @@ class MiOBS:
         HiloFuentes.start()
 
     def HiloFuenteArchivo(self):
-        DataEsenaActual = self.OBS.call(requests.GetCurrentScene()).datain
+        DataEscenaActual = self.OBS.call(requests.GetCurrentScene()).datain
         Refrescar = False
-        for Fuente in DataEsenaActual['sources']:
+        for Fuente in DataEscenaActual['sources']:
             NombreFuente = Fuente['name']
             EstadoFuente = ObtenerValor("data/fuente_obs.json", NombreFuente, Depurar=False)
             EstadoFuenteActual = self.OBS.call(requests.GetSceneItemProperties(NombreFuente)).datain
@@ -92,11 +92,11 @@ class MiOBS:
         """Registra evento de OBS a una funcion."""
         self.OBS.register(Funcion, Evento)
 
-    def EventoEsena(self, Mensaje):
-        """Recive nueva esena actual."""
-        EsenaActual = Mensaje.datain['scene-name']
-        SalvarValor("data/obs.json", "esena_actual", EsenaActual)
-        logger.info(f"Evento a esena: {EsenaActual}")
+    def EventoEcsena(self, Mensaje):
+        """Recive nueva escena actual."""
+        EscenaActual = Mensaje.datain['scene-name']
+        SalvarValor("data/obs.json", "escena_actual", EscenaActual)
+        logger.info(f"Evento a escena: {EscenaActual}")
         self.SalvarFuente()
         self.Dibujar()
 
@@ -171,11 +171,11 @@ class MiOBS:
             Data.append(elemento)
             SalvarValor("data/filtro_obs.json", Data, lista[elemento])
 
-    def CambiarEsena(self, Esena):
-        """Envia solisitud de cambiar de Esena."""
+    def CambiarEscena(self, Escena):
+        """Envia solisitud de cambiar de Escena."""
         if self.Conectado:
-            self.OBS.call(requests.SetCurrentScene(Esena))
-            logger.info(f"Cambiando a Esena: {Esena}")
+            self.OBS.call(requests.SetCurrentScene(Escena))
+            logger.info(f"Cambiando a Escena: {Escena}")
         else:
             logger.warning("OBS no Conectado")
 

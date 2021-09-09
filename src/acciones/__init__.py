@@ -20,7 +20,7 @@ def CargarAcciones():
         "mqtt": MensajeMQTT,
         # OS
         "os": AccionOS,
-        "notification": Notificacion,
+        "notificacion": Notificacion,
         # Precionas teclas
         "teclas": ComandoTeclas,
         "escribir": ComandoEscribir,
@@ -28,7 +28,7 @@ def CargarAcciones():
         "copiar": CopiarTexto,
         # Audio
         "reproducion": Reproducir,
-        "parar_reproducion": PararReproducion,
+        "detener_reproducion": PararReproducion,
         # Archivos
         "leer_valor": LeerValor,
         "escrivir_valor": EscrivirValor,

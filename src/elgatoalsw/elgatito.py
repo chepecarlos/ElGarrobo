@@ -112,7 +112,7 @@ class ElGatito(object):
             ListaAcciones['obs_host'] = self.OBS.Conectar
             ListaAcciones['obs_grabar'] = self.OBS.CambiarGrabacion
             ListaAcciones['obs_envivo'] = self.OBS.CambiarEnVivo
-            ListaAcciones['obs_esena'] = self.OBS.CambiarEsena
+            ListaAcciones['obs_escena'] = self.OBS.CambiarEscena
             ListaAcciones['obs_fuente'] = self.OBS.CambiarFuente
             ListaAcciones['obs_filtro'] = self.OBS.CambiarFiltro
             ListaAcciones['obs_server'] = self.OBS.Conectar
