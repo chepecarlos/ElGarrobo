@@ -37,7 +37,7 @@ class ElGatito(object):
         if self.Data is None:
             logger.error("No existe archivo config.json")
             os._exit(0)
-    
+
         self.acciones = dict()
 
         self.IniciarModulo()
@@ -60,6 +60,9 @@ class ElGatito(object):
         self.IniciarAcciones()
 
     def IniciarModulo(self):
+        """
+            Carga los modulos activos.
+        """
         logger.info(f"Configurando[Modulos]")
         Modulos = ObtenerArchivo('modulos.json')
 
@@ -117,7 +120,9 @@ class ElGatito(object):
         self.ListaAcciones = ListaAcciones
 
     def CargarData(self):
-        """Cargando Data para Dispisitivo."""
+        """
+            Cargando Data para Dispisitivo.
+        """
         logger.info("Cargando[Eventos]")
         if self.ModuloDeck:
             if 'deck_file' in self.Data:
@@ -128,12 +133,6 @@ class ElGatito(object):
                         f"Archivo de config de Strean Deck[{self.Data['teclados_file']}] no exste")
                     self.Data.pop('deck')
 
-            if 'folder_path' in self.Data:
-                self.PathActual = self.Data['folder_path']
-                self.Keys = {"nombre": self.Data['folder_path'],
-                             "folder_path": self.Data['folder_path']}
-                self.CargarFolder(self.Keys)
-
         if self.ModuloTeclado:
             if 'teclados_file' in self.Data:
                 ArchivoTeclado = self.Data['teclados_file']
@@ -142,6 +141,12 @@ class ElGatito(object):
                     logger.error(
                         f"Archivo de config de Teclado[{ArchivoTeclado}] no exste")
                     self.Data.pop('teclados')
+
+        if 'folder_path' in self.Data:
+            self.PathActual = self.Data['folder_path']
+            self.Keys = {"nombre": self.Data['folder_path'],
+                         "folder_path": self.Data['folder_path']}
+            self.CargarFolder(self.Keys)
 
         if self.ModuloMQTT:
             if 'mqtt_file' in self.Data:
@@ -153,14 +158,19 @@ class ElGatito(object):
                     self.Data.pop('mqtt')
 
     def CargarFolder(self, Data):
+        """
+            Carga recursivamente las configuracion de los diferentes eventos por dispositivos.
+        """
         ListaFolder = ObtenerListaFolder(Data['folder_path'])
         ListaArchivos = ObtenerListaArhivos(Data['folder_path'])
 
         if len(ListaArchivos) > 0:
             for Archivo in ListaArchivos:
-                self.CargarArchivos('teclados', Data, Archivo)
-                self.CargarArchivos('global', Data, Archivo)
-                self.CargarArchivos('deck', Data, Archivo)
+                if self.ModuloTeclado:
+                    self.CargarArchivos('teclados', Data, Archivo)
+                if self.ModuloDeck:
+                    self.CargarArchivos('global', Data, Archivo)
+                    self.CargarArchivos('deck', Data, Archivo)
 
         if len(ListaFolder) > 0:
             Data["folder"] = []
@@ -173,17 +183,22 @@ class ElGatito(object):
                 for Folder in Data["folder"]:
                     self.CargarFolder(Folder)
 
-    def CargarArchivos(self, Atributo, Data, Archivo):
-        if Atributo in self.Data:
-            for ArchivosTeclado in self.Data[Atributo]:
-                if ArchivosTeclado['file'] == Archivo:
-                    path = UnirPath(Data['folder_path'], Archivo)
-                    DataArchivo = ObtenerArchivo(path)
-                    DataAtributo = ArchivosTeclado['nombre']
-                    Data[DataAtributo] = DataArchivo
+    def CargarArchivos(self, Dispositivo, Data, Archivo):
+        """
+            Carga la informacion de un dispositivo
+        """
+        if Dispositivo in self.Data:
+            for ArchivoDispositivo in self.Data[Dispositivo]:
+                if ArchivoDispositivo['file'] == Archivo:
+                    Ruta = UnirPath(Data['folder_path'], Archivo)
+                    Info = ObtenerArchivo(Ruta)
+                    Atributo = ArchivoDispositivo['nombre']
+                    Data[Atributo] = Info
 
     def CargarTeclados(self):
-        """Confiurando Teclados Macros."""
+        """
+            Confiurando Teclados Macros.
+        """
         self.ListaTeclados = []
         if 'teclados' in self.Data:
             logger.info("Teclados[Cargando]")
@@ -354,6 +369,8 @@ class ElGatito(object):
                     DataIn = Opciones['data_in']
                     Opciones[DataIn] = respuesta
             respuesta = self.BuscarAccion(Comando)
+
+        # TODO: Hacer Macros en diferentes Hilos
     #     ProcesoAccion = multiprocessing.Process(target=self.HacerMacro, args=[ListaComando])
     #     ProcesoAccion.start()
 
@@ -462,7 +479,6 @@ class ElGatito(object):
             self.ListaMQTT.append(ServidorMQTT)
         for ServidorMQTT in self.ListaMQTT:
             ServidorMQTT.Conectar()
-
 
     def ReiniciarData(self):
         """
