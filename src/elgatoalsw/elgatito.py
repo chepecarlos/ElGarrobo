@@ -109,6 +109,7 @@ class ElGatito(object):
         # Acciones OBS
         if self.ModuloOBS:
             ListaAcciones['obs_conectar'] = self.OBS.Conectar
+            ListaAcciones['obs_desconectar'] = self.OBS.Desconectar
             ListaAcciones['obs_host'] = self.OBS.Conectar
             ListaAcciones['obs_grabar'] = self.OBS.CambiarGrabacion
             ListaAcciones['obs_envivo'] = self.OBS.CambiarEnVivo
