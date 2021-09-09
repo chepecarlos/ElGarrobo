@@ -13,6 +13,7 @@ class MiOBS:
 
     def __init__(self):
         """Crea coneccion basica con OBS Websocket."""
+        logger.info("OBS[Iniciando]")
         self.Reiniciar()
     
     def Reiniciar(self):

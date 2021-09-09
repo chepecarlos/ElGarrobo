@@ -14,6 +14,7 @@ from dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro
 from dispositivos.mideck.mi_streamdeck import MiStreamDeck
 from dispositivos.mideck.mi_deck_extra import DefinirFuente
 from dispositivos.mideck.mi_deck_imagen import DefinirImagenes
+from dispositivos.mimqtt.mi_mqtt import MiMQTT
 
 
 from acciones import CargarAcciones
@@ -30,22 +31,54 @@ class ElGatito(object):
 
     def __init__(self):
 
-        
-        logger.info(f"Cargando[config.json]")
+        logger.info(f"Configurando[config.json]")
 
         self.Data = ObtenerArchivo('config.json')
         if self.Data is None:
             logger.error("No existe archivo config.json")
             os._exit(0)
+    
         self.acciones = dict()
 
-        self.CargarOBS()
-        self.IniciarAcciones()
+        self.IniciarModulo()
+
         self.CargarData()
-        self.CargarTeclados()
-        self.CargarStreamDeck()
-        self.IniciarStreamDeck()
-        # self.IniciarMQTT()
+
+        if self.ModuloOBS:
+            self.CargarOBS()
+
+        if self.ModuloDeck:
+            self.CargarStreamDeck()
+            self.IniciarStreamDeck()
+
+        if self.ModuloTeclado:
+            self.CargarTeclados()
+
+        if self.ModuloMQTT:
+            self.IniciarMQTT()
+
+        self.IniciarAcciones()
+
+    def IniciarModulo(self):
+        logger.info(f"Configurando[Modulos]")
+        Modulos = ObtenerArchivo('modulos.json')
+
+        self.ModuloOBS = False
+        self.ModuloDeck = False
+        self.ModuloTeclado = False
+        self.ModuloMQTT = False
+
+        if 'obs' in Modulos:
+            self.ModuloOBS = Modulos['obs']
+
+        if 'deck' in Modulos:
+            self.ModuloDeck = Modulos['deck']
+
+        if 'teclado' in Modulos:
+            self.ModuloTeclado = Modulos['teclado']
+
+        if 'mqtt' in Modulos:
+            self.ModuloMQTT = Modulos['mqtt']
 
     def IniciarAcciones(self):
         """
@@ -62,49 +95,62 @@ class ElGatito(object):
         ListaAcciones['reiniciar_data'] = self.Reiniciar
         ListaAcciones['entrar_folder'] = self.Entrar_Folder
         ListaAcciones['regresar_folder'] = self.Regresar_Folder
-        ListaAcciones['actualizar_folder'] = self.Actualizar_Folder
-        ListaAcciones['siquiente_pagina'] = self.Siquiente_Pagina
-        ListaAcciones['anterior_pagina'] = self.Anterior_Pagina
-
-        # Acciones OBS
-        ListaAcciones['obs_conectar'] = self.OBS.Conectar
-        ListaAcciones['obs_host'] = self.OBS.Conectar
-        ListaAcciones['obs_grabar'] = self.OBS.CambiarGrabacion
-        ListaAcciones['obs_envivo'] = self.OBS.CambiarEnVivo
-        ListaAcciones['obs_esena'] = self.OBS.CambiarEsena
-        ListaAcciones['obs_fuente'] = self.OBS.CambiarFuente
-        ListaAcciones['obs_filtro'] = self.OBS.CambiarFiltro
-        ListaAcciones['obs_server'] = self.OBS.Conectar
 
         # Acciones Deck
-        ListaAcciones['deck_brillo'] = self.DeckBrillo
+        if self.ModuloDeck:
+            ListaAcciones['siquiente_pagina'] = self.Siquiente_Pagina
+            ListaAcciones['anterior_pagina'] = self.Anterior_Pagina
+            ListaAcciones['actualizar_pagina'] = self.Actualizar_Folder
+            ListaAcciones['deck_brillo'] = self.DeckBrillo
+
+        # Acciones OBS
+        if self.ModuloOBS:
+            ListaAcciones['obs_conectar'] = self.OBS.Conectar
+            ListaAcciones['obs_host'] = self.OBS.Conectar
+            ListaAcciones['obs_grabar'] = self.OBS.CambiarGrabacion
+            ListaAcciones['obs_envivo'] = self.OBS.CambiarEnVivo
+            ListaAcciones['obs_esena'] = self.OBS.CambiarEsena
+            ListaAcciones['obs_fuente'] = self.OBS.CambiarFuente
+            ListaAcciones['obs_filtro'] = self.OBS.CambiarFiltro
+            ListaAcciones['obs_server'] = self.OBS.Conectar
 
         self.ListaAcciones = ListaAcciones
 
     def CargarData(self):
         """Cargando Data para Dispisitivo."""
-        logger.info("Cargando Data")
-        if 'deck_file' in self.Data:
-            self.Data['deck'] = ObtenerArchivo(
-                self.Data['deck_file'])
-            if self.Data['deck'] is None:
-                logger.error(
-                    f"Archivo de config de Strean Deck[{self.Data['teclados_file']}] no exste")
-                self.Data.pop('deck')
+        logger.info("Cargando[Eventos]")
+        if self.ModuloDeck:
+            if 'deck_file' in self.Data:
+                self.Data['deck'] = ObtenerArchivo(
+                    self.Data['deck_file'])
+                if self.Data['deck'] is None:
+                    logger.error(
+                        f"Archivo de config de Strean Deck[{self.Data['teclados_file']}] no exste")
+                    self.Data.pop('deck')
 
-        if 'teclados_file' in self.Data:
-            self.Data['teclados'] = ObtenerArchivo(
-                self.Data['teclados_file'])
-            if self.Data['teclados'] is None:
-                logger.error(
-                    f"Archivo de config de Teclado[{self.Data['teclados_file']}] no exste")
-                self.Data.pop('teclados')
+            if 'folder_path' in self.Data:
+                self.PathActual = self.Data['folder_path']
+                self.Keys = {"nombre": self.Data['folder_path'],
+                             "folder_path": self.Data['folder_path']}
+                self.CargarFolder(self.Keys)
 
-        if 'folder_path' in self.Data:
-            self.PathActual = self.Data['folder_path']
-            self.Keys = {"nombre": self.Data['folder_path'],
-                         "folder_path": self.Data['folder_path']}
-            self.CargarFolder(self.Keys)
+        if self.ModuloTeclado:
+            if 'teclados_file' in self.Data:
+                ArchivoTeclado = self.Data['teclados_file']
+                self.Data['teclados'] = ObtenerArchivo(ArchivoTeclado)
+                if self.Data['teclados'] is None:
+                    logger.error(
+                        f"Archivo de config de Teclado[{ArchivoTeclado}] no exste")
+                    self.Data.pop('teclados')
+
+        if self.ModuloMQTT:
+            if 'mqtt_file' in self.Data:
+                ArchivoMQTT = self.Data['mqtt_file']
+                self.Data['mqtt'] = ObtenerArchivo(ArchivoMQTT)
+                if self.Data['mqtt'] is None:
+                    logger.error(
+                        f"Archivo de config de Teclado[{ArchivoMQTT}] no exste")
+                    self.Data.pop('mqtt')
 
     def CargarFolder(self, Data):
         ListaFolder = ObtenerListaFolder(Data['folder_path'])
@@ -150,13 +196,13 @@ class ElGatito(object):
 
     def CargarStreamDeck(self):
         """Configurando streamdeck."""
-        self.ListaDeck = []
         if 'fuente' in self.Data:
             DefinirFuente(self.Data['fuente'])
             DefinirImagenes(self.Data['imagenes'])
         if 'deck' in self.Data:
             logger.info("StreamDeck[Cargando]")
             Cantidad_Base = 0
+            self.ListaDeck = []
             for InfoDeck in self.Data['deck']:
                 DeckActual = MiStreamDeck(
                     InfoDeck, self.Evento, Cantidad_Base)
@@ -168,6 +214,8 @@ class ElGatito(object):
             # CargarDeck = IniciarStreamDeck(self.Data['deck'], self.Evento)
             # for Deck in CargarDeck:
             #     DeckActual = MiStreamDeck(Deck)
+        else:
+            self.ListaDeck = None
 
     def ActualizarDeck(self):
         for Deck in self.ListaDeck:
@@ -184,14 +232,15 @@ class ElGatito(object):
     def ActualizarDeckIcono(self):
 
         # TODO: Problemar cuando funcion se llama muchas veces el gifs empieza a fallar
-        for Deck in self.ListaDeck:
-            if 'streamdeck' in self.acciones:
-                Deck.ActualizarIconos(
-                    self.acciones['streamdeck'], self.desfaceDeck, Unido=True)
+        if self.ListaDeck is not None:
+            for Deck in self.ListaDeck:
+                if 'streamdeck' in self.acciones:
+                    Deck.ActualizarIconos(
+                        self.acciones['streamdeck'], self.desfaceDeck, Unido=True)
 
-            elif Deck.Nombre in self.acciones:
-                Deck.ActualizarIconos(
-                    self.acciones[Deck.Nombre], self.desfaceDeck)
+                elif Deck.Nombre in self.acciones:
+                    Deck.ActualizarIconos(
+                        self.acciones[Deck.Nombre], self.desfaceDeck)
 
     def LimpiarDeck(self):
         for Deck in self.ListaDeck:
@@ -407,11 +456,13 @@ class ElGatito(object):
 
     def IniciarMQTT(self):
         """Iniciar coneccion con Broker MQTT."""
-        if 'broker_mqtt' in self.Data:
-            self.MQTT = MiMQTT(self.Data['broker_mqtt'])
-        else:
-            self.MQTT = MiMQTT()
-        self.MQTT.Conectar()
+        for DataMQTT in self.Data['mqtt']:
+            self.ListaMQTT = []
+            ServidorMQTT = MiMQTT(DataMQTT, self.Evento)
+            self.ListaMQTT.append(ServidorMQTT)
+        for ServidorMQTT in self.ListaMQTT:
+            ServidorMQTT.Conectar()
+
 
     def ReiniciarData(self):
         """
@@ -441,13 +492,17 @@ class ElGatito(object):
         """
             Cierra el programa.
         """
-        logger.info("Saliendo ElGatoALSW - Adios :) ")
-        self.OBS.Desconectar()
-        # self.MQTT.Desconectar()
-        for Teclado in self.ListaTeclados:
-            Teclado.Desconectar()
-        for deck in self.ListaDeck:
-            deck.Desconectar()
+        logger.info("ElGatoALSW[Saliendo] - Adios :) ")
+        if self.ModuloOBS:
+            self.OBS.Desconectar()
+        if self.ModuloTeclado:
+            for Teclado in self.ListaTeclados:
+                Teclado.Desconectar()
+        if self.ModuloDeck:
+            for deck in self.ListaDeck:
+                deck.Desconectar()
+        if self.ModuloMQTT:
+            self.MQTT.Desconectar()
         # self.LimpiarDeck()
         # raise SystemExit
         os._exit(0)
