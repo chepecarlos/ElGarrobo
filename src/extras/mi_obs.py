@@ -92,7 +92,7 @@ class MiOBS:
         """Registra evento de OBS a una funcion."""
         self.OBS.register(Funcion, Evento)
 
-    def EventoEcsena(self, Mensaje):
+    def EventoEscena(self, Mensaje):
         """Recive nueva escena actual."""
         EscenaActual = Mensaje.datain['scene-name']
         SalvarValor("data/obs.json", "escena_actual", EscenaActual)
