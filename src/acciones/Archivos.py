@@ -20,7 +20,7 @@ def LeerValor(Opciones):
         Archivo = Opciones['archivo']
     if 'atributo' in Opciones:
         Atributo = Opciones['atributo']
-    Logger.info(f"Leer[{Atributo}]:{Archivo}")
+    Logger.info(f"Leer[{Archivo}]: {Atributo}")
     return ObtenerValor(Archivo, Atributo)
 
 
@@ -43,4 +43,6 @@ def EscrivirValor(Opciones):
         Atributo = Opciones['atributo']
     if 'valor' in Opciones:
         Valor = Opciones['valor']
+    
+    Logger.info(f"Escribir[{Archivo}] {Atributo}={Valor}")
     SalvarValor(Archivo, Atributo, Valor)
