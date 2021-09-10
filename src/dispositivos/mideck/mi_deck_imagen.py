@@ -47,10 +47,10 @@ def BuscarDirecionImagen(accion):
         ImagenEstado = accion['imagen_estado']
         NombreAccion = accion['accion']
         if 'opciones' in accion:
-            OpcionesAccion = accion['opciones'] 
+            OpcionesAccion = accion['opciones']
         else:
             OpcionesAccion = None
-        
+
         if NombreAccion.startswith('obs'):
             EstadoImagen = BuscarImagenOBS(NombreAccion, OpcionesAccion)
             if EstadoImagen:
@@ -69,31 +69,6 @@ def BuscarDirecionImagen(accion):
         NombreAccion = accion['accion']
         if NombreAccion in ListaImagenes:
             return ListaImagenes[NombreAccion]
-
-    if 'gif' in accion:
-        return None
-
-    if 'obs' in accion:
-        ActualizarImagenOBS(accion)
-
-    if 'icono' in accion:
-        return accion['icono']
-    elif 'opcion' in accion:
-        if accion['opcion'] == 'regresar':
-            return ImagenBase['regresar']
-        elif accion['opcion'] == 'siquiente':
-            return ImagenBase['siquiente']
-        elif accion['opcion'] == 'anterior':
-            return ImagenBase['anterior']
-    elif 'estado' in accion:
-        EstadoArchivo = ObtenerValor("data/estado.json", accion['nombre'])
-        if EstadoArchivo is not None:
-            accion['estado'] = EstadoArchivo
-
-        if accion['estado']:
-            return accion['icono_true']
-        else:
-            return accion['icono_false']
 
     return None
 
@@ -121,12 +96,12 @@ def PonerImagen(Imagen, NombreIcono, accion, Folder):
 
 def BuscarImagenOBS(NombreAccion, OpcionesAccion):
     Estado = None
-    ListaBasicas = ["obs_conectar", "obs_grabar", "obs_envivo",]
+
+    ListaBasicas = ["obs_conectar", "obs_grabar", "obs_envivo", ]
     for Basica in ListaBasicas:
         if NombreAccion == Basica:
             Estado = ObtenerValor("data/obs.json", Basica)
-    # if NombreAccion == "obs_conectar":
-    #     Estado = ObtenerValor("data/obs.json", "obs_conectar")
+    
     if NombreAccion == "obs_escena":
         if 'escena' in OpcionesAccion:
             EscenaActual = OpcionesAccion['escena']
@@ -135,64 +110,22 @@ def BuscarImagenOBS(NombreAccion, OpcionesAccion):
                 Estado = True
             else:
                 Estado = False
+    elif NombreAccion == 'obs_fuente':
+        if 'fuente' in OpcionesAccion:
+            FuenteActual = OpcionesAccion['fuente']
+            Estado = ObtenerValor("data/obs_fuente.json", FuenteActual)
+    elif NombreAccion == 'obs_filtro':
+        if 'fuente' in OpcionesAccion:
+            Fuente = OpcionesAccion['fuente']
+        if 'filtro' in OpcionesAccion:
+            Filtro = OpcionesAccion['filtro']
+        if Fuente is not None and Filtro is not None:
+            Estado = ObtenerValor("data/obs_filtro.json", [Fuente, Filtro])
 
     if Estado is None:
         Estado = False
 
     return Estado
-
-# def PonerTexto(Imagen,  DirecionImagen, accion):
-#     """Agrega Texto a Botones de StreamDeck."""
-#     Titulo = str(accion['titulo'])
-#     Titulo_Color = "white"
-#     Tamanno = 40
-#     Alinear = "centro"
-#     Borde_Color = 'black'
-#     Borde_Grosor = 5
-#     if DirecionImagen is not None:
-#         Alinear = "abajo"
-#         Tamanno = 20
-
-#     dibujo = ImageDraw.Draw(Imagen)
-
-#     if 'titulo_opciones' in accion:
-#         Opciones = accion['titulo_opciones']
-#         if 'tamanno' in Opciones:
-#             Tamanno = Opciones['tamanno']
-#         if 'alinear' in Opciones:
-#             Alinear = Opciones['alinear']
-#         if 'color' in Opciones:
-#             Titulo_Color = Opciones['color']
-#         if 'borde_color' in Opciones:
-#             Borde_Color = Opciones['borde_color']
-#         if 'borde_grosor' in Opciones:
-#             Borde_Grosor = Opciones['borde_grosor']
-
-#     # TODO: hacer funcion mas limpia
-#     while True:
-#         fuente = ImageFont.truetype(FuenteIcono, Tamanno)
-#         Titulo_ancho, Titulo_alto = dibujo.textsize(Titulo, font=fuente)
-#         if Titulo_ancho < Imagen.width:
-#             break
-#         Tamanno -= 1
-
-#     Horizontal = (Imagen.width - Titulo_ancho) // 2
-
-#     if Alinear == "centro":
-#         Vertical = (Imagen.height - Titulo_alto - Tamanno/2) // 2
-#     elif Alinear == "ariba":
-#         Vertical = 0
-#     else:
-#         Vertical = Imagen.height - Titulo_alto - 2
-#     PosicionTexto = (Horizontal, Vertical)
-
-#     dibujo.text(PosicionTexto, text=Titulo, font=fuente,
-#                 fill=Titulo_Color, stroke_width=Borde_Grosor, stroke_fill=Borde_Color)
-
-
-# def DefinirFuente(Fuente):
-#     global FuenteIcono
-#     FuenteIcono = UnirPath(ObtenerFolderConfig(), Fuente)
 
 
 def DefinirImagenes(Data):
@@ -205,42 +138,3 @@ def DefinirImagenes(Data):
 def LimpiarIcono(Deck, indice):
     ImagenBoton = PILHelper.create_image(Deck)
     Deck.set_key_image(indice, PILHelper.to_native_format(Deck, ImagenBoton))
-
-
-def ActualizarImagenOBS(accion):
-    opcion = accion['obs']
-    if opcion == 'esena':
-        EsenaActual = ObtenerValor("data/obs.json", "esena_actual")
-        if accion['esena'] == EsenaActual:
-            accion['estado'] = True
-        else:
-            accion['estado'] = False
-    elif opcion == 'fuente':
-        EstadoFuente = ObtenerValor("data/fuente_obs.json", accion['fuente'])
-        if EstadoFuente is not None:
-            accion['estado'] = EstadoFuente
-        else:
-            accion['estado'] = False
-    elif opcion == 'filtro':
-        Data = list()
-        Data.append(accion['fuente'])
-        Data.append(accion['filtro'])
-        EstadoFiltro = ObtenerValor("data/filtro_obs.json", Data)
-        if EstadoFiltro is not None:
-            accion['estado'] = EstadoFiltro
-        else:
-            accion['estado'] = False
-    elif opcion == 'grabando':
-        ActualizarEstado(accion, "grabando")
-    elif opcion == 'envivo':
-        ActualizarEstado(accion, "envivo")
-    elif opcion == 'conectar':
-        ActualizarEstado(accion, "conectado")
-
-
-def ActualizarEstado(accion, atributo):
-    Estado = ObtenerValor("data/obs.json", atributo)
-    if Estado:
-        accion['estado'] = True
-    else:
-        accion['estado'] = False
