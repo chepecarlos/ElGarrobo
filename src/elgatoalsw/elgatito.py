@@ -339,20 +339,24 @@ class ElGatito(object):
                 logger.info("Evento[no accion]")
 
     def BuscarAccion(self, accion):
-        NombreAccion = accion['accion']
-        if NombreAccion in self.ListaAcciones:
-            if 'nombre' in accion:
-                Nombre = accion['nombre']
-                logger.info(f"Accion[{NombreAccion}] - {Nombre}")
+        if 'accion' in accion:
+            NombreAccion = accion['accion']
+            if NombreAccion in self.ListaAcciones:
+                if 'nombre' in accion:
+                    Nombre = accion['nombre']
+                    logger.info(f"Accion[{NombreAccion}] - {Nombre}")
+                else:
+                    logger.info(f"Accion[{NombreAccion}]")
+                if 'opciones' in accion:
+                    OpcionesAccion = accion['opciones']
+                else:
+                    OpcionesAccion = {}
+                return self.ListaAcciones[NombreAccion](OpcionesAccion)
             else:
-                logger.info(f"Accion[{NombreAccion}]")
-            if 'opciones' in accion:
-                OpcionesAccion = accion['opciones']
-            else:
-                OpcionesAccion = {}
-            return self.ListaAcciones[NombreAccion](OpcionesAccion)
+                logger.info(f"Accion[No Encontrada] {NombreAccion}")
         else:
-            logger.info(f"No Accion[{NombreAccion}]")
+            logger.info(f"Accion[No Atributo]")
+
         return None
 
     def AccionesMacros(self, ListaComando):
@@ -448,19 +452,22 @@ class ElGatito(object):
         if 'streamdeck' in self.acciones:
             UltimoDeck = self.ListaDeck[-1]
             Cantidad = UltimoDeck.Base + UltimoDeck.Cantidad
-            UltimaAccion = self.acciones['streamdeck'][-1]
+            UltimaAccion = max(
+                self.acciones['streamdeck'], key=lambda x: int(x['key'])
+            )
+            # TODO Limpiar codigo sucio 
             if Direcion == 'siquiente':
                 self.desfaceDeck += Cantidad
-                if self.desfaceDeck >= UltimaAccion['key']:
+                if self.desfaceDeck - 1 >= UltimaAccion['key']:
                     self.desfaceDeck -= Cantidad
                     return
-                logger.info("Siquiente Pagina")
+                logger.info("Deck[Siquiente Pagina]")
             elif Direcion == 'anterior':
                 self.desfaceDeck -= Cantidad
                 if self.desfaceDeck < 0:
                     self.desfaceDeck = 0
                     return
-                logger.info("Anterior Pagina")
+                logger.info("Deck[Anterior Pagina]")
             self.LimpiarDeck()
             self.ActualizarDeck()
         else:
