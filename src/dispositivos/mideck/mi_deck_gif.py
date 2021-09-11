@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageSequence
 from StreamDeck.ImageHelpers import PILHelper
 from fractions import Fraction
 
-from .mi_deck_extra import PonerTexto
+from .mi_deck_extra import PonerTexto, BuscarDirecionImagen
 
 from MiLibrerias import ConfigurarLogging
 from MiLibrerias import ObtenerValor, UnirPath, ObtenerFolderConfig, RelativoAbsoluto
@@ -70,28 +70,26 @@ class DeckGif(threading.Thread):
 
     def CargarGif(self, accion):
         """Extra frame de un gif y los guarda en una lista."""
-        # TODO: agregar titulo a gif
+        # TODO: Errro con git con estado no se desactiva
+        DirecionGif = BuscarDirecionImagen(accion)
+       
+        if DirecionGif is not None and not DirecionGif.endswith('gif'):
+            return
+
         Gif = list()
-        if 'imagen' in accion:
-            DirecionGif = accion['imagen']
-        else:
-            return
-
-        if not DirecionGif.endswith('gif'):
-            return
-
         ColorFondo = 'black'
         if "imagen_opciones" in accion:
             Opciones = accion['imagen_opciones']
             if 'fondo' in Opciones:
                 ColorFondo = Opciones['fondo']
-        
+
         DirecionGif = RelativoAbsoluto(DirecionGif, self.Deck.Folder)
         DirecionGif = UnirPath(ObtenerFolderConfig(), DirecionGif)
         if os.path.exists(DirecionGif):
             GifArchivo = Image.open(DirecionGif)
             for frame in ImageSequence.Iterator(GifArchivo):
-                Gif_frame = PILHelper.create_scaled_image(self.Deck, frame, background=ColorFondo)
+                Gif_frame = PILHelper.create_scaled_image(
+                    self.Deck, frame, background=ColorFondo)
                 if 'titulo' in accion:
                     PonerTexto(Gif_frame, accion, True)
                 ImagenNativa = PILHelper.to_native_format(self.Deck, Gif_frame)
@@ -99,7 +97,7 @@ class DeckGif(threading.Thread):
                 Gif.append(ImagenNativa)
             accion['gif_cargado'] = itertools.cycle(Gif)
         else:
-            logger.warning(f"Gifs[No existe] {DirecionGif}")
+            logger.warning(f"Deck[No Gifs] {DirecionGif}")
 
     def Desconectar(self):
         self.Limpiar()

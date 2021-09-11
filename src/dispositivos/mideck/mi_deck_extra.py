@@ -2,6 +2,12 @@ from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.ImageHelpers import PILHelper
 
 from MiLibrerias import ObtenerFolderConfig, UnirPath
+from MiLibrerias import ObtenerValor, ObtenerArchivo
+
+
+from MiLibrerias import ConfigurarLogging
+
+logger = ConfigurarLogging(__name__)
 
 
 def PonerTexto(Imagen, accion, DirecionImagen=None):
@@ -67,3 +73,70 @@ def DefinirFuente(Fuente):
     """Definir Fuente para StreanDeck"""
     global FuenteIcono
     FuenteIcono = UnirPath(ObtenerFolderConfig(), Fuente)
+
+
+def BuscarDirecionImagen(accion):
+
+    if 'imagen_estado' in accion:
+        ImagenEstado = accion['imagen_estado']
+        NombreAccion = accion['accion']
+        OpcionesAccion = None
+        if 'opciones' in accion:
+            OpcionesAccion = accion['opciones']
+
+        if NombreAccion.startswith('obs'):
+            EstadoImagen = BuscarImagenOBS(NombreAccion, OpcionesAccion)
+            if EstadoImagen:
+                DirecionImagen = ImagenEstado['imagen_true']
+            else:
+                DirecionImagen = ImagenEstado['imagen_false']
+
+            return DirecionImagen
+
+    if 'imagen' in accion:
+        DirecionImagen = accion['imagen']
+        return DirecionImagen
+    elif 'accion' in accion:
+        NombreAccion = accion['accion']
+        if NombreAccion in ListaImagenes:
+            return ListaImagenes[NombreAccion]
+
+    return None
+
+
+def BuscarImagenOBS(NombreAccion, OpcionesAccion):
+    Estado = None
+
+    ListaBasicas = ["obs_conectar", "obs_grabar", "obs_envivo", ]
+    for Basica in ListaBasicas:
+        if NombreAccion == Basica:
+            Estado = ObtenerValor("data/obs.json", Basica)
+
+    if NombreAccion == "obs_escena":
+        if 'escena' in OpcionesAccion:
+            EscenaActual = OpcionesAccion['escena']
+            EscenaActiva = ObtenerValor("data/obs.json", "obs_escena")
+            if EscenaActual == EscenaActiva:
+                Estado = True
+            else:
+                Estado = False
+    elif NombreAccion == 'obs_fuente':
+        if 'fuente' in OpcionesAccion:
+            FuenteActual = OpcionesAccion['fuente']
+            Estado = ObtenerValor("data/obs_fuente.json", FuenteActual)
+    elif NombreAccion == 'obs_filtro':
+        if 'fuente' in OpcionesAccion:
+            Fuente = OpcionesAccion['fuente']
+        if 'filtro' in OpcionesAccion:
+            Filtro = OpcionesAccion['filtro']
+        if Fuente is not None and Filtro is not None:
+            Estado = ObtenerValor("data/obs_filtro.json", [Fuente, Filtro])
+
+    if Estado is None:
+        Estado = False
+
+    return Estado
+
+def DefinirImagenes():
+    global ListaImagenes
+    ListaImagenes = ObtenerArchivo("imagenes_base.json")

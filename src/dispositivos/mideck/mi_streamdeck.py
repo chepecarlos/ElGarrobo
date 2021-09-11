@@ -5,6 +5,7 @@ from StreamDeck.Transport.Transport import TransportError
 
 from .mi_deck_gif import DeckGif
 from .mi_deck_imagen import ActualizarIcono, LimpiarIcono
+from .mi_deck_extra import BuscarDirecionImagen
 
 from MiLibrerias import ConfigurarLogging
 from MiLibrerias import ObtenerValor
@@ -65,20 +66,21 @@ class MiStreamDeck(object):
                     key_desface = i + self.Base + desface
                     Dibujar = list(filter(lambda accion: accion['key'] == key_desface, acciones))
                     # TODO: Cargar primer los Gifs # if AccionAcual is not None:
-                    # if AccionAcual is not None:
-                   
+                    
                     if Dibujar:
                         AccionAcual = Dibujar[0]
-                        if 'imagen' in AccionAcual:
-                            DirecionImagen = AccionAcual['imagen']
-                            if DirecionImagen.endswith(".gif"):
-                                self.DeckGif.ActualizarGif(i, AccionAcual)
-                            else:
-                                ActualizarIcono(self.Deck, i, AccionAcual)
-                        if 'gif' in AccionAcual:
+                        # if 'imagen' in AccionAcual:
+                            # DirecionImagen = AccionAcual['imagen']
+                        DirecionImagen = BuscarDirecionImagen(AccionAcual)
+                        if DirecionImagen is not None and DirecionImagen.endswith(".gif"):
+                            print(DirecionImagen)
                             self.DeckGif.ActualizarGif(i, AccionAcual)
                         else:
                             ActualizarIcono(self.Deck, i, AccionAcual)
+                        # if 'gif' in AccionAcual:
+                        #     self.DeckGif.ActualizarGif(i, AccionAcual)
+                        # else:
+                        #     ActualizarIcono(self.Deck, i, AccionAcual)
             else:
                 pass
 

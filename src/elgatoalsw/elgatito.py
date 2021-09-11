@@ -12,8 +12,7 @@ from extras.mi_obs import MiOBS
 
 from dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro
 from dispositivos.mideck.mi_streamdeck import MiStreamDeck
-from dispositivos.mideck.mi_deck_extra import DefinirFuente
-from dispositivos.mideck.mi_deck_imagen import DefinirImagenes
+from dispositivos.mideck.mi_deck_extra import DefinirFuente, DefinirImagenes
 from dispositivos.mimqtt.mi_mqtt import MiMQTT
 
 
@@ -214,7 +213,7 @@ class ElGatito(object):
         """Configurando streamdeck."""
         if 'fuente' in self.Data:
             DefinirFuente(self.Data['fuente'])
-            DefinirImagenes(self.Data['imagenes'])
+            DefinirImagenes()
         if 'deck' in self.Data:
             logger.info("StreamDeck[Cargando]")
             Cantidad_Base = 0
