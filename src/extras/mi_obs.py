@@ -225,7 +225,6 @@ class MiOBS:
         """Envia solisitud de cambiar estado de filtro."""
         Filtro = None
         Fuente = None
-        print(Opciones)
         if 'filtro' in Opciones:
             Filtro = Opciones['filtro']
         if 'fuente' in Opciones:
