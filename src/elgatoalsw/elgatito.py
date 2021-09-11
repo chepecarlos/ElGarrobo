@@ -86,7 +86,7 @@ class ElGatito(object):
         """
             Inicializa las acciones del Sistema en dict nombre de la accion y la funcion asociada
         """
-        logger.info("Acciones[Cargando]")
+        logger.info("ElGatoALSW[Acciones] Cargando")
         ListaAcciones = CargarAcciones()
 
         # Acciones Macro
@@ -164,7 +164,7 @@ class ElGatito(object):
         ListaFolder = ObtenerListaFolder(Data['folder_path'])
         ListaArchivos = ObtenerListaArhivos(Data['folder_path'])
 
-        if len(ListaArchivos) > 0:
+        if ListaArchivos is not None:
             for Archivo in ListaArchivos:
                 if self.ModuloTeclado:
                     self.CargarArchivos('teclados', Data, Archivo)
@@ -172,7 +172,7 @@ class ElGatito(object):
                     self.CargarArchivos('global', Data, Archivo)
                     self.CargarArchivos('deck', Data, Archivo)
 
-        if len(ListaFolder) > 0:
+        if ListaFolder is not None:
             Data["folder"] = []
             for Folder in ListaFolder:
                 pathActual = UnirPath(Data['folder_path'], Folder)
@@ -480,9 +480,9 @@ class ElGatito(object):
 
     def IniciarMQTT(self):
         """Iniciar coneccion con Broker MQTT."""
+        self.ListaMQTT = []
         for DataMQTT in self.Data['mqtt']:
-            self.ListaMQTT = []
-            ServidorMQTT = MiMQTT(DataMQTT, self.Evento)
+            ServidorMQTT = MiMQTT(DataMQTT, self.BuscarAccion)
             self.ListaMQTT.append(ServidorMQTT)
         for ServidorMQTT in self.ListaMQTT:
             ServidorMQTT.Conectar()

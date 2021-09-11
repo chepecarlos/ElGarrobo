@@ -67,7 +67,7 @@ def main():
         try:
             ElGatito()
         except Exception as error:
-            logger.exception(f"Errro[{error}]")
+            logger.exception(f"Error Main[{error}]")
 
 
 if __name__ == "__main__":
