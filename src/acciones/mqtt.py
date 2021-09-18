@@ -11,6 +11,10 @@ def MensajeMQTT(Opciones):
     """
     Mensaje = None
     Topic = None
+    Usuario = None
+    Contrasenna=None
+    Servidor=None
+    Puerto=None
     if 'mensaje' in Opciones:
         Mensaje = Opciones['mensaje']
     elif 'opciones' in Opciones:
@@ -19,6 +23,18 @@ def MensajeMQTT(Opciones):
     
     if 'topic' in Opciones:
         Topic = Opciones['topic']
+
+    if 'usuario' is Opciones:
+        Usuario = Opciones['usuario']
+    
+    if 'servidor' is Opciones:
+        Servidor = Opciones['servidor']
+    
+    if 'puerto' is Opciones:
+        Puerto = Opciones['puwero']
+    
+    if 'contrasenna' is Opciones:
+        Contrasenna = Opciones['Contrasenna']
     
     if Mensaje is not None and Topic is not None:
-        EnviarMensajeMQTT(Topic, Mensaje)
+        EnviarMensajeMQTT(Topic, Mensaje,  Usuario, Contrasenna, Servidor, Puerto)
