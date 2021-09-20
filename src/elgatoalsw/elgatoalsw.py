@@ -22,20 +22,13 @@ if sys.version_info[0] < 3:
 
 def Parametros():
 
-    parser = argparse.ArgumentParser(
-        description='Heramientas de Macros de ALSW')
-    parser.add_argument('--nodepurar', '-nd',
-                        help="Acivar modo sin depuracion", action="store_true")
-    parser.add_argument(
-        '--proyecto', '-p', help="Configurar folder a proyecto actual", action="store_true")
-    parser.add_argument(
-        '--news', '-n', help="Configurar folder a noticias actual")
-    parser.add_argument('--striming', '-s',
-                        help="Configurar folder a noticias actual")
-    parser.add_argument('--mododemo', '-dd',
-                        help="Sistema modo demo", action="store_true")
-    parser.add_argument(
-        '--gui', '-g', help="Sistema interface grafica", action="store_true")
+    parser = argparse.ArgumentParser(description="Heramientas de Macros de ALSW")
+    parser.add_argument("--nodepurar", "-nd", help="Acivar modo sin depuracion", action="store_true")
+    parser.add_argument("--proyecto", "-p", help="Configurar folder a proyecto actual", action="store_true")
+    parser.add_argument("--news", "-n", help="Configurar folder a noticias actual")
+    parser.add_argument("--striming", "-s", help="Configurar folder a noticias actual")
+    parser.add_argument("--mododemo", "-dd", help="Sistema modo demo", action="store_true")
+    parser.add_argument("--gui", "-g", help="Sistema interface grafica", action="store_true")
 
     return parser.parse_args()
 
