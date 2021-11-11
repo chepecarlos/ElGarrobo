@@ -1,6 +1,8 @@
 """Operaciones de Sistema Operativo."""
 import os
+from MiLibrerias import ConfigurarLogging
 
+Logger = ConfigurarLogging(__name__)
 
 def AccionOS(Opciones):
     """
@@ -11,4 +13,5 @@ def AccionOS(Opciones):
     """
     if "comando" in Opciones:
         Comando = Opciones["comando"]
+        Logger.info(f"OS[{Comando}]")
         os.system(Comando)
