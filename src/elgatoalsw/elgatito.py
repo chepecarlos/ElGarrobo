@@ -252,12 +252,12 @@ class ElGatito(object):
         ListaDispositivo = ["teclados", "global", "deck"]
         Data = self.Keys
         Folderes = Folder.split("/")
-        print(Folderes)
         if len(Folderes) > 0:
             Data = self.BuscarDentroFolder(Folderes, Data)
             if Data is not None:
                 Encontrado = False
                 for Dispositivo in ListaDispositivo:
+                    # SalvarArchivo("Data.json")
                     Estado = self.CargarAcciones(Dispositivo, Data)
                     Encontrado = Estado or Encontrado
         if "streamdeck" in self.acciones:

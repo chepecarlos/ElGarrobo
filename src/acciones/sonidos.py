@@ -16,7 +16,7 @@ ListaSonidos = []
 
 def AccionSonido(AccionActual, Folder):
     """Acciones de Sonido."""
-    if AccionActual['sonido'] == 'parar':
+    if AccionActual["sonido"] == "parar":
         PararReproducion()
     else:
         Reproducir(AccionActual, Folder)
@@ -41,40 +41,39 @@ def Sonido(Archivo, Ganancia):
 
 def Reproducir(opciones):
     """
-        Crear un susproceso para Reproduccion.
+    Crear un susproceso para Reproduccion.
 
-        sonido -> stl
-            direcion del sonido
-        ganancia -> float
-            ganancia en decibeles, a aumentar o bajar el sonido
-        folder -> stl
-            direcion del folder del sonido
+    sonido -> stl
+        direcion del sonido
+    ganancia -> float
+        ganancia en decibeles, a aumentar o bajar el sonido
+    folder -> stl
+        direcion del folder del sonido
     """
     global ListaSonidos
-    if 'sonido' in opciones:
-        Archivo = opciones['sonido']
+    if "sonido" in opciones:
+        Archivo = opciones["sonido"]
 
         Ganancia = 0
-        if 'ganancia' in opciones:
-            Ganancia = opciones['ganancia']
+        if "ganancia" in opciones:
+            Ganancia = opciones["ganancia"]
 
-        if 'folder' in opciones:
-            Folder = opciones['folder']
+        if "folder" in opciones:
+            Folder = opciones["folder"]
         else:
             Folder = ObtenerFolderConfig()
         # TODO recorde del audio
         # Archivo = RelativoAbsoluto(Archivo, Folder)
         Archivo = UnirPath(Folder, Archivo)
 
-        PSonido = multiprocessing.Process(
-            target=Sonido, args=[Archivo, Ganancia])
+        PSonido = multiprocessing.Process(target=Sonido, args=[Archivo, Ganancia])
         PSonido.start()
         ListaSonidos.append(PSonido)
 
 
 def PararReproducion(opciones):
     """
-        Parar todos los susprocesos de repoduccion de sonido.
+    Parar todos los susprocesos de repoduccion de sonido.
     """
     global ListaSonidos
     logger.info(f"Parar Sonidos [{len(ListaSonidos)}]")

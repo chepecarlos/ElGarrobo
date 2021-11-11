@@ -11,7 +11,7 @@ from .mqtt import MensajeMQTT
 
 def CargarAcciones():
     """
-        Carga las acciones en una dic con nombre de accion y funcion asociada.
+    Carga las acciones en una dic con nombre de accion y funcion asociada.
     """
 
     return {
@@ -34,5 +34,5 @@ def CargarAcciones():
         "escrivir_valor": EscrivirValor,
         # Manejo de Ventanas
         "cerrar_ventana": CerrarVentana,
-        "mostar_ventana": MostarVentana
+        "mostar_ventana": MostarVentana,
     }

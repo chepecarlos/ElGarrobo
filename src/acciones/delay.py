@@ -16,6 +16,7 @@ def Delay(Opciones):
     
     if "tiempo" in Opciones:
         tiempo = Opciones["tiempo"]
+        # TODO: Agregar try
         if type(tiempo) is str:
             tiempo = sum(x * int(t) for x, t in zip([3600, 60, 1], tiempo.split(":")))
 

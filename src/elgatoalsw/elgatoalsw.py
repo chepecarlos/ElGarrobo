@@ -1,5 +1,3 @@
-#!/home/chepecarlos/5.Programas/2.Heramientas/1.ElGatoALSW/venv/bin/python
-# /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import argparse

@@ -2,12 +2,13 @@
 # sudo apt install xdotool
 from .accion_os import AccionOS
 from MiLibrerias import ConfigurarLogging
+
 Logger = ConfigurarLogging(__name__)
 
 
 def CerrarVentana(Opciones):
     """
-        Activa el cerrar ventanas con el cursor
+    Activa el cerrar ventanas con el cursor
     """
     Logger.info("Seleciona programa a carrar")
     AccionOS({"comando": "xdotool selectwindow windowclose"})
@@ -15,18 +16,19 @@ def CerrarVentana(Opciones):
 
 def MostarVentana(Opciones):
     """
-        Cambia a ventana que contenga el titulo
+    Cambia a ventana que contenga el titulo
 
-        titulo -> stl
-            titulo a buscar 
+    titulo -> stl
+        titulo a buscar
     """
     Titulo = ""
-    if 'titulo' in Opciones:
-        Titulo = Opciones['titulo']
+    if "titulo" in Opciones:
+        Titulo = Opciones["titulo"]
     Comando = f'xdotool search --onlyvisible "{Titulo}" windowactivate'
     Logger.info(f"Buscando ventana[{Titulo}]")
     AccionOS({"comando": Comando})
     # Agregar mensaje si no esta la venta
+
 
 # TODO: Marcar Ventana favorita
 # xdotool selectwindow
