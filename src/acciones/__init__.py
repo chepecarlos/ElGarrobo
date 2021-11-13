@@ -7,7 +7,7 @@ from .Archivos import LeerValor, EscrivirValor
 from .operaciones import OperacionConstrain
 from .ventanas import CerrarVentana, MostarVentana
 from .mqtt import MensajeMQTT
-from .pulse import CambiarVolumen, CambiarMute
+from .pulse import CambiarVolumen, CambiarMute, SalvarPulse
 
 
 def CargarAcciones():
@@ -32,7 +32,8 @@ def CargarAcciones():
         "detener_reproducion": PararReproducion,
         # Pulse
         "volumen": CambiarVolumen,
-        "mute": CambiarMute, 
+        "mute": CambiarMute,
+        "salvar_pulse": SalvarPulse,
         # Archivos
         "leer_valor": LeerValor,
         "escrivir_valor": EscrivirValor,

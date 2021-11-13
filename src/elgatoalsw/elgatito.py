@@ -36,6 +36,7 @@ class ElGatito(object):
 
         self.CargarData()
 
+
         if self.ModuloOBS:
             self.CargarOBS()
 
@@ -50,6 +51,9 @@ class ElGatito(object):
             self.IniciarMQTT()
 
         self.IniciarAcciones()
+        
+        if self.ModuloPulse:
+            self.ListaAcciones["salvar_pulse"]({})
 
     def IniciarModulo(self):
         """
@@ -63,6 +67,7 @@ class ElGatito(object):
         self.ModuloTeclado = False
         self.ModuloMQTT = False
         self.ModuloMQTTEstado = False
+        self.ModuloPulse = False
 
         if Modulos is not None:
             if "obs" in Modulos:
@@ -79,6 +84,9 @@ class ElGatito(object):
 
             if "mqtt_estado" in Modulos:
                 self.ModuloMQTTEstado = Modulos["mqtt_estado"]
+                
+            if "pulse" in Modulos:
+                self.ModuloPulse = Modulos["pulse"]
 
     def IniciarAcciones(self):
         """

@@ -1,6 +1,10 @@
+import subprocess as sp
+import re
+
 from .accion_os import AccionOS
 import logging
 from MiLibrerias import ConfigurarLogging
+from MiLibrerias import ObtenerValor, SalvarValor
 
 Logger = ConfigurarLogging(__name__)
 
@@ -32,6 +36,7 @@ def CambiarVolumen(Opciones):
         return
     
     AccionOS({"comando": comando})
+    SalvarPulse()
 
 
 def CambiarMute(Opciones):
@@ -51,3 +56,46 @@ def CambiarMute(Opciones):
     comando = f"pactl set-{Tipo}-mute {Dispositivo} toggle"
 
     AccionOS({"comando": comando})
+    SalvarPulse()
+
+def SalvarPulse(Opciones=None):
+    Logger.info("Pulse[Salvar]")
+
+    ListaDispisitovos = DataPulse()
+
+    for Dispositivo in ListaDispisitovos:
+        Texto = "Error"
+        if Dispositivo.Mute:
+            Texto = "Mute"
+        elif Dispositivo.Volumen is not None:
+            Texto = f"{Dispositivo.Volumen}%"
+        
+        SalvarValor("data/pulse.json", Dispositivo.Nombre, Texto)
+
+def DataPulse():
+    Salida = sp.getoutput('pactl list sinks')
+    Salida = Salida.split("Destino")
+    ListaDispisitovos = [] 
+    for Data in Salida:
+        Lineas = Data.split('\n')
+        Actual = Dispositivo()
+        for Linea in Lineas:
+            if "Nombre:" in Linea:
+                Actual.Nombre = Linea.replace('Nombre:','').strip()
+            if "Volumen:" in Linea:
+                Numero = re.findall("(100|[0-9][0-9]|[0-9])%", Linea)
+                Actual.Volumen = Numero[0]
+            if "Silencio:" in Linea:
+                if "sí" in Linea:
+                    Actual.Mute = True
+                else:
+                    Actual.Mute = False
+        if Actual.Volumen is not None:
+            ListaDispisitovos.append(Actual)
+
+    return ListaDispisitovos
+
+class Dispositivo(object):
+    Nombre = None
+    Volumen = None
+    Mute = None

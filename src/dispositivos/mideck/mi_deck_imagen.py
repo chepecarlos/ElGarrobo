@@ -18,11 +18,11 @@ def ActualizarIcono(Deck, indice, accion):
     global ImagenBase
     global ListaImagenes
 
-    ColorFondo = 'black'
+    ColorFondo = "black"
     if "imagen_opciones" in accion:
-        Opciones = accion['imagen_opciones']
-        if 'fondo' in Opciones:
-            ColorFondo = Opciones['fondo']
+        Opciones = accion["imagen_opciones"]
+        if "fondo" in Opciones:
+            ColorFondo = Opciones["fondo"]
 
     ImagenBoton = PILHelper.create_image(Deck, background=ColorFondo)
 
@@ -32,21 +32,18 @@ def ActualizarIcono(Deck, indice, accion):
         if DirecionImagen.endswith(".gif"):
             # TODO: Meter proceso gif adentro
             return None
-    
+
     PonerImagen(ImagenBoton, DirecionImagen, accion, Deck.Folder)
 
-    if 'icono_texto' in accion:
-        Texto = ObtenerValor(
-            accion['icono_texto']['archivo'], accion['icono_texto']['atributo'])
-        PonerTexto(ImagenBoton, accion, DirecionImagen)
+    if "cargar_texto" in accion:
+        TextoCargar = accion["cargar_texto"]
+        if 'archivo' in TextoCargar and "atributo" in TextoCargar:
+            accion["titulo"] = ObtenerValor(TextoCargar["archivo"], TextoCargar["atributo"])
 
-    if 'titulo' in accion:
+    if "titulo" in accion:
         PonerTexto(ImagenBoton, accion, DirecionImagen)
 
     Deck.set_key_image(indice, PILHelper.to_native_format(Deck, ImagenBoton))
-
-
-
 
 
 def PonerImagen(Imagen, NombreIcono, accion, Folder):
@@ -57,7 +54,7 @@ def PonerImagen(Imagen, NombreIcono, accion, Folder):
 
     if os.path.exists(DirecionIcono):
         Icono = Image.open(DirecionIcono).convert("RGBA")
-        if 'titulo' in accion:
+        if "titulo" in accion:
             Icono.thumbnail((Imagen.width, Imagen.height - 20), Image.LANCZOS)
         else:
             Icono.thumbnail((Imagen.width, Imagen.height), Image.LANCZOS)
@@ -68,8 +65,6 @@ def PonerImagen(Imagen, NombreIcono, accion, Folder):
 
     IconoPosicion = ((Imagen.width - Icono.width) // 2, 0)
     Imagen.paste(Icono, IconoPosicion, Icono)
-
-
 
 
 def LimpiarIcono(Deck, indice):
