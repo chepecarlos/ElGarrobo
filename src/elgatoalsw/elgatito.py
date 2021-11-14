@@ -1,12 +1,12 @@
 import os
 
 from extras.mi_obs import MiOBS
+from extras.pulse import MiPulse
 
 from dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro
 from dispositivos.mideck.mi_streamdeck import MiStreamDeck
 from dispositivos.mideck.mi_deck_extra import DefinirFuente, DefinirImagenes
 from dispositivos.mimqtt.mi_mqtt import MiMQTT
-
 
 from acciones import CargarAcciones
 
@@ -36,9 +36,11 @@ class ElGatito(object):
 
         self.CargarData()
 
-
         if self.ModuloOBS:
             self.CargarOBS()
+        
+        if self.ModuloPulse:
+            self.CargarPulse()
 
         if self.ModuloDeck:
             self.CargarStreamDeck()
@@ -51,7 +53,7 @@ class ElGatito(object):
             self.IniciarMQTT()
 
         self.IniciarAcciones()
-        
+
         if self.ModuloPulse:
             self.ListaAcciones["salvar_pulse"]({})
 
@@ -84,7 +86,7 @@ class ElGatito(object):
 
             if "mqtt_estado" in Modulos:
                 self.ModuloMQTTEstado = Modulos["mqtt_estado"]
-                
+
             if "pulse" in Modulos:
                 self.ModuloPulse = Modulos["pulse"]
 
@@ -113,15 +115,11 @@ class ElGatito(object):
 
         # Acciones OBS
         if self.ModuloOBS:
-            ListaAcciones["obs_conectar"] = self.OBS.Conectar
-            ListaAcciones["obs_desconectar"] = self.OBS.Desconectar
-            ListaAcciones["obs_grabar"] = self.OBS.CambiarGrabacion
-            ListaAcciones["obs_envivo"] = self.OBS.CambiarEnVivo
-            ListaAcciones["obs_escena"] = self.OBS.CambiarEscena
-            ListaAcciones["obs_fuente"] = self.OBS.CambiarFuente
-            ListaAcciones["obs_filtro"] = self.OBS.CambiarFiltro
-            # ListaAcciones['obs_host'] = self.OBS.Conectar
-            # ListaAcciones['obs_server'] = self.OBS.Conectar
+            self.OBS.IniciarAcciones(ListaAcciones)
+
+        # Acciones Pulse
+        if self.ModuloPulse:
+            self.Pulse.IniciarAcciones(ListaAcciones)
 
         self.ListaAcciones = ListaAcciones
 
@@ -131,6 +129,7 @@ class ElGatito(object):
         """
         logger.info("Cargando[Eventos]")
         if self.ModuloDeck:
+            self.BanderaActualizarDeck = False
             if "deck_file" in self.Data:
                 DataDeck = ObtenerArchivo(self.Data["deck_file"])
                 if DataDeck is not None:
@@ -502,7 +501,14 @@ class ElGatito(object):
         Inicialioza el Objeto de OBS
         """
         self.OBS = MiOBS()
-        self.OBS.DibujarDeck(self.ActualizarDeckIcono)
+        self.OBS.DibujarDeck(self.SolisitarDibujar)
+
+    def CargarPulse(self):
+        """
+        Inicialioza el Objeto de Pulse
+        """
+        self.Pulse = MiPulse()
+        self.Pulse.DibujarDeck(self.SolisitarDibujar)
 
     def __exit__(self, exc_type, exc_value, traceback):
         print("Hora de matar todo XD")
@@ -530,3 +536,14 @@ class ElGatito(object):
         # self.LimpiarDeck()
         # raise SystemExit
         os._exit(0)
+
+    def SolisitarDibujar(self):
+
+        if self.ModuloDeck:
+            self.BanderaActualizarDeck = True
+
+            if self.BanderaActualizarDeck:
+                self.ActualizarDeckIcono()
+                self.BanderaActualizarDeck = False
+            
+

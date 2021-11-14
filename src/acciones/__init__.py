@@ -30,10 +30,6 @@ def CargarAcciones():
         # Audio
         "reproducion": Reproducir,
         "detener_reproducion": PararReproducion,
-        # Pulse
-        "volumen": CambiarVolumen,
-        "mute": CambiarMute,
-        "salvar_pulse": SalvarPulse,
         # Archivos
         "leer_valor": LeerValor,
         "escrivir_valor": EscrivirValor,

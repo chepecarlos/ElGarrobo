@@ -28,6 +28,17 @@ class MiOBS:
         """Cambia el host a conectarse."""
         self.host = Host
 
+    def IniciarAcciones(self, ListaAcciones):
+        ListaAcciones["obs_conectar"] = self.Conectar
+        ListaAcciones["obs_desconectar"] = self.Desconectar
+        ListaAcciones["obs_grabar"] = self.CambiarGrabacion
+        ListaAcciones["obs_envivo"] = self.CambiarEnVivo
+        ListaAcciones["obs_escena"] = self.CambiarEscena
+        ListaAcciones["obs_fuente"] = self.CambiarFuente
+        ListaAcciones["obs_filtro"] = self.CambiarFiltro
+        # ListaAcciones['obs_host'] = self.OBS.Conectar
+        # ListaAcciones['obs_server'] = self.OBS.Conectar
+
     def DibujarDeck(self, Funcion):
         """Guarda Funcion para refrescar iconos StringDeck."""
         self.Dibujar = Funcion
