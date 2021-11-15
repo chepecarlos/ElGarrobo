@@ -86,7 +86,6 @@ class MiPulse:
             SalvarValor("data/pulse.json", Dispositivo.Nombre, Texto)
 
         self.SolisitarDibujar()
-        # TODO: Actualizar Dibujar
 
     def DataPulse(self):
         Salida = sp.getoutput("pactl list sinks")

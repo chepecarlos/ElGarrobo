@@ -7,8 +7,6 @@ from .Archivos import LeerValor, EscrivirValor
 from .operaciones import OperacionConstrain
 from .ventanas import CerrarVentana, MostarVentana
 from .mqtt import MensajeMQTT
-from .pulse import CambiarVolumen, CambiarMute, SalvarPulse
-
 
 def CargarAcciones():
     """
