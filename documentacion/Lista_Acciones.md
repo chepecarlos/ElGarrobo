@@ -39,7 +39,7 @@ Envia mensaje por mqtt
 Ejecuta un comando de bash en linux
 
 ```json
-"accion": "mqtt"
+"accion": "os"
 ```
 
 **Opciones**
