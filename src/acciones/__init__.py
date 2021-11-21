@@ -3,7 +3,7 @@ from .delay import Delay
 from .emular_teclado import ComandoTeclas, ComandoEscribir, ComandoPegar, CopiarTexto
 from .sonidos import PararReproducion, Reproducir
 from .accion_os import AccionOS
-from .Archivos import LeerValor, EscrivirValor
+from .archivos import LeerValor, EscrivirValor
 from .operaciones import OperacionConstrain
 from .ventanas import CerrarVentana, MostarVentana
 from .mqtt import MensajeMQTT

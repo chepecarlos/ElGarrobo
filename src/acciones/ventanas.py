@@ -21,9 +21,12 @@ def MostarVentana(Opciones):
     titulo -> stl
         titulo a buscar
     """
-    Titulo = ""
+    Titulo = None
     if "titulo" in Opciones:
         Titulo = Opciones["titulo"]
+    
+    if Titulo is None:
+        return
     Comando = f'xdotool search --onlyvisible "{Titulo}" windowactivate'
     Logger.info(f"Buscando ventana[{Titulo}]")
     AccionOS({"comando": Comando})
