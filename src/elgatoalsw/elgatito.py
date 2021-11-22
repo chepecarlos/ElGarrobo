@@ -1,19 +1,18 @@
 import os
-
-from extras.mi_obs import MiOBS
-from extras.pulse import MiPulse
-
-from dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro
-from dispositivos.mideck.mi_streamdeck import MiStreamDeck
-from dispositivos.mideck.mi_deck_extra import DefinirFuente, DefinirImagenes
-from dispositivos.mimqtt.mi_mqtt import MiMQTT
+import random
 
 from acciones import CargarAcciones
-
-from MiLibrerias import ConfigurarLogging
-from MiLibrerias import UnirPath, RelativoAbsoluto, ObtenerListaFolder, ObtenerListaArhivos
-from MiLibrerias import SalvarValor, ObtenerValor, ObtenerArchivo
-from MiLibrerias import SalvarArchivo
+from dispositivos.mideck.mi_deck_extra import DefinirFuente, DefinirImagenes
+from dispositivos.mideck.mi_streamdeck import MiStreamDeck
+from dispositivos.mimqtt.mi_mqtt import MiMQTT
+from dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro
+from extras.mi_obs import MiOBS
+from extras.pulse import MiPulse
+from MiLibrerias import (ConfigurarLogging, ObtenerArchivo,
+                         ObtenerListaArhivos, ObtenerListaFolder, ObtenerValor,
+                         RelativoAbsoluto, SalvarArchivo, SalvarValor,
+                         UnirPath)
+from src.acciones.accion_os import Logger
 
 logger = ConfigurarLogging(__name__)
 
@@ -38,7 +37,7 @@ class ElGatito(object):
 
         if self.ModuloOBS:
             self.CargarOBS()
-        
+
         if self.ModuloPulse:
             self.CargarPulse()
 
@@ -99,6 +98,7 @@ class ElGatito(object):
 
         # Acciones Macro
         ListaAcciones["macro"] = self.AccionesMacros
+        ListaAcciones["random"] = self.AccionRandom
 
         # Acciones Sistema
         ListaAcciones["salir"] = self.Salir
@@ -386,6 +386,14 @@ class ElGatito(object):
     #                 Opciones[DataIn] = respuesta
     #         respuesta = self.BuscarAccion(Comando)
 
+    def AccionRandom(self, Opciones):
+        """
+        Ejecuta una accion al azar de una lista de acciones
+        """
+        Logger.info("Lanzando Datos")
+        Selecion = random.choice(Opciones)
+        return self.BuscarAccion(Selecion)
+
     def Reiniciar(self, Opciones):
         """
         Reinicia la data del programa.
@@ -545,5 +553,3 @@ class ElGatito(object):
             if self.BanderaActualizarDeck:
                 self.ActualizarDeckIcono()
                 self.BanderaActualizarDeck = False
-            
-
