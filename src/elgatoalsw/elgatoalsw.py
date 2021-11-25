@@ -4,12 +4,10 @@ import argparse
 import os
 import sys
 
-from .elgatito import ElGatito
-
 from libreria.acciones.News import SalvarArchivoNoticia
+from MiLibrerias import ConfigurarLogging, SalvarValor, UnirPath
 
-from MiLibrerias import ConfigurarLogging
-from MiLibrerias import UnirPath, SalvarValor
+from .elgatito import ElGatito
 
 logger = ConfigurarLogging(__name__)
 

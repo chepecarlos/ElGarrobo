@@ -12,7 +12,7 @@ from MiLibrerias import (ConfigurarLogging, ObtenerArchivo,
                          ObtenerListaArhivos, ObtenerListaFolder, ObtenerValor,
                          RelativoAbsoluto, SalvarArchivo, SalvarValor,
                          UnirPath)
-from src.acciones.accion_os import Logger
+# from src.acciones.accion_os import Logger
 
 logger = ConfigurarLogging(__name__)
 
@@ -259,7 +259,7 @@ class ElGatito(object):
         ListaDispositivo = ["teclados", "global", "deck"]
         Data = self.Keys
         Folderes = Folder.split("/")
-        if len(Folderes) > 0:
+        if Folderes:
             Data = self.BuscarDentroFolder(Folderes, Data)
             if Data is not None:
                 Encontrado = False
@@ -285,7 +285,7 @@ class ElGatito(object):
         if "nombre" in Data:
             if Data["nombre"] == Folderes[0]:
                 Folderes.remove(Data["nombre"])
-                if len(Folderes) > 0:
+                if Folderes:
                     if "folder" in Data:
                         for BuscarFolder in Data["folder"]:
                             Data = self.BuscarDentroFolder(Folderes, BuscarFolder)

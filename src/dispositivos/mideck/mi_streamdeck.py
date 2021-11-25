@@ -69,17 +69,11 @@ class MiStreamDeck(object):
                     
                     if Dibujar:
                         AccionAcual = Dibujar[0]
-                        # if 'imagen' in AccionAcual:
-                            # DirecionImagen = AccionAcual['imagen']
                         DirecionImagen = BuscarDirecionImagen(AccionAcual)
                         if DirecionImagen is not None and DirecionImagen.endswith(".gif"):
                             self.DeckGif.ActualizarGif(i, AccionAcual)
                         else:
                             ActualizarIcono(self.Deck, i, AccionAcual)
-                        # if 'gif' in AccionAcual:
-                        #     self.DeckGif.ActualizarGif(i, AccionAcual)
-                        # else:
-                        #     ActualizarIcono(self.Deck, i, AccionAcual)
             else:
                 pass
 

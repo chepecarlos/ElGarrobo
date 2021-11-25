@@ -94,7 +94,7 @@ def ComandoPrecionar(Opciones):
             pyautogui.keyUp(tecla)
 
 
-def CopiarTexto():
+def CopiarTexto(Opciones):
     """
     Copia texto de papelera.
     """

@@ -12,11 +12,12 @@ logger = ConfigurarLogging(__name__)
 
 def PonerTexto(Imagen, accion, DirecionImagen=None):
     """Agrega Texto a Botones de StreamDeck."""
-    Titulo = str(accion['titulo'])
+    Titulo = str(accion["titulo"])
     Titulo_Color = "white"
     Tamanno = 40
+    Ajustar = True
     Alinear = "centro"
-    Borde_Color = 'black'
+    Borde_Color = "black"
     Borde_Grosor = 5
     if DirecionImagen is not None:
         Alinear = "abajo"
@@ -24,21 +25,23 @@ def PonerTexto(Imagen, accion, DirecionImagen=None):
 
     dibujo = ImageDraw.Draw(Imagen)
 
-    if 'titulo_opciones' in accion:
-        Opciones = accion['titulo_opciones']
-        if 'tamanno' in Opciones:
-            Tamanno = Opciones['tamanno']
-        if 'alinear' in Opciones:
-            Alinear = Opciones['alinear']
-        if 'color' in Opciones:
-            Titulo_Color = Opciones['color']
-        if 'borde_color' in Opciones:
-            Borde_Color = Opciones['borde_color']
-        if 'borde_grosor' in Opciones:
-            Borde_Grosor = Opciones['borde_grosor']
+    if "titulo_opciones" in accion:
+        Opciones = accion["titulo_opciones"]
+        if "tamanno" in Opciones:
+            Tamanno = Opciones["tamanno"]
+        if "alinear" in Opciones:
+            Alinear = Opciones["alinear"]
+        if "color" in Opciones:
+            Titulo_Color = Opciones["color"]
+        if "borde_color" in Opciones:
+            Borde_Color = Opciones["borde_color"]
+        if "borde_grosor" in Opciones:
+            Borde_Grosor = Opciones["borde_grosor"]
+        if "ajustar" in Opciones:
+            Ajustar = Opciones["ajustar"]
 
     # TODO: hacer funcion mas limpia
-    while True:
+    while Ajustar:
         fuente = ImageFont.truetype(FuenteIcono, Tamanno)
         Titulo_ancho, Titulo_alto = dibujo.textsize(Titulo, font=fuente)
         if Titulo_ancho < Imagen.width:
@@ -48,22 +51,23 @@ def PonerTexto(Imagen, accion, DirecionImagen=None):
     Horizontal = (Imagen.width - Titulo_ancho) // 2
 
     if Alinear == "centro":
-        Vertical = (Imagen.height - Titulo_alto - Tamanno/2) // 2
+        Vertical = (Imagen.height - Titulo_alto - Tamanno / 2) // 2
     elif Alinear == "ariba":
         Vertical = 0
     else:
         Vertical = Imagen.height - Titulo_alto - 2
     PosicionTexto = (Horizontal, Vertical)
 
-    dibujo.text(PosicionTexto, text=Titulo, font=fuente,
-                fill=Titulo_Color, stroke_width=Borde_Grosor, stroke_fill=Borde_Color)
+    dibujo.text(
+        PosicionTexto, text=Titulo, font=fuente, fill=Titulo_Color, stroke_width=Borde_Grosor, stroke_fill=Borde_Color
+    )
 
 
 def PonerFondo(Imagen, accion):
     if "imagen_opciones" in accion:
-        Opciones = accion['imagen_opciones']
-        if 'fondo' in Opciones:
-            ColorFondo = Opciones['fondo']
+        Opciones = accion["imagen_opciones"]
+        if "fondo" in Opciones:
+            ColorFondo = Opciones["fondo"]
             dibujo = ImageDraw.Draw(Imagen)
             Tamanno = [(0, 0), (Imagen.width, Imagen.height)]
             dibujo.rectangle(Tamanno, fill=ColorFondo)
@@ -77,27 +81,27 @@ def DefinirFuente(Fuente):
 
 def BuscarDirecionImagen(accion):
 
-    if 'imagen_estado' in accion:
-        ImagenEstado = accion['imagen_estado']
-        NombreAccion = accion['accion']
+    if "imagen_estado" in accion:
+        ImagenEstado = accion["imagen_estado"]
+        NombreAccion = accion["accion"]
         OpcionesAccion = None
-        if 'opciones' in accion:
-            OpcionesAccion = accion['opciones']
+        if "opciones" in accion:
+            OpcionesAccion = accion["opciones"]
 
-        if NombreAccion.startswith('obs'):
+        if NombreAccion.startswith("obs"):
             EstadoImagen = BuscarImagenOBS(NombreAccion, OpcionesAccion)
             if EstadoImagen:
-                DirecionImagen = ImagenEstado['imagen_true']
+                DirecionImagen = ImagenEstado["imagen_true"]
             else:
-                DirecionImagen = ImagenEstado['imagen_false']
+                DirecionImagen = ImagenEstado["imagen_false"]
 
             return DirecionImagen
 
-    if 'imagen' in accion:
-        DirecionImagen = accion['imagen']
+    if "imagen" in accion:
+        DirecionImagen = accion["imagen"]
         return DirecionImagen
-    elif 'accion' in accion:
-        NombreAccion = accion['accion']
+    elif "accion" in accion:
+        NombreAccion = accion["accion"]
         if NombreAccion in ListaImagenes:
             return ListaImagenes[NombreAccion]
 
@@ -107,28 +111,32 @@ def BuscarDirecionImagen(accion):
 def BuscarImagenOBS(NombreAccion, OpcionesAccion):
     Estado = None
 
-    ListaBasicas = ["obs_conectar", "obs_grabar", "obs_envivo", ]
+    ListaBasicas = [
+        "obs_conectar",
+        "obs_grabar",
+        "obs_envivo",
+    ]
     for Basica in ListaBasicas:
         if NombreAccion == Basica:
             Estado = ObtenerValor("data/obs.json", Basica)
 
     if NombreAccion == "obs_escena":
-        if 'escena' in OpcionesAccion:
-            EscenaActual = OpcionesAccion['escena']
+        if "escena" in OpcionesAccion:
+            EscenaActual = OpcionesAccion["escena"]
             EscenaActiva = ObtenerValor("data/obs.json", "obs_escena")
             if EscenaActual == EscenaActiva:
                 Estado = True
             else:
                 Estado = False
-    elif NombreAccion == 'obs_fuente':
-        if 'fuente' in OpcionesAccion:
-            FuenteActual = OpcionesAccion['fuente']
+    elif NombreAccion == "obs_fuente":
+        if "fuente" in OpcionesAccion:
+            FuenteActual = OpcionesAccion["fuente"]
             Estado = ObtenerValor("data/obs_fuente.json", FuenteActual)
-    elif NombreAccion == 'obs_filtro':
-        if 'fuente' in OpcionesAccion:
-            Fuente = OpcionesAccion['fuente']
-        if 'filtro' in OpcionesAccion:
-            Filtro = OpcionesAccion['filtro']
+    elif NombreAccion == "obs_filtro":
+        if "fuente" in OpcionesAccion:
+            Fuente = OpcionesAccion["fuente"]
+        if "filtro" in OpcionesAccion:
+            Filtro = OpcionesAccion["filtro"]
         if Fuente is not None and Filtro is not None:
             Estado = ObtenerValor("data/obs_filtro.json", [Fuente, Filtro])
 
@@ -136,6 +144,7 @@ def BuscarImagenOBS(NombreAccion, OpcionesAccion):
         Estado = False
 
     return Estado
+
 
 def DefinirImagenes():
     global ListaImagenes

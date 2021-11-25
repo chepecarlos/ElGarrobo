@@ -20,6 +20,7 @@ class MiOBS:
     def Reiniciar(self):
         self.host = "localhost"
         self.port = 4444
+        self.password = None
         self.Conectado = False
         SalvarValor("data/obs.json", "obs_conectar", False)
         self.LimpiarTemporales()
@@ -33,6 +34,7 @@ class MiOBS:
         ListaAcciones["obs_desconectar"] = self.Desconectar
         ListaAcciones["obs_grabar"] = self.CambiarGrabacion
         ListaAcciones["obs_envivo"] = self.CambiarEnVivo
+        ListaAcciones["obs_camara_virtual"] = self.CambiarCamaraVirtual
         ListaAcciones["obs_escena"] = self.CambiarEscena
         ListaAcciones["obs_fuente"] = self.CambiarFuente
         ListaAcciones["obs_filtro"] = self.CambiarFiltro
@@ -45,8 +47,20 @@ class MiOBS:
 
     def Conectar(self, Opciones):
         """Se conecta a OBS Websocket y inicializa los eventos."""
+
+        if "servidor" in Opciones:
+            self.host = Opciones["servidor"]
+        if "puerto" in Opciones:
+            self.port = Opciones["puerto"]
+        if "contrasenna" in Opciones:
+            self.password = Opciones["contrasenna"]
+
         try:
-            self.OBS = obsws(self.host, self.port)
+            if self.password is None:
+                self.OBS = obsws(self.host, self.port)
+            else:
+                self.OBS = obsws(self.host, self.port, self.password)
+
             self.OBS.connect()
             self.Conectado = True
             logger.info(f"OBS[Conectado] {self.host}")
@@ -258,6 +272,15 @@ class MiOBS:
         if self.Conectado:
             logger.info("Cambiando estado EnVivo")
             self.OBS.call(requests.StartStopStreaming())
+        else:
+            logger.info("OBS no Conectado")
+
+    def CambiarCamaraVirtual(self, Opciones=None):
+        if self.Conectado:
+            logger.info("OBS[Cambiando] CamaraVirtual")
+            Solisitud = requests.Baserequests()
+            Solisitud.name = "StartStopVirtualCam"
+            self.OBS.call(Solisitud)
         else:
             logger.info("OBS no Conectado")
 

@@ -9,33 +9,33 @@ from MiLibrerias import ConfigurarLogging
 logger = ConfigurarLogging(__name__)
 
 
-class MiMQTT():
+class MiMQTT:
     def __init__(self, Data, Evento):
         self.Conectado = False
         self.Evento = Evento
-        if 'nombre' in Data:
-            self.Nombre = Data['nombre']
+        if "nombre" in Data:
+            self.Nombre = Data["nombre"]
 
-        if 'broker' in Data:
-            self.Broker = Data['broker']
+        if "broker" in Data:
+            self.Broker = Data["broker"]
         else:
             self.Broker = "test.mosquitto.org"
 
-        if 'puerto' in Data:
-            self.Puerto = Data['puerto']
+        if "puerto" in Data:
+            self.Puerto = Data["puerto"]
         else:
             self.Puerto = 1883
 
-        if 'topic' in Data:
-            self.topic = Data['topic']
+        if "topic" in Data:
+            self.topic = Data["topic"]
 
-        if 'usuario' in Data:
-            self.Usuario = Data['usuario']
+        if "usuario" in Data:
+            self.Usuario = Data["usuario"]
         else:
             self.Usuario = None
 
-        if 'contrasenna' in Data:
-            self.Contrasenna = Data['contrasenna']
+        if "contrasenna" in Data:
+            self.Contrasenna = Data["contrasenna"]
         else:
             self.Contrasenna = None
 
@@ -49,10 +49,9 @@ class MiMQTT():
         """Conectar a Broker MQTT."""
         logger.info(f"MQTT[Conectando] - {self.Nombre}")
         if self.Usuario is not None:
-            self.cliente.username_pw_set(
-                self.Usuario, password=self.Contrasenna)
+            self.cliente.username_pw_set(self.Usuario, password=self.Contrasenna)
         self.cliente.connect(self.Broker, port=self.Puerto, keepalive=60)
-        self.Hilo=threading.Thread(target=self.HiloServidor)
+        self.Hilo = threading.Thread(target=self.HiloServidor)
         self.Hilo.start()
 
     def HiloServidor(self):
@@ -61,9 +60,8 @@ class MiMQTT():
 
     def EventoConectar(self, client, userdata, flags, rc):
         """Respuesta de conecion y subcripcion a topicos."""
-        logger.info(f"MQTT[Conectado] - {self.Nombre}")
-        # logger.info("Se conecto con mqtt " + str(rc))
         self.Conectado = True
+        logger.info(f"MQTT[Conectado] - {self.Nombre}")
         logger.info(f"MQTT[Sub] - [{self.Nombre}]:{self.topic}")
         client.subscribe(self.topic)
 
@@ -78,7 +76,7 @@ class MiMQTT():
         logger.info(f"MQTT[{Topic}] {str(Mensaje)}")
         Mensaje = str(Mensaje.decode("utf-8", "ignore"))
         Mensaje = json.loads(Mensaje)
-        if 'accion' in Mensaje:
+        if "accion" in Mensaje:
             logger.info(f"MQTT[Accion] {Mensaje['accion']}")
             self.Evento(Mensaje)
 

@@ -19,6 +19,7 @@ def ActualizarIcono(Deck, indice, accion):
     global ListaImagenes
 
     ColorFondo = "black"
+
     if "imagen_opciones" in accion:
         Opciones = accion["imagen_opciones"]
         if "fondo" in Opciones:
@@ -35,9 +36,9 @@ def ActualizarIcono(Deck, indice, accion):
 
     PonerImagen(ImagenBoton, DirecionImagen, accion, Deck.Folder)
 
-    if "cargar_texto" in accion:
-        TextoCargar = accion["cargar_texto"]
-        if 'archivo' in TextoCargar and "atributo" in TextoCargar:
+    if "cargar_titulo" in accion:
+        TextoCargar = accion["cargar_titulo"]
+        if "archivo" in TextoCargar and "atributo" in TextoCargar:
             accion["titulo"] = ObtenerValor(TextoCargar["archivo"], TextoCargar["atributo"])
 
     if "titulo" in accion:

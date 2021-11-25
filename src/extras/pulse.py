@@ -62,7 +62,7 @@ class MiPulse:
         if "dispositivo" in Opciones:
             Dispositivo = Opciones["dispositivo"]
 
-        if Dispositivo == None:
+        if Dispositivo is None:
             Logger.info("Necesario de dispositivo")
             return
 
