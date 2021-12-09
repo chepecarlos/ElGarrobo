@@ -390,7 +390,7 @@ class ElGatito(object):
         """
         Ejecuta una accion al azar de una lista de acciones
         """
-        Logger.info("Lanzando Datos")
+        logger.info("Lanzando Datos")
         Selecion = random.choice(Opciones)
         return self.BuscarAccion(Selecion)
 
@@ -488,11 +488,13 @@ class ElGatito(object):
     def IniciarMQTT(self):
         """Iniciar coneccion con Broker MQTT."""
         self.ListaMQTT = []
-        for DataMQTT in self.Data["mqtt"]:
-            ServidorMQTT = MiMQTT(DataMQTT, self.BuscarAccion)
-            self.ListaMQTT.append(ServidorMQTT)
-        for ServidorMQTT in self.ListaMQTT:
-            ServidorMQTT.Conectar()
+        self.Data['mqtt'] = ObtenerArchivo("mqtt.json")
+        if "mqtt" in self.Data:
+            for DataMQTT in self.Data["mqtt"]:
+                ServidorMQTT = MiMQTT(DataMQTT, self.BuscarAccion)
+                self.ListaMQTT.append(ServidorMQTT)
+            for ServidorMQTT in self.ListaMQTT:
+                ServidorMQTT.Conectar()
 
     def ReiniciarData(self):
         """
