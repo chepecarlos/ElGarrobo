@@ -26,7 +26,7 @@ def TextoVoz(Opciones):
     if "esperar" in Opciones:
         Esperar = Opciones["esperar"]
 
-    if Mensaje in None:
+    if Mensaje is None:
         logger.info("falta mensaje a reproduccir")
         return
 
