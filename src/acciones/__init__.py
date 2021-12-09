@@ -7,6 +7,7 @@ from .archivos import LeerValor, EscrivirValor
 from .operaciones import OperacionConstrain
 from .ventanas import CerrarVentana, MostarVentana
 from .mqtt import MensajeMQTT
+from .textovoz import TextoVoz
 
 def CargarAcciones():
     """
@@ -28,6 +29,7 @@ def CargarAcciones():
         # Audio
         "reproducion": Reproducir,
         "detener_reproducion": PararReproducion,
+        "textovoz": TextoVoz,
         # Archivos
         "leer_valor": LeerValor,
         "escrivir_valor": EscrivirValor,
