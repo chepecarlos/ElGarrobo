@@ -22,6 +22,8 @@ class MiOBS:
         self.port = 4444
         self.password = None
         self.Conectado = False
+        self.Dibujar = None
+        self.Notificaciones = None
         SalvarValor("data/obs.json", "obs_conectar", False)
         self.LimpiarTemporales()
 
@@ -44,6 +46,10 @@ class MiOBS:
     def DibujarDeck(self, Funcion):
         """Guarda Funcion para refrescar iconos StringDeck."""
         self.Dibujar = Funcion
+
+    def AgregarNotificacion(self, Funcion):
+        """Agrega funcin para notificacion."""
+        self.Notificaciones = Funcion
 
     def Conectar(self, Opciones):
         """Se conecta a OBS Websocket y inicializa los eventos."""
@@ -216,6 +222,7 @@ class MiOBS:
             logger.info(f"OBS[Cambiando] {Escena}")
         else:
             logger.warning("OBS[No conectado]")
+            self.Notificar("OBS No Conectado")
 
     def CambiarFuente(self, Opciones=False, Fuente=None):
         """Envia solisitud de Cambia el estado de una fuente."""
@@ -235,6 +242,7 @@ class MiOBS:
 
         else:
             logger.info("OBS[no Conectado]")
+            self.Notificar("OBS No Conectado")
 
     def CambiarFiltro(self, Opciones):
         """Envia solisitud de cambiar estado de filtro."""
@@ -257,6 +265,7 @@ class MiOBS:
                 self.OBS.call(requests.SetSourceFilterVisibility(Fuente, Filtro, Estado))
         else:
             logger.info("OBS[no Conectado]")
+            self.Notificar("OBS No Conectado")
 
     def CambiarGrabacion(self, Opciones=None):
         """Envia solisitud de cambiar estado de Grabacion."""
@@ -265,7 +274,7 @@ class MiOBS:
             self.OBS.call(requests.StartStopRecording())
         else:
             logger.info("OBS no Conectado")
-        return
+            self.Notificar("OBS No Conectado")
 
     def CambiarEnVivo(self, Opciones=None):
         """Envia solisitud de cambiar estado del Streaming ."""
@@ -274,15 +283,19 @@ class MiOBS:
             self.OBS.call(requests.StartStopStreaming())
         else:
             logger.info("OBS no Conectado")
+            self.Notificar("OBS No Conectado")
 
     def CambiarCamaraVirtual(self, Opciones=None):
         if self.Conectado:
+            
             logger.info("OBS[Cambiando] CamaraVirtual")
             Solisitud = requests.Baserequests()
             Solisitud.name = "StartStopVirtualCam"
             self.OBS.call(Solisitud)
         else:
             logger.info("OBS no Conectado")
+            self.Notificar("OBS No Conectado")
+
 
     def LimpiarTemporales(self):
         """Limpia los archivos con informacion temporal de OBS."""
@@ -307,6 +320,11 @@ class MiOBS:
 
     def EventoPrueva(self, Mensaje):
         print(Mensaje)
+
+    def Notificar(self, Mensaje):
+        if self.Notificaciones is not None:
+                self.Notificaciones(Mensaje)
+
 
     def Consultas(self):
         # print(dir(requests))

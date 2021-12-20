@@ -64,15 +64,20 @@ class ElGatito(object):
         Modulos = ObtenerArchivo("modulos.json")
 
         self.ModuloOBS = False
+        self.ModuloOBSNotificacion = False
         self.ModuloDeck = False
         self.ModuloTeclado = False
         self.ModuloMQTT = False
         self.ModuloMQTTEstado = False
         self.ModuloPulse = False
+        self.ModuloESP = False
 
         if Modulos is not None:
             if "obs" in Modulos:
                 self.ModuloOBS = Modulos["obs"]
+
+            if "obs_notificacion" in Modulos:
+                self.ModuloOBSNotificacion = Modulos["obs_notificacion"]
 
             if "deck" in Modulos:
                 self.ModuloDeck = Modulos["deck"]
@@ -82,6 +87,9 @@ class ElGatito(object):
 
             if "mqtt" in Modulos:
                 self.ModuloMQTT = Modulos["mqtt"]
+
+            if "esp" in Modulos:
+                self.ModuloESP = Modulos["esp"]
 
             if "mqtt_estado" in Modulos:
                 self.ModuloMQTTEstado = Modulos["mqtt_estado"]
@@ -512,6 +520,7 @@ class ElGatito(object):
         """
         self.OBS = MiOBS()
         self.OBS.DibujarDeck(self.SolisitarDibujar)
+        self.OBS.AgregarNotificacion(self.SolisitarNotifiacacion)
 
     def CargarPulse(self):
         """
@@ -542,7 +551,8 @@ class ElGatito(object):
             for deck in self.ListaDeck:
                 deck.Desconectar()
         if self.ModuloMQTT:
-            self.MQTT.Desconectar()
+            for Servidor in self.ListaMQTT:
+                Servidor.Desconectar()
         # self.LimpiarDeck()
         # raise SystemExit
         os._exit(0)
@@ -555,3 +565,8 @@ class ElGatito(object):
             if self.BanderaActualizarDeck:
                 self.ActualizarDeckIcono()
                 self.BanderaActualizarDeck = False
+
+    def SolisitarNotifiacacion(self, Texto):
+        if(self.ModuloOBSNotificacion):
+            Opciones = {"texto": Texto}
+            self.ListaAcciones['notificacion'](Opciones)

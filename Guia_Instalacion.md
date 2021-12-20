@@ -27,14 +27,17 @@ git submodule update
 ```
 sudo usermod -a -G input $USER
 ```
-
+Recomendacion reinicar la pc despues de agregarse a permisos
 
 ### instalar de paquetes
 
 ```
 pip3 install -r requiraments.txt
-
+pip install .
 ``` 
+
+
+
 
 
 ### Manejador de Ventanas
