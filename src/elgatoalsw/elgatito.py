@@ -362,6 +362,7 @@ class ElGatito(object):
                 if "opciones" in accion:
                     OpcionesAccion = accion["opciones"]
 
+                # TODO: Mover a funcion aparte
                 if self.ModuloMonitorESP:
                     if "topic" in self.ModuloMonitorESP:
                         Mensaje = {"accion": NombreAccion, "nombre": Nombre, "key": accion["key"]}
