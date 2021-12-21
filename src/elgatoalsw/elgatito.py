@@ -8,11 +8,17 @@ from dispositivos.mimqtt.mi_mqtt import MiMQTT
 from dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro
 from extras.mi_obs import MiOBS
 from extras.pulse import MiPulse
-from MiLibrerias import (ConfigurarLogging, ObtenerArchivo,
-                         ObtenerListaArhivos, ObtenerListaFolder, ObtenerValor,
-                         RelativoAbsoluto, SalvarArchivo, SalvarValor,
-                         UnirPath)
-# from src.acciones.accion_os import Logger
+from MiLibrerias import (
+    ConfigurarLogging,
+    ObtenerArchivo,
+    ObtenerListaArhivos,
+    ObtenerListaFolder,
+    ObtenerValor,
+    RelativoAbsoluto,
+    SalvarArchivo,
+    SalvarValor,
+    UnirPath,
+)
 
 logger = ConfigurarLogging(__name__)
 
@@ -35,6 +41,8 @@ class ElGatito(object):
 
         self.CargarData()
 
+        self.IniciarAcciones()
+
         if self.ModuloOBS:
             self.CargarOBS()
 
@@ -51,8 +59,6 @@ class ElGatito(object):
         if self.ModuloMQTT:
             self.IniciarMQTT()
 
-        self.IniciarAcciones()
-
         if self.ModuloPulse:
             self.ListaAcciones["salvar_pulse"]({})
 
@@ -61,7 +67,7 @@ class ElGatito(object):
         Carga los modulos activos.
         """
         logger.info(f"Configurando[Modulos]")
-        Modulos = ObtenerArchivo("modulos.json")
+        Modulos = ObtenerArchivo("modulos/modulos.json")
 
         self.ModuloOBS = False
         self.ModuloOBSNotificacion = False
@@ -70,7 +76,7 @@ class ElGatito(object):
         self.ModuloMQTT = False
         self.ModuloMQTTEstado = False
         self.ModuloPulse = False
-        self.ModuloESP = False
+        self.ModuloMonitorESP = False
 
         if Modulos is not None:
             if "obs" in Modulos:
@@ -88,8 +94,8 @@ class ElGatito(object):
             if "mqtt" in Modulos:
                 self.ModuloMQTT = Modulos["mqtt"]
 
-            if "esp" in Modulos:
-                self.ModuloESP = Modulos["esp"]
+            if "monitor_esp" in Modulos:
+                self.ModuloMonitorESP = ObtenerArchivo("modulos/monidor_esp/mqtt.json")
 
             if "mqtt_estado" in Modulos:
                 self.ModuloMQTTEstado = Modulos["mqtt_estado"]
@@ -120,14 +126,6 @@ class ElGatito(object):
             ListaAcciones["anterior_pagina"] = self.Anterior_Pagina
             ListaAcciones["actualizar_pagina"] = self.Actualizar_Folder
             ListaAcciones["deck_brillo"] = self.DeckBrillo
-
-        # Acciones OBS
-        if self.ModuloOBS:
-            self.OBS.IniciarAcciones(ListaAcciones)
-
-        # Acciones Pulse
-        if self.ModuloPulse:
-            self.Pulse.IniciarAcciones(ListaAcciones)
 
         self.ListaAcciones = ListaAcciones
 
@@ -267,6 +265,14 @@ class ElGatito(object):
         ListaDispositivo = ["teclados", "global", "deck"]
         Data = self.Keys
         Folderes = Folder.split("/")
+
+        FolderActual = Folderes[-1]
+        if self.ModuloMonitorESP:
+            if "topic" in self.ModuloMonitorESP:
+                Mensaje = {"folder": FolderActual, "direccion": Folder}
+                Opciones = {"opciones": Mensaje, "topic": f"{self.ModuloMonitorESP['topic']}/folder"}
+                self.ListaAcciones["mqtt"](Opciones)
+
         if Folderes:
             Data = self.BuscarDentroFolder(Folderes, Data)
             if Data is not None:
@@ -341,17 +347,28 @@ class ElGatito(object):
 
     def BuscarAccion(self, accion):
         if "accion" in accion:
+            # print(accion)
             NombreAccion = accion["accion"]
             if NombreAccion in self.ListaAcciones:
+                OpcionesAccion = {}
+                Nombre = None
+
                 if "nombre" in accion:
                     Nombre = accion["nombre"]
                     logger.info(f"Accion[{NombreAccion}] - {Nombre}")
                 else:
                     logger.info(f"Accion[{NombreAccion}]")
+
                 if "opciones" in accion:
                     OpcionesAccion = accion["opciones"]
-                else:
-                    OpcionesAccion = {}
+
+                if self.ModuloMonitorESP:
+                    if "topic" in self.ModuloMonitorESP:
+                        Mensaje = {"accion": NombreAccion, "nombre": Nombre, "key": accion["key"]}
+                        Opciones = {"opciones": Mensaje, "topic": f"{self.ModuloMonitorESP['topic']}/accion"}
+
+                        self.ListaAcciones["mqtt"](Opciones)
+
                 # try:
                 return self.ListaAcciones[NombreAccion](OpcionesAccion)
                 # except Exception as Error:
@@ -496,7 +513,7 @@ class ElGatito(object):
     def IniciarMQTT(self):
         """Iniciar coneccion con Broker MQTT."""
         self.ListaMQTT = []
-        self.Data['mqtt'] = ObtenerArchivo("mqtt.json")
+        self.Data["mqtt"] = ObtenerArchivo("mqtt.json")
         if "mqtt" in self.Data:
             for DataMQTT in self.Data["mqtt"]:
                 ServidorMQTT = MiMQTT(DataMQTT, self.BuscarAccion)
@@ -522,12 +539,16 @@ class ElGatito(object):
         self.OBS.DibujarDeck(self.SolisitarDibujar)
         self.OBS.AgregarNotificacion(self.SolisitarNotifiacacion)
 
+        # Acciones OBS
+        self.OBS.IniciarAcciones(self.ListaAcciones)
+
     def CargarPulse(self):
         """
         Inicialioza el Objeto de Pulse
         """
         self.Pulse = MiPulse()
         self.Pulse.DibujarDeck(self.SolisitarDibujar)
+        self.Pulse.IniciarAcciones(self.ListaAcciones)
 
     def __exit__(self, exc_type, exc_value, traceback):
         print("Hora de matar todo XD")
@@ -567,6 +588,6 @@ class ElGatito(object):
                 self.BanderaActualizarDeck = False
 
     def SolisitarNotifiacacion(self, Texto):
-        if(self.ModuloOBSNotificacion):
+        if self.ModuloOBSNotificacion:
             Opciones = {"texto": Texto}
-            self.ListaAcciones['notificacion'](Opciones)
+            self.ListaAcciones["notificacion"](Opciones)
