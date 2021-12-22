@@ -443,8 +443,9 @@ class ElGatito(object):
             return
         logger.info(f"Regresar[{self.PathActual}]")
         self.BuscarFolder(self.PathActual)
-        self.LimpiarDeck()
-        self.ActualizarDeck()
+        if self.ModuloDeck:
+            self.LimpiarDeck()
+            self.ActualizarDeck()
 
     def Entrar_Folder(self, opciones):
         """
