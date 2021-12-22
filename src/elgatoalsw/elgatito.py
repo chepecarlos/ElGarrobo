@@ -43,6 +43,8 @@ class ElGatito(object):
 
         self.IniciarAcciones()
 
+        self.BuscarFolder(self.PathActual)
+
         if self.ModuloOBS:
             self.CargarOBS()
 
@@ -511,10 +513,9 @@ class ElGatito(object):
             pass
 
     def IniciarStreamDeck(self):
-        self.PathActual = "defaul"
-        self.BuscarFolder(self.PathActual)
-        self.LimpiarDeck()
-        self.ActualizarDeck()
+        if self.ModuloDeck:
+            self.LimpiarDeck()
+            self.ActualizarDeck()
 
     def IniciarMQTT(self):
         """Iniciar coneccion con Broker MQTT."""
@@ -535,6 +536,9 @@ class ElGatito(object):
         # TODO: Cargar modulos?
         self.acciones = dict()
         self.CargarData()
+        # TODO: Quitar Hard codign de defaul
+        self.PathActual = "defaul"
+        self.BuscarFolder(self.PathActual)
         self.IniciarStreamDeck()
 
     def CargarOBS(self):
