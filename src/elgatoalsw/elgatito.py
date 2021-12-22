@@ -461,8 +461,9 @@ class ElGatito(object):
         logger.info(f"Folder[{Folder}]")
         self.PathActual = RelativoAbsoluto(Folder, self.PathActual)
         self.BuscarFolder(self.PathActual)
-        self.LimpiarDeck()
-        self.ActualizarDeck()
+        if self.ModuloDeck:
+            self.LimpiarDeck()
+            self.ActualizarDeck()
 
     def Actualizar_Folder(self, Opciones):
         self.ActualizarDeck()
