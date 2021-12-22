@@ -26,16 +26,16 @@ def MensajeMQTT(Opciones):
     if "topic" in Opciones:
         Topic = Opciones["topic"]
 
-    if "usuario" is Opciones:
+    if "usuario" in Opciones:
         Usuario = Opciones["usuario"]
 
-    if "servidor" is Opciones:
+    if "servidor" in Opciones:
         Servidor = Opciones["servidor"]
 
-    if "puerto" is Opciones:
+    if "puerto" in Opciones:
         Puerto = Opciones["puwero"]
 
-    if "contrasenna" is Opciones:
+    if "contrasenna" in Opciones:
         Contrasenna = Opciones["Contrasenna"]
 
     if Mensaje is not None and Topic is not None:
