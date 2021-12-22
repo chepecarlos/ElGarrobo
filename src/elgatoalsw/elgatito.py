@@ -280,7 +280,6 @@ class ElGatito(object):
             if Data is not None:
                 Encontrado = False
                 for Dispositivo in ListaDispositivo:
-                    # SalvarArchivo("Data.json")
                     Estado = self.CargarAcciones(Dispositivo, Data)
                     Encontrado = Estado or Encontrado
         if "streamdeck" in self.acciones:
@@ -288,13 +287,15 @@ class ElGatito(object):
             # TODO Error cuando no entra a streamdeck
 
     def CargarAcciones(self, Dispositivo, Data):
+        # TODO: quitar Data y self.Data
         Estado = False
-        for dispositivo in self.Data[Dispositivo]:
-            nombreDispositivo = dispositivo["nombre"]
-            if nombreDispositivo in Data:
-                logger.info(f"Folder[Configurado] {nombreDispositivo}")
-                self.acciones[nombreDispositivo] = Data[nombreDispositivo]
-                Estado = True
+        if Dispositivo in self.Data:
+            for dispositivo in self.Data[Dispositivo]:
+                nombreDispositivo = dispositivo["nombre"]
+                if nombreDispositivo in Data:
+                    logger.info(f"Folder[Configurado] {nombreDispositivo}")
+                    self.acciones[nombreDispositivo] = Data[nombreDispositivo]
+                    Estado = True
         return Estado
 
     def BuscarDentroFolder(self, Folderes, Data):
