@@ -14,6 +14,9 @@ setup(
     author='ChepeCarlos',
     author_email='chepecarlos@alsw.net',
     url='https://github.com/chepecarlos/ElGatoALSW',
+    project_urls={
+        "Bug Tracker": "https://github.com/chepecarlos/ElGatoALSW/issues",
+    },
     install_requires=[],
     packages=find_packages(where='src', exclude=('tests*', 'testing*')),
     package_dir={"": "src"},

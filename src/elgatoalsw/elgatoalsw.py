@@ -5,6 +5,7 @@ import os
 import sys
 
 from libreria.acciones.News import SalvarArchivoNoticia
+from configurar.modulo import ConfigurarModulos
 from MiLibrerias import ConfigurarLogging, SalvarValor, UnirPath
 
 from .elgatito import ElGatito
@@ -25,6 +26,7 @@ def Parametros():
     parser.add_argument("--striming", "-s", help="Configurar folder a noticias actual")
     parser.add_argument("--mododemo", "-dd", help="Sistema modo demo", action="store_true")
     parser.add_argument("--gui", "-g", help="Sistema interface grafica", action="store_true")
+    parser.add_argument("--configurar", "-c", help="Sistema configuracion del programa", action="store_true")
 
     return parser.parse_args()
 
@@ -34,7 +36,10 @@ def main():
     logger.info("ElGatoALSW[Iniciando]")
     args = Parametros()
 
-    if args.proyecto:
+
+    if args.configurar:
+        ConfigurarModulos()
+    elif args.proyecto:
         logger.info("Configurando Folder como Proyecto Actual")
         SalvarValor("data/proyecto.json", "ProyectoActual", os.getcwd())
     elif args.striming:
