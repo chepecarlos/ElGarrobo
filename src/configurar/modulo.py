@@ -25,11 +25,16 @@ def ConfigurarModulos():
         Modulo["nuevo_estado"] = Respuesta(Estado)
     for Modulo in Data_Modulos:
         Atributo = Modulo["atributo"]
-        Estado = Estado_Modulos[Modulo["atributo"]]
         Estado_nuevo = Modulo["nuevo_estado"]
-        if Estado != Estado_nuevo:
+        if Atributo in Estado_Modulos:
+            Estado = Estado_Modulos[Modulo["atributo"]]
+            if Estado != Estado_nuevo:
+                print(f"Actualizando[{Atributo}] {Estado_nuevo}")
+                SalvarValor("modulos/modulos.json", Atributo, Estado_nuevo)
+        else: 
             print(f"Actualizando[{Atributo}] {Estado_nuevo}")
             SalvarValor("modulos/modulos.json", Atributo, Estado_nuevo)
+
 
 
 
