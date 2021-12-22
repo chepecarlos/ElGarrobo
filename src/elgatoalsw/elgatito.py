@@ -365,7 +365,12 @@ class ElGatito(object):
                 # TODO: Mover a funcion aparte
                 if self.ModuloMonitorESP:
                     if "topic" in self.ModuloMonitorESP:
-                        Mensaje = {"accion": NombreAccion, "nombre": Nombre, "key": accion["key"]}
+                        Mensaje = {"accion": NombreAccion}
+                        if "key" in accion:
+                            Mensaje["key"] = accion["key"]
+                        if Nombre is not None:
+                            Mensaje["nombre"] = Nombre
+
                         Opciones = {"opciones": Mensaje, "topic": f"{self.ModuloMonitorESP['topic']}/accion"}
 
                         self.ListaAcciones["mqtt"](Opciones)
