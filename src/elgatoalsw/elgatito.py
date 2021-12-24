@@ -97,7 +97,7 @@ class ElGatito(object):
                 self.ModuloMQTT = Modulos["mqtt"]
 
             if "monitor_esp" in Modulos:
-                if Modulos['monitor_esp']:
+                if Modulos["monitor_esp"]:
                     self.ModuloMonitorESP = ObtenerArchivo("modulos/monidor_esp/mqtt.json")
 
             if "mqtt_estado" in Modulos:
@@ -351,7 +351,6 @@ class ElGatito(object):
 
     def BuscarAccion(self, accion):
         if "accion" in accion:
-            # print(accion)
             NombreAccion = accion["accion"]
             if NombreAccion in self.ListaAcciones:
                 OpcionesAccion = {}
@@ -367,7 +366,6 @@ class ElGatito(object):
                     OpcionesAccion = accion["opciones"]
 
                 # TODO: Mover a funcion aparte
-                print(self.ModuloMonitorESP)
                 if self.ModuloMonitorESP:
                     if "topic" in self.ModuloMonitorESP:
                         Mensaje = {"accion": NombreAccion}
