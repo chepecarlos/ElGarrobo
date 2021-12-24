@@ -1,4 +1,6 @@
 import json
+import multiprocessing
+
 from MiLibrerias import EnviarMensajeMQTT
 
 
@@ -17,6 +19,7 @@ def MensajeMQTT(Opciones):
     Contrasenna = None
     Servidor = None
     Puerto = None
+    Esperar = None
     if "mensaje" in Opciones:
         Mensaje = Opciones["mensaje"]
     elif "opciones" in Opciones:
@@ -33,10 +36,19 @@ def MensajeMQTT(Opciones):
         Servidor = Opciones["servidor"]
 
     if "puerto" in Opciones:
-        Puerto = Opciones["puwero"]
+        Puerto = Opciones["puerto"]
 
     if "contrasenna" in Opciones:
         Contrasenna = Opciones["Contrasenna"]
 
+    if "esperar" in Opciones:
+        Esperar = Opciones["esperar"]
+
     if Mensaje is not None and Topic is not None:
-        EnviarMensajeMQTT(Topic, Mensaje, Usuario, Contrasenna, Servidor, Puerto)
+        if Esperar is None or not Esperar:
+            PSonido = multiprocessing.Process(
+                target=EnviarMensajeMQTT, args=[Topic, Mensaje, Usuario, Contrasenna, Servidor, Puerto]
+            )
+            PSonido.start()
+        else:
+            EnviarMensajeMQTT(Topic, Mensaje, Usuario, Contrasenna, Servidor, Puerto)
