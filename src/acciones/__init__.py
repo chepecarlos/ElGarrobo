@@ -1,13 +1,15 @@
-from .notificacion import Notificacion
-from .delay import Delay
-from .emular_teclado import ComandoTeclas, ComandoEscribir, ComandoPegar, CopiarTexto
-from .sonidos import PararReproducion, Reproducir
 from .accion_os import AccionOS
-from .archivos import LeerValor, EscrivirValor
-from .operaciones import OperacionConstrain
-from .ventanas import CerrarVentana, MostarVentana
+from .archivos import EscrivirValor, LeerValor
+from .delay import Delay
+from .emular_teclado import ComandoEscribir, ComandoPegar, ComandoTeclas, CopiarTexto
 from .mqtt import MensajeMQTT
+from .notificacion import Notificacion
+from .operaciones import OperacionConstrain
+from .sonidos import PararReproducion, Reproducir
 from .textovoz import TextoVoz
+from .ventanas import CerrarVentana, MostarVentana
+from .textbox import VentanaTexto
+
 
 def CargarAcciones():
     """
@@ -36,4 +38,6 @@ def CargarAcciones():
         # Manejo de Ventanas
         "cerrar_ventana": CerrarVentana,
         "mostar_ventana": MostarVentana,
+        # Input
+        "ventana_texto": VentanaTexto,
     }

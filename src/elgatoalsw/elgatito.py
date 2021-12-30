@@ -396,14 +396,23 @@ class ElGatito(object):
         ListaComandos -> list
             Acciones a realizar
         """
-        respuesta = None
+        Cajon = {}
         for Comando in ListaComando:
-            if respuesta is not None:
-                Opciones = Comando["opciones"]
-                if "data_in" in Opciones:
-                    DataIn = Opciones["data_in"]
-                    Opciones[DataIn] = respuesta
+
+            if "solisita" in Comando:
+                Atributo = Comando["solisita"]
+                if Atributo in Cajon:
+                    if not "opciones" in Comando:
+                        Comando["opciones"] = {}
+
+                    Opciones = Comando["opciones"]
+                    Opciones[Atributo] = Cajon[Atributo]
+
             respuesta = self.BuscarAccion(Comando)
+
+            if "respuesta" in Comando:
+                Atributo = Comando["respuesta"]
+                Cajon[Atributo] = respuesta
 
         # TODO: Hacer Macros en diferentes Hilos
 
