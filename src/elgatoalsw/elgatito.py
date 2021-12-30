@@ -407,19 +407,6 @@ class ElGatito(object):
 
         # TODO: Hacer Macros en diferentes Hilos
 
-    #     ProcesoAccion = multiprocessing.Process(target=self.HacerMacro, args=[ListaComando])
-    #     ProcesoAccion.start()
-
-    # def HacerMacro(self, ListaComando):
-    #     respuesta = None
-    #     for Comando in ListaComando:
-    #         if respuesta is not None:
-    #             Opciones = Comando['opciones']
-    #             if 'data_in' in Opciones:
-    #                 DataIn = Opciones['data_in']
-    #                 Opciones[DataIn] = respuesta
-    #         respuesta = self.BuscarAccion(Comando)
-
     def AccionRandom(self, Opciones):
         """
         Ejecuta una accion al azar de una lista de acciones
