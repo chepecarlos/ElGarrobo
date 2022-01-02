@@ -1,5 +1,6 @@
+"""Acciones de texto a voz."""
+# https://pypi.org/project/pyttsx3/
 import pyttsx3
-
 from MiLibrerias import ConfigurarLogging
 
 logger = ConfigurarLogging(__name__)

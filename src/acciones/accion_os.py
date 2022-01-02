@@ -1,8 +1,10 @@
-"""Operaciones de Sistema Operativo."""
+"""Acciones de Ejecucion de Sistema Operativo."""
 import os
+
 from MiLibrerias import ConfigurarLogging
 
 Logger = ConfigurarLogging(__name__)
+
 
 def AccionOS(Opciones):
     """

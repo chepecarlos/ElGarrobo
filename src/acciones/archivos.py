@@ -1,7 +1,6 @@
-import logging
-from MiLibrerias import ObtenerValor, SalvarValor
-from MiLibrerias import ObtenerArchivo, SalvarArchivo
-from MiLibrerias import ConfigurarLogging
+"""Acciones de Archivos."""
+
+from MiLibrerias import ConfigurarLogging, ObtenerArchivo, ObtenerValor, SalvarArchivo, SalvarValor
 
 Logger = ConfigurarLogging(__name__)
 

@@ -1,10 +1,11 @@
+"""Acciones de Emulacion de teclas."""
 # https://pyautogui.readthedocs.io/en/latest/install.html
 
 import pyautogui
 import pyperclip
+from MiLibrerias import ConfigurarLogging
 
 from .delay import Delay
-from MiLibrerias import ConfigurarLogging
 
 # Implementar press y onrelles
 # TODO: Añadir ñ en las funciones

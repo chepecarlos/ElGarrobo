@@ -1,5 +1,7 @@
-from acciones.accion_os import Logger
+"""Acciones de Caja texto. """
 import pyautogui
+
+from acciones.accion_os import Logger
 
 
 def VentanaTexto(Opciones):

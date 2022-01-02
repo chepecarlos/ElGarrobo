@@ -1,3 +1,5 @@
+"""Lista de Acciones."""
+
 from .accion_os import AccionOS
 from .archivos import EscrivirValor, LeerValor
 from .delay import Delay
@@ -6,9 +8,9 @@ from .mqtt import MensajeMQTT
 from .notificacion import Notificacion
 from .operaciones import OperacionConstrain
 from .sonidos import PararReproducion, Reproducir
+from .textbox import VentanaTexto
 from .textovoz import TextoVoz
 from .ventanas import CerrarVentana, MostarVentana
-from .textbox import VentanaTexto
 
 
 def CargarAcciones():

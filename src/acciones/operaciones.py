@@ -1,3 +1,6 @@
+"""Acciones de Operaciones."""
+
+
 def constrain(n, minn, maxn):
     return max(min(maxn, n), minn)
 

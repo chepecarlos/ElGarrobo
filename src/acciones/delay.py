@@ -1,4 +1,5 @@
-"""Modulo de Tiempo."""
+"""Modulo de Acciones de Tiempo."""
+
 import time
 
 from MiLibrerias import ConfigurarLogging
@@ -13,11 +14,11 @@ def Delay(Opciones):
     tiempo -> float o str
         tiempo de espera en segundos
     """
-    
+
     if "tiempo" in Opciones:
         tiempo = Opciones["tiempo"]
-        # TODO: Agregar try
-        if type(tiempo) is str:
+        # TODO: confirmar que es un numero
+        if isinstance(tiempo, str):
             tiempo = sum(x * int(t) for x, t in zip([3600, 60, 1], tiempo.split(":")))
 
         Logger.info(f"Delay[{tiempo}s]")

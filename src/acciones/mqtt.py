@@ -1,3 +1,4 @@
+"""Accion de MQTT."""
 import json
 import multiprocessing
 

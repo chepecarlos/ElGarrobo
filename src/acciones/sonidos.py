@@ -1,13 +1,11 @@
-"""Modulo para acciones de produccion de sonido."""
+"""Acciones de Sonido."""
 
 # https://github.com/jiaaro/pydub
 import multiprocessing
 
+from MiLibrerias import ConfigurarLogging, ObtenerFolderConfig, RelativoAbsoluto, UnirPath
 from pydub import AudioSegment
 from pydub.playback import play
-
-from MiLibrerias import ConfigurarLogging
-from MiLibrerias import ObtenerFolderConfig, UnirPath, RelativoAbsoluto
 
 logger = ConfigurarLogging(__name__)
 

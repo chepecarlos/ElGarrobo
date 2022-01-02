@@ -1,7 +1,9 @@
+"""Acciones de manejo de ventanas de escritorio."""
 # https://github.com/jordansissel/xdotool
 # sudo apt install xdotool
-from .accion_os import AccionOS
 from MiLibrerias import ConfigurarLogging
+
+from .accion_os import AccionOS
 
 Logger = ConfigurarLogging(__name__)
 
@@ -24,7 +26,7 @@ def MostarVentana(Opciones):
     Titulo = None
     if "titulo" in Opciones:
         Titulo = Opciones["titulo"]
-    
+
     if Titulo is None:
         return
     Comando = f'xdotool search --onlyvisible "{Titulo}" windowactivate'

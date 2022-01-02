@@ -1,6 +1,7 @@
+"""Acciones de Notificaciones de Escritorio."""
 # https://github.com/ms7m/notify-py
+from MiLibrerias import ObtenerFolderConfig, UnirPath
 from notifypy import Notify
-from MiLibrerias import UnirPath, ObtenerFolderConfig
 
 
 def Notificacion(Opciones):
@@ -21,6 +22,7 @@ def Notificacion(Opciones):
 
         Noti = Notify()
         Noti.message = Texto
+        Noti.application_name = "ElGatoALSW"
 
         if "titulo" in Opciones:
             Noti.title = Opciones["titulo"]
