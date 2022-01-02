@@ -405,21 +405,20 @@ class ElGatito(object):
                 macro_opciones = Comando["macro_opciones"]
                 if "solisita" in macro_opciones:
                     atributo = Comando["solisita"]
+                    if atributo in Cajon:
+                        if not "opciones" in Comando:
+                            Comando["opciones"] = {}
 
-            if "solisita" in Comando:
-                Atributo = Comando["solisita"]
-                if Atributo in Cajon:
-                    if not "opciones" in Comando:
-                        Comando["opciones"] = {}
-
-                    Opciones = Comando["opciones"]
-                    Opciones[Atributo] = Cajon[Atributo]
+                        Opciones = Comando["opciones"]
+                        Opciones[atributo] = Cajon[atributo]
 
             respuesta = self.BuscarAccion(Comando)
 
-            if "respuesta" in Comando:
-                Atributo = Comando["respuesta"]
-                Cajon[Atributo] = respuesta
+            if "macro_opciones" in Comando:
+                macro_opciones = Comando["macro_opciones"]
+                if "respuesta" in macro_opciones:
+                    Atributo = Comando["respuesta"]
+                    Cajon[Atributo] = respuesta
 
         # TODO: Hacer Macros en diferentes Hilos
 
