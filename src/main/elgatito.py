@@ -397,7 +397,14 @@ class ElGatito(object):
             Acciones a realizar
         """
         Cajon = {}
-        for Comando in ListaComando:
+        for Numero, Comando in enumerate(ListaComando):
+
+            logger.info(f"Macro {Numero}")
+
+            if "macro_opciones" in Comando:
+                macro_opciones = Comando["macro_opciones"]
+                if "solisita" in macro_opciones:
+                    atributo = Comando["solisita"]
 
             if "solisita" in Comando:
                 Atributo = Comando["solisita"]

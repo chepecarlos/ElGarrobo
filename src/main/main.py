@@ -4,8 +4,8 @@ import argparse
 import os
 import sys
 
-from libreria.acciones.News import SalvarArchivoNoticia
 from configurar.modulo import ConfigurarModulos
+from libreria.acciones.News import SalvarArchivoNoticia
 from MiLibrerias import ConfigurarLogging, SalvarValor, UnirPath
 
 from .elgatito import ElGatito
@@ -35,7 +35,6 @@ def main():
     # TODO: funciones para configurar para priner aranque
     logger.info("ElGatoALSW[Iniciando]")
     args = Parametros()
-
 
     if args.configurar:
         ConfigurarModulos()
