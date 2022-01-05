@@ -66,4 +66,4 @@ def EscrivirValor(Opciones):
         # TODO: Salvar en No local
     else:
         Logger.info(f"Escribir[{Archivo}] {Atributo}={Valor}")
-        SalvarValor(Archivo, Atributo, Valor, Local=Local)
+        SalvarValor(Archivo, Atributo, Valor, local=Local)

@@ -20,6 +20,8 @@ from MiLibrerias import (
     UnirPath,
 )
 
+# from src.acciones.accion_os import Logger
+
 logger = ConfigurarLogging(__name__)
 
 
@@ -404,21 +406,23 @@ class ElGatito(object):
             if "macro_opciones" in Comando:
                 macro_opciones = Comando["macro_opciones"]
                 if "solisita" in macro_opciones:
-                    atributo = Comando["solisita"]
+                    atributo = macro_opciones["solisita"]
                     if atributo in Cajon:
                         if not "opciones" in Comando:
                             Comando["opciones"] = {}
 
                         Opciones = Comando["opciones"]
                         Opciones[atributo] = Cajon[atributo]
+                        logger.info(f"Cargar_cajon[{atributo}] {Opciones}")
 
             respuesta = self.BuscarAccion(Comando)
 
             if "macro_opciones" in Comando:
                 macro_opciones = Comando["macro_opciones"]
                 if "respuesta" in macro_opciones:
-                    Atributo = Comando["respuesta"]
-                    Cajon[Atributo] = respuesta
+                    atributo = macro_opciones["respuesta"]
+                    Cajon[atributo] = respuesta
+                    logger.info(f"Salvar_Cajon[{atributo}] {respuesta}")
 
         # TODO: Hacer Macros en diferentes Hilos
 
