@@ -54,7 +54,7 @@ def EscrivirValor(Opciones):
         Atributo = Opciones["atributo"]
     if "valor" in Opciones:
         Valor = Opciones["valor"]
-    if "local" is Opciones:
+    if "local" in Opciones:
         Local = Opciones["local"]
 
     if Archivo is None or Valor is None:

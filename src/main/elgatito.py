@@ -401,7 +401,7 @@ class ElGatito(object):
         Cajon = {}
         for Numero, Comando in enumerate(ListaComando):
 
-            logger.info(f"Macro {Numero}")
+            logger.info(f"Macro[{Numero}]")
 
             if "macro_opciones" in Comando:
                 macro_opciones = Comando["macro_opciones"]
