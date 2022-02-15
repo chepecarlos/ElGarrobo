@@ -1,0 +1,26 @@
+{
+  "files.exclude": {
+    "build": true,
+    "dist": true,
+    "venv": true,
+    "**/__pycache__": true
+  },
+  "python.linting.pylintEnabled": true,
+  "python.linting.pylintArgs": [
+    "--extension-pkg-whitelist=wx",
+    // camelCase
+    "--module-naming-style=camelCase",
+    "--const-naming-style=camelCase",
+    "--class-naming-style=PascalCase",
+    "--function-naming-style=camelCase",
+    "--method-naming-style=any",
+    "--attr-naming-style=camelCase",
+    "--argument-naming-style=camelCase",
+    "--variable-naming-style=camelCase",
+    "--class-attribute-naming-style=camelCase",
+    "--inlinevar-naming-style=camelCase",
+    // formato
+    "--disable=logging-fstring-interpolation"
+  ],
+  "cSpell.words": ["elgatoalsw", "MQTT"]
+}

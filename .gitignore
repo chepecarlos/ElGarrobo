@@ -2,7 +2,7 @@
 Data/*
 
 # Demos de prueba
-demo/*
+demo/
 
 # Archivos de Audio
 *.mp3
