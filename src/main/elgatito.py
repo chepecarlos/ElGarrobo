@@ -20,8 +20,6 @@ from MiLibrerias import (
     UnirPath,
 )
 
-# from src.acciones.accion_os import Logger
-
 logger = ConfigurarLogging(__name__)
 
 
@@ -275,8 +273,8 @@ class ElGatito(object):
         if self.ModuloMonitorESP:
             if "topic" in self.ModuloMonitorESP:
                 Mensaje = {"folder": FolderActual, "direccion": Folder}
-                Opciones = {"opciones": Mensaje, "topic": f"{self.ModuloMonitorESP['topic']}/folder"}
-                self.ListaAcciones["mqtt"](Opciones)
+                opciones = {"opciones": Mensaje, "topic": f"{self.ModuloMonitorESP['topic']}/folder"}
+                self.ListaAcciones["mqtt"](opciones)
 
         if Folderes:
             Data = self.BuscarDentroFolder(Folderes, Data)
@@ -355,7 +353,7 @@ class ElGatito(object):
         if "accion" in accion:
             NombreAccion = accion["accion"]
             if NombreAccion in self.ListaAcciones:
-                OpcionesAccion = {}
+                opcionesAccion = {}
                 Nombre = None
 
                 if "nombre" in accion:
@@ -365,7 +363,7 @@ class ElGatito(object):
                     logger.info(f"Accion[{NombreAccion}]")
 
                 if "opciones" in accion:
-                    OpcionesAccion = accion["opciones"]
+                    opcionesAccion = accion["opciones"]
 
                 # TODO: Mover a funcion aparte
                 if self.ModuloMonitorESP:
@@ -376,12 +374,12 @@ class ElGatito(object):
                         if Nombre is not None:
                             Mensaje["nombre"] = Nombre
 
-                        Opciones = {"opciones": Mensaje, "topic": f"{self.ModuloMonitorESP['topic']}/accion"}
+                        opciones = {"opciones": Mensaje, "topic": f"{self.ModuloMonitorESP['topic']}/accion"}
 
-                        self.ListaAcciones["mqtt"](Opciones)
+                        self.ListaAcciones["mqtt"](opciones)
 
                 # try:
-                return self.ListaAcciones[NombreAccion](OpcionesAccion)
+                return self.ListaAcciones[NombreAccion](opcionesAccion)
                 # except Exception as Error:
                 #     logger.info(f"Accion[Error] {Error}")
             else:
@@ -411,9 +409,9 @@ class ElGatito(object):
                         if not "opciones" in Comando:
                             Comando["opciones"] = {}
 
-                        Opciones = Comando["opciones"]
-                        Opciones[atributo] = Cajon[atributo]
-                        logger.info(f"Cargar_cajon[{atributo}] {Opciones}")
+                        opciones = Comando["opciones"]
+                        opciones[atributo] = Cajon[atributo]
+                        logger.info(f"Cargar_cajon[{atributo}] {opciones}")
 
             respuesta = self.BuscarAccion(Comando)
 
@@ -426,22 +424,22 @@ class ElGatito(object):
 
         # TODO: Hacer Macros en diferentes Hilos
 
-    def AccionRandom(self, Opciones):
+    def AccionRandom(self, opciones):
         """
         Ejecuta una accion al azar de una lista de acciones
         """
         logger.info("Lanzando Datos")
-        Selecion = random.choice(Opciones)
+        Selecion = random.choice(opciones)
         return self.BuscarAccion(Selecion)
 
-    def Reiniciar(self, Opciones):
+    def Reiniciar(self, opciones):
         """
         Reinicia la data del programa.
         """
         logger.info("Reiniciar data ElGatoALSW")
         self.ReiniciarData()
 
-    def Regresar_Folder(self, Opciones):
+    def Regresar_Folder(self, opciones):
         Direcion = self.PathActual.split("/")
         self.PathActual = "/".join(Direcion[:-1])
         if self.PathActual == "":
@@ -472,23 +470,23 @@ class ElGatito(object):
             self.LimpiarDeck()
             self.ActualizarDeck()
 
-    def Actualizar_Folder(self, Opciones):
+    def Actualizar_Folder(self, opciones):
         self.ActualizarDeck()
 
-    def Siquiente_Pagina(self, Opciones):
+    def Siquiente_Pagina(self, opciones):
         self.MoverPagina("siquiente")
 
-    def Anterior_Pagina(self, Opciones):
+    def Anterior_Pagina(self, opciones):
         self.MoverPagina("anterior")
 
-    def DeckBrillo(self, Opciones):
+    def DeckBrillo(self, opciones):
         Brillo = ObtenerValor("data/streamdeck.json", "brillo")
 
         def constrain(n, minn, maxn):
             return max(min(maxn, n), minn)
 
-        if "cantidad" in Opciones:
-            cantidad = Opciones["cantidad"]
+        if "cantidad" in opciones:
+            cantidad = opciones["cantidad"]
         else:
             return
         Brillo += cantidad
@@ -577,7 +575,7 @@ class ElGatito(object):
     def __del__(self):
         print("I'm being automatically destroyed. Goodbye!")
 
-    def Salir(self, Opciones):
+    def Salir(self, opciones):
         """
         Cierra el programa.
         """
@@ -608,5 +606,5 @@ class ElGatito(object):
 
     def SolisitarNotifiacacion(self, Texto):
         if self.ModuloOBSNotificacion:
-            Opciones = {"texto": Texto}
-            self.ListaAcciones["notificacion"](Opciones)
+            opciones = {"texto": Texto}
+            self.ListaAcciones["notificacion"](opciones)

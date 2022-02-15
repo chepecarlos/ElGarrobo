@@ -1,10 +1,8 @@
-import paho.mqtt.client as mqtt
-
 import json
 import threading
 
-from MiLibrerias import ObtenerValor
-from MiLibrerias import ConfigurarLogging
+import paho.mqtt.client as mqtt
+from MiLibrerias import ConfigurarLogging, ObtenerValor
 
 logger = ConfigurarLogging(__name__)
 
@@ -59,7 +57,7 @@ class MiMQTT:
         self.cliente.loop_forever()
 
     def EventoConectar(self, client, userdata, flags, rc):
-        """Respuesta de conecion y subcripcion a topicos."""
+        """Respuesta de conecion y suscripción a topicos."""
         self.Conectado = True
         logger.info(f"MQTT[Conectado] - {self.Nombre}")
         logger.info(f"MQTT[Sub] - [{self.Nombre}]:{self.topic}")
@@ -70,7 +68,7 @@ class MiMQTT:
         self.Conectado = False
 
     def MensajeMQTT(self, client, userdata, msg):
-        # """Recibe mensaje por MQTT."""
+        """Recibe mensaje por MQTT."""
         Mensaje = msg.payload
         Topic = msg.topic
         logger.info(f"MQTT[{Topic}] {str(Mensaje)}")

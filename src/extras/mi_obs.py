@@ -1,19 +1,17 @@
 # Libreria: https://github.com/Elektordi/obs-websocket-py
 import threading
 
-from obswebsocket import obsws, requests, events
-
-from MiLibrerias import ConfigurarLogging
-from MiLibrerias import SalvarValor, SalvarArchivo, ObtenerValor
+from MiLibrerias import ConfigurarLogging, ObtenerValor, SalvarArchivo, SalvarValor
+from obswebsocket import events, obsws, requests
 
 logger = ConfigurarLogging(__name__)
 
 
 class MiOBS:
-    """Coneccion con OBS."""
+    """Concepción con OBS."""
 
     def __init__(self):
-        """Crea coneccion basica con OBS Websocket."""
+        """Crea confección básica con OBS Websocket."""
         logger.info("OBS[Iniciando]")
         self.Reiniciar()
 
@@ -47,19 +45,28 @@ class MiOBS:
         """Guarda Funcion para refrescar iconos StringDeck."""
         self.Dibujar = Funcion
 
+    def actualizarDeck(self):
+        """Dibuja en StreanDeck si es posible"""
+        if self.Dibujar is not None:
+            self.Dibujar()
+
     def AgregarNotificacion(self, Funcion):
-        """Agrega funcin para notificacion."""
+        """Agrega función para notificación."""
         self.Notificaciones = Funcion
 
-    def Conectar(self, Opciones):
+    def Conectar(self, opciones):
         """Se conecta a OBS Websocket y inicializa los eventos."""
 
-        if "servidor" in Opciones:
-            self.host = Opciones["servidor"]
-        if "puerto" in Opciones:
-            self.port = Opciones["puerto"]
-        if "contrasenna" in Opciones:
-            self.password = Opciones["contrasenna"]
+        if "servidor" in opciones:
+            self.host = opciones["servidor"]
+        if "puerto" in opciones:
+            self.port = opciones["puerto"]
+        if "contrasenna" in opciones:
+            self.password = opciones["contrasenna"]
+
+        if self.Conectado:
+            logger.info("OBS Ya Conectado")
+            return
 
         try:
             if self.password is None:
@@ -85,7 +92,7 @@ class MiOBS:
         self.AgregarEvento(self.EventoVisibilidadIten, events.SceneItemVisibilityChanged)
         self.AgregarEvento(self.EventoVisibilidadFiltro, events.SourceFilterVisibilityChanged)
         self.AgregarEvento(self.EventoSalir, events.Exiting)
-        self.Dibujar()
+        self.actualizarDeck()
 
     def SalvarEstadoActual(self):
         """Salta estado inicial de OBS para StreamDeck."""
@@ -121,7 +128,7 @@ class MiOBS:
             self.SalvarFiltroFuente(NombreFuente)
 
         if Refrescar:
-            self.Dibujar()
+            self.actualizarDeck()
 
     def AgregarEvento(self, Funcion, Evento):
         """Registra evento de OBS a una funcion."""
@@ -133,37 +140,37 @@ class MiOBS:
         SalvarValor("data/obs.json", "obs_escena", EscenaActual)
         logger.info(f"OBS[Escena] {EscenaActual}")
         self.SalvarFuente()
-        self.Dibujar()
+        self.actualizarDeck()
 
     def EventoGrabando(self, Mensaje):
-        """Recive estado de grabacion."""
+        """Recibe estado de grabación."""
         if Mensaje.name == "RecordingStarted":
             SalvarValor("data/obs.json", "obs_grabar", True)
             logger.info("OBS[Grabando]")
         elif Mensaje.name == "RecordingStopping":
             SalvarValor("data/obs.json", "obs_grabar", False)
             logger.info(f"OBS[Grabo] {Mensaje.datain['rec-timecode']}")
-        self.Dibujar()
+        self.actualizarDeck()
 
     def EventoEnVivo(self, Mensaje):
-        """Recive estado del Striming."""
+        """Recibe estado del Striming."""
         if Mensaje.name == "StreamStarted":
             SalvarValor("data/obs.json", "obs_envivo", True)
             logger.info("OBS EnVivo")
         elif Mensaje.name == "StreamStopping":
             SalvarValor("data/obs.json", "obs_envivo", False)
             logger.info(f"OBS Paro EnVivo {Mensaje.datain['stream-timecode']}")
-        self.Dibujar()
+        self.actualizarDeck()
 
     def EventoSalir(self, Mensaje):
-        """Recive desconeccion de OBS websocket."""
+        """Recibe desconeccion de OBS websocket."""
         logger.info("Se desconecto OBS")
         try:
             self.Desconectar()
         except Exception as Error:
             logger.warning(f"OBS[Error] {Error}")
         self.LimpiarTemporales()
-        self.Dibujar()
+        self.actualizarDeck()
 
     def EventoVisibilidadIten(self, Mensaje):
         """Recive estado de fuente."""
@@ -171,7 +178,7 @@ class MiOBS:
         Visibilidad = Mensaje.datain["item-visible"]
         logger.info(f"OBS[{NombreFuente}] {Visibilidad}")
         SalvarValor("data/obs_fuente.json", NombreFuente, Visibilidad)
-        self.Dibujar()
+        self.actualizarDeck()
 
     def EventoVisibilidadFiltro(self, Mensaje):
         """Recive estado del filtro."""
@@ -183,7 +190,7 @@ class MiOBS:
         Data.append(NombreFuente)
         Data.append(NombreFiltro)
         SalvarValor("data/obs_filtro.json", Data, Visibilidad)
-        self.Dibujar()
+        self.actualizarDeck()
 
     def SalvarFiltroFuente(self, Fuente):
         """Salva el estado de los filtros de una fuente."""
@@ -209,10 +216,10 @@ class MiOBS:
             Data.append(elemento)
             SalvarValor("data/obs_filtro_opciones.json", Data, lista[elemento])
 
-    def CambiarEscena(self, Opciones):
+    def CambiarEscena(self, opciones):
         """Envia solisitud de cambiar de Escena."""
-        if "escena" in Opciones:
-            Escena = Opciones["escena"]
+        if "escena" in opciones:
+            Escena = opciones["escena"]
         else:
             logger.info(f"esena no definida")
             return
@@ -224,11 +231,11 @@ class MiOBS:
             logger.warning("OBS[No conectado]")
             self.Notificar("OBS No Conectado")
 
-    def CambiarFuente(self, Opciones=False, Fuente=None):
+    def CambiarFuente(self, opciones=False, Fuente=None):
         """Envia solisitud de Cambia el estado de una fuente."""
         if Fuente is None:
-            if "fuente" in Opciones:
-                Fuente = Opciones["fuente"]
+            if "fuente" in opciones:
+                Fuente = opciones["fuente"]
 
         if self.Conectado:
             Estado = ObtenerValor("data/obs_fuente.json", Fuente)
@@ -244,14 +251,14 @@ class MiOBS:
             logger.info("OBS[no Conectado]")
             self.Notificar("OBS No Conectado")
 
-    def CambiarFiltro(self, Opciones):
+    def CambiarFiltro(self, opciones):
         """Envia solisitud de cambiar estado de filtro."""
         Filtro = None
         Fuente = None
-        if "filtro" in Opciones:
-            Filtro = Opciones["filtro"]
-        if "fuente" in Opciones:
-            Fuente = Opciones["fuente"]
+        if "filtro" in opciones:
+            Filtro = opciones["filtro"]
+        if "fuente" in opciones:
+            Fuente = opciones["fuente"]
 
         if Filtro is None or Fuente is None:
             logger.info("OBS[Falta Atributo]")
@@ -267,7 +274,7 @@ class MiOBS:
             logger.info("OBS[no Conectado]")
             self.Notificar("OBS No Conectado")
 
-    def CambiarGrabacion(self, Opciones=None):
+    def CambiarGrabacion(self, opciones=None):
         """Envia solisitud de cambiar estado de Grabacion."""
         if self.Conectado:
             logger.info("Cambiando[Grabacion]")
@@ -276,7 +283,7 @@ class MiOBS:
             logger.info("OBS no Conectado")
             self.Notificar("OBS No Conectado")
 
-    def CambiarEnVivo(self, Opciones=None):
+    def CambiarEnVivo(self, opciones=None):
         """Envia solisitud de cambiar estado del Streaming ."""
         if self.Conectado:
             logger.info("Cambiando estado EnVivo")
@@ -285,9 +292,9 @@ class MiOBS:
             logger.info("OBS no Conectado")
             self.Notificar("OBS No Conectado")
 
-    def CambiarCamaraVirtual(self, Opciones=None):
+    def CambiarCamaraVirtual(self, opciones=None):
         if self.Conectado:
-            
+
             logger.info("OBS[Cambiando] CamaraVirtual")
             Solisitud = requests.Baserequests()
             Solisitud.name = "StartStopVirtualCam"
@@ -296,15 +303,14 @@ class MiOBS:
             logger.info("OBS no Conectado")
             self.Notificar("OBS No Conectado")
 
-
     def LimpiarTemporales(self):
-        """Limpia los archivos con informacion temporal de OBS."""
+        """Limpia los archivos con información temporal de OBS."""
         SalvarArchivo("data/obs.json", dict())
         SalvarArchivo("data/obs_fuente.json", dict())
         SalvarArchivo("data/obs_filtro.json", dict())
         SalvarArchivo("data/obs_filtro_opciones.json", dict())
 
-    def Desconectar(self, Opciones=False):
+    def Desconectar(self, opciones=False):
         """Deconectar de OBS websocket."""
         logger.info(f"OBS[Desconectar] - {self.host}")
         if self.Conectado:
@@ -312,7 +318,7 @@ class MiOBS:
             self.LimpiarTemporales()
         self.Conectado = False
         SalvarValor("data/obs.json", "obs_conectar", False)
-        self.Dibujar()
+        self.actualizarDeck()
 
     def __del__(self):
         """Borrar objeto de Websocket ."""
@@ -323,8 +329,7 @@ class MiOBS:
 
     def Notificar(self, Mensaje):
         if self.Notificaciones is not None:
-                self.Notificaciones(Mensaje)
-
+            self.Notificaciones(Mensaje)
 
     def Consultas(self):
         # print(dir(requests))

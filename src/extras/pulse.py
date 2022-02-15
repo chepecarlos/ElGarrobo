@@ -1,10 +1,8 @@
-import subprocess as sp
 import re
+import subprocess as sp
 
-from acciones.accion_os import AccionOS
-import logging
-from MiLibrerias import ConfigurarLogging
-from MiLibrerias import ObtenerValor, SalvarValor
+from acciones.accion_os import accionOS
+from MiLibrerias import ConfigurarLogging, ObtenerValor, SalvarValor
 
 Logger = ConfigurarLogging(__name__)
 
@@ -22,22 +20,22 @@ class MiPulse:
         ListaAcciones["mute"] = self.CambiarMute
         ListaAcciones["salvar_pulse"] = self.SalvarPulse
 
-    def CambiarVolumen(self, Opciones):
+    def CambiarVolumen(self, opciones):
 
         Dispositivo = None
         Valor = None
         Opcion = "asigniar"
         comando = None
 
-        if "dispositivo" in Opciones:
-            Dispositivo = Opciones["dispositivo"]
-        if "valor" in Opciones:
-            Valor = Opciones["valor"]
-        if "opcion" in Opciones:
-            Opcion = Opciones["opcion"]
+        if "dispositivo" in opciones:
+            Dispositivo = opciones["dispositivo"]
+        if "valor" in opciones:
+            Valor = opciones["valor"]
+        if "opcion" in opciones:
+            Opcion = opciones["opcion"]
 
         if Dispositivo is None or Valor is None:
-            logging.info("Faltan opciones")
+            Logger.info("Faltan opciones")
             return
 
         if Opcion == "asignar":
@@ -46,21 +44,21 @@ class MiPulse:
             simbolo = "+" if Valor > 0 else ""
             comando = f"pactl set-sink-volume {Dispositivo} {simbolo}{Valor}%"
         else:
-            logging.info("Opcion de audio no enocntrada")
+            Logger.info("Opción de audio no encontrada")
             return
 
-        AccionOS({"comando": comando})
+        accionOS({"comando": comando})
         self.SalvarPulse()
 
-    def CambiarMute(self, Opciones):
+    def CambiarMute(self, opciones):
 
         Dispositivo = None
         Tipo = "sink"
 
-        if "tipo" in Opciones:
-            Tipo = Opciones["tipo"]
-        if "dispositivo" in Opciones:
-            Dispositivo = Opciones["dispositivo"]
+        if "tipo" in opciones:
+            Tipo = opciones["tipo"]
+        if "dispositivo" in opciones:
+            Dispositivo = opciones["dispositivo"]
 
         if Dispositivo is None:
             Logger.info("Necesario de dispositivo")
@@ -68,15 +66,15 @@ class MiPulse:
 
         comando = f"pactl set-{Tipo}-mute {Dispositivo} toggle"
 
-        AccionOS({"comando": comando})
+        accionOS({"comando": comando})
         self.SalvarPulse()
 
-    def SalvarPulse(self, Opciones=None):
+    def SalvarPulse(self, opciones=None):
         Logger.info("Pulse[Salvar]")
 
-        ListaDispisitovos = self.DataPulse()
+        listaDispisitovos = self.DataPulse()
 
-        for Dispositivo in ListaDispisitovos:
+        for Dispositivo in listaDispisitovos:
             Texto = "Error"
             if Dispositivo.Mute:
                 Texto = "Mute"
@@ -90,25 +88,25 @@ class MiPulse:
     def DataPulse(self):
         Salida = sp.getoutput("pactl list sinks")
         Salida = Salida.split("Destino")
-        ListaDispisitovos = []
+        listaDispisitovos = []
         for Data in Salida:
             Lineas = Data.split("\n")
-            Actual = Dispositivo()
+            actual = Dispositivo()
             for Linea in Lineas:
                 if "Nombre:" in Linea:
-                    Actual.Nombre = Linea.replace("Nombre:", "").strip()
+                    actual.Nombre = Linea.replace("Nombre:", "").strip()
                 if "Volumen:" in Linea:
                     Numero = re.findall("([0-9][0-9][0-9]|[0-9][0-9]|[0-9])%", Linea)
-                    Actual.Volumen = Numero[0]
+                    actual.Volumen = Numero[0]
                 if "Silencio:" in Linea:
                     if "sí" in Linea:
-                        Actual.Mute = True
+                        actual.Mute = True
                     else:
-                        Actual.Mute = False
-            if Actual.Volumen is not None:
-                ListaDispisitovos.append(Actual)
+                        actual.Mute = False
+            if actual.Volumen is not None:
+                listaDispisitovos.append(actual)
 
-        return ListaDispisitovos
+        return listaDispisitovos
 
 
 class Dispositivo(object):
