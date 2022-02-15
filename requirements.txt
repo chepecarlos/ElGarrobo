@@ -7,3 +7,4 @@ pyttsx3
 StreamDeck
 evdev
 obs-websocket-py
+python-telegram-bot
