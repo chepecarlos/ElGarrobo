@@ -5,7 +5,7 @@ import pyautogui
 import pyperclip
 from MiLibrerias import ConfigurarLogging
 
-from .delay import Delay
+from .delay import delay
 
 # Implementar press y onrelles
 # TODO: Añadir ñ en las funciones
@@ -14,26 +14,26 @@ from .delay import Delay
 logger = ConfigurarLogging(__name__)
 
 
-def ComandoTeclas(Opciones):
+def comandoTeclas(opciones):
     """
     Preciona una combinacion de tecla.
 
     teclas -> list
         combinaciones de teclas
     """
-    if "teclas" in Opciones:
-        Teclas = Opciones["teclas"]
+    if "teclas" in opciones:
+        teclas = opciones["teclas"]
 
-        logger.info(f"Teclas{Teclas}")
-        for tecla in Teclas:
+        logger.info(f"Teclas{teclas}")
+        for tecla in teclas:
             pyautogui.keyDown(tecla)
-        for tecla in reversed(Teclas):
+        for tecla in reversed(teclas):
             pyautogui.keyUp(tecla)
     else:
         logger.info("Teclas[no asignadas]")
 
 
-def ComandoPegar(Opciones):
+def comandoPegar(opciones):
     """
     Guarda texto en papelera.
 
@@ -42,18 +42,18 @@ def ComandoPegar(Opciones):
     intervalo -> float
         tiempo de espera
     """
-    if "texto" in Opciones:
-        Texto = Opciones["texto"]
+    if "texto" in opciones:
+        texto = opciones["texto"]
 
         intervalo = 0.15
-        if "intervalo" in Opciones:
-            intervalo = Opciones["intervalo"]
+        if "intervalo" in opciones:
+            intervalo = opciones["intervalo"]
 
-        pyperclip.copy(Texto)
+        pyperclip.copy(texto)
         pyautogui.hotkey("ctrl", "v", interval=intervalo)
 
 
-def ComandoEscribir(Opciones):
+def comandoEscribir(opciones):
     """
     Escribe un texto letra por letra.
 
@@ -62,17 +62,17 @@ def ComandoEscribir(Opciones):
     intervalo -> float
         tiempo de espera
     """
-    if "texto" in Opciones:
-        Texto = Opciones["texto"]
+    if "texto" in opciones:
+        texto = opciones["texto"]
 
         intervalo = 0.01
-        if "intervalo" in Opciones:
-            intervalo = Opciones["intervalo"]
+        if "intervalo" in opciones:
+            intervalo = opciones["intervalo"]
 
-        pyautogui.write(Texto, interval=intervalo)
+        pyautogui.write(texto, interval=intervalo)
 
 
-def ComandoPrecionar(Opciones):
+def ComandoPrecionar(opciones):
     """
     Preciona una combinacion de teclas con estado.
 
@@ -82,20 +82,21 @@ def ComandoPrecionar(Opciones):
         estado de la tecla
 
     """
-    if "teclas" in Opciones:
-        Teclas = Opciones["teclas"]
-    if "precionado" in Opciones:
-        Estado = Opciones["presionado"]
+    estado = False
+    if "teclas" in opciones:
+        teclas = opciones["teclas"]
+    if "precionado" in opciones:
+        estado = opciones["presionado"]
 
-    if Estado:
-        for tecla in Teclas:
+    if estado:
+        for tecla in teclas:
             pyautogui.keyDown(tecla)
     else:
-        for tecla in reversed(Teclas):
+        for tecla in reversed(teclas):
             pyautogui.keyUp(tecla)
 
 
-def CopiarTexto(Opciones):
+def CopiarTexto(opciones):
     """
     Copia texto de papelera.
     """

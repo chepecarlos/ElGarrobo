@@ -3,35 +3,36 @@
 # sudo apt install xdotool
 from MiLibrerias import ConfigurarLogging
 
-from .accion_os import AccionOS
+from .accion_os import accionOS
 
-Logger = ConfigurarLogging(__name__)
+logger = ConfigurarLogging(__name__)
 
 
-def CerrarVentana(Opciones):
+def cerrarVentana(opciones):
     """
     Activa el cerrar ventanas con el cursor
     """
-    Logger.info("Seleciona programa a carrar")
-    AccionOS({"comando": "xdotool selectwindow windowclose"})
+    logger.info("Seleciona programa a carrar")
+    accionOS({"comando": "xdotool selectwindow windowclose"})
 
 
-def MostarVentana(Opciones):
+def mostarVentana(opciones):
     """
     Cambia a ventana que contenga el titulo
 
     titulo -> stl
         titulo a buscar
     """
-    Titulo = None
-    if "titulo" in Opciones:
-        Titulo = Opciones["titulo"]
+    titulo = None
+    if "titulo" in opciones:
+        titulo = opciones["titulo"]
 
-    if Titulo is None:
+    if titulo is None:
         return
-    Comando = f'xdotool search --onlyvisible "{Titulo}" windowactivate'
-    Logger.info(f"Buscando ventana[{Titulo}]")
-    AccionOS({"comando": Comando})
+
+    comando = f'xdotool search --onlyvisible "{titulo}" windowactivate'
+    logger.info(f"Buscando ventana[{titulo}]")
+    accionOS({"comando": comando})
     # Agregar mensaje si no esta la venta
 
 

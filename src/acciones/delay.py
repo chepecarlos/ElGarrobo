@@ -7,7 +7,7 @@ from MiLibrerias import ConfigurarLogging
 Logger = ConfigurarLogging(__name__)
 
 
-def Delay(Opciones):
+def delay(opciones):
     """
     Hace una pequeña espera en segundos.
 
@@ -15,11 +15,17 @@ def Delay(Opciones):
         tiempo de espera en segundos
     """
 
-    if "tiempo" in Opciones:
-        tiempo = Opciones["tiempo"]
+    if "tiempo" in opciones:
+        tiempo = opciones["tiempo"]
         # TODO: confirmar que es un numero
         if isinstance(tiempo, str):
-            tiempo = sum(x * int(t) for x, t in zip([3600, 60, 1], tiempo.split(":")))
+            pedadosTiempo = tiempo.split(":")
+            segundos = int(pedadosTiempo[-1])
+            if len(pedadosTiempo) > 1:
+                segundos += int(pedadosTiempo[-2]) * 60
+            if len(pedadosTiempo) > 2:
+                segundos += int(pedadosTiempo[-3]) * 3600
+            tiempo = segundos
 
         Logger.info(f"Delay[{tiempo}s]")
         time.sleep(tiempo)

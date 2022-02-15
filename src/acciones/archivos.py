@@ -1,42 +1,42 @@
-"""Acciones de Archivos."""
+"""Acciones de archivos."""
 
-from MiLibrerias import ConfigurarLogging, ObtenerArchivo, ObtenerValor, SalvarArchivo, SalvarValor
+from MiLibrerias import ConfigurarLogging, FuncionesArchivos
 
-Logger = ConfigurarLogging(__name__)
+logger = ConfigurarLogging(__name__)
 
 
-def LeerValor(Opciones):
+def leerValor(opciones):
     """
-    Lee un Atributo de un Archivo y lo devuelve
+    Lee un atributo de un archivo y lo devuelve
 
     archivo -> stl
         Nombre del archivo
     atributo -> stl
         Nombre del atributo
     """
-    Archivo = None
-    Atributo = None
-    if "archivo" in Opciones:
-        Archivo = Opciones["archivo"]
-    if "atributo" in Opciones:
-        Atributo = Opciones["atributo"]
-    if Archivo is None:
-        Logger.info(f"Requerido[Archivo,]")
+    archivo = None
+    atributo = None
+    if "archivo" in opciones:
+        archivo = opciones["archivo"]
+    if "atributo" in opciones:
+        atributo = opciones["atributo"]
+    if archivo is None:
+        logger.info(f"Requerido[archivo,]")
         return
 
-    Data = None
-    if Atributo is None:
-        Logger.info(f"Leer[{Archivo}]")
-        Data = ObtenerArchivo()
+    data = None
+    if atributo is None:
+        logger.info(f"Leer[{archivo}]")
+        data = FuncionesArchivos.ObtenerArchivo(archivo)
     else:
-        Logger.info(f"Leer[{Archivo}]: {Atributo}")
-        Data = ObtenerValor(Archivo, Atributo)
-    return Data
+        logger.info(f"Leer[{archivo}]: {atributo}")
+        data = FuncionesArchivos.ObtenerValor(archivo, atributo)
+    return data
 
 
-def EscrivirValor(Opciones):
+def escrivirValor(opciones):
     """
-    Escribe un Atributo de un Archivo
+    Escribe un atributo de un archivo
 
     archivo -> stl
         Nombre del archivo
@@ -44,26 +44,26 @@ def EscrivirValor(Opciones):
         Nombre del atributo
     valor -> everything
     """
-    Archivo = None
-    Atributo = None
-    Valor = None
-    Local = True
-    if "archivo" in Opciones:
-        Archivo = Opciones["archivo"]
-    if "atributo" in Opciones:
-        Atributo = Opciones["atributo"]
-    if "valor" in Opciones:
-        Valor = Opciones["valor"]
-    if "local" in Opciones:
-        Local = Opciones["local"]
+    archivo = None
+    atributo = None
+    valor = None
+    local = True
+    if "archivo" in opciones:
+        archivo = opciones["archivo"]
+    if "atributo" in opciones:
+        atributo = opciones["atributo"]
+    if "valor" in opciones:
+        valor = opciones["valor"]
+    if "local" in opciones:
+        local = opciones["local"]
 
-    if Archivo is None or Valor is None:
-        Logger.info("Falta informacion para")
+    if archivo is None or valor is None:
+        logger.info("Falta informacion para")
 
-    if Atributo is None:
-        Logger.info(f"Escribir[{Archivo}]={Valor}")
-        SalvarArchivo(Archivo, Valor)
+    if atributo is None:
+        logger.info(f"Escribir[{archivo}]={valor}")
+        FuncionesArchivos.SalvarArchivo(archivo, valor)
         # TODO: Salvar en No local
     else:
-        Logger.info(f"Escribir[{Archivo}] {Atributo}={Valor}")
-        SalvarValor(Archivo, Atributo, Valor, local=Local)
+        logger.info(f"Escribir[{archivo}] {atributo}={valor}")
+        FuncionesArchivos.SalvarValor(archivo, atributo, valor, local=local)

@@ -3,17 +3,17 @@ import os
 
 from MiLibrerias import ConfigurarLogging
 
-Logger = ConfigurarLogging(__name__)
+logger = ConfigurarLogging(__name__)
 
 
-def AccionOS(Opciones):
+def accionOS(opciones):
     """
     Ejecuta acciones del OS.
 
     comando -> stl
         comando a ejecutar
     """
-    if "comando" in Opciones:
-        Comando = Opciones["comando"]
-        Logger.info(f"OS[{Comando}]")
-        os.system(Comando)
+    if "comando" in opciones:
+        comando = opciones["comando"]
+        logger.info(f"OS[{comando}]")
+        os.system(comando)

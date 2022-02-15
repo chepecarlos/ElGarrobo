@@ -64,7 +64,7 @@ def Reproducir(opciones):
         # Archivo = RelativoAbsoluto(Archivo, Folder)
         Archivo = UnirPath(Folder, Archivo)
 
-        PSonido = multiprocessing.Process(target=Sonido, args=[Archivo, Ganancia])
+        PSonido = multiprocessing.Process(target=Sonido, args=(Archivo, Ganancia))
         PSonido.start()
         ListaSonidos.append(PSonido)
 

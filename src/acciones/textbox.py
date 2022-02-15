@@ -1,10 +1,11 @@
 """Acciones de Caja texto. """
 import pyautogui
+from MiLibrerias import ConfigurarLogging
 
-from acciones.accion_os import Logger
+logger = ConfigurarLogging(__name__)
 
 
-def VentanaTexto(Opciones):
+def VentanaTexto(opciones):
 
     Mensaje = ""
     Titulo = ""
@@ -13,16 +14,16 @@ def VentanaTexto(Opciones):
     Respuesta = None
     Tipo = "string"
 
-    if "mensaje" in Opciones:
-        Mensaje = Opciones["mensaje"]
-    if "titulo" in Opciones:
-        Titulo = Opciones["titulo"]
-    if "defaul" in Opciones:
-        Defaul = Opciones["defaul"]
-    if "ocultar" in Opciones:
-        Ocultar = Opciones["ocultar"]
-    if "tipo" in Opciones:
-        Tipo = Opciones["tipo"]
+    if "mensaje" in opciones:
+        Mensaje = opciones["mensaje"]
+    if "titulo" in opciones:
+        Titulo = opciones["titulo"]
+    if "defaul" in opciones:
+        Defaul = opciones["defaul"]
+    if "ocultar" in opciones:
+        Ocultar = opciones["ocultar"]
+    if "tipo" in opciones:
+        Tipo = opciones["tipo"]
 
     if Ocultar:
         Respuesta = pyautogui.password(Mensaje, Titulo, Defaul, "*")
@@ -33,8 +34,8 @@ def VentanaTexto(Opciones):
         Respuesta = int(Respuesta)
 
     if Respuesta:
-        Logger.info(f"Respuesta[{Respuesta}]")
+        logger.info(f"Respuesta[{Respuesta}]")
     else:
-        Logger.info("Respuesta[vacillo]")
+        logger.info("Respuesta[vacillo]")
 
     return Respuesta

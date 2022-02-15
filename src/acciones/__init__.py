@@ -1,16 +1,16 @@
 """Lista de Acciones."""
 
-from .accion_os import AccionOS
-from .archivos import EscrivirValor, LeerValor
-from .delay import Delay
-from .emular_teclado import ComandoEscribir, ComandoPegar, ComandoTeclas, CopiarTexto
-from .mqtt import MensajeMQTT
+from .accion_os import accionOS
+from .archivos import escrivirValor, leerValor
+from .delay import delay
+from .emular_teclado import CopiarTexto, comandoEscribir, comandoPegar, comandoTeclas
+from .mqtt import mensajeMQTT
 from .notificacion import Notificacion
 from .operaciones import OperacionConstrain
 from .sonidos import PararReproducion, Reproducir
 from .textbox import VentanaTexto
 from .textovoz import TextoVoz
-from .ventanas import CerrarVentana, MostarVentana
+from .ventanas import cerrarVentana, mostarVentana
 
 
 def CargarAcciones():
@@ -19,27 +19,27 @@ def CargarAcciones():
     """
 
     return {
-        "delay": Delay,
+        "delay": delay,
         "contrain": OperacionConstrain,
-        "mqtt": MensajeMQTT,
+        "mqtt": mensajeMQTT,
         # OS
-        "os": AccionOS,
+        "os": accionOS,
         "notificacion": Notificacion,
         # Precionas teclas
-        "teclas": ComandoTeclas,
-        "escribir": ComandoEscribir,
-        "pegar": ComandoPegar,
+        "teclas": comandoTeclas,
+        "escribir": comandoEscribir,
+        "pegar": comandoPegar,
         "copiar": CopiarTexto,
         # Audio
         "reproducion": Reproducir,
         "detener_reproducion": PararReproducion,
         "textovoz": TextoVoz,
         # Archivos
-        "leer_valor": LeerValor,
-        "escrivir_valor": EscrivirValor,
+        "leer_valor": leerValor,
+        "escrivir_valor": escrivirValor,
         # Manejo de Ventanas
-        "cerrar_ventana": CerrarVentana,
-        "mostar_ventana": MostarVentana,
+        "cerrar_ventana": cerrarVentana,
+        "mostar_ventana": mostarVentana,
         # Input
         "ventana_texto": VentanaTexto,
     }

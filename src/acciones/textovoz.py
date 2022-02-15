@@ -6,7 +6,7 @@ from MiLibrerias import ConfigurarLogging
 logger = ConfigurarLogging(__name__)
 
 
-def TextoVoz(Opciones):
+def TextoVoz(opciones):
     """
     Trasforma texto a sonido
     """
@@ -16,16 +16,16 @@ def TextoVoz(Opciones):
     Lenguaje = "spanish"
     Esperar = True
 
-    if "mensaje" in Opciones:
-        Mensaje = Opciones["mensaje"]
-    if "volumen" in Opciones:
-        Volumen = Opciones["volumen"]
-    if "lenguaje" in Opciones:
-        Lenguaje = Opciones["lenguaje"]
-    if "velocidad" in Opciones:
-        Velocidad = Opciones["velocidad"]
-    if "esperar" in Opciones:
-        Esperar = Opciones["esperar"]
+    if "mensaje" in opciones:
+        Mensaje = opciones["mensaje"]
+    if "volumen" in opciones:
+        Volumen = opciones["volumen"]
+    if "lenguaje" in opciones:
+        Lenguaje = opciones["lenguaje"]
+    if "velocidad" in opciones:
+        Velocidad = opciones["velocidad"]
+    if "esperar" in opciones:
+        Esperar = opciones["esperar"]
 
     if Mensaje is None:
         logger.info("falta mensaje a reproduccir")
