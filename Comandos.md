@@ -38,14 +38,14 @@ Configurara opciones de streamdeck que se aplicaran, guardara y cargaran en el c
 
 ```json
 {
-  "ConfigDeck": "<Opciones>"
+  "ConfigDeck": "<opciones>"
 }
 ```
 
-**Opciones**
+**opciones**
 
-| Nombre      | Descripcion |
-| ----------- | ------------|
+| Nombre      | Descripcion                  |
+| ----------- | ---------------------------- |
 | SubirBrillo | Sube el Brillo de streamdeck |
 | BajarBrillo | Baja el Brillo de streamdeck |
 

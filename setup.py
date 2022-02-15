@@ -12,15 +12,14 @@ with open("requirements.txt", "r") as f:
 setup(
     name="elgatoalsw",
     version=version,
-    description="Heramienta Macros de ALSW",
+    description="Herramienta Macros de ALSW",
     author="ChepeCarlos",
     author_email="chepecarlos@alsw.net",
     url="https://github.com/chepecarlos/ElGatoALSW",
     project_urls={
         "Bug Tracker": "https://github.com/chepecarlos/ElGatoALSW/issues",
     },
-    install_requires=[],
-    # install_requires=required,
+    install_requires=required,
     packages=find_packages(where="src", exclude=("tests*", "testing*")),
     package_dir={"": "src"},
     # data_files={"data/*"},
