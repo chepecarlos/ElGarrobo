@@ -21,9 +21,9 @@ def ActualizarIcono(Deck, indice, accion):
     ColorFondo = "black"
 
     if "imagen_opciones" in accion:
-        Opciones = accion["imagen_opciones"]
-        if "fondo" in Opciones:
-            ColorFondo = Opciones["fondo"]
+        opciones = accion["imagen_opciones"]
+        if "fondo" in opciones:
+            ColorFondo = opciones["fondo"]
 
     ImagenBoton = PILHelper.create_image(Deck, background=ColorFondo)
 

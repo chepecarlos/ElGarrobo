@@ -1,16 +1,14 @@
-import threading
 import itertools
-import time
 import os
-
-from PIL import Image, ImageDraw, ImageFont, ImageSequence
-from StreamDeck.ImageHelpers import PILHelper
+import threading
+import time
 from fractions import Fraction
 
-from .mi_deck_extra import PonerTexto, BuscarDirecionImagen
+from MiLibrerias import ConfigurarLogging, ObtenerFolderConfig, ObtenerValor, RelativoAbsoluto, UnirPath
+from PIL import Image, ImageDraw, ImageFont, ImageSequence
+from StreamDeck.ImageHelpers import PILHelper
 
-from MiLibrerias import ConfigurarLogging
-from MiLibrerias import ObtenerValor, UnirPath, ObtenerFolderConfig, RelativoAbsoluto
+from .mi_deck_extra import BuscarDirecionImagen, PonerTexto
 
 logger = ConfigurarLogging(__name__)
 
@@ -56,7 +54,7 @@ class DeckGif(threading.Thread):
                 self.Activo = False
 
     def DibujarGif(self, accion):
-        """Dibuja el siquiente frame de gif en StreamDeck."""
+        """Dibuja el siguiente frame de gif en StreamDeck."""
         if self.Activo:
             self.Deck.set_key_image(accion["indice"], next(accion["gif_cargado"]))
 
@@ -88,9 +86,9 @@ class DeckGif(threading.Thread):
         Gif = list()
         ColorFondo = "black"
         if "imagen_opciones" in accion:
-            Opciones = accion["imagen_opciones"]
-            if "fondo" in Opciones:
-                ColorFondo = Opciones["fondo"]
+            opciones = accion["imagen_opciones"]
+            if "fondo" in opciones:
+                ColorFondo = opciones["fondo"]
 
         DirecionGif = RelativoAbsoluto(DirecionGif, self.Deck.Folder)
         DirecionGif = UnirPath(ObtenerFolderConfig(), DirecionGif)

@@ -26,19 +26,19 @@ def PonerTexto(Imagen, accion, DirecionImagen=None):
     dibujo = ImageDraw.Draw(Imagen)
 
     if "titulo_opciones" in accion:
-        Opciones = accion["titulo_opciones"]
-        if "tamanno" in Opciones:
-            Tamanno = Opciones["tamanno"]
-        if "alinear" in Opciones:
-            Alinear = Opciones["alinear"]
-        if "color" in Opciones:
-            Titulo_Color = Opciones["color"]
-        if "borde_color" in Opciones:
-            Borde_Color = Opciones["borde_color"]
-        if "borde_grosor" in Opciones:
-            Borde_Grosor = Opciones["borde_grosor"]
-        if "ajustar" in Opciones:
-            Ajustar = Opciones["ajustar"]
+        opciones = accion["titulo_opciones"]
+        if "tamanno" in opciones:
+            Tamanno = opciones["tamanno"]
+        if "alinear" in opciones:
+            Alinear = opciones["alinear"]
+        if "color" in opciones:
+            Titulo_Color = opciones["color"]
+        if "borde_color" in opciones:
+            Borde_Color = opciones["borde_color"]
+        if "borde_grosor" in opciones:
+            Borde_Grosor = opciones["borde_grosor"]
+        if "ajustar" in opciones:
+            Ajustar = opciones["ajustar"]
 
     # TODO: hacer funcion mas limpia
     while Ajustar:
@@ -65,9 +65,9 @@ def PonerTexto(Imagen, accion, DirecionImagen=None):
 
 def PonerFondo(Imagen, accion):
     if "imagen_opciones" in accion:
-        Opciones = accion["imagen_opciones"]
-        if "fondo" in Opciones:
-            ColorFondo = Opciones["fondo"]
+        opciones = accion["imagen_opciones"]
+        if "fondo" in opciones:
+            ColorFondo = opciones["fondo"]
             dibujo = ImageDraw.Draw(Imagen)
             Tamanno = [(0, 0), (Imagen.width, Imagen.height)]
             dibujo.rectangle(Tamanno, fill=ColorFondo)
@@ -84,12 +84,12 @@ def BuscarDirecionImagen(accion):
     if "imagen_estado" in accion:
         ImagenEstado = accion["imagen_estado"]
         NombreAccion = accion["accion"]
-        OpcionesAccion = None
+        opcionesAccion = None
         if "opciones" in accion:
-            OpcionesAccion = accion["opciones"]
+            opcionesAccion = accion["opciones"]
 
         if NombreAccion.startswith("obs"):
-            EstadoImagen = BuscarImagenOBS(NombreAccion, OpcionesAccion)
+            EstadoImagen = BuscarImagenOBS(NombreAccion, opcionesAccion)
             if EstadoImagen:
                 DirecionImagen = ImagenEstado["imagen_true"]
             else:
@@ -108,7 +108,7 @@ def BuscarDirecionImagen(accion):
     return None
 
 
-def BuscarImagenOBS(NombreAccion, OpcionesAccion):
+def BuscarImagenOBS(NombreAccion, opcionesAccion):
     Estado = None
 
     ListaBasicas = [
@@ -121,22 +121,22 @@ def BuscarImagenOBS(NombreAccion, OpcionesAccion):
             Estado = ObtenerValor("data/obs.json", Basica)
 
     if NombreAccion == "obs_escena":
-        if "escena" in OpcionesAccion:
-            EscenaActual = OpcionesAccion["escena"]
+        if "escena" in opcionesAccion:
+            EscenaActual = opcionesAccion["escena"]
             EscenaActiva = ObtenerValor("data/obs.json", "obs_escena")
             if EscenaActual == EscenaActiva:
                 Estado = True
             else:
                 Estado = False
     elif NombreAccion == "obs_fuente":
-        if "fuente" in OpcionesAccion:
-            FuenteActual = OpcionesAccion["fuente"]
+        if "fuente" in opcionesAccion:
+            FuenteActual = opcionesAccion["fuente"]
             Estado = ObtenerValor("data/obs_fuente.json", FuenteActual)
     elif NombreAccion == "obs_filtro":
-        if "fuente" in OpcionesAccion:
-            Fuente = OpcionesAccion["fuente"]
-        if "filtro" in OpcionesAccion:
-            Filtro = OpcionesAccion["filtro"]
+        if "fuente" in opcionesAccion:
+            Fuente = opcionesAccion["fuente"]
+        if "filtro" in opcionesAccion:
+            Filtro = opcionesAccion["filtro"]
         if Fuente is not None and Filtro is not None:
             Estado = ObtenerValor("data/obs_filtro.json", [Fuente, Filtro])
 
