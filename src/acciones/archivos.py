@@ -34,7 +34,37 @@ def leerValor(opciones):
     return data
 
 
-def escrivirValor(opciones):
+def escribirValores(opciones):
+    """
+    Escribe un atributo de un archivo
+
+    archivo -> stl
+        Nombre del archivo
+    atributo -> stl
+        Nombre del atributo
+    valor -> everything
+    """
+    archivo = None
+    atributo = None
+    valores = None
+    local = True
+    if "archivo" in opciones:
+        archivo = opciones["archivo"]
+    if "valores" in opciones:
+        valores = opciones["valores"]
+    if "local" in opciones:
+        local = opciones["local"]
+
+    if archivo is None or valores is None:
+        logger.info("Falta información para")
+        return
+
+    for atributo in valores:
+        logger.info(f"Escribir[{archivo}] {atributo}={valores.get(atributo)}")
+        FuncionesArchivos.SalvarValor(archivo, atributo, valores.get(atributo), local=local)
+
+
+def escribirValor(opciones):
     """
     Escribe un atributo de un archivo
 
@@ -59,6 +89,7 @@ def escrivirValor(opciones):
 
     if archivo is None or valor is None:
         logger.info("Falta informacion para")
+        return
 
     if atributo is None:
         logger.info(f"Escribir[{archivo}]={valor}")

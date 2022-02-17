@@ -1,7 +1,7 @@
 """Lista de Acciones."""
 
 from .accion_os import accionOS
-from .archivos import escrivirValor, leerValor
+from .archivos import escribirValor, escribirValores, leerValor
 from .delay import delay
 from .emular_teclado import CopiarTexto, comandoEscribir, comandoPegar, comandoTeclas
 from .mqtt import mensajeMQTT
@@ -36,7 +36,8 @@ def CargarAcciones():
         "textovoz": TextoVoz,
         # Archivos
         "leer_valor": leerValor,
-        "escrivir_valor": escrivirValor,
+        "escribir_valor": escribirValor,
+        "escribir_valores": escribirValores,
         # Manejo de Ventanas
         "cerrar_ventana": cerrarVentana,
         "mostar_ventana": mostarVentana,
