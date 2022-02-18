@@ -66,6 +66,7 @@ class MiOBS:
 
         if self.Conectado:
             logger.info("OBS Ya Conectado")
+            self.Notificar("OBS Ya Conectado")
             return
 
         try:
@@ -82,6 +83,7 @@ class MiOBS:
             self.LimpiarTemporales()
             self.Conectado = False
             SalvarValor("data/obs.json", "obs_conectar", False)
+            self.Notificar("No se conectoOBS")
             return
         self.SalvarEstadoActual()
         self.AgregarEvento(self.EventoEscena, events.SwitchScenes)
@@ -169,6 +171,7 @@ class MiOBS:
             self.Desconectar()
         except Exception as Error:
             logger.warning(f"OBS[Error] {Error}")
+            self.Conectado = False
         self.LimpiarTemporales()
         self.actualizarDeck()
 
@@ -319,6 +322,7 @@ class MiOBS:
         self.Conectado = False
         SalvarValor("data/obs.json", "obs_conectar", False)
         self.actualizarDeck()
+        logger.info("Desconeccion correcta")
 
     def __del__(self):
         """Borrar objeto de Websocket ."""
