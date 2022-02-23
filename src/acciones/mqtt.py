@@ -47,9 +47,9 @@ def mensajeMQTT(opciones):
 
     if Mensaje is not None and Topic is not None:
         if Esperar is None or not Esperar:
-            PSonido = multiprocessing.Process(
-                target=EnviarMensajeMQTT, args=[Topic, Mensaje, Usuario, Contrasenna, Servidor, Puerto]
+            procesoSonido = multiprocessing.Process(
+                target=EnviarMensajeMQTT, args=(Topic, Mensaje, Usuario, Contrasenna, Servidor, Puerto)
             )
-            PSonido.start()
+            procesoSonido.start()
         else:
             EnviarMensajeMQTT(Topic, Mensaje, Usuario, Contrasenna, Servidor, Puerto)
