@@ -71,9 +71,15 @@ class MiMQTT:
         """Recibe mensaje por MQTT."""
         Mensaje = msg.payload
         Topic = msg.topic
-        logger.info(f"MQTT[{Topic}] {str(Mensaje)}")
         Mensaje = str(Mensaje.decode("utf-8", "ignore"))
-        Mensaje = json.loads(Mensaje)
+        logger.info(f"MQTT[{Topic}] {Mensaje}")
+
+        try:
+            Mensaje = json.loads(Mensaje)
+        except Exception as Error:
+            logger.error("MQTT[Problemas con la accion]")
+            return
+
         if "accion" in Mensaje:
             logger.info(f"MQTT[Accion] {Mensaje['accion']}")
             self.Evento(Mensaje)
