@@ -3,6 +3,7 @@
 from .accion_os import accionOS
 from .archivos import escribirValor, escribirValores, leerValor
 from .delay import delay
+from .emular_raton import precionarRaton
 from .emular_teclado import CopiarTexto, comandoEscribir, comandoPegar, comandoTeclas
 from .mqtt import mensajeMQTT
 from .notificacion import Notificacion
@@ -30,6 +31,7 @@ def CargarAcciones():
         "escribir": comandoEscribir,
         "pegar": comandoPegar,
         "copiar": CopiarTexto,
+        "raton": precionarRaton,
         # Audio
         "reproducion": Reproducir,
         "detener_reproducion": PararReproducion,
@@ -40,7 +42,7 @@ def CargarAcciones():
         "escribir_valores": escribirValores,
         # Manejo de Ventanas
         "cerrar_ventana": cerrarVentana,
-        "mostar_ventana": mostarVentana,
+        "mostrar_ventana": mostarVentana,
         # Input
         "ventana_texto": VentanaTexto,
     }
