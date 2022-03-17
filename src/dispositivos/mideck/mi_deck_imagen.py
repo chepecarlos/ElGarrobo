@@ -1,14 +1,10 @@
 import os
 
+from MiLibrerias import ConfigurarLogging, ObtenerArchivo, ObtenerFolderConfig, ObtenerValor, RelativoAbsoluto, UnirPath
 from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.ImageHelpers import PILHelper
 
-from .mi_deck_extra import PonerTexto, BuscarDirecionImagen
-
-from MiLibrerias import ObtenerFolderConfig, ObtenerValor, UnirPath, RelativoAbsoluto
-from MiLibrerias import ObtenerArchivo
-
-from MiLibrerias import ConfigurarLogging
+from .mi_deck_extra import BuscarDirecionImagen, PonerTexto
 
 logger = ConfigurarLogging(__name__)
 
@@ -19,13 +15,19 @@ def ActualizarIcono(Deck, indice, accion):
     global ListaImagenes
 
     ColorFondo = "black"
+    imagenFondo = None
 
     if "imagen_opciones" in accion:
         opciones = accion["imagen_opciones"]
         if "fondo" in opciones:
             ColorFondo = opciones["fondo"]
+        if "imagen" in opciones:
+            imagenFondo = opciones["imagen"]
 
     ImagenBoton = PILHelper.create_image(Deck, background=ColorFondo)
+
+    if imagenFondo is not None:
+        PonerImagen(ImagenBoton, imagenFondo, accion, Deck.Folder, True)
 
     DirecionImagen = BuscarDirecionImagen(accion)
 
@@ -47,7 +49,7 @@ def ActualizarIcono(Deck, indice, accion):
     Deck.set_key_image(indice, PILHelper.to_native_format(Deck, ImagenBoton))
 
 
-def PonerImagen(Imagen, NombreIcono, accion, Folder):
+def PonerImagen(Imagen, NombreIcono, accion, Folder, fondo=False):
     if NombreIcono is None:
         return
     NombreIcono = RelativoAbsoluto(NombreIcono, Folder)
@@ -55,7 +57,7 @@ def PonerImagen(Imagen, NombreIcono, accion, Folder):
 
     if os.path.exists(DirecionIcono):
         Icono = Image.open(DirecionIcono).convert("RGBA")
-        if "titulo" in accion:
+        if "titulo" in accion and not fondo:
             Icono.thumbnail((Imagen.width, Imagen.height - 20), Image.LANCZOS)
         else:
             Icono.thumbnail((Imagen.width, Imagen.height), Image.LANCZOS)
