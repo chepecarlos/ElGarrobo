@@ -53,6 +53,19 @@ def comandoPegar(opciones):
         pyautogui.hotkey("ctrl", "v", interval=intervalo)
 
 
+def comandoPortapapeles(opciones):
+    """
+    Guardar en clip un texto
+    """
+    if "texto" in opciones:
+        texto = opciones["texto"]
+        if texto is None:
+            print("No Texto")
+            return
+        logger.info(f"Portapapeles[{texto}]")
+        pyperclip.copy(texto)
+
+
 def comandoEscribir(opciones):
     """
     Escribe un texto letra por letra.
