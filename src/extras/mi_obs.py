@@ -40,6 +40,8 @@ class MiOBS:
         ListaAcciones["obs_fuente"] = self.CambiarFuente
         ListaAcciones["obs_filtro"] = self.CambiarFiltro
         ListaAcciones["obs_estado"] = self.EstadoOBS
+        ListaAcciones["obs_tiempo_grabando"] = self.TiempoGrabando
+        ListaAcciones["obs_tiempo_envivo"] = self.TiempoEnVivo
         # ListaAcciones['obs_host'] = self.OBS.Conectar
         # ListaAcciones['obs_server'] = self.OBS.Conectar
 
@@ -90,6 +92,7 @@ class MiOBS:
             self.Notificar("OBS-No-Encontrado")
             return
         self.SalvarEstadoActual()
+        # self.OBS.call(requests.SetHeartbeat(True))
         self.AgregarEvento(self.EventoEscena, events.SwitchScenes)
         self.AgregarEvento(self.EventoGrabando, events.RecordingStarted)
         self.AgregarEvento(self.EventoGrabando, events.RecordingStopping)
@@ -98,6 +101,7 @@ class MiOBS:
         self.AgregarEvento(self.EventoVisibilidadIten, events.SceneItemVisibilityChanged)
         self.AgregarEvento(self.EventoVisibilidadFiltro, events.SourceFilterVisibilityChanged)
         self.AgregarEvento(self.EventoSalir, events.Exiting)
+        # self.AgregarEvento(self.EventoPulsoCorazon, events.Heartbeat)
         self.actualizarDeck()
 
     def SalvarEstadoActual(self):
@@ -183,6 +187,17 @@ class MiOBS:
             self.Conectado = False
         self.LimpiarTemporales()
         self.actualizarDeck()
+
+    def EventoPulsoCorazon(self, Mensaje):
+        if Mensaje.name == "Heartbeat":
+            logger.info("Pulso de OBS")
+            # print(Mensaje.datain)
+            # if "current-profile" in Mensaje.datain:
+            #     print(Mensaje.datain["current-profile"])
+            # if "rec-timecode" in Mensaje.datain:
+            #     print("Grabando", Mensaje.datain["rec-timecode"])
+            # if "stream-timecode" in Mensaje.datain:
+            #     print("EnVivo", Mensaje.datain["stream-timecode"])
 
     def EventoVisibilidadIten(self, Mensaje):
         """Recive estado de fuente."""
@@ -315,6 +330,31 @@ class MiOBS:
             logger.info("OBS no Conectado")
             self.Notificar("OBS-No-Conectado")
 
+    def TiempoGrabando(self, opciones=None):
+        if self.Conectado:
+            consulta = self.OBS.call(requests.GetStreamingStatus())
+            if consulta.getRecording():
+                tiempo = consulta.getRecTimecode().split(".")[0]
+                logger.info(f"Tiempo Grabando: {tiempo}")
+                return tiempo
+        else:
+            logger.info("OBS no Conectado")
+            self.Notificar("OBS-No-Conectado")
+        return "No-Grabando"
+
+    def TiempoEnVivo(self, opciones=None):
+        if self.Conectado:
+            consulta = self.OBS.call(requests.GetStreamingStatus())
+            if consulta.getStreaming():
+                tiempo = consulta.getStreamTimecode().split(".")[0]
+                logger.info(f"Tiempo Envivo: {tiempo}")
+                return tiempo
+        else:
+            logger.info("OBS no Conectado")
+            self.Notificar("OBS-No-EnVivo")
+        return "No-EnVivo"
+        pass
+
     def LimpiarTemporales(self):
         """Limpia los archivos con información temporal de OBS."""
         SalvarArchivo("data/obs.json", dict())
@@ -357,7 +397,7 @@ class MiOBS:
         else:
             self.Notificar("OBS-Grabando")
 
-        enVivo = ObtenerValor(self.archivoEstado, "obs_grabar")
+        enVivo = ObtenerValor(self.archivoEstado, "obs_envivo")
         if enVivo is None or not enVivo:
             self.Notificar("OBS-No-EnVivo")
         else:
