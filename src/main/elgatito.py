@@ -409,9 +409,13 @@ class ElGatito(object):
                         if not "opciones" in Comando:
                             Comando["opciones"] = {}
 
+                        atributoRecibir = atributo
+                        if "solisita_cambiar" in macro_opciones:
+                            atributoRecibir = macro_opciones["solisita_cambiar"]
+
                         opciones = Comando["opciones"]
-                        opciones[atributo] = Cajon[atributo]
-                        logger.info(f"Cargar_cajon[{atributo}] {opciones}")
+                        opciones[atributoRecibir] = Cajon[atributo]
+                        logger.info(f"Cargar_cajon[{atributoRecibir}] {opciones}")
 
             respuesta = self.BuscarAccion(Comando)
 
