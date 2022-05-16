@@ -1,5 +1,9 @@
 """Acciones de Operaciones."""
 
+from MiLibrerias import ConfigurarLogging, FuncionesArchivos
+
+logger = ConfigurarLogging(__name__)
+
 
 def constrain(n, minn, maxn):
     return max(min(maxn, n), minn)
@@ -27,3 +31,14 @@ def OperacionConstrain(opciones):
         Maximo = opciones["maximo"]
 
     return constrain(Numero, Minimo, Maximo)
+
+
+def operacionConcatenar(opciones):
+    texto = ""
+    if "texto_1" in opciones:
+        texto += opciones["texto_1"]
+    if "texto_2" in opciones:
+        texto += opciones["texto_2"]
+    logger.info(f"Concatenar[{texto}]")
+
+    return texto

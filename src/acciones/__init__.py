@@ -7,7 +7,7 @@ from .emular_raton import precionarRaton
 from .emular_teclado import CopiarTexto, comandoEscribir, comandoPegar, comandoPortapapeles, comandoTeclas
 from .mqtt import mensajeMQTT
 from .notificacion import Notificacion
-from .operaciones import OperacionConstrain
+from .operaciones import OperacionConstrain, operacionConcatenar
 from .sonidos import PararReproducion, Reproducir
 from .textbox import VentanaTexto
 from .textovoz import TextoVoz
@@ -46,4 +46,6 @@ def CargarAcciones():
         "mostrar_ventana": mostarVentana,
         # Input
         "ventana_texto": VentanaTexto,
+        # Operacion
+        "concatenar": operacionConcatenar,
     }
