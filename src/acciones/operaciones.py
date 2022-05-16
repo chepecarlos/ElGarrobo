@@ -42,3 +42,9 @@ def operacionConcatenar(opciones):
     logger.info(f"Concatenar[{texto}]")
 
     return texto
+
+
+def operacionAsignar(opciones):
+    # TODO: todo los valore sde opciones a cajon
+    if "valor" in opciones:
+        return opciones["valor"]
