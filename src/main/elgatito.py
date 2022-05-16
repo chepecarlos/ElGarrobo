@@ -396,37 +396,56 @@ class ElGatito(object):
         ListaComandos -> list
             Acciones a realizar
         """
-        Cajon = {}
-        for Numero, Comando in enumerate(ListaComando):
+        cajon = {}
+        for numero, comando in enumerate(ListaComando):
 
-            logger.info(f"Macro[{Numero}]")
+            logger.info(f"Macro[{numero}]")
 
-            if "macro_opciones" in Comando:
-                macro_opciones = Comando["macro_opciones"]
-                if "solisita" in macro_opciones:
-                    atributo = macro_opciones["solisita"]
-                    if atributo in Cajon:
-                        if not "opciones" in Comando:
-                            Comando["opciones"] = {}
+            self.solisitaMacro(comando, cajon)
 
-                        atributoRecibir = atributo
-                        if "solisita_cambiar" in macro_opciones:
-                            atributoRecibir = macro_opciones["solisita_cambiar"]
+            respuesta = self.BuscarAccion(comando)
 
-                        opciones = Comando["opciones"]
-                        opciones[atributoRecibir] = Cajon[atributo]
-                        logger.info(f"Cargar_cajon[{atributoRecibir}] {opciones}")
-
-            respuesta = self.BuscarAccion(Comando)
-
-            if "macro_opciones" in Comando:
-                macro_opciones = Comando["macro_opciones"]
-                if "respuesta" in macro_opciones:
-                    atributo = macro_opciones["respuesta"]
-                    Cajon[atributo] = respuesta
-                    logger.info(f"Salvar_Cajon[{atributo}] {respuesta}")
+            self.respuestaMacro(comando, respuesta, cajon)
 
         # TODO: Hacer Macros en diferentes Hilos
+
+    def solisitaMacro(self, comando, cajon):
+        if "macro_opciones" in comando:
+            macroOpciones = comando["macro_opciones"]
+            if "solisita" in macroOpciones:
+                atributo = macroOpciones["solisita"]
+                Tipo = type(atributo)
+                if Tipo is list:
+                    recibir = atributo
+                    if "solisita_cambiar" in macroOpciones:
+                        recibir = macroOpciones["solisita_cambiar"]
+                    for atributoTMP, recibirTMP in zip(atributo, recibir):
+                        self.solisitudSimpleMacro(comando, atributoTMP, recibirTMP, cajon)
+                else:
+                    recibir = None
+                    if "solisita_cambiar" in macroOpciones:
+                        recibir = macroOpciones["solisita_cambiar"]
+                    self.solisitudSimpleMacro(comando, atributo, recibir, cajon)
+
+    def solisitudSimpleMacro(self, comando, atributo, recibir, cajon):
+        if atributo in cajon:
+            if not "opciones" in comando:
+                comando["opciones"] = {}
+
+            if recibir is None:
+                recibir = atributo
+
+            opciones = comando["opciones"]
+            opciones[recibir] = cajon[atributo]
+            logger.info(f"Cargar_cajon[{recibir}] {opciones}")
+
+    def respuestaMacro(self, comando, respuesta, cajon):
+        if "macro_opciones" in comando:
+            macro_opciones = comando["macro_opciones"]
+            if "respuesta" in macro_opciones:
+                atributo = macro_opciones["respuesta"]
+                cajon[atributo] = respuesta
+                logger.info(f"Salvar_Cajon[{atributo}] {respuesta}")
 
     def AccionRandom(self, opciones):
         """
