@@ -35,10 +35,8 @@ def OperacionConstrain(opciones):
 
 def operacionConcatenar(opciones):
     texto = ""
-    if "texto_1" in opciones:
-        texto += opciones["texto_1"]
-    if "texto_2" in opciones:
-        texto += opciones["texto_2"]
+    for mensaje in opciones:
+        texto += opciones[mensaje]
     logger.info(f"Concatenar[{texto}]")
 
     return texto
