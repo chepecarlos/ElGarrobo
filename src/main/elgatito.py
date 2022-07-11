@@ -481,6 +481,7 @@ class ElGatito(object):
         folder -> str
             folder a entrar
         """
+        # TODO: no entrar a folder si no existe
         if "folder" in opciones:
             Folder = opciones["folder"]
         else:
@@ -627,15 +628,8 @@ class ElGatito(object):
                 self.ActualizarDeckIcono()
                 self.BanderaActualizarDeck = False
 
-    def SolisitarNotifiacacion(self, Texto):
+    def SolisitarNotifiacacion(self, texto, opciones):
         if self.ModuloOBSNotificacion:
-            opciones = {"texto": Texto}
-            self.ListaAcciones["notificacion"](opciones)
-            # Temporal data a test.mosquitto.org
-            opciones = {
-                "servidor": "test.mosquitto.org",
-                "puerto": 1883,
-                "topic": "alsw/monitor_esp/obs",
-                "mensaje": Texto,
-            }
+            self.ListaAcciones["notificacion"]({"texto": texto})
+            opciones["mensaje"] = texto
             self.ListaAcciones["mqtt"](opciones)

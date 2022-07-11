@@ -1,7 +1,7 @@
 # Libreria: https://github.com/Elektordi/obs-websocket-py
 import threading
 
-from MiLibrerias import ConfigurarLogging, ObtenerValor, SalvarArchivo, SalvarValor
+from MiLibrerias import ConfigurarLogging, ObtenerArchivo, ObtenerValor, SalvarArchivo, SalvarValor
 from obswebsocket import events, obsws, requests
 
 logger = ConfigurarLogging(__name__)
@@ -56,6 +56,9 @@ class MiOBS:
 
     def AgregarNotificacion(self, Funcion):
         """Agrega función para notificación."""
+        self.alertaOBS = ObtenerArchivo("modulos/alerta_obs/mqtt.json")
+        print(self.alertaOBS)
+
         self.Notificaciones = Funcion
         self.EstadoOBS({})
 
@@ -145,7 +148,7 @@ class MiOBS:
         self.OBS.register(Funcion, Evento)
 
     def EventoEscena(self, Mensaje):
-        """Recive nueva escena actual."""
+        """Recibe nueva escena actual."""
         EscenaActual = Mensaje.datain["scene-name"]
         SalvarValor("data/obs.json", "obs_escena", EscenaActual)
         logger.info(f"OBS[Escena] {EscenaActual}")
@@ -168,17 +171,17 @@ class MiOBS:
         """Recibe estado del Striming."""
         if Mensaje.name == "StreamStarted":
             SalvarValor("data/obs.json", "obs_envivo", True)
-            logger.info("OBS EnVivo")
+            logger.info("OBS[EnVivo]")
             self.Notificar("OBS-EnVivo")
         elif Mensaje.name == "StreamStopping":
             SalvarValor("data/obs.json", "obs_envivo", False)
-            logger.info(f"OBS Paro EnVivo {Mensaje.datain['stream-timecode']}")
+            logger.info(f"OBS[Paro EnVivo] - {Mensaje.datain['stream-timecode']}")
             self.Notificar("OBS-No-EnVivo")
         self.actualizarDeck()
 
     def EventoSalir(self, Mensaje):
         """Recibe desconeccion de OBS websocket."""
-        logger.info("Se desconecto OBS")
+        logger.info("OBS[Desconectado]")
         self.Notificar("OBS-No-Conectado")
         try:
             self.Desconectar()
@@ -382,7 +385,7 @@ class MiOBS:
 
     def Notificar(self, Mensaje):
         if self.Notificaciones is not None:
-            self.Notificaciones(Mensaje)
+            self.Notificaciones(Mensaje, self.alertaOBS)
 
     def EstadoOBS(self, Opciones):
         conectado = ObtenerValor(self.archivoEstado, "obs_conectar")
