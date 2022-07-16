@@ -57,8 +57,6 @@ class MiOBS:
     def AgregarNotificacion(self, Funcion):
         """Agrega función para notificación."""
         self.alertaOBS = ObtenerArchivo("modulos/alerta_obs/mqtt.json")
-        print(self.alertaOBS)
-
         self.Notificaciones = Funcion
         self.EstadoOBS({})
 

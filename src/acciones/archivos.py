@@ -31,6 +31,7 @@ def leerValor(opciones):
     else:
         logger.info(f"Leer[{archivo}]: {atributo}")
         data = FuncionesArchivos.ObtenerValor(archivo, atributo)
+    logger.info(f"Leido[{data}]")
     return data
 
 
