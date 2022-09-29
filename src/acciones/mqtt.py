@@ -40,7 +40,7 @@ def mensajeMQTT(opciones):
         Puerto = opciones["puerto"]
 
     if "contrasenna" in opciones:
-        Contrasenna = opciones["Contrasenna"]
+        Contrasenna = opciones["contrasenna"]
 
     if "esperar" in opciones:
         Esperar = opciones["esperar"]

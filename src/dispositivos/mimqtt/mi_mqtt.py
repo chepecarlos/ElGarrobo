@@ -46,11 +46,17 @@ class MiMQTT:
     def Conectar(self):
         """Conectar a Broker MQTT."""
         logger.info(f"MQTT[Conectando] - {self.Nombre}")
-        if self.Usuario is not None:
-            self.cliente.username_pw_set(self.Usuario, password=self.Contrasenna)
-        self.cliente.connect(self.Broker, port=self.Puerto, keepalive=60)
-        self.Hilo = threading.Thread(target=self.HiloServidor)
-        self.Hilo.start()
+        try:
+            if self.Usuario is not None:
+                self.cliente.username_pw_set(self.Usuario, password=self.Contrasenna)
+            self.cliente.connect(self.Broker, port=self.Puerto, keepalive=60)
+            self.Hilo = threading.Thread(target=self.HiloServidor)
+            self.Hilo.start()
+            self.Conectado = True
+        except Exception as error:
+            logger.error(f"MQTT[Error] Dispositivo {self.Nombre} no responde")
+            self.Conectado = False
+            # TODO intentar re-conectar después de un tiempo
 
     def HiloServidor(self):
         logger.info(f"MQTT[Hijo] - {self.Nombre}")
@@ -86,7 +92,10 @@ class MiMQTT:
 
     def EnviarMQTT(self, Topic, Mensaje):
         """Envia dato por MQTT."""
-        self.cliente.publish(Topic, Mensaje)
+        if self.Conectado:
+            self.cliente.publish(Topic, Mensaje)
+        else:
+            logger.error(f"MQTT[error] No Conectado con {self.Nombre}")
 
     def Desconectar(self):
         if self.Conectado:
