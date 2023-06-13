@@ -8,3 +8,4 @@ StreamDeck
 evdev
 obs-websocket-py
 python-telegram-bot
+simpleaudio
