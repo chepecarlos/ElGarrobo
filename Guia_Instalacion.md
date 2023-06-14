@@ -1,21 +1,24 @@
 
-## Clonar proyecto
+# Guiá de instalación
 
-TODO: Confirmar que es necesario tk? 
+## Paquetes a instalar dependencias
+
+### Linux Mint
+
 ```bash
 sudo apt install python3-pip python3-setuptools python3-tk python3-dev git 
+```
+
+### fedora 
+
+```
+ sudo dnf install python3-pip python3-setuptools python3-tkinter python3-devel git 
+```
+
+# Clonar 
+
+```
 git clone https://github.com/chepecarlos/ElGatoALSW.git
-```
-
-fedora 
-```
- python3-devel
-```
-
-## Audio
-
-```
-sudo apt-get install -y python3-dev libasound2-dev
 ```
 
 ## Submodulos 
@@ -25,19 +28,23 @@ git submodule init
 git submodule update
 ```
 
-### Activar permisos de teclado
+## Modulos
+
+
+### Control teclado USB
 
 ```
 sudo usermod -a -G input $USER
 ```
-Recomendacion reinicar la pc despues de agregarse a permisos
 
-### instalar de paquetes
+Recomendación reiniciar la pc después de agregarse a permisos
+
+
+## Audio
 
 ```
-pip3 install -r requiraments.txt
-pip install .
-``` 
+sudo apt-get install -y libasound2-dev
+```
 
 ### Manejador de Ventanas
 
@@ -45,33 +52,15 @@ pip install .
 sudo apt install xdotool
 ```
 
+### instalar de paquetes
+
+```
+pip install .
+``` 
+
 sudo apt install espeak
 
 ####### GUIA Vieja #######
-
-
-# Instalacion
-
-TODO: Competar instucciones de Instalacion
-
-### Instalacion de Python y Git
-
-```bash
-sudo apt update
-sudo apt install python3-pip python3-setuptools python3-tk python3-dev git
-git clone https://github.com/chepecarlos/ElGatoALSW.git
-cd ElGatoALSW
-```
-
-### Instalar Paquetes de Python3
-
-```bash
-pip3 install -r requiraments.txt
-```
-
-```bash
-pip3 freeze > paquetes.txt
-```
 
 ### Configuraciones de StreamDeck
 ```bash
@@ -83,7 +72,7 @@ pip3 install pillow
 
 ### Repoducion Sonidos
 ```bash
-sudo apt-get install -y python3-dev libasound2-dev
+sudo apt-get install -y libasound2-dev
 ```
 
 ### Crear y Agregar e los archivos
@@ -106,11 +95,6 @@ sudo udevadm control --reload-rules
 pip3 install streamdeck
 ```
 
-# Teclados Extras
-
-```bash
-sudo usermod -a -G input $USER
-```
 
 ## funciones
 
