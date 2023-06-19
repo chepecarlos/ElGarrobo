@@ -362,8 +362,16 @@ class ElGatito(object):
                 logger.info(f"AccionOOP[{comandoAccion}] - {nombreAccion}")
 
                 if self.ModuloMonitorESP:
-                    #Todo: Enviar por mqtt
-                    pass
+                    if "topic" in self.ModuloMonitorESP:
+                        Mensaje = {"accion": NombreAccion}
+                        if "key" in accion:
+                            Mensaje["key"] = accion["key"]
+                        if Nombre is not None:
+                            Mensaje["nombre"] = Nombre
+
+                        opciones = {"opciones": Mensaje, "topic": f"{self.ModuloMonitorESP['topic']}/accion"}
+
+                        self.ListaAcciones["mqtt"](opciones)
 
                 objetoAccion = self.listaClasesAcciones[comandoAccion]()
                 objetoAccion.configurar(opcionesAccion)
