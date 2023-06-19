@@ -15,8 +15,9 @@ def delay(opciones):
         tiempo de espera en segundos
     """
 
-    if "tiempo" in opciones:
-        tiempo = opciones["tiempo"]
+    tiempo = opciones.get("tiempo")
+
+    if tiempo is not None:
         # TODO: confirmar que es un numero
         if isinstance(tiempo, str):
             pedadosTiempo = tiempo.split(":")

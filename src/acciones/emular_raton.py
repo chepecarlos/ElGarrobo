@@ -8,15 +8,10 @@ logger = ConfigurarLogging(__name__)
 
 
 def precionarRaton(opciones):
+    """Precionar boton del raton."""
 
-    estado = None
-    if "boton" in opciones:
-        boton = opciones["boton"]
-    else:
-        boton = "left"
-
-    if "estado" in opciones:
-        estado = opciones["estado"]
+    boton = opciones.get("boton", "letf")
+    estado = opciones.get("estado")
 
     if estado is not None:
         if estado:

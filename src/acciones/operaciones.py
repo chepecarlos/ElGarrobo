@@ -20,29 +20,23 @@ def OperacionConstrain(opciones):
     maximo -> float
         rando superior
     """
-    Numero = 0
-    Minimo = 0
-    Maximo = 0
-    if "numero" in opciones:
-        Numero = opciones["numero"]
-    if "minimo" in opciones:
-        Minimo = opciones["minimo"]
-    if "maximo" in opciones:
-        Maximo = opciones["maximo"]
+    numero = opciones.get("numero", 0)
+    minimo = opciones.get("minomo", 0)
+    maximo = opciones.get("maximo", 0)
 
-    return constrain(Numero, Minimo, Maximo)
+    return constrain(numero, minimo, maximo)
 
 
 def operacionConcatenar(opciones):
     texto = ""
-    for mensaje in opciones:
-        texto += opciones[mensaje]
+    if type(opciones) is dict:
+        opciones = sorted(opciones.items(), key=lambda x: x[0])
+        for mensaje in opciones:
+            texto += mensaje[1]
     logger.info(f"Concatenar[{texto}]")
-
     return texto
 
 
 def operacionAsignar(opciones):
     # TODO: todo los valore sde opciones a cajon
-    if "valor" in opciones:
-        return opciones["valor"]
+    return opciones.get("valor")

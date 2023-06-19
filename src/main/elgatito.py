@@ -552,6 +552,7 @@ class ElGatito(object):
         """Iniciar coneccion con Broker MQTT."""
         self.ListaMQTT = []
         self.Data["mqtt"] = ObtenerArchivo("mqtt.json")
+        # todo: no existe mqtt.json
         if "mqtt" in self.Data:
             for DataMQTT in self.Data["mqtt"]:
                 ServidorMQTT = MiMQTT(DataMQTT, self.BuscarAccion)
@@ -631,5 +632,8 @@ class ElGatito(object):
     def SolisitarNotifiacacion(self, texto, opciones):
         if self.ModuloOBSNotificacion:
             self.ListaAcciones["notificacion"]({"texto": texto})
-            opciones["mensaje"] = texto
-            self.ListaAcciones["mqtt"](opciones)
+            if opciones is  None:
+                logger.error('error en configuracciones')
+            else:
+                opciones["mensaje"] = texto
+                self.ListaAcciones["mqtt"](opciones)

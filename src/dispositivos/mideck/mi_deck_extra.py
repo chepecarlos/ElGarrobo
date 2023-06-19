@@ -1,11 +1,6 @@
+from MiLibrerias import ConfigurarLogging, ObtenerArchivo, ObtenerFolderConfig, ObtenerValor, UnirPath
 from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.ImageHelpers import PILHelper
-
-from MiLibrerias import ObtenerFolderConfig, UnirPath
-from MiLibrerias import ObtenerValor, ObtenerArchivo
-
-
-from MiLibrerias import ConfigurarLogging
 
 logger = ConfigurarLogging(__name__)
 
@@ -115,6 +110,7 @@ def BuscarImagenOBS(NombreAccion, opcionesAccion):
         "obs_conectar",
         "obs_grabar",
         "obs_envivo",
+        "obs_camara_virtual"
     ]
     for Basica in ListaBasicas:
         if NombreAccion == Basica:

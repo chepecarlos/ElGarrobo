@@ -12,7 +12,7 @@ def cerrarVentana(opciones):
     """
     Activa el cerrar ventanas con el cursor
     """
-    logger.info("Seleciona programa a carrar")
+    logger.info("Selecciona programa a cerrar")
     accionOS({"comando": "xdotool selectwindow windowclose"})
 
 
@@ -23,17 +23,13 @@ def mostarVentana(opciones):
     titulo -> stl
         titulo a buscar
     """
-    titulo = None
-    if "titulo" in opciones:
-        titulo = opciones["titulo"]
+    titulo = opciones.get("titulo")
 
-    if titulo is None:
-        return
-
-    comando = f'xdotool search --onlyvisible "{titulo}" windowactivate'
-    logger.info(f"Buscando ventana[{titulo}]")
-    accionOS({"comando": comando})
-    # Agregar mensaje si no esta la venta
+    if titulo is not None:
+        comando = f'xdotool search --onlyvisible "{titulo}" windowactivate'
+        logger.info(f"Buscando ventana[{titulo}]")
+        accionOS({"comando": comando})
+        # Agregar mensaje si no esta la venta
 
 
 # TODO: Marcar Ventana favorita

@@ -3,21 +3,22 @@
 # https://github.com/jiaaro/pydub
 import multiprocessing
 
-from MiLibrerias import ConfigurarLogging, ObtenerFolderConfig, RelativoAbsoluto, UnirPath
 from pydub import AudioSegment
 from pydub.playback import play
 
+from MiLibrerias import (ConfigurarLogging, ObtenerFolderConfig, UnirPath)
+
 logger = ConfigurarLogging(__name__)
 
-ListaSonidos = []
+listaSonidos = []
 
 
-def AccionSonido(AccionActual, Folder):
+def AccionSonido(accionActual, folder):
     """Acciones de Sonido."""
-    if AccionActual["sonido"] == "parar":
+    if accionActual.get("sonido") == "parar":
         PararReproducion()
     else:
-        Reproducir(AccionActual, Folder)
+        Reproducir(accionActual, folder)
 
 
 def Sonido(Archivo, Ganancia):
@@ -48,33 +49,26 @@ def Reproducir(opciones):
     folder -> stl
         direcion del folder del sonido
     """
-    global ListaSonidos
-    if "sonido" in opciones:
-        Archivo = opciones["sonido"]
+    global listaSonidos
+    archivo = opciones.get("sonido")
 
-        Ganancia = 0
-        if "ganancia" in opciones:
-            Ganancia = opciones["ganancia"]
+    if archivo is not None:
+        ganancia = opciones.get("ganancia", 0)
+        folder = opciones.get("folder", ObtenerFolderConfig()) 
+        ganancia = opciones.get("ganancia", 0)
+        archivo = UnirPath(folder, archivo)
 
-        if "folder" in opciones:
-            Folder = opciones["folder"]
-        else:
-            Folder = ObtenerFolderConfig()
-        # TODO recorde del audio
-        # Archivo = RelativoAbsoluto(Archivo, Folder)
-        Archivo = UnirPath(Folder, Archivo)
-
-        PSonido = multiprocessing.Process(target=Sonido, args=(Archivo, Ganancia))
-        PSonido.start()
-        ListaSonidos.append(PSonido)
+        procesoSonido = multiprocessing.Process(target=Sonido, args=(archivo, ganancia))
+        procesoSonido.start()
+        listaSonidos.append(procesoSonido)
 
 
 def PararReproducion(opciones):
     """
     Parar todos los susprocesos de repoduccion de sonido.
     """
-    global ListaSonidos
-    logger.info(f"Parar Sonidos [{len(ListaSonidos)}]")
-    for Sonido in ListaSonidos:
+    global listaSonidos
+    logger.info(f"Parar Sonidos [{len(listaSonidos)}]")
+    for Sonido in listaSonidos:
         Sonido.terminate()
-    ListaSonidos = []
+    listaSonidos = []

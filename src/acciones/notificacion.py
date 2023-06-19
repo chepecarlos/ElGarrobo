@@ -1,4 +1,4 @@
-"""Acciones de Notificaciones de Escritorio."""
+"""Acciones de notificaciones de Escritorio."""
 # https://github.com/ms7m/notify-py
 from MiLibrerias import ObtenerFolderConfig, UnirPath
 from notifypy import Notify
@@ -17,25 +17,21 @@ def Notificacion(opciones):
     icono_relativo -> bool
         direcion del icono dentro de folder config
     """
-    if "texto" in opciones:
-        Texto = opciones["texto"]
+    texto = opciones.get("texto")
+    titulo = opciones.get("titulo","ElGatoALSW")
+    icono = opciones.get('icono')
+    iconoRelativo = opciones.get('icono_relativo', False)
 
-        Noti = Notify()
-        Noti.message = Texto
-        Noti.application_name = "ElGatoALSW"
+    if texto is not None:
 
-        if "titulo" in opciones:
-            Noti.title = opciones["titulo"]
-        else:
-            Noti.title = "ElGatoALSW"
+        noti = Notify()
+        noti.message = texto
+        noti.application_name = "ElGatoALSW"
+        noti.title = titulo
 
-        # TODO: Iconos relativo
-        if "icono" in opciones:
-            DirecionIcono = opciones["icono"]
-            if "icono_relativo" in opciones:
-                if opciones["icono_relativo"]:
-                    DirecionIcono = UnirPath(ObtenerFolderConfig, DirecionIcono)
-
-            Noti.icon = DirecionIcono
-        Noti.send()
+        if icono is not None:
+            if iconoRelativo:
+                icono = UnirPath(ObtenerFolderConfig, icono)
+            noti.icon = icono
+        noti.send()
         # TODO: que hace block=False

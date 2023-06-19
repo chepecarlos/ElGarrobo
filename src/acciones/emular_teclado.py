@@ -3,9 +3,13 @@
 
 import pyautogui
 import pyperclip
+
 from MiLibrerias import ConfigurarLogging
 
 from .delay import delay
+
+# https://pyautogui.readthedocs.io/en/latest/
+
 
 # Implementar press y onrelles
 # TODO: Añadir ñ en las funciones
@@ -21,9 +25,9 @@ def comandoTeclas(opciones):
     teclas -> list
         combinaciones de teclas
     """
-    if "teclas" in opciones:
-        teclas = opciones["teclas"]
+    teclas = opciones.get("teclas")
 
+    if teclas is not None:
         logger.info(f"Teclas{teclas}")
         for tecla in teclas:
             pyautogui.keyDown(tecla)
@@ -42,13 +46,10 @@ def comandoPegar(opciones):
     intervalo -> float
         tiempo de espera
     """
-    if "texto" in opciones:
-        texto = opciones["texto"]
+    texto = opciones.get("tecto")
+    intervalo = opciones.get("intervalo", 0.15)
 
-        intervalo = 0.15
-        if "intervalo" in opciones:
-            intervalo = opciones["intervalo"]
-
+    if texto is not None:
         pyperclip.copy(texto)
         pyautogui.hotkey("ctrl", "v", interval=intervalo)
 
@@ -57,11 +58,8 @@ def comandoPortapapeles(opciones):
     """
     Guardar en clip un texto
     """
-    if "texto" in opciones:
-        texto = opciones["texto"]
-        if texto is None:
-            print("No Texto")
-            return
+    texto = opciones.get("texto")
+    if texto is not None:
         logger.info(f"Portapapeles[{texto}]")
         pyperclip.copy(texto)
 
@@ -75,13 +73,10 @@ def comandoEscribir(opciones):
     intervalo -> float
         tiempo de espera
     """
-    if "texto" in opciones:
-        texto = opciones["texto"]
+    texto = opciones.get("texto")
+    intervalo = opciones.get("intervalo", 0.01)
 
-        intervalo = 0.01
-        if "intervalo" in opciones:
-            intervalo = opciones["intervalo"]
-
+    if texto is not None:
         pyautogui.write(texto, interval=intervalo)
 
 
@@ -95,11 +90,12 @@ def ComandoPrecionar(opciones):
         estado de la tecla
 
     """
-    estado = False
-    if "teclas" in opciones:
-        teclas = opciones["teclas"]
-    if "precionado" in opciones:
-        estado = opciones["presionado"]
+
+    teclas = opciones.get("teclas")
+    estado = opciones.get("presionado")
+
+    if estado is None or teclas is None:
+        return
 
     if estado:
         for tecla in teclas:
@@ -114,5 +110,5 @@ def CopiarTexto(opciones):
     Copia texto de papelera.
     """
     pyautogui.hotkey("ctrl", "c")
-    Delay({"tiempo": 0.1})
+    delay({"tiempo": 0.1})
     return pyperclip.paste()

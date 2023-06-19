@@ -14,23 +14,24 @@ def mensajeMQTT(opciones):
     topic -> stl
         tema a publicar el mensaje
     """
-    Mensaje = opciones.get("mensaje")
-    Topic = opciones.get("topic")
-    Usuario = opciones.get("usuario")
-    Servidor = opciones.get("servidor")
-    Puerto = opciones.get("puerto")
-    Contrasenna = opciones.get("contrasenna")
-    Esperar = opciones.get("esperar")
+    mensaje = opciones.get("mensaje")
+    topic = opciones.get("topic")
+    usuario = opciones.get("usuario")
+    servidor = opciones.get("servidor")
+    puerto = opciones.get("puerto")
+    contrasenna = opciones.get("contrasenna")
+    esperar = opciones.get("esperar")
 
     if "opciones" in opciones:
-        Mensaje = opciones["opciones"]
-        Mensaje = json.dumps(Mensaje)
+        mensaje = opciones["opciones"]
+        mensaje = json.dumps(mensaje)
 
-    if Mensaje is not None and Topic is not None:
-        if Esperar is None or not Esperar:
+    if mensaje is not None and topic is not None:
+        if esperar is None or not esperar:
             procesoSonido = multiprocessing.Process(
-                target=EnviarMensajeMQTT, args=(Topic, Mensaje, Usuario, Contrasenna, Servidor, Puerto)
+                target=EnviarMensajeMQTT,
+                args=(topic, mensaje, usuario, contrasenna, servidor, puerto),
             )
             procesoSonido.start()
         else:
-            EnviarMensajeMQTT(Topic, Mensaje, Usuario, Contrasenna, Servidor, Puerto)
+            EnviarMensajeMQTT(topic, mensaje, usuario, contrasenna, servidor, puerto)

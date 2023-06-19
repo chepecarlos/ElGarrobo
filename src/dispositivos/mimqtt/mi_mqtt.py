@@ -2,6 +2,7 @@ import json
 import threading
 
 import paho.mqtt.client as mqtt
+
 from MiLibrerias import ConfigurarLogging, ObtenerValor
 
 logger = ConfigurarLogging(__name__)

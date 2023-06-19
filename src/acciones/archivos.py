@@ -14,14 +14,10 @@ def leerValor(opciones):
     atributo -> stl
         Nombre del atributo
     """
-    archivo = None
-    atributo = None
-    if "archivo" in opciones:
-        archivo = opciones["archivo"]
-    if "atributo" in opciones:
-        atributo = opciones["atributo"]
+    archivo = opciones.get("archivo")
+    atributo = opciones.get("atributo")
     if archivo is None:
-        logger.info(f"Requerido[archivo,]")
+        logger.info("Requerido[archivo,]")
         return
 
     data = None
@@ -45,16 +41,10 @@ def escribirValores(opciones):
         Nombre del atributo
     valor -> everything
     """
-    archivo = None
-    atributo = None
-    valores = None
-    local = True
-    if "archivo" in opciones:
-        archivo = opciones["archivo"]
-    if "valores" in opciones:
-        valores = opciones["valores"]
-    if "local" in opciones:
-        local = opciones["local"]
+    archivo = opciones.get("archivo")
+    valores = opciones.get("valores")
+    atributo = opciones.get("atributo")
+    local = opciones.get("local", True)
 
     if archivo is None or valores is None:
         logger.info("Falta información para")
@@ -75,18 +65,10 @@ def escribirValor(opciones):
         Nombre del atributo
     valor -> everything
     """
-    archivo = None
-    atributo = None
-    valor = None
-    local = True
-    if "archivo" in opciones:
-        archivo = opciones["archivo"]
-    if "atributo" in opciones:
-        atributo = opciones["atributo"]
-    if "valor" in opciones:
-        valor = opciones["valor"]
-    if "local" in opciones:
-        local = opciones["local"]
+    archivo = opciones.get("archivo")
+    atributo = opciones.get("atributo")
+    valor = opciones.get("valor")
+    local = opciones.get("local", True)
 
     if archivo is None or valor is None:
         logger.info("Falta informacion para")

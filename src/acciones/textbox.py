@@ -7,35 +7,24 @@ logger = ConfigurarLogging(__name__)
 
 def VentanaTexto(opciones):
 
-    Mensaje = ""
-    Titulo = ""
-    Defaul = ""
-    Ocultar = False
-    Respuesta = None
-    Tipo = "string"
+    mensaje = opciones.get("mensaje")
+    titulo = opciones.get("titulo")
+    defaul = opciones.get("defaul")
+    ocultar = opciones.get("ocultar", False)
+    tipo = opciones.get("tipo", "string")
+    respuesta = None
 
-    if "mensaje" in opciones:
-        Mensaje = opciones["mensaje"]
-    if "titulo" in opciones:
-        Titulo = opciones["titulo"]
-    if "defaul" in opciones:
-        Defaul = opciones["defaul"]
-    if "ocultar" in opciones:
-        Ocultar = opciones["ocultar"]
-    if "tipo" in opciones:
-        Tipo = opciones["tipo"]
-
-    if Ocultar:
-        Respuesta = pyautogui.password(Mensaje, Titulo, Defaul, "*")
+    if ocultar:
+        respuesta = pyautogui.password(mensaje, titulo, defaul, "*")
     else:
-        Respuesta = pyautogui.prompt(Mensaje, Titulo, Defaul)
+        respuesta = pyautogui.prompt(mensaje, titulo, defaul)
 
-    if Tipo == "entero":
-        Respuesta = int(Respuesta)
+    if tipo == "entero":
+        respuesta = int(respuesta)
 
-    if Respuesta:
-        logger.info(f"Respuesta[{Respuesta}]")
+    if respuesta:
+        logger.info(f"Respuesta[{respuesta}]")
     else:
         logger.info("Respuesta[vacillo]")
 
-    return Respuesta
+    return respuesta

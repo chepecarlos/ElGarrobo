@@ -1,4 +1,4 @@
-"""Acciones de Ejecucion de Sistema Operativo."""
+"""Acciones de Ejecución de Sistema Operativo."""
 import os
 
 from MiLibrerias import ConfigurarLogging
@@ -13,7 +13,8 @@ def accionOS(opciones):
     comando -> stl
         comando a ejecutar
     """
-    if "comando" in opciones:
-        comando = opciones["comando"]
+    comando = opciones.get("comando")
+
+    if comando is not None:
         logger.info(f"OS[{comando}]")
         os.system(comando)
