@@ -1,6 +1,7 @@
 """Lista de Acciones."""
 
 from .accionDelay import accionDelay
+from .accionOS import accionOS
 
 
 def cargarAcciones():
@@ -9,5 +10,6 @@ def cargarAcciones():
     """
 
     return {
-        "delay": accionDelay
+        "delay": accionDelay,
+        "os": accionOS
         }
