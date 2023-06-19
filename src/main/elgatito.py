@@ -2,6 +2,7 @@ import os
 import random
 
 from acciones import CargarAcciones
+from accionesOOP import cargarAcciones
 from dispositivos.mideck.mi_deck_extra import DefinirFuente, DefinirImagenes
 from dispositivos.mideck.mi_streamdeck import MiStreamDeck
 from dispositivos.mimqtt.mi_mqtt import MiMQTT
@@ -112,6 +113,7 @@ class ElGatito(object):
         """
         logger.info("ElGatoALSW[Acciones] Cargando")
         ListaAcciones = CargarAcciones()
+        listaClasesAcciones = cargarAcciones()
 
         # Acciones Macro
         ListaAcciones["macro"] = self.AccionesMacros
@@ -131,6 +133,7 @@ class ElGatito(object):
             ListaAcciones["deck_brillo"] = self.DeckBrillo
 
         self.ListaAcciones = ListaAcciones
+        self.listaClasesAcciones = listaClasesAcciones
 
     def CargarData(self):
         """
@@ -350,6 +353,22 @@ class ElGatito(object):
                 logger.info("Evento[no accion]")
 
     def BuscarAccion(self, accion):
+        comandoAccion = accion.get("accion")
+        if comandoAccion is not None:
+            if comandoAccion in self.listaClasesAcciones:
+                print(f"intentando ejecutar OOP-{comandoAccion}")
+                opcionesAccion = accion.get("opciones", {})
+                nombreAccion = accion.get("nombre")
+                logger.info(f"AccionOOP[{comandoAccion}] - {nombreAccion}")
+
+                if self.ModuloMonitorESP:
+                    #Todo: Enviar por mqtt
+                    pass
+
+                objetoAccion = self.listaClasesAcciones[comandoAccion]()
+                objetoAccion.configurar(opcionesAccion)
+                return objetoAccion.ejecutar()
+
         if "accion" in accion:
             NombreAccion = accion["accion"]
             if NombreAccion in self.ListaAcciones:
