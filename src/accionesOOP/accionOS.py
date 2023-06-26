@@ -13,7 +13,7 @@ class accionOS(accionBase):
         descripcion = "Ejecuta comando de terminal"
         super().__init__(nombre, comando, descripcion)
 
-        propiedadTiempo = {
+        propiedadComando = {
             "nombre": "Comando",
             "tipo": str,
             "obligatorio": True,
@@ -22,7 +22,7 @@ class accionOS(accionBase):
             "ejemplo": "ls",
         }
 
-        self.agregarPropiedad(propiedadTiempo)
+        self.agregarPropiedad(propiedadComando)
 
         self.funcion = self.ejecutrarComando
 

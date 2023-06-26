@@ -12,7 +12,7 @@ class accionFolder(accionBase):
         descripcion = "Abre un folder"
         super().__init__(nombre, comando, descripcion)
 
-        propiedadTiempo = {
+        propiedadRuta = {
             "nombre": "Folder",
             "tipo": str,
             "obligatorio": True,
@@ -21,7 +21,7 @@ class accionFolder(accionBase):
             "ejemplo": "/home/usuario",
         }
 
-        self.agregarPropiedad(propiedadTiempo)
+        self.agregarPropiedad(propiedadRuta)
 
         self.funcion = self.abrirFolder
 

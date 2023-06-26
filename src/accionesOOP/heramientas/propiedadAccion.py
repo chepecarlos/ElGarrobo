@@ -12,9 +12,9 @@ class propiedadAccion:
             self.tipo = lista["tipo"]
             self.obligatorio = lista["obligatorio"]
             self.descripcion = lista["descripcion"]
-            self.ejemplo = None
-            if "ejemplo" in lista:
-                self.ejemplo = lista["ejemplo"]
+            self.ejemplo = lista.get("ejemplo")
+            self.defecto = lista.get("defecto")
+
 
     def mismoTipo(self, valor) -> bool:
         return type(valor) == self.tipo
