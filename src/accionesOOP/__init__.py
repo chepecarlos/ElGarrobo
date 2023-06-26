@@ -2,6 +2,7 @@
 
 from .accionDelay import accionDelay
 from .accionOS import accionOS
+from .accionFolder import accionFolder
 
 
 def cargarAcciones():
@@ -11,5 +12,6 @@ def cargarAcciones():
 
     return {
         "delay": accionDelay,
-        "os": accionOS
+        "os": accionOS,
+        "folder": accionFolder
         }

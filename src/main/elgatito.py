@@ -363,11 +363,11 @@ class ElGatito(object):
 
                 if self.ModuloMonitorESP:
                     if "topic" in self.ModuloMonitorESP:
-                        Mensaje = {"accion": NombreAccion}
+                        Mensaje = {"accion": nombreAccion}
                         if "key" in accion:
                             Mensaje["key"] = accion["key"]
-                        if Nombre is not None:
-                            Mensaje["nombre"] = Nombre
+                        if nombreAccion is not None:
+                            Mensaje["nombre"] = nombreAccion
 
                         opciones = {"opciones": Mensaje, "topic": f"{self.ModuloMonitorESP['topic']}/accion"}
 
