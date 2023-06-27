@@ -20,11 +20,11 @@ def CargarAcciones():
     """
 
     return {
-        "delay": delay,
+        # "delay": delay,
         "contrain": OperacionConstrain,
         "mqtt": mensajeMQTT,
         # OS
-        "os": accionOS,
+        # "os": accionOS,
         "notificacion": Notificacion,
         # Precionas teclas
         "teclas": comandoTeclas,
