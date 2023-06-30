@@ -102,6 +102,7 @@ class MiOBS:
         self.AgregarEvento(self.EventoWebCamara, events.VirtualcamStateChanged)
         self.AgregarEvento(self.EventoVisibilidadFuente, events.SceneItemEnableStateChanged)
         self.AgregarEvento(self.EventoVisibilidadFiltro, events.SourceFilterEnableStateChanged)
+        self.AgregarEvento(self.eventoVendendor, events.VendorEvent)
         self.AgregarEvento(self.EventoSalir, events.ExitStarted)#
         # self.AgregarEvento(self.EventoPulsoCorazon, events.Heartbeat)
         self.actualizarDeck()
@@ -237,6 +238,22 @@ class MiOBS:
             Data = Filtro.copy()
             Data.append(elemento)
             SalvarValor("data/obs_filtro_opciones.json", Data, lista[elemento])
+
+    def eventoVendendor(self, mensaje):
+        """Recive mensajes de plugins extras"""
+        vendedor = mensaje.datain["vendorName"]
+        print(vendedor)
+        if vendedor == "aitum-vertical-canvas":
+            self.eventoVertical(mensaje)
+
+    def eventoVertical(self, mensaje):
+        """Recive mensajes para el plugin de Vertical"""
+        tipo = mensaje.datain["eventType"]
+        print(tipo, mensaje)
+        if tipo == "switch_scene":
+            escenaActual = mensaje.datain["eventData"]["new_scene"]
+            SalvarValor(self.archivoEstado, "obs_escena_vertical", escenaActual)
+            logger.info(f"OBS[Escena-Vertical] {escenaActual}")
 
     def CambiarEscena(self, opciones):
         """Enviá solicitud de cambiar de Escena."""
