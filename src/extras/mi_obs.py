@@ -44,6 +44,7 @@ class MiOBS:
         listaAcciones["obs_estado"] = self.EstadoOBS
         listaAcciones["obs_tiempo_grabando"] = self.TiempoGrabando
         listaAcciones["obs_tiempo_envivo"] = self.TiempoEnVivo
+        listaAcciones["obs_escena_vertical"] = self.cambiarEscenaVertical
         # listaAcciones['obs_host'] = self.OBS.Conectar
         # listaAcciones['obs_server'] = self.OBS.Conectar
 
@@ -242,14 +243,12 @@ class MiOBS:
     def eventoVendendor(self, mensaje):
         """Recive mensajes de plugins extras"""
         vendedor = mensaje.datain["vendorName"]
-        print(vendedor)
         if vendedor == "aitum-vertical-canvas":
             self.eventoVertical(mensaje)
 
     def eventoVertical(self, mensaje):
         """Recive mensajes para el plugin de Vertical"""
         tipo = mensaje.datain["eventType"]
-        print(tipo, mensaje)
         if tipo == "switch_scene":
             escenaActual = mensaje.datain["eventData"]["new_scene"]
             SalvarValor(self.archivoEstado, "obs_escena_vertical", escenaActual)
@@ -330,11 +329,28 @@ class MiOBS:
             self.Notificar("OBS No Conectado")
 
     def CambiarCamaraVirtual(self, opciones=None):
+        """Envia solisitud de cambio estado Camara Virtual"""
         if self.conectado:
             self.OBS.call(requests.ToggleVirtualCam())
         else:
             logger.info("OBS no Conectado")
             self.Notificar("OBS-No-Conectado")
+
+    def cambiarEscenaVertical(self, opciones=None):
+        """Enviá solicitud de cambiar de Escena en plugin Vertical."""
+        escena = opciones.get("escena")
+
+        if escena is None:
+            logger.info("OBS[Escena no definida]")
+            return
+       
+        if self.conectado:
+            mensaje = {"scene":escena}
+            self.OBS.call(requests.CallVendorRequest(vendorName="aitum-vertical-canvas",requestType="switch_scene", requestData=mensaje))
+            logger.info(f"OBS[Cambiando] {escena}")
+        else:
+            logger.warning("OBS[No conectado]")
+            self.Notificar("OBS-No-Encontrado")
 
     def TiempoGrabando(self, opciones=None):
         if self.conectado:
