@@ -307,7 +307,7 @@ class MiOBS:
         """Envia solisitud de cambiar estado del Streaming ."""
         if self.conectado:
             logger.info("Cambiando estado EnVivo")
-            self.OBS.call(requests.StartStopStreaming())
+            self.OBS.call(requests.ToggleStream())
         else:
             logger.info("OBS no Conectado")
             self.Notificar("OBS No Conectado")
