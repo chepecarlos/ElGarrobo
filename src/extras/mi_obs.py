@@ -44,7 +44,10 @@ class MiOBS:
         listaAcciones["obs_estado"] = self.EstadoOBS
         listaAcciones["obs_tiempo_grabando"] = self.TiempoGrabando
         listaAcciones["obs_tiempo_envivo"] = self.TiempoEnVivo
+
+        listaAcciones["obs_grabar_vertical"] = self.cambiarGrabacionVertical
         listaAcciones["obs_escena_vertical"] = self.cambiarEscenaVertical
+        
         # listaAcciones['obs_host'] = self.OBS.Conectar
         # listaAcciones['obs_server'] = self.OBS.Conectar
 
@@ -336,6 +339,15 @@ class MiOBS:
             logger.info("OBS no Conectado")
             self.Notificar("OBS-No-Conectado")
 
+    def cambiarGrabacionVertical(self, opciones=None):
+        """Envia solisitud de cambiar estado de Grabacion en plugin Vertical."""
+        if self.conectado:
+            logger.info("Cambiando[Grabacion-Vertical]")
+            self.OBS.call(requests.CallVendorRequest(vendorName="aitum-vertical-canvas",requestType="toggle_recording"))
+        else:
+            logger.info("OBS no Conectado")
+            self.Notificar("OBS No Conectado")
+
     def cambiarEscenaVertical(self, opciones=None):
         """Enviá solicitud de cambiar de Escena en plugin Vertical."""
         escena = opciones.get("escena")
@@ -347,7 +359,7 @@ class MiOBS:
         if self.conectado:
             mensaje = {"scene":escena}
             self.OBS.call(requests.CallVendorRequest(vendorName="aitum-vertical-canvas",requestType="switch_scene", requestData=mensaje))
-            logger.info(f"OBS[Cambiando] {escena}")
+            logger.info(f"OBS[Cambiando-Vertical] {escena}")
         else:
             logger.warning("OBS[No conectado]")
             self.Notificar("OBS-No-Encontrado")
