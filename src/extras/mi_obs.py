@@ -46,6 +46,7 @@ class MiOBS:
         listaAcciones["obs_tiempo_envivo"] = self.TiempoEnVivo
 
         listaAcciones["obs_grabar_vertical"] = self.cambiarGrabacionVertical
+        listaAcciones["obs_envivo_vertical"] = self.cambiarEnVivoVertical
         listaAcciones["obs_escena_vertical"] = self.cambiarEscenaVertical
         
         # listaAcciones['obs_host'] = self.OBS.Conectar
@@ -325,7 +326,7 @@ class MiOBS:
     def CambiarEnVivo(self, opciones=None):
         """Envia solisitud de cambiar estado del Streaming ."""
         if self.conectado:
-            logger.info("Cambiando estado EnVivo")
+            logger.info("Cambiando[EnVivo]")
             self.OBS.call(requests.ToggleStream())
         else:
             logger.info("OBS no Conectado")
@@ -347,6 +348,17 @@ class MiOBS:
         else:
             logger.info("OBS no Conectado")
             self.Notificar("OBS No Conectado")
+
+    def cambiarEnVivoVertical(self, opciones=None):
+        """Envia solisitud de cambiar estado del Streaming ."""
+        if self.conectado:
+            logger.info("Cambiando[EnVivo-Vertical]")
+            self.OBS.call(requests.CallVendorRequest(vendorName="aitum-vertical-canvas",requestType="toggle_streaming"))
+        else:
+            logger.info("OBS no Conectado")
+            self.Notificar("OBS No Conectado")
+
+
 
     def cambiarEscenaVertical(self, opciones=None):
         """Enviá solicitud de cambiar de Escena en plugin Vertical."""
