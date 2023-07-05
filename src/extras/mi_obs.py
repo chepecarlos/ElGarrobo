@@ -299,15 +299,19 @@ class MiOBS:
         """Envia solisitud de cambiar estado de filtro."""
         filtro = opciones.get("filtro")
         fuente = opciones.get("fuente")
+        estado = opciones.get("estado")
 
         if fuente is None or filtro is None:
             logger.info("OBS[Falta Atributo]")
             return
 
         if self.conectado:
-            estado = ObtenerValor("data/obs_filtro.json", [fuente, filtro])
+            if estado is None:
+                estado = ObtenerValor("data/obs_filtro.json", [fuente, filtro])
+                if estado is not None:
+                    estado = not estado
+
             if estado is not None:
-                estado = not estado
                 logger.info(f"OBS[Filtro] {fuente}[{filtro}]={estado}")
                 self.OBS.call(requests.SetSourceFilterEnabled(sourceName=fuente, filterName=filtro, filterEnabled=estado))
         else:
