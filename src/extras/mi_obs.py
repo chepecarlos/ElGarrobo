@@ -3,6 +3,8 @@ import threading
 
 from MiLibrerias import ConfigurarLogging, ObtenerArchivo, ObtenerValor, SalvarArchivo, SalvarValor
 from obswebsocket import events, obsws, requests
+from acciones import mensajeMQTT
+from math import log
 
 logger = ConfigurarLogging(__name__)
 
@@ -14,6 +16,7 @@ class MiOBS:
         """Crea confección básica con OBS Websocket."""
         logger.info("OBS[Iniciando]")
         self.archivoEstado = "data/obs.json"
+        self.audioMonitoriar = list()
         self.Reiniciar()
 
     def Reiniciar(self):
@@ -76,18 +79,24 @@ class MiOBS:
         if "contrasenna" in opciones:
             self.password = opciones["contrasenna"]
 
-        if self.conectado: 
+        if self.conectado:
             logger.info("OBS Ya Conectado")
             self.Notificar("OBS-Ya-Conectado")
             return
+        
+        modulos = ObtenerArchivo("modulos/modulos.json")
+        monitorAudio = modulos.get("obs_monitor_audio", False)
+
+        if monitorAudio:
+            self.audioMonitoriar = ObtenerArchivo("modulos/audio_obs/audio.json")
+            self.audioTopico = ObtenerArchivo("modulos/audio_obs/mqtt.json")["topic"]
 
         try:
             if self.password is None:
                 self.OBS = obsws(self.host, self.port)
             else:
                 self.OBS = obsws(self.host, self.port, self.password)
-
-            self.OBS.connect()
+            self.OBS.connect(input_volume_meters=monitorAudio)
             self.conectado = True
             logger.info(f"OBS[Conectado] {self.host}")
             self.Notificar("OBS-Conectado")
@@ -108,7 +117,9 @@ class MiOBS:
         self.AgregarEvento(self.EventoVisibilidadFuente, events.SceneItemEnableStateChanged)
         self.AgregarEvento(self.EventoVisibilidadFiltro, events.SourceFilterEnableStateChanged)
         self.AgregarEvento(self.eventoVendendor, events.VendorEvent)
-        self.AgregarEvento(self.EventoSalir, events.ExitStarted)#
+        self.AgregarEvento(self.EventoSalir, events.ExitStarted)
+        self.AgregarEvento(self.eventoVolumen, events.InputVolumeMeters)
+
         # self.AgregarEvento(self.EventoPulsoCorazon, events.Heartbeat)
         self.actualizarDeck()
 
@@ -257,6 +268,23 @@ class MiOBS:
             escenaActual = mensaje.datain["eventData"]["new_scene"]
             SalvarValor(self.archivoEstado, "obs_escena_vertical", escenaActual)
             logger.info(f"OBS[Escena-Vertical] {escenaActual}")
+
+    def eventoVolumen(self, mensaje):
+        """Recive mensaje de entradas de Audio"""
+        def convertir(nivel):
+            return round(20 * log(nivel, 10), 1) if nivel > 0 else -200.0
+            
+        canales = mensaje.datain["inputs"]
+        for canal in canales:
+            for nombres in self.audioMonitoriar:
+                if nombres == canal["inputName"]:
+                    if len(canal["inputLevelsMul"]) > 0:
+                        nivel = canal["inputLevelsMul"][0][1]
+                        opciones = {
+                         "mensaje" : convertir(nivel),
+                         "topic" : f"{self.audioTopico}/{nombres}"
+                        }
+                        mensajeMQTT(opciones)
 
     def CambiarEscena(self, opciones):
         """Enviá solicitud de cambiar de Escena."""
