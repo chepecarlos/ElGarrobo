@@ -16,12 +16,20 @@ sudo apt install python3-pip python3-setuptools python3-tk python3-dev git
 ```
 
 # Clonar 
+Puede clonar el repositorio donde más te convenga
 
 ```
 git clone https://github.com/chepecarlos/ElGatoALSW.git
 ```
+# Entrara al folder del repositorio 
+Debes entrar a la carpeta ElGatoALSW 
+
+```
+cd ElGatoALSW/
+```
 
 ## Submodulos 
+Ejecuta lo siguiente
 
 ```
 git submodule init
