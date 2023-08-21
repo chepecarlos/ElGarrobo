@@ -80,33 +80,23 @@ class ElGatito(object):
         self.ModuloMQTTEstado = False
         self.ModuloPulse = False
         self.ModuloMonitorESP = False
+        self.ModuloAlias = False
 
         if Modulos is not None:
-            if "obs" in Modulos:
-                self.ModuloOBS = Modulos["obs"]
-
             if "obs_notificacion" in Modulos:
                 self.ModuloOBSNotificacion = Modulos["obs_notificacion"]
 
-            if "deck" in Modulos:
-                self.ModuloDeck = Modulos["deck"]
+            if Modulos.get("monitor_esp", False):
+                self.ModuloMonitorESP = ObtenerArchivo("modulos/monidor_esp/mqtt.json")
 
-            if "teclado" in Modulos:
-                self.ModuloTeclado = Modulos["teclado"]
-
-            if "mqtt" in Modulos:
-                self.ModuloMQTT = Modulos["mqtt"]
-
-            if "monitor_esp" in Modulos:
-                if Modulos["monitor_esp"]:
-                    self.ModuloMonitorESP = ObtenerArchivo("modulos/monidor_esp/mqtt.json")
-
-            if "mqtt_estado" in Modulos:
-                self.ModuloMQTTEstado = Modulos["mqtt_estado"]
-
-            if "pulse" in Modulos:
-                self.ModuloPulse = Modulos["pulse"]
-
+            self.ModuloOBS = Modulos.get("obs", False)
+            self.ModuloDeck = Modulos.get("deck", False)
+            self.ModuloTeclado = Modulos.get("teclado", False)
+            self.ModuloMQTT = Modulos.get("mqtt", False)
+            self.ModuloMQTTEstado = Modulos.get("mqtt_estado", False)
+            self.ModuloPulse = Modulos.get("pulse", False)
+            self.ModuloAlias = Modulos.get("alias", False)
+        
     def IniciarAcciones(self):
         """
         Inicializa las acciones del Sistema en dict nombre de la accion y la funcion asociada
@@ -117,6 +107,7 @@ class ElGatito(object):
 
         # Acciones Macro
         ListaAcciones["macro"] = self.AccionesMacros
+        ListaAcciones["alias"] = self.AccionesAlias
         ListaAcciones["random"] = self.AccionRandom
 
         # Acciones Sistema
@@ -154,17 +145,25 @@ class ElGatito(object):
                 if DataTeclado is not None:
                     self.Data["teclados"] = DataTeclado
 
-        if "folder_path" in self.Data:
-            self.PathActual = self.Data["folder_path"]
+        pathActual = self.Data.get("folder_path")
+        if pathActual is not None:
+            self.PathActual = pathActual
             self.Keys = {"nombre": self.Data["folder_path"], "folder_path": self.Data["folder_path"]}
             self.CargarFolder(self.Keys)
 
         if self.ModuloMQTT:
-            if "mqtt_file" in self.Data:
-                ArchivoMQTT = self.Data["mqtt_file"]
-                DataMQTT = ObtenerArchivo(ArchivoMQTT)
-                if DataMQTT is not None:
-                    self.Data["mqtt"] = ObtenerArchivo(ArchivoMQTT)
+            archivoMQTT = self.Data.get("mqtt_file")
+            if archivoMQTT is not None:
+                dataMQTT = ObtenerArchivo(archivoMQTT)
+                if dataMQTT is not None:
+                    self.Data["mqtt"] = dataMQTT
+
+        if self.ModuloAlias:
+            archivoAlias = self.Data.get("alias_file")
+            if archivoAlias:
+                dataAlias = ObtenerArchivo(archivoAlias)
+                if dataAlias is not None:
+                    self.Data["alias"] = dataAlias
 
     def CargarFolder(self, Data):
         """
@@ -440,6 +439,19 @@ class ElGatito(object):
             self.respuestaMacro(comando, respuesta, cajon)
 
         # TODO: Hacer Macros en diferentes Hilos
+
+    def AccionesAlias(self, opciones):
+        """
+        Ejecuta una accion con un sobre nombre
+        """
+        if not self.ModuloAlias:
+            return
+
+        nombre = opciones.get("nombre")
+        if nombre is not None:
+            for accion in self.Data["alias"]:
+                if nombre == accion.get("nombre"):
+                    self.BuscarAccion(accion)
 
     def solisitaMacro(self, comando, cajon):
         if "macro_opciones" in comando:
