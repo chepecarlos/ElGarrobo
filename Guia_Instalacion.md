@@ -6,13 +6,13 @@
 ### Linux Mint
 
 ```bash
-sudo apt install python3-pip python3-setuptools python3-tk python3-dev git 
+sudo apt install python3-pip python3-setuptools python3-tk python3-dev ffmpeg git 
 ```
 
 ### fedora 
 
 ```
- sudo dnf install python3-pip python3-setuptools python3-tkinter python3-devel git 
+sudo dnf install python3-pip python3-setuptools python3-tkinter python3-devel git 
 ```
 
 # Clonar 
@@ -52,13 +52,21 @@ sudo apt-get install -y libasound2-dev
 sudo apt install xdotool
 ```
 
+### Sintetizador de voz
+
+```
+sudo apt install espeak
+```
+
 ### instalar de paquetes
 
 ```
 pip install .
 ``` 
 
-sudo apt install espeak
+## Agregar binarios a sistema 
+
+$HOME/.local/bin
 
 ####### GUIA Vieja #######
 
