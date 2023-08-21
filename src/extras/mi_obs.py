@@ -1,4 +1,5 @@
-# Libreria: https://github.com/Elektordi/obs-websocket-py
+# Librería: https://github.com/Elektordi/obs-websocket-py
+# librería temporal: https://github.com/Elektordi/obs-websocket-py
 import threading
 
 from MiLibrerias import ConfigurarLogging, ObtenerArchivo, ObtenerValor, SalvarArchivo, SalvarValor
@@ -93,13 +94,10 @@ class MiOBS:
 
         try:
             if self.password is None:
-                self.OBS = obsws(self.host, self.port)
+                self.OBS = obsws(self.host, self.port, authreconnect=1, on_connect=self.conectarOBS, on_disconnect=self.desconectarOBS)
             else:
-                self.OBS = obsws(self.host, self.port, self.password)
+                self.OBS = obsws(self.host, self.port, self.password, authreconnect=1, on_connect=self.conectarOBS, on_disconnect=self.desconectarOBS)
             self.OBS.connect(input_volume_meters=monitorAudio)
-            self.conectado = True
-            logger.info(f"OBS[Conectado] {self.host}")
-            self.Notificar("OBS-Conectado")
         except Exception as error:
             logger.warning(f"OBS[Error] {error}")
             self.LimpiarTemporales()
@@ -121,6 +119,18 @@ class MiOBS:
         self.AgregarEvento(self.eventoVolumen, events.InputVolumeMeters)
 
         # self.AgregarEvento(self.EventoPulsoCorazon, events.Heartbeat)
+        self.actualizarDeck()
+
+    def conectarOBS(self, mensaje):
+        self.conectado = True
+        logger.info(f"OBS[Conectado] {self.host}")
+        self.Notificar("OBS-Conectado")
+
+    def desconectarOBS(self, mensaje):
+        self.conectado = False
+        logger.info("OBS[Desconectado]")
+        self.Notificar("OBS-No-Conectado")
+        self.LimpiarTemporales()
         self.actualizarDeck()
 
     def SalvarEstadoActual(self):
@@ -287,7 +297,7 @@ class MiOBS:
                         mensajeMQTT(opciones)
 
     def CambiarEscena(self, opciones):
-        """Enviá solicitud de cambiar de Escena."""
+        """Envía solicitud de cambiar de Escena."""
         escena = opciones.get("escena")
 
         if escena is None:
@@ -295,7 +305,7 @@ class MiOBS:
             return
        
         if self.conectado:
-            self.OBS.call(requests.SetCurrentProgramScene(sceneName=escena))
+            self.OBS.call(requests.SetCurrentProgramScene(sceneName=escena))## problema 
             logger.info(f"OBS[Cambiando] {escena}")
         else:
             logger.warning("OBS[No conectado]")
