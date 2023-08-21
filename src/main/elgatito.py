@@ -57,7 +57,7 @@ class ElGatito(object):
             self.IniciarStreamDeck()
 
         if self.ModuloTeclado:
-            self.CargarTeclados()
+            self.cargarTeclados()
 
         if self.ModuloMQTT:
             self.IniciarMQTT()
@@ -204,18 +204,23 @@ class ElGatito(object):
                     if Info is not None:
                         Data[Atributo] = Info
 
-    def CargarTeclados(self):
+    def cargarTeclados(self):
         """
-        Confiurando Teclados Macros.
+        Configurando Teclados Macros.
         """
         self.ListaTeclados = []
         if "teclados" in self.Data:
             logger.info("Teclados[Cargando]")
-            for Teclado in self.Data["teclados"]:
-                if "nombre" in Teclado and "input" in Teclado and "file" in Teclado:
-                    TecladoActual = MiTecladoMacro(Teclado["nombre"], Teclado["input"], Teclado["file"], self.Evento)
-                    TecladoActual.Conectar()
-                    self.ListaTeclados.append(TecladoActual)
+            for teclado in self.Data["teclados"]:
+                nombre = teclado.get("nombre")
+                archivo = teclado.get("file")
+                input = teclado.get("input")
+                estado = teclado.get("enable", True)
+                if estado:
+                    if nombre is not None and archivo is not None and input is not None:
+                        tecladoActual = MiTecladoMacro(nombre, input, archivo, self.Evento)
+                        tecladoActual.Conectar()
+                        self.ListaTeclados.append(tecladoActual)
 
     def CargarStreamDeck(self):
         """Configurando streamdeck."""
