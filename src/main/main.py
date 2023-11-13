@@ -5,7 +5,7 @@ import os
 import sys
 
 from configurar.modulo import ConfigurarModulos
-from MiLibrerias import ConfigurarLogging
+from MiLibrerias import ConfigurarLogging, ObtenerArchivo
 
 from .elgatito import ElGatito
 
@@ -26,6 +26,13 @@ def Parametros():
 
 
 def main():
+
+    # http://peak.telecommunity.com/DevCenter/setuptools#non-package-data-files
+    from pkg_resources import Requirement, resource_filename
+    filename = resource_filename(Requirement.parse("elgatoalsw"),"/main/pollo.md")
+    data = ObtenerArchivo(filename)
+    print(data)
+    
     logger.info("ElGatoALSW[Iniciando]")
     args = Parametros()
 

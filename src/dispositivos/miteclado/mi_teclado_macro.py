@@ -63,16 +63,15 @@ class MiTecladoMacro():
                         f"Teclado[Desconectado] {self.Nombre} Error[{error.errno}]")
             else:
                 try:
-                    logger.info(f"Teclado[Conectandose] {self.Nombre}")
+                    logger.info(f"Teclado[Conectándose] {self.Nombre}")
                     self.Teclado = InputDevice(self.Dispisitivo)
                     self.Teclado.grab()
                     self.Conectado = True
                     logger.info(f"Teclado[Conectado] {self.Nombre}")
                 except Exception as error:
-                    logger.warning(
-                        f"Teclado[No Conectado] {self.Nombre} Error {error.errno}")
-                    logger.info(
-                        f"Teclado[Re-Intetando]{self.Nombre} en {self.EsperaReconectar} Segundos")
+                    logger.warning(f"Teclado[Error] {self.Nombre} Re-Intensando en {self.EsperaReconectar} Error {error.errno}")
+                    if self.EsperaReconectar < 60:
+                        self.EsperaReconectar += 5
                     time.sleep(self.EsperaReconectar)
                     self.Conectado = False
 
