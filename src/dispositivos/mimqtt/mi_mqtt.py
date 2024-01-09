@@ -9,94 +9,83 @@ logger = ConfigurarLogging(__name__)
 
 
 class MiMQTT:
-    def __init__(self, Data, Evento):
+    def __init__(self, data, Evento):
         self.Conectado = False
         self.Evento = Evento
-        if "nombre" in Data:
-            self.Nombre = Data["nombre"]
 
-        if "broker" in Data:
-            self.Broker = Data["broker"]
-        else:
-            self.Broker = "test.mosquitto.org"
+        self.nombre = data.get("nombre")
+        self.broker = data.get("broker","test.mosquitto.org")
+        self.puerto = data.get("puerto", 1883)
+        self.topicControl = data.get("topic")
+        self.usuario = data.get("usuario")
+        self.contrasenna = data.get("contrasenna")
+        self.hostControl = data.get("host", "fulanito")
 
-        if "puerto" in Data:
-            self.Puerto = Data["puerto"]
-        else:
-            self.Puerto = 1883
-
-        if "topic" in Data:
-            self.topic = Data["topic"]
-
-        if "usuario" in Data:
-            self.Usuario = Data["usuario"]
-        else:
-            self.Usuario = None
-
-        if "contrasenna" in Data:
-            self.Contrasenna = Data["contrasenna"]
-        else:
-            self.Contrasenna = None
-
-        logger.info(f"MQTT[Iniciando] - {self.Nombre}")
-        self.cliente = mqtt.Client()
+        logger.info(f"MQTT[Iniciando] - {self.nombre}")
+        self.cliente = mqtt.Client(client_id=self.hostControl)
         self.cliente.on_connect = self.EventoConectar
         self.cliente.on_disconnect = self.EventoDesconectando
         self.cliente.on_message = self.MensajeMQTT
 
     def Conectar(self):
         """Conectar a Broker MQTT."""
-        logger.info(f"MQTT[Conectando] - {self.Nombre}")
+        logger.info(f"MQTT[Conectando] - {self.nombre} - {self.hostControl}")
         try:
-            if self.Usuario is not None:
-                self.cliente.username_pw_set(self.Usuario, password=self.Contrasenna)
-            self.cliente.connect(self.Broker, port=self.Puerto, keepalive=60)
+            if self.usuario is not None:
+                self.cliente.username_pw_set(self.usuario, password=self.contrasenna)
+            self.cliente.connect(self.broker, port=self.puerto, keepalive=60)
             self.Hilo = threading.Thread(target=self.HiloServidor)
             self.Hilo.start()
             self.Conectado = True
         except Exception as error:
-            logger.error(f"MQTT[Error] Dispositivo {self.Nombre} no responde")
+            logger.error(f"MQTT[Error] Dispositivo {self.nombre} no responde")
             self.Conectado = False
             # TODO intentar re-conectar después de un tiempo
 
     def HiloServidor(self):
-        logger.info(f"MQTT[Hijo] - {self.Nombre}")
+        logger.info(f"MQTT[Hijo] - {self.nombre}")
         self.cliente.loop_forever()
 
     def EventoConectar(self, client, userdata, flags, rc):
         """Respuesta de conecion y suscripción a topicos."""
         self.Conectado = True
-        logger.info(f"MQTT[Conectado] - {self.Nombre}")
-        logger.info(f"MQTT[Sub] - [{self.Nombre}]:{self.topic}")
-        client.subscribe(self.topic)
+        logger.info(f"MQTT[Conectado] - {self.nombre}")
+        if self.hostControl and self.topicControl:
+            logger.info(f"MQTT[Accion-Control] - [{self.hostControl}]:{self.topicControl}")
+            client.subscribe(self.topicControl)
 
     def EventoDesconectando(self, client, userdata, rc):
-        logger.info(f"MQTT[Desconectando] - {self.Nombre}")
+        logger.info(f"MQTT[Desconectando] - {self.nombre}")
         self.Conectado = False
 
     def MensajeMQTT(self, client, userdata, msg):
         """Recibe mensaje por MQTT."""
-        Mensaje = msg.payload
-        Topic = msg.topic
-        Mensaje = str(Mensaje.decode("utf-8", "ignore"))
-        logger.info(f"MQTT[{Topic}] {Mensaje}")
+        mensaje = msg.payload
+        topic = msg.topic
+        mensaje = str(mensaje.decode("utf-8", "ignore"))
+        logger.info(f"MQTT[{topic}] {mensaje}")
 
-        try:
-            Mensaje = json.loads(Mensaje)
-        except Exception as Error:
-            logger.error("MQTT[Problemas con la accion]")
-            return
+        if topic == self.topicControl:
+            try:
+                mensaje = json.loads(mensaje)
+            except Exception as Error:
+                logger.error("MQTT[Problema] Conversion a Json ")
+                return
 
-        if "accion" in Mensaje:
-            logger.info(f"MQTT[Accion] {Mensaje['accion']}")
-            self.Evento(Mensaje)
+            hostAccion = mensaje.get("host")
+
+            if hostAccion == self.hostControl or hostAccion == "todos":
+                logger.info(f"MQTT[Control] - Acción({mensaje.get('accion')})")
+                self.Evento(mensaje)
+            else:
+                logger.info(f"MQTT[Control] - NoConMigo")
 
     def EnviarMQTT(self, Topic, Mensaje):
         """Envia dato por MQTT."""
         if self.Conectado:
             self.cliente.publish(Topic, Mensaje)
         else:
-            logger.error(f"MQTT[error] No Conectado con {self.Nombre}")
+            logger.error(f"MQTT[error] No Conectado con {self.nombre}")
 
     def Desconectar(self):
         if self.Conectado:
