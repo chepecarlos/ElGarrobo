@@ -18,16 +18,17 @@ class MiOBS:
         logger.info("OBS[Iniciando]")
         self.archivoEstado = "data/obs.json"
         self.audioMonitoriar = list()
+        self.dibujar = None
+        self.notificaciones = None
         self.Reiniciar()
 
     def Reiniciar(self):
         """Reiniciar todo los estado"""
+        logger.info("OBS[Reiniciando]")
         self.host = "localhost"
-        self.port = 4455 #
+        self.port = 4455
         self.password = None
         self.conectado = False
-        self.dibujar = None
-        self.notificaciones = None
         SalvarValor(self.archivoEstado, "obs_conectar", False)
         self.LimpiarTemporales()
 
@@ -69,8 +70,6 @@ class MiOBS:
         """Agrega función para notificación."""
         self.alertaOBS = ObtenerArchivo("modulos/alerta_obs/mqtt.json")
         self.notificaciones = funcion
-        self.EstadoOBS({})
-
     def Conectar(self, opciones):
         """Se conecta a OBS Websocket y inicializa los eventos."""
         if "servidor" in opciones:
