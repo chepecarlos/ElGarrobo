@@ -67,4 +67,5 @@ class accionNotificacion(accionBase):
             #     icono = UnirPath(ObtenerFolderConfig, icono)
             noti.icon = icono
         noti.send()
+        Logger.info(f"Notificación[{texto}]")
         # TODO: que hace block=False
