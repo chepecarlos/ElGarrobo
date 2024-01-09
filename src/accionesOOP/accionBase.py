@@ -13,6 +13,7 @@ class accionBase:
         self.listaPropiedades = []
         self.listaValores = list()
         self.funcion = None
+        self.gui = True
 
     def agregarPropiedad(self, lista=None) -> None:
         """Agrega propiedad a la accion"""
@@ -36,7 +37,7 @@ class accionBase:
     def ejecutar(self) -> bool:
         """Ejecuta la accion si es posible"""
         if not self.sePuedeEjecutar():
-            print("No se puede ejecutar, falta valores.")
+            print("AcciónPOO[Error] - Falta Propiedades.")
             return False
 
         if self.funcion is not None:
