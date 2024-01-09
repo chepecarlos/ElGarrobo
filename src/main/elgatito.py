@@ -675,7 +675,10 @@ class ElGatito(object):
 
     def SolisitarNotifiacacion(self, texto, opciones):
         if self.ModuloOBSNotificacion:
-            self.ListaAcciones["notificacion"]({"texto": texto})
+            objetoAccion = self.listaClasesAcciones["notificacion"]()
+            objetoAccion.configurar({"texto": texto})
+            objetoAccion.ejecutar()
+        
             if opciones is  None:
                 logger.error('error en configuracciones')
             else:

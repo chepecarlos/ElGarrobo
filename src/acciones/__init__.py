@@ -25,7 +25,7 @@ def CargarAcciones():
         "mqtt": mensajeMQTT,
         # OS
         # "os": accionOS,
-        "notificacion": Notificacion,
+        # "notificacion": Notificacion,
         # Precionas teclas
         "teclas": comandoTeclas,
         "escribir": comandoEscribir,

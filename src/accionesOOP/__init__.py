@@ -5,6 +5,7 @@ from .accionOS import accionOS
 from .accionFolder import accionFolder
 from .accionTelegram import accionTelegram
 from .accionControl import accionControl
+from .accionNotificacion import accionNotificacion
 
 
 def cargarAcciones():
@@ -18,4 +19,5 @@ def cargarAcciones():
         "folder": accionFolder,
         "telegram": accionTelegram,
         "control": accionControl,
+        "notificacion": accionNotificacion,
     }
