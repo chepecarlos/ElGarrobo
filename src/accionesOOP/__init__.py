@@ -4,6 +4,7 @@ from .accionDelay import accionDelay
 from .accionOS import accionOS
 from .accionFolder import accionFolder
 from .accionTelegram import accionTelegram
+from .accionControl import accionControl
 
 
 def cargarAcciones():
@@ -15,5 +16,6 @@ def cargarAcciones():
         "delay": accionDelay,
         "os": accionOS,
         "folder": accionFolder,
-        "telegram": accionTelegram
-        }
+        "telegram": accionTelegram,
+        "control": accionControl,
+    }
