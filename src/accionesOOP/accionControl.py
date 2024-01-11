@@ -34,7 +34,7 @@ class accionControl(accionBase):
 
         propiedadOpciones = {
             "nombre": "opciones",
-            "tipo": list,
+            "tipo": dict,
             "obligatorio": False,
             "atributo": "opciones",
             "descripcion": "opciones para accion a realizar en la pc",
@@ -44,11 +44,11 @@ class accionControl(accionBase):
         self.agregarPropiedad(propiedadHost)
         self.agregarPropiedad(propiedadAccion)
         self.agregarPropiedad(propiedadOpciones)
-        
+
         # TODO: usar configuraciones globales
         data = ObtenerArchivo("modulos/control/mqtt.json")
 
-        self.topicControl = data.get("topic","control")
+        self.topicControl = data.get("topic", "control")
 
         self.funcion = self.controlDistancia
 
@@ -58,11 +58,12 @@ class accionControl(accionBase):
         accionHost = self.obtenerValor("accion")
         opcionesHost = self.obtenerValor("opciones")
         if host is not None and accionHost is not None:
-            mensaje = {
-                "host": host,
-                "accion": accionHost
-            }
+            mensaje = {"host": host, "accion": accionHost}
             if opcionesHost:
-                mensaje["opciones"] = opcionesHost
-            Logger.info(f"Control[{mensaje['host']}] - {mensaje['accion']}")
+                mensaje = {"host": host, "accion": accionHost, "opciones": opcionesHost}
+                Logger.info(f"Control[{mensaje['host']}] - {mensaje['accion']}")
+                Logger.info(f"Opciones: {opcionesHost}")
+            else:
+                mensaje = {"host": host, "accion": accionHost}
+                Logger.info(f"Control[{mensaje['host']}] - {mensaje['accion']}")
             EnviarMensajeMQTT(self.topicControl, json.dumps(mensaje))

@@ -14,6 +14,7 @@ class accionBase:
         self.listaValores = list()
         self.funcion = None
         self.gui = True
+        self.error = False
 
     def agregarPropiedad(self, lista=None) -> None:
         """Agrega propiedad a la accion"""
@@ -33,6 +34,9 @@ class accionBase:
                 if self.confirmarPropiedad(atributo, valor):
                     valorActual = valoresAcciones(atributo, valor)
                     self.listaValores.append(valorActual)
+                else:
+                    print(f"AcciónPOO[Error] Atribulo {atributo} incorrecto {type(valor)}")
+                    self.error = True
 
     def ejecutar(self) -> bool:
         """Ejecuta la accion si es posible"""
@@ -48,6 +52,9 @@ class accionBase:
 
     def sePuedeEjecutar(self) -> bool:
         """Confirmar que se tiene todos los atributos necesarios"""
+        if self.error:
+            return False
+        
         listaObligatoria = []
         for propiedad in self.listaPropiedades:
             if propiedad.obligatorio:
