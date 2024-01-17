@@ -53,7 +53,8 @@ class MiMQTT:
         if self.hostControl and self.topicControl:
             logger.info(f"MQTT[Accion-Control] - [{self.hostControl}]:{self.topicControl}")
             client.subscribe(self.topicControl)
-
+            client.publish(f"{self.topicControl}/{self.hostControl}", "conectado")
+           
     def EventoDesconectando(self, client, userdata, rc):
         logger.info(f"MQTT[Desconectando] - {self.nombre}")
         self.Conectado = False
@@ -90,4 +91,5 @@ class MiMQTT:
     def Desconectar(self):
         if self.Conectado:
             logger.info("MQTT[Desconectado]")
+            self.cliente.publish(f"{self.topicControl}/{self.hostControl}", "desconectado")
             self.cliente.disconnect()
