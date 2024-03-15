@@ -29,11 +29,12 @@ class ElGatito(object):
 
     def __init__(self):
 
-        logger.info(f"Configurando[config.json]")
+        logger.info(f"Abri[config]")
 
-        self.Data = ObtenerArchivo("config.json")
+        self.tipoArchivos = [".md", ".json"]
+        self.Data = self.LeerData("config")
         if self.Data is None:
-            logger.error("No existe archivo config.json")
+            logger.error("No existe archivo config.json o config.md")
             os._exit(0)
 
         self.acciones = dict()
@@ -96,7 +97,7 @@ class ElGatito(object):
             self.ModuloMQTTEstado = Modulos.get("mqtt_estado", False)
             self.ModuloPulse = Modulos.get("pulse", False)
             self.ModuloAlias = Modulos.get("alias", False)
-        
+
     def IniciarAcciones(self):
         """
         Inicializa las acciones del Sistema en dict nombre de la accion y la funcion asociada
@@ -126,6 +127,14 @@ class ElGatito(object):
         self.ListaAcciones = ListaAcciones
         self.listaClasesAcciones = listaClasesAcciones
 
+    def LeerData(self, archivo):
+        for tipo in self.tipoArchivos:
+            dataTmp = ObtenerArchivo(f"{archivo}{tipo}")
+            if dataTmp is not None:
+                logger.info(f"Abriendo {archivo}{tipo}")
+                return dataTmp
+        return None
+
     def CargarData(self):
         """
         Cargando Data para Dispisitivo.
@@ -133,24 +142,29 @@ class ElGatito(object):
         logger.info("Cargando[Eventos]")
         if self.ModuloDeck:
             self.BanderaActualizarDeck = False
-            if "deck_file" in self.Data:
-                DataDeck = ObtenerArchivo(self.Data["deck_file"])
+            deck_file = self.Data.get("deck_file")
+            if deck_file is not None:
+                DataDeck = ObtenerArchivo(deck_file)
                 if DataDeck is not None:
                     self.Data["deck"] = DataDeck
 
         if self.ModuloTeclado:
-            if "teclados_file" in self.Data:
-                ArchivoTeclado = self.Data["teclados_file"]
-                DataTeclado = ObtenerArchivo(ArchivoTeclado)
+            teclados_file = self.Data.get("teclados_file")
+            if teclados_file is not None:
+                DataTeclado = ObtenerArchivo(teclados_file)
                 if DataTeclado is not None:
                     self.Data["teclados"] = DataTeclado
 
         pathActual = self.Data.get("folder_path")
         if pathActual is not None:
             self.PathActual = pathActual
-            self.Keys = {"nombre": self.Data["folder_path"], "folder_path": self.Data["folder_path"]}
+            self.Keys = {
+                "nombre": self.Data["folder_path"],
+                "folder_path": self.Data["folder_path"],
+            }
             self.CargarFolder(self.Keys)
 
+        ## TODO: por que no inicia la data de mqtt
         if self.ModuloMQTT:
             archivoMQTT = self.Data.get("mqtt_file")
             if archivoMQTT is not None:
@@ -217,7 +231,9 @@ class ElGatito(object):
                 estado = teclado.get("enable", True)
                 if estado:
                     if nombre is not None and archivo is not None and input is not None:
-                        tecladoActual = MiTecladoMacro(nombre, input, archivo, self.Evento)
+                        tecladoActual = MiTecladoMacro(
+                            nombre, input, archivo, self.Evento
+                        )
                         tecladoActual.Conectar()
                         self.ListaTeclados.append(tecladoActual)
 
@@ -247,7 +263,9 @@ class ElGatito(object):
         for Deck in self.ListaDeck:
             if "streamdeck" in self.acciones:
                 Deck.CambiarFolder(self.PathActual)
-                Deck.ActualizarIconos(self.acciones["streamdeck"], self.desfaceDeck, Unido=True)
+                Deck.ActualizarIconos(
+                    self.acciones["streamdeck"], self.desfaceDeck, Unido=True
+                )
 
             elif Deck.Nombre in self.acciones:
                 Deck.CambiarFolder(self.PathActual)
@@ -259,7 +277,9 @@ class ElGatito(object):
         if self.ListaDeck is not None:
             for Deck in self.ListaDeck:
                 if "streamdeck" in self.acciones:
-                    Deck.ActualizarIconos(self.acciones["streamdeck"], self.desfaceDeck, Unido=True)
+                    Deck.ActualizarIconos(
+                        self.acciones["streamdeck"], self.desfaceDeck, Unido=True
+                    )
 
                 elif Deck.Nombre in self.acciones:
                     Deck.ActualizarIconos(self.acciones[Deck.Nombre], self.desfaceDeck)
@@ -280,7 +300,10 @@ class ElGatito(object):
         if self.ModuloMonitorESP:
             if "topic" in self.ModuloMonitorESP:
                 Mensaje = {"folder": FolderActual, "direccion": Folder}
-                opciones = {"opciones": Mensaje, "topic": f"{self.ModuloMonitorESP['topic']}/folder"}
+                opciones = {
+                    "opciones": Mensaje,
+                    "topic": f"{self.ModuloMonitorESP['topic']}/folder",
+                }
                 self.ListaAcciones["mqtt"](opciones)
 
         if Folderes:
@@ -326,7 +349,9 @@ class ElGatito(object):
                 if "key" in accion:
                     if accion["key"] == Evento["key"]:
                         if Evento["estado"]:
-                            logger.info(f"Evento {NombreEvento}[{accion['key']}] {accion['nombre']}")
+                            logger.info(
+                                f"Evento {NombreEvento}[{accion['key']}] {accion['nombre']}"
+                            )
                         self.EjecutandoEvento(accion, Evento["estado"])
                         return
 
@@ -373,7 +398,10 @@ class ElGatito(object):
                         if nombreAccion is not None:
                             Mensaje["nombre"] = nombreAccion
 
-                        opciones = {"opciones": Mensaje, "topic": f"{self.ModuloMonitorESP['topic']}/accion"}
+                        opciones = {
+                            "opciones": Mensaje,
+                            "topic": f"{self.ModuloMonitorESP['topic']}/accion",
+                        }
 
                         self.ListaAcciones["mqtt"](opciones)
 
@@ -405,7 +433,10 @@ class ElGatito(object):
                         if Nombre is not None:
                             Mensaje["nombre"] = Nombre
 
-                        opciones = {"opciones": Mensaje, "topic": f"{self.ModuloMonitorESP['topic']}/accion"}
+                        opciones = {
+                            "opciones": Mensaje,
+                            "topic": f"{self.ModuloMonitorESP['topic']}/accion",
+                        }
 
                         self.ListaAcciones["mqtt"](opciones)
 
@@ -464,7 +495,9 @@ class ElGatito(object):
                     if "solisita_cambiar" in macroOpciones:
                         recibir = macroOpciones["solisita_cambiar"]
                     for atributoTMP, recibirTMP in zip(atributo, recibir):
-                        self.solisitudSimpleMacro(comando, atributoTMP, recibirTMP, cajon)
+                        self.solisitudSimpleMacro(
+                            comando, atributoTMP, recibirTMP, cajon
+                        )
                 else:
                     recibir = None
                     if "solisita_cambiar" in macroOpciones:
@@ -678,9 +711,9 @@ class ElGatito(object):
             objetoAccion = self.listaClasesAcciones["notificacion"]()
             objetoAccion.configurar({"texto": texto})
             objetoAccion.ejecutar()
-        
-            if opciones is  None:
-                logger.error('error en configuracciones')
+
+            if opciones is None:
+                logger.error("error en configuracciones")
             else:
                 opciones["mensaje"] = texto
                 self.ListaAcciones["mqtt"](opciones)
