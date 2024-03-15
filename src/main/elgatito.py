@@ -144,16 +144,26 @@ class ElGatito(object):
             self.BanderaActualizarDeck = False
             deck_file = self.Data.get("deck_file")
             if deck_file is not None:
-                DataDeck = ObtenerArchivo(deck_file)
+                DataDeck = self.LeerData(deck_file)
                 if DataDeck is not None:
                     self.Data["deck"] = DataDeck
+                else:
+                    logger.error(f"Falta {deck_file}")
+            else:
+                logger.error("Falta atribulo deck_file en config")
+
 
         if self.ModuloTeclado:
             teclados_file = self.Data.get("teclados_file")
             if teclados_file is not None:
-                DataTeclado = ObtenerArchivo(teclados_file)
+                DataTeclado = self.LeerData(teclados_file)
                 if DataTeclado is not None:
                     self.Data["teclados"] = DataTeclado
+                else:
+                    logger.error(f"Falta {deck_file}")
+            else:
+                logger.error("Falta atribulo teclados_file en config")
+
 
         pathActual = self.Data.get("folder_path")
         if pathActual is not None:
@@ -168,14 +178,14 @@ class ElGatito(object):
         if self.ModuloMQTT:
             archivoMQTT = self.Data.get("mqtt_file")
             if archivoMQTT is not None:
-                dataMQTT = ObtenerArchivo(archivoMQTT)
+                dataMQTT = self.LeerData(archivoMQTT)
                 if dataMQTT is not None:
                     self.Data["mqtt"] = dataMQTT
 
         if self.ModuloAlias:
             archivoAlias = self.Data.get("alias_file")
             if archivoAlias:
-                dataAlias = ObtenerArchivo(archivoAlias)
+                dataAlias = self.LeerData(archivoAlias)
                 if dataAlias is not None:
                     self.Data["alias"] = dataAlias
 
