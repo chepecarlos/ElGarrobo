@@ -71,7 +71,7 @@ class ElGatito(object):
         Carga los modulos activos.
         """
         logger.info(f"Configurando[Modulos]")
-        Modulos = ObtenerArchivo("modulos/modulos.json")
+        Modulos = self.LeerData("modulos/modulos")
 
         self.ModuloOBS = False
         self.ModuloOBSNotificacion = False
@@ -88,7 +88,7 @@ class ElGatito(object):
                 self.ModuloOBSNotificacion = Modulos["obs_notificacion"]
 
             if Modulos.get("monitor_esp", False):
-                self.ModuloMonitorESP = ObtenerArchivo("modulos/monidor_esp/mqtt.json")
+                self.ModuloMonitorESP = self.LeerData("modulos/monidor_esp/mqtt")
 
             self.ModuloOBS = Modulos.get("obs", False)
             self.ModuloDeck = Modulos.get("deck", False)
@@ -128,6 +128,12 @@ class ElGatito(object):
         self.listaClasesAcciones = listaClasesAcciones
 
     def LeerData(self, archivo):
+        """
+        Lee los archivos primero .md y después .json y lo devuelve
+        """
+        if ".md" in archivo or ".json" in archivo:
+            return ObtenerArchivo(archivo)
+   
         for tipo in self.tipoArchivos:
             dataTmp = ObtenerArchivo(f"{archivo}{tipo}")
             if dataTmp is not None:
@@ -152,7 +158,6 @@ class ElGatito(object):
             else:
                 logger.error("Falta atribulo deck_file en config")
 
-
         if self.ModuloTeclado:
             teclados_file = self.Data.get("teclados_file")
             if teclados_file is not None:
@@ -163,7 +168,6 @@ class ElGatito(object):
                     logger.error(f"Falta {deck_file}")
             else:
                 logger.error("Falta atribulo teclados_file en config")
-
 
         pathActual = self.Data.get("folder_path")
         if pathActual is not None:
@@ -222,7 +226,7 @@ class ElGatito(object):
             for ArchivoDispositivo in self.Data[Dispositivo]:
                 if ArchivoDispositivo["file"] == Archivo:
                     Ruta = UnirPath(Data["folder_path"], Archivo)
-                    Info = ObtenerArchivo(Ruta)
+                    Info = self.LeerData(Ruta)
                     Atributo = ArchivoDispositivo["nombre"]
                     if Info is not None:
                         Data[Atributo] = Info
@@ -638,7 +642,7 @@ class ElGatito(object):
     def IniciarMQTT(self):
         """Iniciar coneccion con Broker MQTT."""
         self.ListaMQTT = []
-        self.Data["mqtt"] = ObtenerArchivo("mqtt.json")
+        self.Data["mqtt"] = self.LeerData("mqtt.json")
         # todo: no existe mqtt.json
         if "mqtt" in self.Data:
             for DataMQTT in self.Data["mqtt"]:
@@ -651,7 +655,7 @@ class ElGatito(object):
         """
         Reinicia data de los Botones Actuales.
         """
-        self.Data = ObtenerArchivo("config.json")
+        self.Data = self.LeerData("config.json")
         # TODO: Cargar modulos?
         self.acciones = dict()
         self.CargarData()
