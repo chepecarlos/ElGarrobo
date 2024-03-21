@@ -655,7 +655,7 @@ class ElGatito(object):
         """
         Reinicia data de los Botones Actuales.
         """
-        self.Data = self.LeerData("config.json")
+        self.Data = self.LeerData("config")
         # TODO: Cargar modulos?
         self.acciones = dict()
         self.CargarData()
