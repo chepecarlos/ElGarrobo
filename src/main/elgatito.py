@@ -642,7 +642,7 @@ class ElGatito(object):
     def IniciarMQTT(self):
         """Iniciar coneccion con Broker MQTT."""
         self.ListaMQTT = []
-        self.Data["mqtt"] = self.LeerData("mqtt.json")
+        self.Data["mqtt"] = self.LeerData("mqtt")
         # todo: no existe mqtt.json
         if "mqtt" in self.Data:
             for DataMQTT in self.Data["mqtt"]:
