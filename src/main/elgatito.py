@@ -19,6 +19,7 @@ from MiLibrerias import (
     SalvarArchivo,
     SalvarValor,
     UnirPath,
+    leerData
 )
 
 logger = ConfigurarLogging(__name__)
@@ -31,8 +32,7 @@ class ElGatito(object):
 
         logger.info(f"Abri[config]")
 
-        self.tipoArchivos = [".md", ".json"]
-        self.Data = self.LeerData("config")
+        self.Data = leerData("config")
         if self.Data is None:
             logger.error("No existe archivo config.json o config.md")
             os._exit(0)
@@ -71,7 +71,7 @@ class ElGatito(object):
         Carga los modulos activos.
         """
         logger.info(f"Configurando[Modulos]")
-        Modulos = self.LeerData("modulos/modulos")
+        Modulos = leerData("modulos/modulos")
 
         self.ModuloOBS = False
         self.ModuloOBSNotificacion = False
@@ -88,7 +88,7 @@ class ElGatito(object):
                 self.ModuloOBSNotificacion = Modulos["obs_notificacion"]
 
             if Modulos.get("monitor_esp", False):
-                self.ModuloMonitorESP = self.LeerData("modulos/monidor_esp/mqtt")
+                self.ModuloMonitorESP = leerData("modulos/monidor_esp/mqtt")
 
             self.ModuloOBS = Modulos.get("obs", False)
             self.ModuloDeck = Modulos.get("deck", False)
@@ -127,19 +127,6 @@ class ElGatito(object):
         self.ListaAcciones = ListaAcciones
         self.listaClasesAcciones = listaClasesAcciones
 
-    def LeerData(self, archivo):
-        """
-        Lee los archivos primero .md y después .json y lo devuelve
-        """
-        if ".md" in archivo or ".json" in archivo:
-            return ObtenerArchivo(archivo)
-   
-        for tipo in self.tipoArchivos:
-            dataTmp = ObtenerArchivo(f"{archivo}{tipo}")
-            if dataTmp is not None:
-                logger.info(f"Abriendo {archivo}{tipo}")
-                return dataTmp
-        return None
 
     def CargarData(self):
         """
@@ -150,7 +137,7 @@ class ElGatito(object):
             self.BanderaActualizarDeck = False
             deck_file = self.Data.get("deck_file")
             if deck_file is not None:
-                DataDeck = self.LeerData(deck_file)
+                DataDeck = leerData(deck_file)
                 if DataDeck is not None:
                     self.Data["deck"] = DataDeck
                 else:
@@ -161,7 +148,7 @@ class ElGatito(object):
         if self.ModuloTeclado:
             teclados_file = self.Data.get("teclados_file")
             if teclados_file is not None:
-                DataTeclado = self.LeerData(teclados_file)
+                DataTeclado = leerData(teclados_file)
                 if DataTeclado is not None:
                     self.Data["teclados"] = DataTeclado
                 else:
@@ -182,14 +169,14 @@ class ElGatito(object):
         if self.ModuloMQTT:
             archivoMQTT = self.Data.get("mqtt_file")
             if archivoMQTT is not None:
-                dataMQTT = self.LeerData(archivoMQTT)
+                dataMQTT = leerData(archivoMQTT)
                 if dataMQTT is not None:
                     self.Data["mqtt"] = dataMQTT
 
         if self.ModuloAlias:
             archivoAlias = self.Data.get("alias_file")
             if archivoAlias:
-                dataAlias = self.LeerData(archivoAlias)
+                dataAlias = leerData(archivoAlias)
                 if dataAlias is not None:
                     self.Data["alias"] = dataAlias
 
@@ -226,7 +213,7 @@ class ElGatito(object):
             for ArchivoDispositivo in self.Data[Dispositivo]:
                 if ArchivoDispositivo["file"] == Archivo:
                     Ruta = UnirPath(Data["folder_path"], Archivo)
-                    Info = self.LeerData(Ruta)
+                    Info = leerData(Ruta)
                     Atributo = ArchivoDispositivo["nombre"]
                     if Info is not None:
                         Data[Atributo] = Info
@@ -642,7 +629,7 @@ class ElGatito(object):
     def IniciarMQTT(self):
         """Iniciar coneccion con Broker MQTT."""
         self.ListaMQTT = []
-        self.Data["mqtt"] = self.LeerData("mqtt")
+        self.Data["mqtt"] = leerData("mqtt")
         # todo: no existe mqtt.json
         if "mqtt" in self.Data:
             for DataMQTT in self.Data["mqtt"]:
@@ -655,7 +642,7 @@ class ElGatito(object):
         """
         Reinicia data de los Botones Actuales.
         """
-        self.Data = self.LeerData("config")
+        self.Data = leerData("config")
         # TODO: Cargar modulos?
         self.acciones = dict()
         self.CargarData()
