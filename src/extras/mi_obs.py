@@ -2,7 +2,7 @@
 # librería temporal: https://github.com/Elektordi/obs-websocket-py
 import threading
 
-from MiLibrerias import ConfigurarLogging, ObtenerArchivo, ObtenerValor, SalvarArchivo, SalvarValor
+from MiLibrerias import ConfigurarLogging, leerData, ObtenerValor, SalvarArchivo, SalvarValor
 from obswebsocket import events, obsws, requests
 from acciones import mensajeMQTT
 from math import log
@@ -16,7 +16,7 @@ class MiOBS:
     def __init__(self):
         """Crea confección básica con OBS Websocket."""
         logger.info("OBS[Iniciando]")
-        self.archivoEstado = "data/obs.json"
+        self.archivoEstado = "data/obs"
         self.audioMonitoriar = list()
         self.dibujar = None
         self.notificaciones = None
@@ -68,7 +68,7 @@ class MiOBS:
 
     def AgregarNotificacion(self, funcion):
         """Agrega función para notificación."""
-        self.alertaOBS = ObtenerArchivo("modulos/alerta_obs/mqtt.json")
+        self.alertaOBS = leerData("modulos/alerta_obs/mqtt")
         self.notificaciones = funcion
     def Conectar(self, opciones):
         """Se conecta a OBS Websocket y inicializa los eventos."""
@@ -84,12 +84,12 @@ class MiOBS:
             self.Notificar("OBS-Ya-Conectado")
             return
         
-        modulos = ObtenerArchivo("modulos/modulos.json")
+        modulos = leerData("modulos/modulos")
         monitorAudio = modulos.get("obs_monitor_audio", False)
 
         if monitorAudio:
-            self.audioMonitoriar = ObtenerArchivo("modulos/audio_obs/audio.json")
-            self.audioTopico = ObtenerArchivo("modulos/audio_obs/mqtt.json")["topic"]
+            self.audioMonitoriar = leerData("modulos/audio_obs/audio")
+            self.audioTopico = leerData("modulos/audio_obs/mqtt")["topic"]
 
         try:
             if self.password is None:
