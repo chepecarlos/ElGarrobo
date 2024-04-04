@@ -639,7 +639,7 @@ class ElGatito(object):
         self.ListaMQTT = []
         self.Data["mqtt"] = leerData("mqtt")
         # todo: no existe mqtt.json
-        if "mqtt" in self.Data:
+        if "mqtt" in self.Data and self.Data["mqtt"] is not None:
             for DataMQTT in self.Data["mqtt"]:
                 ServidorMQTT = MiMQTT(DataMQTT, self.BuscarAccion)
                 self.ListaMQTT.append(ServidorMQTT)
