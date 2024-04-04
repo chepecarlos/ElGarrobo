@@ -209,14 +209,21 @@ class ElGatito(object):
         """
         Carga la informacion de un dispositivo
         """
-        if Dispositivo in self.Data:
-            for ArchivoDispositivo in self.Data[Dispositivo]:
-                if ArchivoDispositivo["file"] == Archivo:
-                    Ruta = UnirPath(Data["folder_path"], Archivo)
-                    Info = leerData(Ruta)
-                    Atributo = ArchivoDispositivo["nombre"]
-                    if Info is not None:
-                        Data[Atributo] = Info
+        if ".md" in Archivo or ".json" in Archivo:
+            # TODO: Mejorar algoritmo para quitar subfijo
+            Archivo = Archivo.replace(".json", "")
+            Archivo = Archivo.replace(".md", "")
+            if Dispositivo in self.Data:
+                for ArchivoDispositivo in self.Data[Dispositivo]:
+                    fileDispositivo = ArchivoDispositivo.get("file")
+                    fileDispositivo = fileDispositivo.replace(".json", "")
+                    fileDispositivo = fileDispositivo.replace(".md", "")
+                    if fileDispositivo == Archivo:
+                        Ruta = UnirPath(Data["folder_path"], fileDispositivo)
+                        Info = leerData(Ruta)
+                        Atributo = ArchivoDispositivo.get("nombre")
+                        if Info is not None:
+                            Data[Atributo] = Info
 
     def cargarTeclados(self):
         """
@@ -321,9 +328,10 @@ class ElGatito(object):
     def CargarAcciones(self, Dispositivo, Data):
         # TODO: quitar Data y self.Data
         Estado = False
-        if Dispositivo in self.Data:
-            for dispositivo in self.Data[Dispositivo]:
-                nombreDispositivo = dispositivo["nombre"]
+        dispositivoActual = self.Data.get(Dispositivo)
+        if dispositivoActual is not None:
+            for dispositivo in dispositivoActual:
+                nombreDispositivo = dispositivo.get("nombre")
                 if nombreDispositivo in Data:
                     logger.info(f"Folder[Configurado] {nombreDispositivo}")
                     self.acciones[nombreDispositivo] = Data[nombreDispositivo]
