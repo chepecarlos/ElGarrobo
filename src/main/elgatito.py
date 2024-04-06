@@ -7,6 +7,7 @@ from dispositivos.mideck.mi_deck_extra import DefinirFuente, DefinirImagenes
 from dispositivos.mideck.mi_streamdeck import MiStreamDeck
 from dispositivos.mimqtt.mi_mqtt import MiMQTT
 from dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro
+from dispositivos.mipedal.mi_pedal import MiPedal
 from extras.mi_obs import MiOBS
 from extras.pulse import MiPulse
 from MiLibrerias import (
@@ -19,7 +20,7 @@ from MiLibrerias import (
     SalvarArchivo,
     SalvarValor,
     UnirPath,
-    leerData
+    leerData,
 )
 
 logger = ConfigurarLogging(__name__)
@@ -47,6 +48,9 @@ class ElGatito(object):
 
         self.BuscarFolder(self.PathActual)
 
+        if self.ModuloPedal or self.ModuloDeck:
+            self.listaIndex = []
+
         if self.ModuloOBS:
             self.CargarOBS()
 
@@ -56,6 +60,9 @@ class ElGatito(object):
         if self.ModuloDeck:
             self.CargarStreamDeck()
             self.IniciarStreamDeck()
+
+        if self.ModuloPedal:
+            self.cargarPedal()
 
         if self.ModuloTeclado:
             self.cargarTeclados()
@@ -82,6 +89,7 @@ class ElGatito(object):
         self.ModuloPulse = False
         self.ModuloMonitorESP = False
         self.ModuloAlias = False
+        self.ModuloPedal = False
 
         if Modulos is not None:
             if "obs_notificacion" in Modulos:
@@ -93,6 +101,7 @@ class ElGatito(object):
             self.ModuloOBS = Modulos.get("obs", False)
             self.ModuloDeck = Modulos.get("deck", False)
             self.ModuloTeclado = Modulos.get("teclado", False)
+            self.ModuloPedal = Modulos.get("pedal", False)
             self.ModuloMQTT = Modulos.get("mqtt", False)
             self.ModuloMQTTEstado = Modulos.get("mqtt_estado", False)
             self.ModuloPulse = Modulos.get("pulse", False)
@@ -127,7 +136,6 @@ class ElGatito(object):
         self.ListaAcciones = ListaAcciones
         self.listaClasesAcciones = listaClasesAcciones
 
-
     def CargarData(self):
         """
         Cargando Data para Dispisitivo.
@@ -155,6 +163,15 @@ class ElGatito(object):
                     logger.error(f"Falta {deck_file}")
             else:
                 logger.error("Falta atribulo teclados_file en config")
+
+        if self.ModuloPedal:
+            pedal_file = self.Data.get("pedal_file")
+            if pedal_file is not None:
+                DataPedal = leerData(pedal_file)
+                if DataPedal is not None:
+                    self.Data["pedal"] = DataPedal
+                else:
+                    logger.error(f"Falta {pedal_file}")
 
         pathActual = self.Data.get("folder_path")
         if pathActual is not None:
@@ -189,11 +206,21 @@ class ElGatito(object):
 
         if ListaArchivos is not None:
             for Archivo in ListaArchivos:
-                if self.ModuloTeclado:
-                    self.CargarArchivos("teclados", Data, Archivo)
-                if self.ModuloDeck:
-                    self.CargarArchivos("global", Data, Archivo)
-                    self.CargarArchivos("deck", Data, Archivo)
+                if ".md" in Archivo or ".json" in Archivo:
+                    Archivo = Archivo.replace(".json", "")
+                    Archivo = Archivo.replace(".md", "")
+                    encontrado = False
+                    if self.ModuloTeclado:
+                        encontrado = self.CargarArchivos("teclados", Data, Archivo)
+                    if self.ModuloDeck and not encontrado:
+                        encontrado = encontrado or self.CargarArchivos(
+                            "global", Data, Archivo
+                        )
+                        encontrado = encontrado or self.CargarArchivos(
+                            "deck", Data, Archivo
+                        )
+                    if self.ModuloPulse and not encontrado:
+                        self.CargarArchivos("pedal", Data, Archivo)
 
         if ListaFolder is not None:
             Data["folder"] = []
@@ -209,21 +236,19 @@ class ElGatito(object):
         """
         Carga la informacion de un dispositivo
         """
-        if ".md" in Archivo or ".json" in Archivo:
-            # TODO: Mejorar algoritmo para quitar subfijo
-            Archivo = Archivo.replace(".json", "")
-            Archivo = Archivo.replace(".md", "")
-            if Dispositivo in self.Data:
-                for ArchivoDispositivo in self.Data[Dispositivo]:
-                    fileDispositivo = ArchivoDispositivo.get("file")
-                    fileDispositivo = fileDispositivo.replace(".json", "")
-                    fileDispositivo = fileDispositivo.replace(".md", "")
-                    if fileDispositivo == Archivo:
-                        Ruta = UnirPath(Data["folder_path"], fileDispositivo)
-                        Info = leerData(Ruta)
-                        Atributo = ArchivoDispositivo.get("nombre")
-                        if Info is not None:
-                            Data[Atributo] = Info
+        if Dispositivo in self.Data:
+            for ArchivoDispositivo in self.Data[Dispositivo]:
+                fileDispositivo = ArchivoDispositivo.get("file")
+                fileDispositivo = fileDispositivo.replace(".json", "")
+                fileDispositivo = fileDispositivo.replace(".md", "")
+                if fileDispositivo == Archivo:
+                    Ruta = UnirPath(Data["folder_path"], fileDispositivo)
+                    Info = leerData(Ruta)
+                    Atributo = ArchivoDispositivo.get("nombre")
+                    if Info is not None:
+                        Data[Atributo] = Info
+                        return True
+        return False
 
     def cargarTeclados(self):
         """
@@ -256,16 +281,31 @@ class ElGatito(object):
             self.ListaDeck = []
             for InfoDeck in self.Data["deck"]:
                 DeckActual = MiStreamDeck(InfoDeck, self.Evento, Cantidad_Base)
-                DeckActual.Conectar()
+                indexActual = DeckActual.Conectar(self.listaIndex)
+                self.listaIndex.append(indexActual)
                 Cantidad_Base += DeckActual.Cantidad
                 self.ListaDeck.append(DeckActual)
-            self.ListaDeck.sort(key=lambda x: x.ID, reverse=False)
+            self.ListaDeck.sort(key=lambda x: x.id, reverse=False)
             #     self.ListaDeck.append(DeckActual)
             # CargarDeck = IniciarStreamDeck(self.Data['deck'], self.Evento)
             # for Deck in CargarDeck:
             #     DeckActual = MiStreamDeck(Deck)
         else:
             self.ListaDeck = None
+
+    def cargarPedal(self):
+        """Configura los Pedales de StreamDeck"""
+        if "pedal" in self.Data:
+            logger.info("Pedal[Cargando]")
+            self.listaPedales = []
+            for indoPedales in self.Data.get("pedal"):
+                pedalActual = MiPedal(indoPedales, self.Evento)
+                indexActual = pedalActual.conectar(self.listaIndex)
+                self.listaIndex.append(indexActual)
+                self.listaPedales.append(pedalActual)
+            self.ListaDeck.sort(key=lambda x: x.id, reverse=False)
+        else:
+            self.listaPedales = None
 
     def ActualizarDeck(self):
         for Deck in self.ListaDeck:
@@ -300,7 +340,7 @@ class ElGatito(object):
                 Deck.Limpiar()
 
     def BuscarFolder(self, Folder):
-        ListaDispositivo = ["teclados", "global", "deck"]
+        ListaDispositivo = ["teclados", "global", "deck", "pedal"]
         Data = self.Keys
         Folderes = Folder.split("/")
 
@@ -366,7 +406,9 @@ class ElGatito(object):
 
         if "deck" in Evento:
             if "streamdeck" in self.acciones:
-                key_desface = Evento["key"] + Evento["base"] + self.desfaceDeck
+                key_desface = (
+                    Evento.get("key") + Evento.get("base", 0) + self.desfaceDeck
+                )
                 for accion in self.acciones["streamdeck"]:
                     if "key" in accion:
                         if accion["key"] == key_desface:

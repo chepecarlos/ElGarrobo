@@ -15,7 +15,7 @@ logger = ConfigurarLogging(__name__)
 
 class MiStreamDeck(object):
     def __init__(self, Data, Evento, Base):
-        self.ID = Data["id"]
+        self.id = Data["id"]
         self.Nombre = Data["nombre"]
         self.Serial = Data["serial"]
         self.File = Data["file"]
@@ -27,37 +27,45 @@ class MiStreamDeck(object):
         self.Evento = Evento
         self.ultimoDibujo = None
         self.tiempoDibujar = 0.4
+        self.index = -1
 
-    def Conectar(self):
+    def Conectar(self, indexUsados):
         streamdecks = DeviceManager().enumerate()
 
         # TODO: Cambiar metodo para cargar StreanDeks
         for index, deck in enumerate(streamdecks):
-            try:
-                self.Deck = deck
-                self.Deck.open()
-                self.Deck.reset()
-                if self.Deck.get_serial_number() == self.Serial:
-                    self.Conectado = True
-                    self.Cantidad = self.Deck.key_count()
-                    Brillo = ObtenerValor("data/streamdeck.json", "brillo")
-                    # Todo: brillo no es un int
-                    self.Deck.set_brightness(Brillo)
-                    self.DeckGif = DeckGif(self.Deck)
-                    self.DeckGif.start()
-                    self.Deck.set_key_callback(self.ActualizarBoton)
-                    return
-                else:
-                    self.Deck.close()
+            probarIndex = True
+            for indexUsado in indexUsados:
+                if index == indexUsado:
+                     probarIndex = False
 
-            except TransportError as error:
-                self.Conectado = False
-                self.Deck = None
-                logger.exception(f"Error 1 {error}")
-            except Exception as error:
-                self.Conectado = False
-                self.Deck = None
-                logger.exception(f"Error 2 {error}")
+            if probarIndex:
+                try:
+                    self.Deck = deck
+                    self.Deck.open()
+                    self.Deck.reset()
+                    if self.Deck.get_serial_number() == self.Serial:
+                        self.Conectado = True
+                        self.Cantidad = self.Deck.key_count()
+                        Brillo = ObtenerValor("data/streamdeck.json", "brillo")
+                        # Todo: brillo no es un int
+                        self.Deck.set_brightness(Brillo)
+                        self.DeckGif = DeckGif(self.Deck)
+                        self.DeckGif.start()
+                        self.Deck.set_key_callback(self.ActualizarBoton)
+                        self.index = index
+                        return self.index
+                    else:
+                        self.Deck.close()
+
+                except TransportError as error:
+                    self.Conectado = False
+                    self.Deck = None
+                    logger.exception(f"Error 1 {error}")
+                except Exception as error:
+                    self.Conectado = False
+                    self.Deck = None
+                    logger.exception(f"Error 2 {error}")
 
     def ActualizarIconos(self, acciones, desface, Unido=False):
         """Refresca iconos, tomando en cuenta pagina actual."""
@@ -141,7 +149,7 @@ def IniciarStreamDeck(Datas, FuncionEvento):
                 logger.info(f"Conectando: {Data['nombre']} - {DeckActual.get_serial_number()}")
                 DeckActual.Serial = DeckActual.get_serial_number()
                 DeckActual.Cantidad = DeckActual.key_count()
-                DeckActual.ID = Data["id"]
+                DeckActual.id = Data["id"]
                 DeckActual.Nombre = Data["nombre"]
                 DeckActual.File = Data["file"]
                 DeckActual.FuncionEvento = FuncionEvento
@@ -149,7 +157,7 @@ def IniciarStreamDeck(Datas, FuncionEvento):
                 ListaDeck.append(DeckActual)
                 Data["encontado"] = True
 
-    ListaDeck.sort(key=lambda x: x.ID, reverse=False)
+    ListaDeck.sort(key=lambda x: x.id, reverse=False)
     Cantidad_Base = 0
     for deck in ListaDeck:
         deck.Base = Cantidad_Base
