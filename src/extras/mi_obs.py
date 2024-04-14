@@ -29,8 +29,8 @@ class MiOBS:
         self.port = 4455
         self.password = None
         self.conectado = False
-        SalvarValor(self.archivoEstado, "obs_conectar", False)
         self.LimpiarTemporales()
+        SalvarValor(self.archivoEstado, "obs_conectar", False)
 
     def CambiarHost(self, host: int) :
         """Cambia el host a conectarse."""
