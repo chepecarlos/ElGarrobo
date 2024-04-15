@@ -16,7 +16,7 @@ class MiOBS:
     def __init__(self):
         """Crea confección básica con OBS Websocket."""
         logger.info("OBS[Iniciando]")
-        self.archivoEstado = "data/obs"
+        self.archivoEstado = "data/obs/obs"
         self.audioMonitoriar = list()
         self.dibujar = None
         self.notificaciones = None
@@ -156,13 +156,13 @@ class MiOBS:
             nombreFuente = fuente["sourceName"]
             estadoFuente = fuente["sceneItemEnabled"]
             idFuente = fuente["sceneItemId"]
-            estadoFuenteViejo = ObtenerValor("data/obs_fuente.json", nombreFuente, Depurar=False)
+            estadoFuenteViejo = ObtenerValor(unirPath(self.archivoEstado, "fuente"), nombreFuente)
 
             if estadoFuente != estadoFuenteViejo:
-                SalvarValor("data/obs_fuente.json", nombreFuente, estadoFuente)
+                SalvarValor(unirPath(self.archivoEstado, "fuente"), nombreFuente, estadoFuente)
                 refrescar = True
 
-            SalvarValor("data/obs_fuente_id.json", [escenaActual, idFuente], nombreFuente)
+            SalvarValor(unirPath(self.archivoEstado, "fuente_id"), [escenaActual, idFuente], nombreFuente)
             self.SalvarFiltroFuente(nombreFuente)
 
         if refrescar:
@@ -234,8 +234,8 @@ class MiOBS:
         escenaActual = mensaje.datain["sceneName"]
         idFuente = mensaje.datain["sceneItemId"]
         visibilidad = mensaje.datain["sceneItemEnabled"]
-        nombreFuente = ObtenerValor("data/obs_fuente_id.json", [escenaActual, str(idFuente)])
-        SalvarValor("data/obs_fuente.json", nombreFuente, visibilidad)
+        nombreFuente = ObtenerValor(unirPath(self.archivoEstado,"fuente_id"), [escenaActual, idFuente])
+        SalvarValor(unirPath(self.archivoEstado,"fuente"), nombreFuente, visibilidad)
         self.actualizarDeck()
 
     def EventoVisibilidadFiltro(self, mensaje):
@@ -244,7 +244,7 @@ class MiOBS:
         nombreFuente = mensaje.datain["sourceName"]
         visibilidad = mensaje.datain["filterEnabled"]
         logger.info(f"OBS[{nombreFiltro}] {visibilidad}")
-        SalvarValor("data/obs_filtro.json", [nombreFuente, nombreFiltro], visibilidad)
+        SalvarValor(unirPath(self.archivoEstado,"_filtro"), [nombreFuente, nombreFiltro], visibilidad)
         self.actualizarDeck()
 
     def SalvarFiltroFuente(self, fuente):
@@ -256,13 +256,13 @@ class MiOBS:
         for filtro in filtros:
             nombreFiltro = filtro["filterName"]
             estadoFiltro = filtro["filterEnabled"]
-            SalvarValor("data/obs_filtro.json", [fuente, nombreFiltro], estadoFiltro)
+            SalvarValor(unirPath(self.archivoEstado,"filtro"), [fuente, nombreFiltro], estadoFiltro)
 
     def SalvarFiltroConfiguraciones(self, Filtro, lista):
         for elemento in lista:
             Data = Filtro.copy()
             Data.append(elemento)
-            SalvarValor("data/obs_filtro_opciones.json", Data, lista[elemento])
+            SalvarValor(unirPath(self.archivoEstado,"filtro_opciones"), Data, lista[elemento])
 
     def eventoVendendor(self, mensaje):
         """Recive mensajes de plugins extras"""
@@ -319,7 +319,8 @@ class MiOBS:
                 fuente = opciones["fuente"]
 
         if self.conectado:
-            estadoFuente = ObtenerValor("data/obs_fuente.json", fuente)
+            estadoFuente = ObtenerValor(unirPath(self.archivoEstado,"fuente"), fuente)
+            print(esenaActual, fuente, estadoFuente)
             idFuente =  self.OBS.call(requests.GetSceneItemId(sceneName=esenaActual, sourceName=fuente)).datain["sceneItemId"]
             if estadoFuente is not None:
                 estadoFuente = not estadoFuente
@@ -344,7 +345,7 @@ class MiOBS:
 
         if self.conectado:
             if estado is None:
-                estado = ObtenerValor("data/obs_filtro.json", [fuente, filtro])
+                estado = ObtenerValor(unirPath(self.archivoEstado,"filtro"), [fuente, filtro])
                 if estado is not None:
                     estado = not estado
 
@@ -444,10 +445,10 @@ class MiOBS:
     def LimpiarTemporales(self):
         """Limpia los archivos con información temporal de OBS."""
         SalvarArchivo(self.archivoEstado, dict())
-        SalvarArchivo("data/obs_fuente.json", dict())
-        SalvarArchivo("data/obs_filtro.json", dict())
-        SalvarArchivo("data/obs_filtro_opciones.json", dict())
-        SalvarArchivo("data/obs_fuente_id.json", dict())
+        SalvarArchivo(unirPath(self.archivoEstado,"fuente"), dict())
+        SalvarArchivo(unirPath(self.archivoEstado,"filtro"), dict())
+        SalvarArchivo(unirPath(self.archivoEstado,"filtro_opciones"), dict())
+        SalvarArchivo(unirPath(self.archivoEstado,"fuente_id"), dict())
 
     def Desconectar(self, opciones=False):
         """Deconectar de OBS websocket."""
@@ -504,3 +505,7 @@ class MiOBS:
         # Solisitud = requests.Baserequests()
         # Solisitud.name = "StartStopVirtualCam"
         # self.OBS.call(Solisitud)
+
+
+def unirPath(ruta1, ruta2):
+    return f"{ruta1}_{ruta2}"
