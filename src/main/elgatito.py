@@ -21,6 +21,7 @@ from MiLibrerias import (
     SalvarValor,
     UnirPath,
     leerData,
+    obtenerArchivoPaquete
 )
 
 logger = ConfigurarLogging(__name__)
@@ -33,10 +34,15 @@ class ElGatito(object):
 
         logger.info(f"Abri[config]")
 
-        self.Data = leerData("config")
+        self.Data = obtenerArchivoPaquete("data/config.md")
         if self.Data is None:
-            logger.error("No existe archivo config.json o config.md")
+            logger.error("No existe archivo config.md")
             os._exit(0)
+
+        self.DataUsuario = leerData("config")
+        if self.DataUsuario is not None:
+            logger.info("Cargando config usuario")
+            self.Data |= self.DataUsuario
 
         self.acciones = dict()
 
