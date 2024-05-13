@@ -10,9 +10,9 @@ with open("requirements.txt", "r") as f:
     required = f.read().splitlines()
 
 setup(
-    name="elgatoalsw",
+    name="elgarobo",
     version=version,
-    description="Herramienta Macros de ALSW",
+    description="Herramienta Macros de chepecarlos",
     author="ChepeCarlos",
     author_email="chepecarlos@alsw.net",
     url="https://github.com/chepecarlos/ElGatoALSW",
@@ -26,7 +26,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     python_requires=">=3.8",
-    entry_points={"console_scripts": ["elgatoalsw-cli = main.main:main"]},
+    entry_points={"console_scripts": ["elgarobo-cli = elGarobo.main:main"]},
     include_package_data = True,
     package_data = {
         '': ['*.md'],
