@@ -10,7 +10,7 @@ with open("requirements.txt", "r") as f:
     required = f.read().splitlines()
 
 setup(
-    name="elgarobo",
+    name="elgarrobo",
     version=version,
     description="Herramienta Macros de chepecarlos",
     author="ChepeCarlos",
@@ -26,7 +26,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     python_requires=">=3.8",
-    entry_points={"console_scripts": ["elgarobo-cli = elGarobo.main:main"]},
+    entry_points={"console_scripts": ["elgarrobo-cli = elGarrobo.main:main"]},
     include_package_data = True,
     package_data = {
         '': ['*.md'],

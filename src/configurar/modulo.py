@@ -1,5 +1,5 @@
 from sys import modules
-from elGarobo.miLibrerias import ConfigurarLogging, ObtenerArchivo, SalvarValor
+from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerArchivo, SalvarValor
 
 logger = ConfigurarLogging(__name__)
 
