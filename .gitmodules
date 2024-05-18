@@ -1,3 +1,3 @@
 [submodule "MiLibrerias"]
-	path = src/elGarobo/miLibrerias
+	path = src/elGarrobo/miLibrerias
 	url = https://github.com/chepecarlos/MiLibrerias.git
