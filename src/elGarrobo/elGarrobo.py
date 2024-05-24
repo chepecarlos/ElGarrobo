@@ -700,7 +700,15 @@ class elGarrobo(object):
         """
         Reinicia data de los Botones Actuales.
         """
-        self.Data = leerData("config")
+        self.Data = obtenerArchivoPaquete("elGarrobo","elGarrobo/data/config.md")
+        if self.Data is None:
+            logger.error("No existe archivo config.md")
+            os._exit(0)
+
+        self.DataUsuario = leerData("config")
+        if self.DataUsuario is not None:
+            logger.info("Cargando config usuario")
+            self.Data |= self.DataUsuario
         # TODO: Cargar modulos?
         self.acciones = dict()
         self.CargarData()
