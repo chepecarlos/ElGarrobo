@@ -11,8 +11,22 @@ def Parametros():
 
     parser = argparse.ArgumentParser(description="Heramientas extras de elGarrobo")
     parser.add_argument("--ordenar", "-o", help="Ordena el archivo .md")
+    parser.add_argument("--convertir", "-c", help="Convertir de .json a .md")
+    
 
     return parser.parse_args()
+
+def convertirArchivo(archivo: str) -> None:
+    
+    tipo = Path(archivo).suffix
+    nombre = archivo.removesuffix(tipo)
+    
+    if tipo != ".json":
+        logger.error("No es archivo .json")
+        return
+
+    data = ObtenerArchivo(archivo, EnConfig=False)
+    EscribirArchivo(f"{nombre}.md",data)
 
 
 def ordenarArchivo(archivo: str) -> None:
@@ -39,8 +53,23 @@ def ordenarArchivo(archivo: str) -> None:
                     print(búsqueda)
             return
         listaKey.append(keyActual)
+     
     data.sort(key=lambda x: x.get("key"), reverse=False)
-    EscribirArchivo(archivo, data)
+    
+    dataOrdenada = []
+    for valor in data:
+        valorTMP = dict()
+        valorTMP["nombre"] = valor.pop("nombre", "SinNombre")
+        if "titulo" in valor:
+            valorTMP["titulo"] = valor.pop("titulo")
+        valorTMP["key"] = valor.pop("key")
+        valorTMP["accion"] = valor.pop("accion")
+        if "opciones" in valor:
+            valorTMP["opciones"] =valor.pop("opciones")
+        valorTMP |=  valor
+        dataOrdenada.append(valorTMP)
+        
+    EscribirArchivo(archivo, dataOrdenada)
     logger.info("Archivo ordenado")
     # TODO: decir si se ordeno o no
 
@@ -50,7 +79,9 @@ def main():
 
     if args.ordenar:
         ordenarArchivo(args.ordenar)
-    pass
+    elif args.convertir:
+        convertirArchivo(args.convertir)
+        
 
 if __name__ == "__main__":
     main()
