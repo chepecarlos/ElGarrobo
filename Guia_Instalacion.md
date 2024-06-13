@@ -11,27 +11,27 @@ sudo apt install python3-pip python3-setuptools python3-tk python3-dev ffmpeg gi
 
 ### fedora 
 
-```
+```bash
 sudo dnf install python3-pip python3-setuptools python3-tkinter python3-devel git 
 ```
 
 # Clonar 
 Puede clonar el repositorio donde más te convenga
 
-```
-git clone https://github.com/chepecarlos/ElGatoALSW.git
+```bash
+git clone https://github.com/chepecarlos/ElGarrobo
 ```
 # Entrara al folder del repositorio 
 Debes entrar a la carpeta ElGatoALSW 
 
-```
-cd ElGatoALSW/
+```bash
+cd ElGarrobo
 ```
 
 ## Submodulos 
 Ejecuta lo siguiente
 
-```
+```bash
 git submodule init
 git submodule update
 ```
@@ -41,40 +41,48 @@ git submodule update
 
 ### Control teclado USB
 
-```
+```bash
 sudo usermod -a -G input $USER
 ```
 
 Recomendación reiniciar la pc después de agregarse a permisos
 
-
 ## Audio
 
-```
+```bash
 sudo apt-get install -y libasound2-dev
 ```
 
 ### Manejador de Ventanas
 
-```
+```bash
 sudo apt install xdotool
 ```
 
 ### Sintetizador de voz
 
-```
+```bash
 sudo apt install espeak
 ```
 
 ### instalar de paquetes
 
-```
+```bash
 pip install .
 ``` 
 
 ## Agregar binarios a sistema 
 
-$HOME/.local/bin
+```bash
+echo 'PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+```
+
+
+
+
+
+
+
 
 ####### GUIA Vieja #######
 
