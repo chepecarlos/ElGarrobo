@@ -1,4 +1,10 @@
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerArchivo, ObtenerFolderConfig, ObtenerValor, UnirPath
+from elGarrobo.miLibrerias import (
+    ConfigurarLogging,
+    ObtenerArchivo,
+    ObtenerFolderConfig,
+    ObtenerValor,
+    UnirPath,
+)
 from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.ImageHelpers import PILHelper
 
@@ -35,10 +41,13 @@ def PonerTexto(Imagen, accion, DirecionImagen=None):
         if "ajustar" in opciones:
             Ajustar = opciones["ajustar"]
 
-    # TODO: hacer funcion mas limpia
+    # TODO: buscar como calcular tamaño de fuente de manera mas eficiente
     while Ajustar:
         fuente = ImageFont.truetype(FuenteIcono, Tamanno)
-        Titulo_ancho, Titulo_alto = dibujo.textsize(Titulo, font=fuente)
+        cajaTexto = dibujo.textbbox([0, 0], Titulo, font=fuente)
+        Titulo_ancho = dibujo.textlength(Titulo, font=fuente)
+        Titulo_alto = cajaTexto[3] - cajaTexto[1]
+
         if Titulo_ancho < Imagen.width:
             break
         Tamanno -= 1
@@ -54,7 +63,12 @@ def PonerTexto(Imagen, accion, DirecionImagen=None):
     PosicionTexto = (Horizontal, Vertical)
 
     dibujo.text(
-        PosicionTexto, text=Titulo, font=fuente, fill=Titulo_Color, stroke_width=Borde_Grosor, stroke_fill=Borde_Color
+        PosicionTexto,
+        text=Titulo,
+        font=fuente,
+        fill=Titulo_Color,
+        stroke_width=Borde_Grosor,
+        stroke_fill=Borde_Color,
     )
 
 
@@ -106,12 +120,7 @@ def BuscarDirecionImagen(accion):
 def BuscarImagenOBS(NombreAccion, opcionesAccion):
     Estado = None
 
-    ListaBasicas = [
-        "obs_conectar",
-        "obs_grabar",
-        "obs_envivo",
-        "obs_camara_virtual"
-    ]
+    ListaBasicas = ["obs_conectar", "obs_grabar", "obs_envivo", "obs_camara_virtual"]
     for Basica in ListaBasicas:
         if NombreAccion == Basica:
             Estado = ObtenerValor("data/obs.json", Basica)
