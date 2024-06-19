@@ -5,22 +5,18 @@
     "venv": true,
     "**/__pycache__": true
   },
-  "python.linting.pylintEnabled": true,
-  "python.linting.pylintArgs": [
-    "--extension-pkg-whitelist=wx",
-    // camelCase
-    "--module-naming-style=camelCase",
-    "--const-naming-style=camelCase",
-    "--class-naming-style=PascalCase",
-    "--function-naming-style=camelCase",
-    "--method-naming-style=any",
-    "--attr-naming-style=camelCase",
-    "--argument-naming-style=camelCase",
-    "--variable-naming-style=camelCase",
-    "--class-attribute-naming-style=camelCase",
-    "--inlinevar-naming-style=camelCase",
-    // formato
-    "--disable=logging-fstring-interpolation"
-  ],
-  "cSpell.words": ["elgatoalsw", "MQTT"]
+  "cSpell.words": ["elgatoalsw", "MQTT", "ElGarrobo"],
+  "editor.formatOnSave": true,
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "isort.args": ["--profile", "black"],
+  "black-formatter.args": ["--line-length=200"],
+  "autopep8.args": ["--max-line-length", "180"],
+  "flake8.args": ["--max-line-length=119"],
+  "ruff.lint.args": ["--line-length=119"]
 }
