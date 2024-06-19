@@ -6,23 +6,21 @@ from .accionesOOP import cargarAcciones
 from .dispositivos.mideck.mi_deck_extra import DefinirFuente, DefinirImagenes
 from .dispositivos.mideck.mi_streamdeck import MiStreamDeck
 from .dispositivos.mimqtt.mi_mqtt import MiMQTT
-from .dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro
 from .dispositivos.mipedal.mi_pedal import MiPedal
-from .modulos.mi_obs import MiOBS
-from .modulos.pulse import MiPulse
+from .dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro
 from .miLibrerias import (
     ConfigurarLogging,
-    ObtenerArchivo,
     ObtenerListaArhivos,
     ObtenerListaFolder,
     ObtenerValor,
     RelativoAbsoluto,
-    SalvarArchivo,
     SalvarValor,
     UnirPath,
     leerData,
-    obtenerArchivoPaquete
+    obtenerArchivoPaquete,
 )
+from .modulos.mi_obs import MiOBS
+from .modulos.pulse import MiPulse
 
 logger = ConfigurarLogging(__name__)
 
@@ -34,7 +32,7 @@ class elGarrobo(object):
 
         logger.info(f"Abri[config]")
 
-        self.Data = obtenerArchivoPaquete("elGarrobo","elGarrobo/data/config.md")
+        self.Data = obtenerArchivoPaquete("elGarrobo", "elGarrobo/data/config.md")
         if self.Data is None:
             logger.error("No existe archivo config.md")
             os._exit(0)
@@ -221,12 +219,8 @@ class elGarrobo(object):
                     if self.ModuloTeclado:
                         encontrado = self.CargarArchivos("teclados", Data, Archivo)
                     if self.ModuloDeck and not encontrado:
-                        encontrado = encontrado or self.CargarArchivos(
-                            "global", Data, Archivo
-                        )
-                        encontrado = encontrado or self.CargarArchivos(
-                            "deck", Data, Archivo
-                        )
+                        encontrado = encontrado or self.CargarArchivos("global", Data, Archivo)
+                        encontrado = encontrado or self.CargarArchivos("deck", Data, Archivo)
                     if self.ModuloPulse and not encontrado:
                         self.CargarArchivos("pedal", Data, Archivo)
 
@@ -272,9 +266,7 @@ class elGarrobo(object):
                 estado = teclado.get("enable", True)
                 if estado:
                     if nombre is not None and archivo is not None and input is not None:
-                        tecladoActual = MiTecladoMacro(
-                            nombre, input, archivo, self.Evento
-                        )
+                        tecladoActual = MiTecladoMacro(nombre, input, archivo, self.Evento)
                         tecladoActual.Conectar()
                         self.ListaTeclados.append(tecladoActual)
 
@@ -319,9 +311,7 @@ class elGarrobo(object):
         for Deck in self.ListaDeck:
             if "streamdeck" in self.acciones:
                 Deck.CambiarFolder(self.PathActual)
-                Deck.ActualizarIconos(
-                    self.acciones["streamdeck"], self.desfaceDeck, Unido=True
-                )
+                Deck.ActualizarIconos(self.acciones["streamdeck"], self.desfaceDeck, Unido=True)
 
             elif Deck.Nombre in self.acciones:
                 Deck.CambiarFolder(self.PathActual)
@@ -333,9 +323,7 @@ class elGarrobo(object):
         if self.ListaDeck is not None:
             for Deck in self.ListaDeck:
                 if "streamdeck" in self.acciones:
-                    Deck.ActualizarIconos(
-                        self.acciones["streamdeck"], self.desfaceDeck, Unido=True
-                    )
+                    Deck.ActualizarIconos(self.acciones["streamdeck"], self.desfaceDeck, Unido=True)
 
                 elif Deck.Nombre in self.acciones:
                     Deck.ActualizarIconos(self.acciones[Deck.Nombre], self.desfaceDeck)
@@ -406,17 +394,13 @@ class elGarrobo(object):
                 if "key" in accion:
                     if accion["key"] == Evento["key"]:
                         if Evento["estado"]:
-                            logger.info(
-                                f"Evento {NombreEvento}[{accion['key']}] {accion['nombre']}"
-                            )
+                            logger.info(f"Evento {NombreEvento}[{accion['key']}] {accion['nombre']}")
                         self.EjecutandoEvento(accion, Evento["estado"])
                         return
 
         if "deck" in Evento:
             if "streamdeck" in self.acciones:
-                key_desface = (
-                    Evento.get("key") + Evento.get("base", 0) + self.desfaceDeck
-                )
+                key_desface = Evento.get("key") + Evento.get("base", 0) + self.desfaceDeck
                 for accion in self.acciones["streamdeck"]:
                     if "key" in accion:
                         if accion["key"] == key_desface:
@@ -554,9 +538,7 @@ class elGarrobo(object):
                     if "solisita_cambiar" in macroOpciones:
                         recibir = macroOpciones["solisita_cambiar"]
                     for atributoTMP, recibirTMP in zip(atributo, recibir):
-                        self.solisitudSimpleMacro(
-                            comando, atributoTMP, recibirTMP, cajon
-                        )
+                        self.solisitudSimpleMacro(comando, atributoTMP, recibirTMP, cajon)
                 else:
                     recibir = None
                     if "solisita_cambiar" in macroOpciones:
@@ -700,7 +682,7 @@ class elGarrobo(object):
         """
         Reinicia data de los Botones Actuales.
         """
-        self.Data = obtenerArchivoPaquete("elGarrobo","elGarrobo/data/config.md")
+        self.Data = obtenerArchivoPaquete("elGarrobo", "elGarrobo/data/config.md")
         if self.Data is None:
             logger.error("No existe archivo config.md")
             os._exit(0)
