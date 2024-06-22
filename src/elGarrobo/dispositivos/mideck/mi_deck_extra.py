@@ -1,3 +1,6 @@
+from PIL import Image, ImageDraw, ImageFont
+from StreamDeck.ImageHelpers import PILHelper
+
 from elGarrobo.miLibrerias import (
     ConfigurarLogging,
     ObtenerArchivo,
@@ -5,8 +8,6 @@ from elGarrobo.miLibrerias import (
     ObtenerValor,
     UnirPath,
 )
-from PIL import Image, ImageDraw, ImageFont
-from StreamDeck.ImageHelpers import PILHelper
 
 logger = ConfigurarLogging(__name__)
 
@@ -45,7 +46,7 @@ def PonerTexto(Imagen, accion, DirecionImagen=None):
     while Ajustar:
         fuente = ImageFont.truetype(FuenteIcono, Tamanno)
         cajaTexto = dibujo.textbbox([0, 0], Titulo, font=fuente)
-        Titulo_ancho = dibujo.textlength(Titulo, font=fuente)
+        Titulo_ancho = cajaTexto[2] - cajaTexto[0]
         Titulo_alto = cajaTexto[3] - cajaTexto[1]
 
         if Titulo_ancho < Imagen.width:
