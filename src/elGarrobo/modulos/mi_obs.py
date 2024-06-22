@@ -102,9 +102,9 @@ class MiOBS:
 
         try:
             if self.password is None:
-                self.OBS = obsws(self.host, self.port, authreconnect=1, on_connect=self.conectarOBS, on_disconnect=self.desconectarOBS)
+                self.OBS = obsws(self.host, self.port, on_connect=self.conectarOBS, on_disconnect=self.desconectarOBS)
             else:
-                self.OBS = obsws(self.host, self.port, self.password, authreconnect=1, on_connect=self.conectarOBS, on_disconnect=self.desconectarOBS)
+                self.OBS = obsws(self.host, self.port, self.password, on_connect=self.conectarOBS, on_disconnect=self.desconectarOBS)
             self.OBS.connect(input_volume_meters=monitorAudio)
         except Exception as error:
             logger.warning(f"OBS[Error] {error}")
