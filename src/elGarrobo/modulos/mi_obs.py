@@ -1,13 +1,19 @@
 # Librería: https://github.com/Elektordi/obs-websocket-py
-# librería temporal: https://github.com/Elektordi/obs-websocket-py
+# librería temporal: https://github.com/chepecarlos/obs-websocket-py
 # Protocolo https://github.com/obsproject/obs-websocket/blob/master/docs/generated/protocol.md
 import threading
-
-
-from elGarrobo.miLibrerias import ConfigurarLogging, leerData, ObtenerValor, SalvarArchivo, SalvarValor
-from obswebsocket import events, obsws, requests
-from elGarrobo.acciones import mensajeMQTT
 from math import log
+
+from obswebsocket import events, obsws, requests
+
+from elGarrobo.acciones import mensajeMQTT
+from elGarrobo.miLibrerias import (
+    ConfigurarLogging,
+    ObtenerValor,
+    SalvarArchivo,
+    SalvarValor,
+    leerData,
+)
 
 logger = ConfigurarLogging(__name__)
 
@@ -34,7 +40,7 @@ class MiOBS:
         self.LimpiarTemporales()
         SalvarValor(self.archivoEstado, "obs_conectar", False)
 
-    def CambiarHost(self, host: int) :
+    def CambiarHost(self, host: int):
         """Cambia el host a conectarse."""
         self.host = host
 
@@ -55,7 +61,7 @@ class MiOBS:
         listaAcciones["obs_grabar_vertical"] = self.cambiarGrabacionVertical
         listaAcciones["obs_envivo_vertical"] = self.cambiarEnVivoVertical
         listaAcciones["obs_escena_vertical"] = self.cambiarEscenaVertical
-        
+
         # listaAcciones['obs_host'] = self.OBS.Conectar
         # listaAcciones['obs_server'] = self.OBS.Conectar
 
@@ -72,6 +78,7 @@ class MiOBS:
         """Agrega función para notificación."""
         self.alertaOBS = leerData("modulos/alerta_obs/mqtt")
         self.notificaciones = funcion
+
     def Conectar(self, opciones):
         """Se conecta a OBS Websocket y inicializa los eventos."""
         if "servidor" in opciones:
@@ -85,7 +92,7 @@ class MiOBS:
             logger.info("OBS Ya Conectado")
             self.Notificar("OBS-Ya-Conectado")
             return
-        
+
         modulos = leerData("modulos/modulos")
         monitorAudio = modulos.get("obs_monitor_audio", False)
 
@@ -184,7 +191,7 @@ class MiOBS:
 
     def EventoGrabando(self, mensaje):
         """Recibe estado de grabación."""
-        estado =  mensaje.datain["outputActive"]
+        estado = mensaje.datain["outputActive"]
         SalvarValor(self.archivoEstado, "obs_grabar", estado)
         logger.info(f"OBS[Grabado] {estado}")
         if estado:
@@ -236,8 +243,8 @@ class MiOBS:
         escenaActual = mensaje.datain["sceneName"]
         idFuente = mensaje.datain["sceneItemId"]
         visibilidad = mensaje.datain["sceneItemEnabled"]
-        nombreFuente = ObtenerValor(unirPath(self.archivoEstado,"fuente_id"), [escenaActual, idFuente])
-        SalvarValor(unirPath(self.archivoEstado,"fuente"), nombreFuente, visibilidad)
+        nombreFuente = ObtenerValor(unirPath(self.archivoEstado, "fuente_id"), [escenaActual, idFuente])
+        SalvarValor(unirPath(self.archivoEstado, "fuente"), nombreFuente, visibilidad)
         self.actualizarDeck()
 
     def EventoVisibilidadFiltro(self, mensaje):
@@ -247,7 +254,7 @@ class MiOBS:
         nombreFuente = mensaje.datain["sourceName"]
         visibilidad = mensaje.datain["filterEnabled"]
         logger.info(f"OBS[{nombreFiltro}] {visibilidad}")
-        SalvarValor(unirPath(self.archivoEstado,"_filtro"), [nombreFuente, nombreFiltro], visibilidad)
+        SalvarValor(unirPath(self.archivoEstado, "_filtro"), [nombreFuente, nombreFiltro], visibilidad)
         self.actualizarDeck()
 
     def SalvarFiltroFuente(self, fuente):
@@ -259,13 +266,13 @@ class MiOBS:
         for filtro in filtros:
             nombreFiltro = filtro["filterName"]
             estadoFiltro = filtro["filterEnabled"]
-            SalvarValor(unirPath(self.archivoEstado,"filtro"), [fuente, nombreFiltro], estadoFiltro)
+            SalvarValor(unirPath(self.archivoEstado, "filtro"), [fuente, nombreFiltro], estadoFiltro)
 
     def SalvarFiltroConfiguraciones(self, Filtro, lista):
         for elemento in lista:
             Data = Filtro.copy()
             Data.append(elemento)
-            SalvarValor(unirPath(self.archivoEstado,"filtro_opciones"), Data, lista[elemento])
+            SalvarValor(unirPath(self.archivoEstado, "filtro_opciones"), Data, lista[elemento])
 
     def eventoVendendor(self, mensaje):
         """Recive mensajes de plugins extras"""
@@ -283,19 +290,17 @@ class MiOBS:
 
     def eventoVolumen(self, mensaje):
         """Recive mensaje de entradas de Audio"""
+
         def convertir(nivel):
             return round(20 * log(nivel, 10), 1) if nivel > 0 else -200.0
-            
+
         canales = mensaje.datain["inputs"]
         for canal in canales:
             for nombres in self.audioMonitoriar:
                 if nombres == canal["inputName"]:
                     if len(canal["inputLevelsMul"]) > 0:
                         nivel = canal["inputLevelsMul"][0][1]
-                        opciones = {
-                         "mensaje" : convertir(nivel),
-                         "topic" : f"{self.audioTopico}/{nombres}"
-                        }
+                        opciones = {"mensaje": convertir(nivel), "topic": f"{self.audioTopico}/{nombres}"}
                         mensajeMQTT(opciones)
 
     def CambiarEscena(self, opciones):
@@ -305,9 +310,9 @@ class MiOBS:
         if escena is None:
             logger.info("OBS[Escena no definida]")
             return
-       
+
         if self.conectado:
-            self.OBS.call(requests.SetCurrentProgramScene(sceneName=escena))## problema 
+            self.OBS.call(requests.SetCurrentProgramScene(sceneName=escena))  ## problema
             logger.info(f"OBS[Cambiando] {escena}")
         else:
             logger.warning("OBS[No conectado]")
@@ -322,9 +327,9 @@ class MiOBS:
                 fuente = opciones["fuente"]
 
         if self.conectado:
-            estadoFuente = ObtenerValor(unirPath(self.archivoEstado,"fuente"), fuente)
+            estadoFuente = ObtenerValor(unirPath(self.archivoEstado, "fuente"), fuente)
             print(esenaActual, fuente, estadoFuente)
-            idFuente =  self.OBS.call(requests.GetSceneItemId(sceneName=esenaActual, sourceName=fuente)).datain["sceneItemId"]
+            idFuente = self.OBS.call(requests.GetSceneItemId(sceneName=esenaActual, sourceName=fuente)).datain["sceneItemId"]
             if estadoFuente is not None:
                 estadoFuente = not estadoFuente
                 logger.info(f"OBS[Fuente] {esenaActual}-{fuente}={estadoFuente}")
@@ -348,7 +353,7 @@ class MiOBS:
 
         if self.conectado:
             if estado is None:
-                estado = ObtenerValor(unirPath(self.archivoEstado,"filtro"), [fuente, filtro])
+                estado = ObtenerValor(unirPath(self.archivoEstado, "filtro"), [fuente, filtro])
                 if estado is not None:
                     estado = not estado
 
@@ -389,7 +394,7 @@ class MiOBS:
         """Envia solisitud de cambiar estado de Grabacion en plugin Vertical."""
         if self.conectado:
             logger.info("Cambiando[Grabacion-Vertical]")
-            self.OBS.call(requests.CallVendorRequest(vendorName="aitum-vertical-canvas",requestType="toggle_recording"))
+            self.OBS.call(requests.CallVendorRequest(vendorName="aitum-vertical-canvas", requestType="toggle_recording"))
         else:
             logger.info("OBS no Conectado")
             self.Notificar("OBS No Conectado")
@@ -398,12 +403,10 @@ class MiOBS:
         """Envia solisitud de cambiar estado del Streaming ."""
         if self.conectado:
             logger.info("Cambiando[EnVivo-Vertical]")
-            self.OBS.call(requests.CallVendorRequest(vendorName="aitum-vertical-canvas",requestType="toggle_streaming"))
+            self.OBS.call(requests.CallVendorRequest(vendorName="aitum-vertical-canvas", requestType="toggle_streaming"))
         else:
             logger.info("OBS no Conectado")
             self.Notificar("OBS No Conectado")
-
-
 
     def cambiarEscenaVertical(self, opciones=None):
         """Enviá solicitud de cambiar de Escena en plugin Vertical."""
@@ -412,10 +415,10 @@ class MiOBS:
         if escena is None:
             logger.info("OBS[Escena no definida]")
             return
-       
+
         if self.conectado:
-            mensaje = {"scene":escena}
-            self.OBS.call(requests.CallVendorRequest(vendorName="aitum-vertical-canvas",requestType="switch_scene", requestData=mensaje))
+            mensaje = {"scene": escena}
+            self.OBS.call(requests.CallVendorRequest(vendorName="aitum-vertical-canvas", requestType="switch_scene", requestData=mensaje))
             logger.info(f"OBS[Cambiando-Vertical] {escena}")
         else:
             logger.warning("OBS[No conectado]")
@@ -448,10 +451,10 @@ class MiOBS:
     def LimpiarTemporales(self):
         """Limpia los archivos con información temporal de OBS."""
         SalvarArchivo(self.archivoEstado, dict())
-        SalvarArchivo(unirPath(self.archivoEstado,"fuente"), dict())
-        SalvarArchivo(unirPath(self.archivoEstado,"filtro"), dict())
-        SalvarArchivo(unirPath(self.archivoEstado,"filtro_opciones"), dict())
-        SalvarArchivo(unirPath(self.archivoEstado,"fuente_id"), dict())
+        SalvarArchivo(unirPath(self.archivoEstado, "fuente"), dict())
+        SalvarArchivo(unirPath(self.archivoEstado, "filtro"), dict())
+        SalvarArchivo(unirPath(self.archivoEstado, "filtro_opciones"), dict())
+        SalvarArchivo(unirPath(self.archivoEstado, "fuente_id"), dict())
 
     def Desconectar(self, opciones=False):
         """Deconectar de OBS websocket."""
