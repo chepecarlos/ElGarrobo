@@ -63,14 +63,7 @@ def PonerTexto(Imagen, accion, DirecionImagen=None):
         Vertical = Imagen.height - Titulo_alto - 2
     PosicionTexto = (Horizontal, Vertical)
 
-    dibujo.text(
-        PosicionTexto,
-        text=Titulo,
-        font=fuente,
-        fill=Titulo_Color,
-        stroke_width=Borde_Grosor,
-        stroke_fill=Borde_Color,
-    )
+    dibujo.text(PosicionTexto, text=Titulo, font=fuente, fill=Titulo_Color, stroke_width=Borde_Grosor, stroke_fill=Borde_Color, align="center")
 
 
 def PonerFondo(Imagen, accion):
