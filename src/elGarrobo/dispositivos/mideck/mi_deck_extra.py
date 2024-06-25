@@ -53,14 +53,14 @@ def PonerTexto(Imagen, accion, DirecionImagen=None):
             break
         Tamanno -= 1
 
-    Horizontal = (Imagen.width - Titulo_ancho) // 2
+    Horizontal = (Imagen.width - Titulo_ancho) / 2
 
     if Alinear == "centro":
-        Vertical = (Imagen.height - Titulo_alto - Tamanno / 2) // 2
+        Vertical = (Imagen.height - Titulo_alto - Tamanno / 2) / 2
     elif Alinear == "ariba":
         Vertical = 0
     else:
-        Vertical = Imagen.height - Titulo_alto - 2
+        Vertical = Imagen.height - Titulo_alto - Titulo_alto / 3
     PosicionTexto = (Horizontal, Vertical)
 
     dibujo.text(PosicionTexto, text=Titulo, font=fuente, fill=Titulo_Color, stroke_width=Borde_Grosor, stroke_fill=Borde_Color, align="center")
