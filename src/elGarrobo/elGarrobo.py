@@ -84,6 +84,10 @@ class elGarrobo(object):
         logger.info(f"Configurando[Modulos]")
         Modulos = leerData("modulos/modulos")
 
+        if Modulos is None:
+            logger.error("No existe archivo modulos.md")
+            os._exit(0)
+
         # TODO: Modulos en un dict
 
         self.ModuloOBS = False
