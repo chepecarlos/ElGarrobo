@@ -1,8 +1,9 @@
-from .accionBase import accionBase
-import time
 import json
+import time
 
 from elGarrobo.miLibrerias import ConfigurarLogging, EnviarMensajeMQTT, ObtenerArchivo
+
+from .accionBase import accionBase
 
 Logger = ConfigurarLogging(__name__)
 
@@ -46,7 +47,11 @@ class accionControl(accionBase):
         self.agregarPropiedad(propiedadOpciones)
 
         # TODO: usar configuraciones globales
-        data = ObtenerArchivo("modulos/control/mqtt.json")
+        data = ObtenerArchivo("modulos/control/mqtt")
+
+        if data is None:
+            Logger.warning("No se encontro informacion mqtt modulos/control/mqtt")
+            return
 
         self.topicControl = data.get("topic", "control")
 
