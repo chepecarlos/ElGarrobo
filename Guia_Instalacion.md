@@ -77,7 +77,9 @@ pip install .
 echo 'PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 ```
 
+## Reiniciar PC 
 
+Para aplicar los permisos de usb se necesita reiniciar la computadora
 
 
 
