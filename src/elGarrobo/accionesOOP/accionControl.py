@@ -47,10 +47,10 @@ class accionControl(accionBase):
         self.agregarPropiedad(propiedadOpciones)
 
         # TODO: usar configuraciones globales
-        data = ObtenerArchivo("modulos/control/mqtt")
+        data = ObtenerArchivo("modulos/control/mqtt.md")
 
         if data is None:
-            Logger.warning("No se encontro informacion mqtt modulos/control/mqtt")
+            Logger.warning("No se encontro informacion mqtt modulos/control/mqtt.md")
             return
 
         self.topicControl = data.get("topic", "control")
