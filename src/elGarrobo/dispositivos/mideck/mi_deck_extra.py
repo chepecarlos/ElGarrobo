@@ -14,18 +14,20 @@ logger = ConfigurarLogging(__name__)
 
 def PonerTexto(Imagen, accion, DirecionImagen=None):
     """Agrega Texto a Botones de StreamDeck."""
-    Titulo = str(accion["titulo"])
+    Titulo: str = str(accion["titulo"])
+    Lineas = Titulo.split("\\n")
+    Titulo = "\n".join(Lineas)
     Titulo_Color = "white"
-    Tamanno = 40
-    Ajustar = True
-    Alinear = "centro"
-    Borde_Color = "black"
-    Borde_Grosor = 5
+    Tamanno: int = 40
+    Ajustar: bool = True
+    Alinear: str = "centro"
+    Borde_Color: str = "black"
+    Borde_Grosor: int = 5
     if DirecionImagen is not None:
         Alinear = "abajo"
         Tamanno = 20
 
-    dibujo = ImageDraw.Draw(Imagen)
+    dibujo: ImageDraw = ImageDraw.Draw(Imagen)
 
     if "titulo_opciones" in accion:
         opciones = accion["titulo_opciones"]
