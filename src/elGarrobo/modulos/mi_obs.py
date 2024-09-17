@@ -275,21 +275,25 @@ class MiOBS:
             SalvarValor(unirPath(self.archivoEstado, "filtro_opciones"), Data, lista[elemento])
 
     def eventoVendendor(self, mensaje):
-        """Recive mensajes de plugins extras"""
+        """Recibe mensajes de plugins extras"""
         vendedor = mensaje.datain["vendorName"]
         if vendedor == "aitum-vertical-canvas":
             self.eventoVertical(mensaje)
 
     def eventoVertical(self, mensaje):
-        """Recive mensajes para el plugin de Vertical"""
+        """Recibe mensajes para el plugin de Vertical"""
         tipo = mensaje.datain["eventType"]
         if tipo == "switch_scene":
             escenaActual = mensaje.datain["eventData"]["new_scene"]
             SalvarValor(self.archivoEstado, "obs_escena_vertical", escenaActual)
             logger.info(f"OBS[Escena-Vertical] {escenaActual}")
+        elif tipo == "recording_started":
+            self.Notificar("obs-grabando-vertival")
+        elif tipo == "recording_stopping":
+            self.Notificar("obs-no-grabando-vertival")
 
     def eventoVolumen(self, mensaje):
-        """Recive mensaje de entradas de Audio"""
+        """Recibe mensaje de entradas de Audio"""
 
         def convertir(nivel):
             return round(20 * log(nivel, 10), 1) if nivel > 0 else -200.0
@@ -339,7 +343,7 @@ class MiOBS:
 
         else:
             logger.info("OBS[no Conectado]")
-            self.Notificar("OBS No Conectado")
+            self.Notificar("OBS-No-Conectado")
 
     def CambiarFiltro(self, opciones):
         """Envia solisitud de cambiar estado de filtro."""
@@ -362,7 +366,7 @@ class MiOBS:
                 self.OBS.call(requests.SetSourceFilterEnabled(sourceName=fuente, filterName=filtro, filterEnabled=estado))
         else:
             logger.info("OBS[no Conectado]")
-            self.Notificar("OBS No Conectado")
+            self.Notificar("OBS-No-Conectado")
 
     def CambiarGrabacion(self, opciones=None):
         """Envia solisitud de cambiar estado de Grabacion."""
@@ -371,7 +375,7 @@ class MiOBS:
             self.OBS.call(requests.ToggleRecord())
         else:
             logger.info("OBS no Conectado")
-            self.Notificar("OBS No Conectado")
+            self.Notificar("OBS-No-Conectado")
 
     def CambiarEnVivo(self, opciones=None):
         """Envia solisitud de cambiar estado del Streaming ."""
@@ -380,7 +384,7 @@ class MiOBS:
             self.OBS.call(requests.ToggleStream())
         else:
             logger.info("OBS no Conectado")
-            self.Notificar("OBS No Conectado")
+            self.Notificar("OBS-No-Conectado")
 
     def CambiarCamaraVirtual(self, opciones=None):
         """Envia solisitud de cambio estado Camara Virtual"""
@@ -397,7 +401,7 @@ class MiOBS:
             self.OBS.call(requests.CallVendorRequest(vendorName="aitum-vertical-canvas", requestType="toggle_recording"))
         else:
             logger.info("OBS no Conectado")
-            self.Notificar("OBS No Conectado")
+            self.Notificar("OBS-No-Conectado")
 
     def cambiarEnVivoVertical(self, opciones=None):
         """Envia solisitud de cambiar estado del Streaming ."""
@@ -406,7 +410,7 @@ class MiOBS:
             self.OBS.call(requests.CallVendorRequest(vendorName="aitum-vertical-canvas", requestType="toggle_streaming"))
         else:
             logger.info("OBS no Conectado")
-            self.Notificar("OBS No Conectado")
+            self.Notificar("OBS-No-Conectado")
 
     def cambiarEscenaVertical(self, opciones=None):
         """Enviá solicitud de cambiar de Escena en plugin Vertical."""
