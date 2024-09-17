@@ -116,7 +116,7 @@ def BuscarDirecionImagen(accion):
 def BuscarImagenOBS(NombreAccion, opcionesAccion):
     Estado = None
 
-    ListaBasicas = ["obs_conectar", "obs_grabar", "obs_envivo", "obs_camara_virtual"]
+    ListaBasicas = ["obs_conectar", "obs_grabar", "obs_envivo", "obs_camara_virtual", "obs_grabar_vertical"]
     for Basica in ListaBasicas:
         if NombreAccion == Basica:
             Estado = ObtenerValor("data/obs/obs", Basica)

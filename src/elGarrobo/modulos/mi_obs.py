@@ -289,8 +289,11 @@ class MiOBS:
             logger.info(f"OBS[Escena-Vertical] {escenaActual}")
         elif tipo == "recording_started":
             self.Notificar("obs-grabando-vertival")
+            SalvarValor(self.archivoEstado, "obs_grabar_vertical", True)
         elif tipo == "recording_stopping":
             self.Notificar("obs-no-grabando-vertival")
+            SalvarValor(self.archivoEstado, "obs_grabar_vertical", False)
+        self.actualizarDeck()
 
     def eventoVolumen(self, mensaje):
         """Recibe mensaje de entradas de Audio"""
