@@ -119,12 +119,12 @@ def BuscarImagenOBS(NombreAccion, opcionesAccion):
     ListaBasicas = ["obs_conectar", "obs_grabar", "obs_envivo", "obs_camara_virtual"]
     for Basica in ListaBasicas:
         if NombreAccion == Basica:
-            Estado = ObtenerValor("data/obs.json", Basica)
+            Estado = ObtenerValor("data/obs/obs", Basica)
 
     if NombreAccion == "obs_escena":
         if "escena" in opcionesAccion:
             EscenaActual = opcionesAccion["escena"]
-            EscenaActiva = ObtenerValor("data/obs.json", "obs_escena")
+            EscenaActiva = ObtenerValor("data/obs/obs", "obs_escena")
             if EscenaActual == EscenaActiva:
                 Estado = True
             else:
@@ -132,14 +132,14 @@ def BuscarImagenOBS(NombreAccion, opcionesAccion):
     elif NombreAccion == "obs_fuente":
         if "fuente" in opcionesAccion:
             FuenteActual = opcionesAccion["fuente"]
-            Estado = ObtenerValor("data/obs_fuente.json", FuenteActual)
+            Estado = ObtenerValor("data/obs/obs_fuente", FuenteActual)
     elif NombreAccion == "obs_filtro":
         if "fuente" in opcionesAccion:
             Fuente = opcionesAccion["fuente"]
         if "filtro" in opcionesAccion:
             Filtro = opcionesAccion["filtro"]
         if Fuente is not None and Filtro is not None:
-            Estado = ObtenerValor("data/obs_filtro.json", [Fuente, Filtro])
+            Estado = ObtenerValor("data/obs/obs_filtro", [Fuente, Filtro])
 
     if Estado is None:
         Estado = False
