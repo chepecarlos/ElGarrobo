@@ -2,9 +2,10 @@
 
 import time
 
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Transport.Transport import TransportError
+
+from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor
 
 from .mi_deck_extra import BuscarDirecionImagen
 from .mi_deck_gif import DeckGif
@@ -28,6 +29,7 @@ class MiStreamDeck(object):
         self.ultimoDibujo = None
         self.tiempoDibujar = 0.4
         self.index = -1
+        self.archivoImagen = None
 
     def Conectar(self, indexUsados):
         streamdecks = DeviceManager().enumerate()
@@ -37,7 +39,7 @@ class MiStreamDeck(object):
             probarIndex = True
             for indexUsado in indexUsados:
                 if index == indexUsado:
-                     probarIndex = False
+                    probarIndex = False
 
             if probarIndex:
                 try:
@@ -72,6 +74,11 @@ class MiStreamDeck(object):
         if not self.Conectado:
             return
 
+        if self.archivoImagen is None:
+            self.archivoImagen = list()
+            for _ in range(self.Cantidad):
+                self.archivoImagen.append("")
+
         if self.Deck is None or not self.Deck.is_open():
             self.Conectado = False
             return
@@ -93,12 +100,19 @@ class MiStreamDeck(object):
                 # TODO: Cargar primer los Gifs # if AccionAcual is not None:
 
                 if dibujar:
-                    AccionAcual = dibujar[0]
-                    DirecionImagen = BuscarDirecionImagen(AccionAcual)
+                    accionAcual = dibujar[0]
+
+                    if accionAcual.get("imagen"):
+                        rutaImagenAcutal = accionAcual.get("imagen")
+                        if rutaImagenAcutal == self.archivoImagen[i]:
+                            continue
+                        self.archivoImagen[i] = rutaImagenAcutal
+
+                    DirecionImagen = BuscarDirecionImagen(accionAcual)
                     if DirecionImagen is not None and DirecionImagen.endswith(".gif"):
-                        self.DeckGif.ActualizarGif(i, AccionAcual)
+                        self.DeckGif.ActualizarGif(i, accionAcual)
                     else:
-                        ActualizarIcono(self.Deck, i, AccionAcual)
+                        ActualizarIcono(self.Deck, i, accionAcual)
 
     def Limpiar(self):
         """Borra iconos de todo los botones de StreamDeck."""
@@ -106,6 +120,7 @@ class MiStreamDeck(object):
             self.DeckGif.Limpiar()
             for i in range(self.Cantidad):
                 LimpiarIcono(self.Deck, i)
+            self.archivoImagen = None
 
     def Brillo(self, Brillo):
         """Cambia brillo de StreamDeck."""
