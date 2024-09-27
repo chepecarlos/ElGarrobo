@@ -49,6 +49,7 @@ class MiOBS:
         listaAcciones["obs_conectar"] = self.Conectar
         listaAcciones["obs_desconectar"] = self.Desconectar
         listaAcciones["obs_grabar"] = self.CambiarGrabacion
+        listaAcciones["obs_pausar"] = self.CambiarPausa
         listaAcciones["obs_envivo"] = self.CambiarEnVivo
         listaAcciones["obs_camara_virtual"] = self.CambiarCamaraVirtual
         listaAcciones["obs_escena"] = self.CambiarEscena
@@ -143,13 +144,16 @@ class MiOBS:
 
     def SalvarEstadoActual(self):
         """Salta estado inicial de OBS para StreamDeck."""
+        # Todo obtener tiempo de grabacion con self.OBS.call(requests.GetRecordStatus())
         escenaActual = self.OBS.call(requests.GetSceneList()).datain["currentProgramSceneName"]
         estadoGrabando = self.OBS.call(requests.GetRecordStatus()).datain["outputActive"]
         estadoEnVivo = self.OBS.call(requests.GetStreamStatus()).datain["outputActive"]
+        estadoPausado = self.OBS.call(requests.GetRecordStatus()).datain["outputPaused"]
         SalvarValor(self.archivoEstado, "obs_conectar", self.conectado)
         SalvarValor(self.archivoEstado, "obs_escena", escenaActual)
         SalvarValor(self.archivoEstado, "obs_grabar", estadoGrabando)
         SalvarValor(self.archivoEstado, "obs_envivo", estadoEnVivo)
+        SalvarValor(self.archivoEstado, "obs_pausar", estadoPausado)
 
         self.SalvarFuente()
 
@@ -191,13 +195,23 @@ class MiOBS:
 
     def EventoGrabando(self, mensaje):
         """Recibe estado de grabación."""
-        estado = mensaje.datain["outputActive"]
-        SalvarValor(self.archivoEstado, "obs_grabar", estado)
-        logger.info(f"OBS[Grabado] {estado}")
-        if estado:
+        estadoGrabado = mensaje.datain["outputState"]
+
+        if estadoGrabado == "OBS_WEBSOCKET_OUTPUT_STARTED":
             self.Notificar("OBS-Grabando")
-        else:
+            SalvarValor(self.archivoEstado, "obs_grabar", True)
+        elif estadoGrabado == "OBS_WEBSOCKET_OUTPUT_STOPPED":
             self.Notificar("OBS-No-Grabando")
+            SalvarValor(self.archivoEstado, "obs_grabar", False)
+            SalvarValor(self.archivoEstado, "obs_pausar", False)
+        elif estadoGrabado == "OBS_WEBSOCKET_OUTPUT_PAUSED":
+            self.Notificar("OBS-Pause-Grabando")
+            SalvarValor(self.archivoEstado, "obs_pausar", True)
+        elif estadoGrabado == "OBS_WEBSOCKET_OUTPUT_RESUMED":
+            self.Notificar("OBS-Re-Grabando")
+            SalvarValor(self.archivoEstado, "obs_pausar", False)
+        else:
+            logger.info(f"OBS[Grabando] Desconocido - {estadoGrabado}")
         self.actualizarDeck()
 
     def EventoEnVivo(self, mensaje):
@@ -376,6 +390,15 @@ class MiOBS:
         if self.conectado:
             logger.info("Cambiando[Grabacion]")
             self.OBS.call(requests.ToggleRecord())
+        else:
+            logger.info("OBS no Conectado")
+            self.Notificar("OBS-No-Conectado")
+
+    def CambiarPausa(self, opciones=None):
+        """Envía solisitud de cambiar estado de Pausa Grabacion."""
+        if self.conectado:
+            logger.info("Cambiando[Pausa]")
+            self.OBS.call(requests.ToggleRecordPause())
         else:
             logger.info("OBS no Conectado")
             self.Notificar("OBS-No-Conectado")
