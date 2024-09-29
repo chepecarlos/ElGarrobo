@@ -2,6 +2,7 @@
 # librería temporal: https://github.com/chepecarlos/obs-websocket-py
 # Protocolo https://github.com/obsproject/obs-websocket/blob/master/docs/generated/protocol.md
 import threading
+import time
 from math import log
 
 from obswebsocket import events, obsws, requests
@@ -28,6 +29,7 @@ class MiOBS:
         self.audioMonitoriar = list()
         self.dibujar = None
         self.notificaciones = None
+        self.procesoTiempo = None
         self.Reiniciar()
 
     def Reiniciar(self):
@@ -126,6 +128,7 @@ class MiOBS:
         self.AgregarEvento(self.eventoVendendor, events.VendorEvent)
         self.AgregarEvento(self.EventoSalir, events.ExitStarted)
         self.AgregarEvento(self.eventoVolumen, events.InputVolumeMeters)
+        # self.OBS.register(self.on_event, events.StreamStatus)
 
         # self.AgregarEvento(self.EventoPulsoCorazon, events.Heartbeat)
         self.actualizarDeck()
@@ -155,7 +158,22 @@ class MiOBS:
         SalvarValor(self.archivoEstado, "obs_envivo", estadoEnVivo)
         SalvarValor(self.archivoEstado, "obs_pausar", estadoPausado)
 
+        self.procesoTiempo = threading.Thread(target=self.consultaTiempo)
+        self.procesoTiempo.start()
+
         self.SalvarFuente()
+
+    def consultaTiempo(self):
+        while True:
+            if self.conectado:
+                estadoGracion = self.OBS.call(requests.GetRecordStatus())
+                tiempoGrabando = estadoGracion.datain["outputTimecode"]
+                tiempoGrabando = tiempoGrabando.split(".")[0]
+                opciones = {"mensaje": tiempoGrabando, "topic": "alsw/tiempo_obs"}
+                mensajeMQTT(opciones)
+            else:
+                break
+            time.sleep(1)
 
     def SalvarFuente(self):
         HiloFuentes = threading.Thread(target=self.HiloFuenteArchivo)
