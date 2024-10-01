@@ -34,7 +34,7 @@ class elGarrobo(object):
 
         self.Data = obtenerArchivoPaquete("elGarrobo", "elGarrobo/data/config.md")
         if self.Data is None:
-            logger.error("No existe archivo config.md")
+            logger.error("No existe archivo Interno config.md")
             os._exit(0)
 
         self.DataUsuario = leerData("config")
