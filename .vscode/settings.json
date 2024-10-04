@@ -18,5 +18,20 @@
   "black-formatter.args": ["--line-length=200"],
   "autopep8.args": ["--max-line-length", "180"],
   "flake8.args": ["--max-line-length=119"],
-  "ruff.lint.args": ["--line-length=119"]
+  "ruff.lint.args": ["--line-length=119"],
+  // https://code.visualstudio.com/api/references/theme-color
+  "workbench.colorCustomizations": {
+    // Color Oscuro
+    "activityBar.background": "#006403",
+    "tab.inactiveBackground": "#006403",
+    "statusBar.background": "#006403",
+    "breadcrumb.background": "#006403",
+    "editorGroupHeader.tabsBackground": "#006403",
+    // Color Claro
+    "activityBar.activeBackground": "#2ca430",
+    "tab.activeBackground": "#2ca430",
+    // Color Mas Oscuro
+    "minimap.background": "#0b4c0d",
+    "sideBar.background": "#0b4c0d"
+  }
 }
