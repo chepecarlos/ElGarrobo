@@ -27,7 +27,7 @@ def leerValor(opciones):
     else:
         logger.info(f"Leer[{archivo}]: {atributo}")
         data = FuncionesArchivos.ObtenerValor(archivo, atributo)
-    logger.info(f"Leido[{data}]")
+    logger.info(f"Leído[{data}]")
     return data
 
 
@@ -71,7 +71,7 @@ def escribirValor(opciones):
     local = opciones.get("local", True)
 
     if archivo is None or valor is None:
-        logger.info("Falta informacion para")
+        logger.info("Falta información para")
         return
 
     if atributo is None:
@@ -81,3 +81,18 @@ def escribirValor(opciones):
     else:
         logger.info(f"Escribir[{archivo}] {atributo}={valor}")
         FuncionesArchivos.SalvarValor(archivo, atributo, valor, local=local)
+
+
+def escribirArchivo(opciones):
+
+    archivo = opciones.get("archivo")
+    data = opciones.get("data")
+
+    if archivo is None or data is None:
+        logger.info("Falta información para")
+        return
+
+    print(archivo)
+    print(data)
+
+    FuncionesArchivos.SalvarArchivo(archivo, data)

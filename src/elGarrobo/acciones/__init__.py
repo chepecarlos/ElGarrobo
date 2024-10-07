@@ -1,10 +1,16 @@
 """Lista de Acciones."""
 
 from .accion_os import accionOS
-from .archivos import escribirValor, escribirValores, leerValor
+from .archivos import escribirArchivo, escribirValor, escribirValores, leerValor
 from .delay import delay
 from .emular_raton import precionarRaton
-from .emular_teclado import CopiarTexto, comandoEscribir, comandoPegar, comandoPortapapeles, comandoTeclas
+from .emular_teclado import (
+    CopiarTexto,
+    comandoEscribir,
+    comandoPegar,
+    comandoPortapapeles,
+    comandoTeclas,
+)
 from .mqtt import mensajeMQTT
 from .notificacion import Notificacion
 from .operaciones import OperacionConstrain, operacionAsignar, operacionConcatenar
@@ -41,6 +47,7 @@ def CargarAcciones():
         "leer_valor": leerValor,
         "escribir_valor": escribirValor,
         "escribir_valores": escribirValores,
+        "escribir_archivo": escribirArchivo,
         # Manejo de Ventanas
         "cerrar_ventana": cerrarVentana,
         "mostrar_ventana": mostarVentana,
