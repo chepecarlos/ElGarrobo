@@ -20,7 +20,7 @@ class accionControl(accionBase):
             "tipo": str,
             "obligatorio": True,
             "atributo": "host",
-            "descripcion": "Compradora a controlar por MQTT",
+            "descripcion": "Computadora a controlar por MQTT",
             "ejemplo": "umaru",
         }
 

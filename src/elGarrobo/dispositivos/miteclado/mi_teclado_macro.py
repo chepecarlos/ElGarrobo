@@ -6,18 +6,17 @@ from evdev import InputDevice, categorize, ecodes
 from evdev.eventio import EvdevError
 
 from elGarrobo.miLibrerias import ConfigurarLogging
-from elGarrobo.miLibrerias import UnirPath
 
 logger = ConfigurarLogging(__name__)
 
 # TODO  Hacer con clase threading
 
 
-class MiTecladoMacro():
+class MiTecladoMacro:
     """Clase de Teclado Macro para Linux."""
 
     def __init__(self, Nombre, Dispisitivo, File, Evento):
-        """ ."""
+        """Inicializando Dispositivo de teclado."""
         self.Nombre = Nombre
         self.Dispisitivo = Dispisitivo
         self.File = File
@@ -35,8 +34,7 @@ class MiTecladoMacro():
 
     def Conectar(self):
         """Conecta con un teclado para escuchas botones precionados."""
-        self.HiloTeclado = threading.Thread(
-            name="teclados-" + self.Nombre, target=self.HiloRaton)
+        self.HiloTeclado = threading.Thread(name="teclados-" + self.Nombre, target=self.HiloRaton)
         self.HiloTeclado.start()
 
     def HiloRaton(self):
@@ -48,19 +46,19 @@ class MiTecladoMacro():
                         if event.type == ecodes.EV_KEY:
                             key = categorize(event)
                             data = dict()
-                            if key.keystate == key.key_down:
-                                data = {"nombre": self.Nombre,
-                                        "key": key.keycode,
-                                        "estado": True}
-                            else:
-                                data = {"nombre": self.Nombre,
-                                        "key": key.keycode,
-                                        "estado": False}
+                            data.update({"nombre": self.Nombre, "key": key.keycode})
+
+                            match key.keystate:
+                                case key.key_down:
+                                    data.update({"estado": "presionado"})
+                                case key.key_hold:
+                                    data.update({"estado": "mantener"})
+                                case key.key_up:
+                                    data.update({"estado": "soltar"})
                             self.Evento(data)
                 except Exception as error:
                     self.Conectado = False
-                    logger.info(
-                        f"Teclado[Desconectado] {self.Nombre} Error[{error.errno}]")
+                    logger.info(f"Teclado[Desconectado] {self.Nombre} Error[{error.errno}]")
             else:
                 try:
                     logger.info(f"Teclado[Conectándose] {self.Nombre}")

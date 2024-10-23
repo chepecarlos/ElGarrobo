@@ -127,6 +127,7 @@ class elGarrobo(object):
 
         # Acciones Macro
         ListaAcciones["macro"] = self.AccionesMacros
+        ListaAcciones["presionar"] = self.AccionesPresionar  # TODO: ver lista que puede usar estado
         ListaAcciones["alias"] = self.AccionesAlias
         ListaAcciones["random"] = self.AccionRandom
 
@@ -420,13 +421,20 @@ class elGarrobo(object):
         logger.info(f"Evento[No asignado] {NombreEvento}[{Evento['key']}]")
 
     def EjecutandoEvento(self, evento, estado):
-        if estado:
-            if "accion" in evento:
-                evento["precionado"] = estado
-                # TODO: Ver como pasar estado entre macros
+
+        if isinstance(estado, bool):
+            if estado:
+                if "accion" in evento:
+                    evento["__estado"] = estado
+                    # TODO: Ver como pasar estado entre macros
+                    self.BuscarAccion(evento)
+                else:
+                    logger.info("Evento[no accion]")
+        elif isinstance(estado, str):
+            evento["__estado"] = estado
+            accion = evento.get("accion")
+            if accion == "presionar" or estado == "presionado":
                 self.BuscarAccion(evento)
-            else:
-                logger.info("Evento[no accion]")
 
     def BuscarAccion(self, accion):
         comandoAccion = accion.get("accion")
@@ -461,15 +469,20 @@ class elGarrobo(object):
             if NombreAccion in self.ListaAcciones:
                 opcionesAccion = {}
                 Nombre = None
+                presionado = accion.get("__estado")
 
                 if "nombre" in accion:
                     Nombre = accion["nombre"]
-                    logger.info(f"Accion[{NombreAccion}] - {Nombre}")
+                    if isinstance(presionado, str):
+                        logger.info(f"Accion[{NombreAccion}-{presionado}] - {Nombre}")
+                    else:
+                        logger.info(f"Accion[{NombreAccion}] - {Nombre}")
                 else:
                     logger.info(f"Accion[{NombreAccion}]")
 
                 if "opciones" in accion:
                     opcionesAccion = accion["opciones"]
+                opcionesAccion.update({"__estado": presionado})
 
                 # TODO: Mover a funcion aparte
                 if self.ModuloMonitorESP:
@@ -517,6 +530,20 @@ class elGarrobo(object):
             self.respuestaMacro(comando, respuesta, cajon)
 
         # TODO: Hacer Macros en diferentes Hilos
+
+    def AccionesPresionar(self, opciones):
+
+        estado = opciones.get("__estado")
+        if estado is None:
+            logger.info("Falta Estado en Accion Presionar")
+            return
+
+        accion = opciones.get(estado)
+
+        if accion is None:
+            return
+
+        return self.BuscarAccion(accion)
 
     def AccionesAlias(self, opciones):
         """
