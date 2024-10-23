@@ -393,7 +393,7 @@ class elGarrobo(object):
                     return Data
 
     def Evento(self, Evento):
-        NombreEvento = Evento["nombre"]
+        NombreEvento = Evento.get("nombre")
         if NombreEvento in self.acciones:
             for accion in self.acciones[NombreEvento]:
                 if "key" in accion:
@@ -467,7 +467,7 @@ class elGarrobo(object):
         if "accion" in accion:
             NombreAccion = accion["accion"]
             if NombreAccion in self.ListaAcciones:
-                opcionesAccion = {}
+                opcionesAccion = dict()
                 Nombre = None
                 presionado = accion.get("__estado")
 
@@ -482,7 +482,12 @@ class elGarrobo(object):
 
                 if "opciones" in accion:
                     opcionesAccion = accion["opciones"]
-                opcionesAccion.update({"__estado": presionado})
+
+                # TODO solo recibir opciones como lista o dicionario
+                if isinstance(opcionesAccion, dict):
+                    opcionesAccion.update({"__estado": presionado})
+                elif isinstance(opcionesAccion, list):
+                    opcionesAccion.append({"__estado": presionado})
 
                 # TODO: Mover a funcion aparte
                 if self.ModuloMonitorESP:
