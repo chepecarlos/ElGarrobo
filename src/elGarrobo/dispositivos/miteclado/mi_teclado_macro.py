@@ -15,10 +15,10 @@ logger = ConfigurarLogging(__name__)
 class MiTecladoMacro:
     """Clase de Teclado Macro para Linux."""
 
-    def __init__(self, Nombre, Dispisitivo, File, Evento):
+    def __init__(self, Nombre, Dispositivo, File, Evento):
         """Inicializando Dispositivo de teclado."""
         self.Nombre = Nombre
-        self.Dispisitivo = Dispisitivo
+        self.Dispositivo = Dispositivo
         self.File = File
         self.Evento = Evento
         self.Conectado = False
@@ -27,13 +27,13 @@ class MiTecladoMacro:
         # super(MiTecladoMacro, self).__init__()
 
     # def run(self):
-    #     """Dibuja un frame de cada gif y espera a siquiente frame."""
+    #     """Dibuja un frame de cada gif y espera a siguiente frame."""
     #     while True:
     #         with self.lock:
     #             print("hola :D")
 
     def Conectar(self):
-        """Conecta con un teclado para escuchas botones precionados."""
+        """Conecta con un teclado para escuchas botones presionados."""
         self.HiloTeclado = threading.Thread(name="teclados-" + self.Nombre, target=self.HiloRaton)
         self.HiloTeclado.start()
 
@@ -62,7 +62,7 @@ class MiTecladoMacro:
             else:
                 try:
                     logger.info(f"Teclado[Conectándose] {self.Nombre}")
-                    self.Teclado = InputDevice(self.Dispisitivo)
+                    self.Teclado = InputDevice(self.Dispositivo)
                     self.Teclado.grab()
                     self.Conectado = True
                     logger.info(f"Teclado[Conectado] {self.Nombre}")

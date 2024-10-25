@@ -340,31 +340,33 @@ class elGarrobo(object):
             elif Deck.Nombre in self.acciones:
                 Deck.Limpiar()
 
-    def BuscarFolder(self, Folder):
+    def BuscarFolder(self, folder: str):
         ListaDispositivo = ["teclados", "global", "deck", "pedal"]
         Data = self.Keys
-        Folderes = Folder.split("/")
+        folderes = folder.split("/")
 
-        FolderActual = Folderes[-1]
+        folderActual = folderes[-1]
         if self.ModuloMonitorESP:
             if "topic" in self.ModuloMonitorESP:
-                Mensaje = {"folder": FolderActual, "direccion": Folder}
+                Mensaje = {"folder": folderActual, "direccion": folder}
                 opciones = {
                     "opciones": Mensaje,
                     "topic": f"{self.ModuloMonitorESP['topic']}/folder",
                 }
                 self.ListaAcciones["mqtt"](opciones)
 
-        if Folderes:
-            Data = self.BuscarDentroFolder(Folderes, Data)
+        if folderes:
+            Data = self.BuscarDentroFolder(folderes, Data)
             if Data is not None:
                 Encontrado = False
                 for Dispositivo in ListaDispositivo:
                     Estado = self.CargarAcciones(Dispositivo, Data)
                     Encontrado = Estado or Encontrado
-        if "streamdeck" in self.acciones:
-            self.desfaceDeck = 0
-            # TODO Error cuando no entra a streamdeck
+
+                if Encontrado:
+                    if "streamdeck" in self.acciones:
+                        self.desfaceDeck = 0
+                return Encontrado
 
     def CargarAcciones(self, Dispositivo, Data):
         # TODO: quitar Data y self.Data
@@ -380,17 +382,21 @@ class elGarrobo(object):
         return Estado
 
     def BuscarDentroFolder(self, Folderes, Data):
-        if "nombre" in Data:
-            if Data["nombre"] == Folderes[0]:
-                Folderes.remove(Data["nombre"])
+        nombreFolder = Data.get("nombre")
+
+        if nombreFolder is not None:
+            if nombreFolder == Folderes[0]:
+                Folderes.remove(nombreFolder)
                 if Folderes:
-                    if "folder" in Data:
-                        for BuscarFolder in Data["folder"]:
+                    dataFolder = Data.get("folder")
+                    if dataFolder is not None:
+                        for BuscarFolder in dataFolder:
                             Data = self.BuscarDentroFolder(Folderes, BuscarFolder)
                             if Data is not None:
                                 return Data
                 else:
                     return Data
+        return None
 
     def Evento(self, Evento):
         NombreEvento = Evento.get("nombre")
@@ -398,7 +404,7 @@ class elGarrobo(object):
             for accion in self.acciones[NombreEvento]:
                 if "key" in accion:
                     if accion["key"] == Evento["key"]:
-                        if Evento["estado"]:
+                        if Evento["estado"] == "presionado":
                             logger.info(f"Evento {NombreEvento}[{accion['key']}] {accion['nombre']}")
                         self.EjecutandoEvento(accion, Evento["estado"])
                         return
@@ -411,14 +417,18 @@ class elGarrobo(object):
                         if accion["key"] == key_desface:
                             self.EjecutandoEvento(accion, Evento["estado"])
                             return
-                logger.info(f"Evento[No asignado] streamdeck[{key_desface}]")
+                estadoEvento = Evento.get("estado")
+                if estadoEvento:
+                    logger.info(f"Evento[No asignado] streamdeck[{key_desface}]")
                 return
             else:
                 pass
         else:
             pass
 
-        logger.info(f"Evento[No asignado] {NombreEvento}[{Evento['key']}]")
+        estadoEvento = Evento.get("estado")
+        if estadoEvento == "presionado":
+            logger.info(f"Evento[No asignado] {NombreEvento}[{Evento['key']}]")
 
     def EjecutandoEvento(self, evento, estado):
 
@@ -623,10 +633,13 @@ class elGarrobo(object):
             self.PathActual = "defaul"
             return
         logger.info(f"Regresar[{self.PathActual}]")
-        self.BuscarFolder(self.PathActual)
-        if self.ModuloDeck:
-            self.LimpiarDeck()
-            self.ActualizarDeck()
+        encontrado = self.BuscarFolder(self.PathActual)
+        if encontrado:
+            if self.ModuloDeck:
+                self.LimpiarDeck()
+                self.ActualizarDeck()
+        else:
+            logger.warning(f"Regresar[En base]")
 
     def Entrar_Folder(self, opciones):
         """
@@ -635,18 +648,24 @@ class elGarrobo(object):
         folder -> str
             folder a entrar
         """
-        # TODO: no entrar a folder si no existe
-        if "folder" in opciones:
-            Folder = opciones["folder"]
-        else:
+        folder: str = opciones.get("folder")
+        if folder is None:
             logger.warning(f"Folder[no encontrado]")
             return
-        logger.info(f"Folder[{Folder}]")
-        self.PathActual = RelativoAbsoluto(Folder, self.PathActual)
-        self.BuscarFolder(self.PathActual)
-        if self.ModuloDeck:
-            self.LimpiarDeck()
-            self.ActualizarDeck()
+
+        rutaActual = RelativoAbsoluto(folder, self.PathActual)
+        if rutaActual == self.PathActual:
+            logger.info(f"Folder[{rutaActual}] Actual")
+            return
+        encontrado = self.BuscarFolder(rutaActual)
+        if encontrado:
+            logger.info(f"Folder[{folder}]")
+            self.PathActual = rutaActual
+            if self.ModuloDeck:
+                self.LimpiarDeck()
+                self.ActualizarDeck()
+        else:
+            logger.warning(f"Folder[{folder}] No encontró")
 
     def Actualizar_Folder(self, opciones):
         self.ActualizarDeck()
