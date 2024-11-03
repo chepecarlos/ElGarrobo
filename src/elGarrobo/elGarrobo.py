@@ -51,6 +51,9 @@ class elGarrobo(object):
 
         self.IniciarModulo()
 
+        if self.ModuloGui:
+            self.miGui = miGui()
+
         self.CargarData()
 
         self.IniciarAcciones()
@@ -59,9 +62,6 @@ class elGarrobo(object):
 
         if self.ModuloPedal or self.ModuloDeck:
             self.listaIndex = []
-
-        if self.ModuloGui:
-            self.miGui = miGui()
 
         if self.ModuloOBS:
             self.CargarOBS()
@@ -174,6 +174,13 @@ class elGarrobo(object):
                 DataDeck = leerData(deck_file)
                 if DataDeck is not None:
                     self.Data["deck"] = DataDeck
+                    # TODO: informar en archivo de configuración que están unidos
+                    if self.ModuloGui:
+                        nombre = "streamdeck"
+                        archivo = "streamdeck.md"
+                        input = "??"
+                        pedal = {"nombre": nombre, "tipo": "steamdeck", "clase": "null", "input": input, "archivo": archivo}
+                        self.miGui.agregarDispositivos(pedal)
                 else:
                     logger.error(f"Falta {deck_file}")
             else:
@@ -185,6 +192,13 @@ class elGarrobo(object):
                 DataTeclado = leerData(teclados_file)
                 if DataTeclado is not None:
                     self.Data["teclados"] = DataTeclado
+                    if self.ModuloGui:
+                        for teclado in self.Data["teclados"]:
+                            nombre = teclado.get("nombre")
+                            archivo = teclado.get("file")
+                            input = teclado.get("input")
+                            teclado = {"nombre": nombre, "tipo": "teclado", "clase": "null", "input": input, "archivo": archivo, "estado": True}
+                            self.miGui.agregarDispositivos(teclado)
                 else:
                     logger.error(f"Falta {deck_file}")
             else:
@@ -196,6 +210,13 @@ class elGarrobo(object):
                 DataPedal = leerData(pedal_file)
                 if DataPedal is not None:
                     self.Data["pedal"] = DataPedal
+                    if self.ModuloGui:
+                        for pedal in self.Data["pedal"]:
+                            nombre = pedal.get("nombre")
+                            archivo = pedal.get("file")
+                            input = pedal.get("serial")
+                            pedal = {"nombre": nombre, "tipo": "pedal", "clase": "null", "input": input, "archivo": archivo, "estado": True}
+                            self.miGui.agregarDispositivos(pedal)
                 else:
                     logger.error(f"Falta {pedal_file}")
 
@@ -207,6 +228,8 @@ class elGarrobo(object):
                 "folder_path": self.Data["folder_path"],
             }
             self.CargarFolder(self.Keys)
+            if self.ModuloGui:
+                self.miGui.actualizarFolder(self.PathActual)
 
         ## TODO: por que no inicia la data de mqtt
         if self.ModuloMQTT:
@@ -225,7 +248,7 @@ class elGarrobo(object):
 
     def CargarFolder(self, Data):
         """
-        Carga recursivamente las configuracion de los diferentes eventos por dispositivos.
+        Carga recursivamente las configuración de los diferentes eventos por dispositivos.
         """
         ListaFolder = ObtenerListaFolder(Data["folder_path"])
         ListaArchivos = ObtenerListaArhivos(Data["folder_path"])
@@ -289,9 +312,6 @@ class elGarrobo(object):
                         tecladoActual = MiTecladoMacro(nombre, input, archivo, self.Evento)
                         tecladoActual.Conectar()
                         self.ListaTeclados.append(tecladoActual)
-                        if self.ModuloGui:
-                            teclado = {"nombre": nombre, "tipo": "teclado", "clase": "null", "input": input, "archivo": archivo}
-                            self.miGui.agregarDispositivos(teclado)
 
     def CargarStreamDeck(self):
         """Configurando streamdeck."""
@@ -308,12 +328,7 @@ class elGarrobo(object):
                 self.listaIndex.append(indexActual)
                 Cantidad_Base += DeckActual.Cantidad
                 self.ListaDeck.append(DeckActual)
-                if self.ModuloGui:
-                    nombre = InfoDeck.get("nombre")
-                    archivo = InfoDeck.get("file")
-                    input = InfoDeck.get("serial")
-                    pedal = {"nombre": nombre, "tipo": "steamdeck", "clase": "null", "input": input, "archivo": archivo}
-                    self.miGui.agregarDispositivos(pedal)
+
             self.ListaDeck.sort(key=lambda x: x.id, reverse=False)
             #     self.ListaDeck.append(DeckActual)
             # CargarDeck = IniciarStreamDeck(self.Data['deck'], self.Evento)
@@ -332,12 +347,6 @@ class elGarrobo(object):
                 indexActual = pedalActual.conectar(self.listaIndex)
                 self.listaIndex.append(indexActual)
                 self.listaPedales.append(pedalActual)
-                if self.ModuloGui:
-                    nombre = infoPedales.get("nombre")
-                    archivo = infoPedales.get("file")
-                    input = infoPedales.get("serial")
-                    pedal = {"nombre": nombre, "tipo": "pedal", "clase": "null", "input": input, "archivo": archivo}
-                    self.miGui.agregarDispositivos(pedal)
             self.ListaDeck.sort(key=lambda x: x.id, reverse=False)
         else:
             self.listaPedales = None
@@ -405,9 +414,12 @@ class elGarrobo(object):
         if dispositivoActual is not None:
             for dispositivo in dispositivoActual:
                 nombreDispositivo = dispositivo.get("nombre")
-                if nombreDispositivo in Data:
+                accionesDispositivo = Data.get(nombreDispositivo)
+                if accionesDispositivo:
                     logger.info(f"Folder[Configurado] {nombreDispositivo}")
-                    self.acciones[nombreDispositivo] = Data[nombreDispositivo]
+                    self.acciones[nombreDispositivo] = accionesDispositivo
+                    if self.ModuloGui:
+                        self.miGui.actualizarAcciones(nombreDispositivo, accionesDispositivo)
                     Estado = True
         return Estado
 
@@ -772,10 +784,10 @@ class elGarrobo(object):
         """
         Reinicia data de los Botones Actuales.
         """
-        self.Data = obtenerArchivoPaquete("elGarrobo", "elGarrobo/data/config.md")
-        if self.Data is None:
-            logger.error("No existe archivo config.md")
-            os._exit(0)
+        # self.Data = obtenerArchivoPaquete("elGarrobo", "elGarrobo/data/config.md")
+        # if self.Data is None:
+        #     logger.error("No existe archivo config.md")
+        #     os._exit(0)
 
         self.DataUsuario = leerData("config")
         if self.DataUsuario is not None:
@@ -785,6 +797,8 @@ class elGarrobo(object):
         self.acciones = dict()
         self.CargarData()
         self.PathActual = self.Data.get("folder_path")
+        if self.ModuloGui:
+            self.miGui.actualizarFolder(self.PathActual)
         self.BuscarFolder(self.PathActual)
         self.IniciarStreamDeck()
 

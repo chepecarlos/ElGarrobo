@@ -127,6 +127,32 @@ class miGui:
                         ui.markdown(f"**Tipo**: {tipo}")
                         # ui.markdown(f"**Input**: {input}")
                         ui.markdown(f"**clase**: {clase}")
+                    acciones = dispositivo.get("acciones")
+
+                    with ui.scroll_area().classes("border"):
+
+                        if acciones is None:
+                            ui.label("No acciones")
+                            continue
+
+                        with ui.row():
+                            ui.label("Nombre").style("font-weight: bold; width: 100px")
+                            ui.label("Tecla").style("font-weight: bold; width: 100px")
+                            ui.label("Acción").style("font-weight: bold; width: 125px")
+                            ui.label("Opciones").style("font-weight: bold; width: 180px")
+
+                        for acciónActual in acciones:
+                            nombreAcción = acciónActual.get("nombre")
+                            teclaAcción = acciónActual.get("key")
+                            acciónAcción = acciónActual.get("accion")
+
+                            with ui.row().classes("content border-2 border-teal-600"):
+                                ui.label(nombreAcción).style("width: 100px")
+                                ui.label(teclaAcción).style("width: 100px")
+                                ui.label(acciónAcción).style("width: 125px")
+                                # ui.button("Seleccionar", on_click=lambda f=fila: seleccionar_fila(f))  # .style("width: 70px")
+                                # ui.button("Eliminar", on_click=lambda f=fila: eliminar_fila(f)).style("width: 70px")
+                                # ui.button("Editar", on_click=lambda f=fila: editar_fila(f)).style("width: 70px")
 
     def estructura(self):
         with ui.header(elevated=True).style("background-color: #0b4c0d").classes("items-center justify-between"):
@@ -162,5 +188,12 @@ class miGui:
         self.folderLabel.content = self.folder
 
     def agregarDispositivos(self, dispositivo):
+        dispositivo["acciones"] = None
         self.listaDispositivos.append(dispositivo)
+        self.mostrarPestañas()
+
+    def actualizarAcciones(self, nombreDispositivo: str, acciones: list):
+        for dispositivo in self.listaDispositivos:
+            if dispositivo.get("nombre") == nombreDispositivo:
+                dispositivo["acciones"] = acciones
         self.mostrarPestañas()
