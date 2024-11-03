@@ -5,6 +5,7 @@ from .acciones import CargarAcciones
 from .accionesOOP import cargarAcciones
 from .dispositivos.mideck.mi_deck_extra import DefinirFuente, DefinirImagenes
 from .dispositivos.mideck.mi_streamdeck import MiStreamDeck
+from .dispositivos.migui.migui import miGui
 from .dispositivos.mimqtt.mi_mqtt import MiMQTT
 from .dispositivos.mipedal.mi_pedal import MiPedal
 from .dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro
@@ -35,12 +36,16 @@ class elGarrobo(object):
         self.Data = obtenerArchivoPaquete("elGarrobo", "elGarrobo/data/config.md")
         if self.Data is None:
             logger.error("No existe archivo Interno config.md")
-            os._exit(0)
+            # TODO: reparar error en carga data
+            # os._exit(0)
 
         self.DataUsuario = leerData("config")
         if self.DataUsuario is not None:
             logger.info("Cargando config usuario")
-            self.Data |= self.DataUsuario
+            if self.Data:
+                self.Data |= self.DataUsuario
+            else:
+                self.Data = self.DataUsuario
 
         self.acciones = dict()
 
@@ -77,6 +82,10 @@ class elGarrobo(object):
         if self.ModuloPulse:
             self.ListaAcciones["salvar_pulse"]({})
 
+        if self.ModuloGui:
+            self.miGui = miGui()
+            self.miGui.iniciar()
+
     def IniciarModulo(self) -> None:
         """
         Carga los modulos activos.
@@ -100,6 +109,7 @@ class elGarrobo(object):
         self.ModuloMonitorESP = False
         self.ModuloAlias = False
         self.ModuloPedal = False
+        self.ModuloGui = False
 
         if Modulos is not None:
             if "obs_notificacion" in Modulos:
@@ -116,6 +126,7 @@ class elGarrobo(object):
             self.ModuloMQTTEstado = Modulos.get("mqtt_estado", False)
             self.ModuloPulse = Modulos.get("pulse", False)
             self.ModuloAlias = Modulos.get("alias", False)
+            self.ModuloGui = Modulos.get("gui", False)
 
     def IniciarAcciones(self):
         """
@@ -638,6 +649,8 @@ class elGarrobo(object):
             if self.ModuloDeck:
                 self.LimpiarDeck()
                 self.ActualizarDeck()
+            if self.ModuloGui:
+                self.miGui.actualizarFolder(self.PathActual)
         else:
             logger.warning(f"Regresar[En base]")
 
@@ -664,6 +677,9 @@ class elGarrobo(object):
             if self.ModuloDeck:
                 self.LimpiarDeck()
                 self.ActualizarDeck()
+            if self.ModuloGui:
+                self.miGui.actualizarFolder(self.PathActual)
+
         else:
             logger.warning(f"Folder[{folder}] No encontró")
 

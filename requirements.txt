@@ -10,4 +10,5 @@ obs-websocket-py
 python-telegram-bot
 simpleaudio
 requests
-sphinx
+# sphinx
+nicegui>=2.5.0
