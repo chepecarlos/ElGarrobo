@@ -8,7 +8,9 @@ class miGui:
 
     def __init__(self):
 
-        self.folder = None
+        self.folder = "?"
+        self.folderLabel = None
+        self.listaDispositivos = list()
 
         # Datos de ejemplo para la tabla
         datos = [{"nombre": "Alice", "edad": 25, "ciudad": "Madrid"}, {"nombre": "Bob", "edad": 30, "ciudad": "Barcelona"}, {"nombre": "Carlos", "edad": 35, "ciudad": "Valencia"}]
@@ -87,26 +89,51 @@ class miGui:
             ciudad_input.value = ""
 
         # Contenedor para la tabla
+        self.pestañas = ui.tabs().classes("w-full")
+        self.paneles = ui.tab_panels(self.pestañas).classes("w-full")
         tabla_cont = ui.column()
-        mostrar_tabla()
+
+        self.mostrarPestañas()
+        # mostrar_tabla()
 
         # Formulario para agregar o editar una fila
-        with ui.row():
-            nombre_input = ui.input("Nombre").style("width: 100px")
-            edad_input = ui.number("Edad").style("width: 50px")
-            ciudad_input = ui.select(["San Miguel", "San Salvador", "La Union"], value="San Miguel").style("width: 100px")
-            # ciudad_input = ui.input("Ciudad").style("width: 100px")
-            ui.button("Agregar", on_click=agregar_fila).style("width: 70px")
-            ui.button("Guardar cambios", on_click=guardar_cambios).style("width: 120px")
+        # with ui.row():
+        #     nombre_input = ui.input("Nombre").style("width: 100px")
+        #     edad_input = ui.number("Edad").style("width: 50px")
+        #     ciudad_input = ui.select(["San Miguel", "San Salvador", "La Union"], value="San Miguel").style("width: 100px")
+        #     # ciudad_input = ui.input("Ciudad").style("width: 100px")
+        #     ui.button("Agregar", on_click=agregar_fila).style("width: 70px")
+        #     ui.button("Guardar cambios", on_click=guardar_cambios).style("width: 120px")
 
         self.estructura()
 
+    def mostrarPestañas(self):
+        self.pestañas.clear()
+        self.paneles.clear()
+
+        with self.pestañas:
+            for dispositivo in self.listaDispositivos:
+                nombre = dispositivo.get("nombre")
+                dispositivo["pestaña"] = ui.tab(nombre)
+
+        for dispositivo in self.listaDispositivos:
+            nombre = dispositivo.get("nombre")
+            tipo = dispositivo.get("tipo")
+            input = dispositivo.get("input")
+            clase = dispositivo.get("clase")
+            with self.paneles:
+                with ui.tab_panel(dispositivo.get("pestaña")):
+                    with ui.row():
+                        ui.markdown(f"**Tipo**: {tipo}")
+                        # ui.markdown(f"**Input**: {input}")
+                        ui.markdown(f"**clase**: {clase}")
+
     def estructura(self):
         with ui.header(elevated=True).style("background-color: #0b4c0d").classes("items-center justify-between"):
-            ui.label("ElGarrobo")
+            ui.label("ElGarrobo").classes("text-h4")
             with ui.row():
                 ui.markdown("**FolderRuta**:")
-                self.folder = ui.markdown("default/blender")
+                self.folderLabel = ui.markdown(self.folder)
             ui.button(on_click=lambda: right_drawer.toggle(), icon="menu").props("flat color=white")
         with ui.footer().style("background-color: #0b4c0d"):
             with ui.row():
@@ -131,5 +158,9 @@ class miGui:
         # ui.run(uvicorn_logging_level="debug", reload=False)
 
     def actualizarFolder(self, folder: str):
-        print("Actualizando GUI")
-        self.folder.content = folder
+        self.folder = folder
+        self.folderLabel.content = self.folder
+
+    def agregarDispositivos(self, dispositivo):
+        self.listaDispositivos.append(dispositivo)
+        self.mostrarPestañas()

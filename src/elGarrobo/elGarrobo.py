@@ -60,6 +60,9 @@ class elGarrobo(object):
         if self.ModuloPedal or self.ModuloDeck:
             self.listaIndex = []
 
+        if self.ModuloGui:
+            self.miGui = miGui()
+
         if self.ModuloOBS:
             self.CargarOBS()
 
@@ -83,8 +86,9 @@ class elGarrobo(object):
             self.ListaAcciones["salvar_pulse"]({})
 
         if self.ModuloGui:
-            self.miGui = miGui()
             self.miGui.iniciar()
+            # TODO: cargar foldrer al inicio
+            self.miGui.actualizarFolder(self.PathActual)
 
     def IniciarModulo(self) -> None:
         """
@@ -285,6 +289,9 @@ class elGarrobo(object):
                         tecladoActual = MiTecladoMacro(nombre, input, archivo, self.Evento)
                         tecladoActual.Conectar()
                         self.ListaTeclados.append(tecladoActual)
+                        if self.ModuloGui:
+                            teclado = {"nombre": nombre, "tipo": "teclado", "clase": "null", "input": input, "archivo": archivo}
+                            self.miGui.agregarDispositivos(teclado)
 
     def CargarStreamDeck(self):
         """Configurando streamdeck."""
@@ -301,6 +308,12 @@ class elGarrobo(object):
                 self.listaIndex.append(indexActual)
                 Cantidad_Base += DeckActual.Cantidad
                 self.ListaDeck.append(DeckActual)
+                if self.ModuloGui:
+                    nombre = InfoDeck.get("nombre")
+                    archivo = InfoDeck.get("file")
+                    input = InfoDeck.get("serial")
+                    pedal = {"nombre": nombre, "tipo": "steamdeck", "clase": "null", "input": input, "archivo": archivo}
+                    self.miGui.agregarDispositivos(pedal)
             self.ListaDeck.sort(key=lambda x: x.id, reverse=False)
             #     self.ListaDeck.append(DeckActual)
             # CargarDeck = IniciarStreamDeck(self.Data['deck'], self.Evento)
@@ -314,11 +327,17 @@ class elGarrobo(object):
         if "pedal" in self.Data:
             logger.info("Pedal[Cargando]")
             self.listaPedales = []
-            for indoPedales in self.Data.get("pedal"):
-                pedalActual = MiPedal(indoPedales, self.Evento)
+            for infoPedales in self.Data.get("pedal"):
+                pedalActual = MiPedal(infoPedales, self.Evento)
                 indexActual = pedalActual.conectar(self.listaIndex)
                 self.listaIndex.append(indexActual)
                 self.listaPedales.append(pedalActual)
+                if self.ModuloGui:
+                    nombre = infoPedales.get("nombre")
+                    archivo = infoPedales.get("file")
+                    input = infoPedales.get("serial")
+                    pedal = {"nombre": nombre, "tipo": "pedal", "clase": "null", "input": input, "archivo": archivo}
+                    self.miGui.agregarDispositivos(pedal)
             self.ListaDeck.sort(key=lambda x: x.id, reverse=False)
         else:
             self.listaPedales = None
