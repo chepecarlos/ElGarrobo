@@ -162,6 +162,14 @@ class elGarrobo(object):
         self.ListaAcciones = ListaAcciones
         self.listaClasesAcciones = listaClasesAcciones
 
+        if self.ModuloGui:
+            listaAccion = []
+            for accion in self.ListaAcciones.keys():
+                listaAccion.append(accion)
+            for accion in self.listaClasesAcciones.keys():
+                listaAccion.append(accion)
+            self.miGui.agregarAcciones(listaAccion)
+
     def CargarData(self):
         """
         Cargando Data para Dispisitivo.

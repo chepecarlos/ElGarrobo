@@ -1,5 +1,8 @@
 from nicegui import ui
 
+# https://nicegui.io/
+# https://tailwindcss.com/
+
 
 class miGui:
     """
@@ -11,6 +14,7 @@ class miGui:
         self.folder = "?"
         self.folderLabel = None
         self.listaDispositivos = list()
+        self.listaAcciones = [""]
 
         # Datos de ejemplo para la tabla
         datos = [{"nombre": "Alice", "edad": 25, "ciudad": "Madrid"}, {"nombre": "Bob", "edad": 30, "ciudad": "Barcelona"}, {"nombre": "Carlos", "edad": 35, "ciudad": "Valencia"}]
@@ -88,26 +92,49 @@ class miGui:
             edad_input.value = 0
             ciudad_input.value = ""
 
-        # Contenedor para la tabla
-        self.pestañas = ui.tabs().classes("w-full")
-        self.paneles = ui.tab_panels(self.pestañas).classes("w-full")
-        tabla_cont = ui.column()
+        # tabla_cont = ui.column()
 
-        self.mostrarPestañas()
-        # mostrar_tabla()
-
-        # Formulario para agregar o editar una fila
-        # with ui.row():
-        #     nombre_input = ui.input("Nombre").style("width: 100px")
-        #     edad_input = ui.number("Edad").style("width: 50px")
-        #     ciudad_input = ui.select(["San Miguel", "San Salvador", "La Union"], value="San Miguel").style("width: 100px")
-        #     # ciudad_input = ui.input("Ciudad").style("width: 100px")
-        #     ui.button("Agregar", on_click=agregar_fila).style("width: 70px")
-        #     ui.button("Guardar cambios", on_click=guardar_cambios).style("width: 120px")
+        with ui.splitter(value=20).classes("w-full") as splitter:
+            with splitter.before:
+                self.mostraFormulario()
+            with splitter.after:
+                # Contenedor para la tabla
+                self.pestañas = ui.tabs().classes("w-full")
+                self.paneles = ui.tab_panels(self.pestañas).classes("w-full")
+                self.mostrarPestañas()
 
         self.estructura()
 
+    def mostraFormulario(self):
+        def agregarAcción():
+            nombre = self.editorNombre.value
+            tecla = self.editorTecla.value
+            acción = self.editorAcción.value
+            folder = self.folder
+            dispositivo = self.pestañas.value
+            if nombre and tecla and acción:
+                print(nombre, tecla, acción, folder, dispositivo)
+                # datos.append({"nombre": nombre, "edad": edad, "ciudad": ciudad})
+                self.mostrarPestañas()
+                ui.notify(f"Agregando acción {nombre}")
+                limpiar_formulario()
+
+        def limpiar_formulario():
+            global fila_seleccionada
+            fila_seleccionada = None
+            self.editorNombre.value = ""
+            self.editorTecla.value = ""
+            self.editorAcción.value = ""
+
+        ui.label("Agregar").classes("h2")
+        self.editorNombre = ui.input("Nombre")  # .style("width: 100px")
+        self.editorTecla = ui.input("Tecla")  # .style("width: 50px")
+        self.editorAcción = ui.select(self.listaAcciones, label="acción").style("width: 150px")
+
+        ui.button("Agregar", on_click=agregarAcción)
+
     def mostrarPestañas(self):
+
         self.pestañas.clear()
         self.paneles.clear()
 
@@ -122,14 +149,13 @@ class miGui:
             input = dispositivo.get("input")
             clase = dispositivo.get("clase")
             with self.paneles:
-                with ui.tab_panel(dispositivo.get("pestaña")):
+                with ui.tab_panel(dispositivo.get("pestaña")).classes("h-svh"):
                     with ui.row():
                         ui.markdown(f"**Tipo**: {tipo}")
-                        # ui.markdown(f"**Input**: {input}")
                         ui.markdown(f"**clase**: {clase}")
                     acciones = dispositivo.get("acciones")
 
-                    with ui.scroll_area().classes("border"):
+                    with ui.scroll_area().classes("h-96 border border-2 border-teal-600"):
 
                         if acciones is None:
                             ui.label("No acciones")
@@ -150,9 +176,15 @@ class miGui:
                                 ui.label(nombreAcción).style("width: 100px")
                                 ui.label(teclaAcción).style("width: 100px")
                                 ui.label(acciónAcción).style("width: 125px")
-                                # ui.button("Seleccionar", on_click=lambda f=fila: seleccionar_fila(f))  # .style("width: 70px")
+                                ui.button("Seleccionar", on_click=lambda a=acciónActual: self.seleccionarAcción(a))  # .style("width: 70px")
                                 # ui.button("Eliminar", on_click=lambda f=fila: eliminar_fila(f)).style("width: 70px")
                                 # ui.button("Editar", on_click=lambda f=fila: editar_fila(f)).style("width: 70px")
+
+    def seleccionarAcción(self, accion):
+        print(accion)
+        self.editorNombre.value = accion.get("nombre")
+        self.editorTecla.value = accion.get("key")
+        self.editorAcción.value = accion.get("accion")
 
     def estructura(self):
         with ui.header(elevated=True).style("background-color: #0b4c0d").classes("items-center justify-between"):
@@ -161,23 +193,17 @@ class miGui:
                 ui.markdown("**FolderRuta**:")
                 self.folderLabel = ui.markdown(self.folder)
             ui.button(on_click=lambda: right_drawer.toggle(), icon="menu").props("flat color=white")
+
+        with ui.right_drawer(fixed=False).style("background-color: #ebf1fa").props("bordered") as right_drawer:
+            right_drawer.toggle()
+            ui.label("RIGHT DRAWER")
+
         with ui.footer().style("background-color: #0b4c0d"):
             with ui.row():
                 ui.label("Creado por ChepeCarlos")
                 ui.space()
                 ui.link("Youtube", "https://www.youtube.com/@chepecarlo")
-                ui.link("Tiktok", "https://www.youtube.com/@chepecarlo")
-            # with ui.button_group():
-            #     # ui.button("Agregar", on_click=agregar)
-            #     # ui.button("Two", on_click=lambda: ui.notify("You clicked Button 2!"))
-            #     # ui.button("Three", on_click=lambda: ui.notify("You clicked Button 3!"))
-            # ui.label("FOOTER")
-
-        with ui.left_drawer(top_corner=True, bottom_corner=True).style("background-color: #d7e3f4"):
-            ui.label("LEFT DRAWER")
-        with ui.right_drawer(fixed=False).style("background-color: #ebf1fa").props("bordered") as right_drawer:
-            ui.label("RIGHT DRAWER")
-        pass
+                ui.link("Tiktok", "https://www.tiktok.com/@chepecarlo")
 
     def iniciar(self):
         ui.run(title="ElGarrobo", reload=False, show=False)
@@ -191,6 +217,10 @@ class miGui:
         dispositivo["acciones"] = None
         self.listaDispositivos.append(dispositivo)
         self.mostrarPestañas()
+
+    def agregarAcciones(self, listaAcciones: dict):
+        self.listaAcciones = listaAcciones
+        self.editorAcción.options = self.listaAcciones
 
     def actualizarAcciones(self, nombreDispositivo: str, acciones: list):
         for dispositivo in self.listaDispositivos:
