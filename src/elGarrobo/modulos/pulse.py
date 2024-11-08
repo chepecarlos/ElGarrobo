@@ -22,17 +22,10 @@ class MiPulse:
 
     def CambiarVolumen(self, opciones):
 
-        Dispositivo = None
-        Valor = None
-        Opcion = "asigniar"
+        Dispositivo = opciones.get("dispositivo")
+        Valor = opciones.get("valor")
+        Opcion = opciones.get("opcion", "asigniar")
         comando = None
-
-        if "dispositivo" in opciones:
-            Dispositivo = opciones["dispositivo"]
-        if "valor" in opciones:
-            Valor = opciones["valor"]
-        if "opcion" in opciones:
-            Opcion = opciones["opcion"]
 
         if Dispositivo is None or Valor is None:
             Logger.info("Faltan opciones")
@@ -72,14 +65,17 @@ class MiPulse:
     def SalvarPulse(self, opciones=None):
         Logger.info("Pulse[Salvar]")
 
-        listaDispisitovos = self.DataPulse()
+        listaDispisitovos: list = self.DataPulse()
 
         for Dispositivo in listaDispisitovos:
             Texto = "Error"
             if Dispositivo.Mute:
                 Texto = "Mute"
             elif Dispositivo.Volumen is not None:
-                Texto = f"{Dispositivo.Volumen}%"
+                if Dispositivo.Volumen[0] == Dispositivo.Volumen[1]:
+                    Texto = f"{Dispositivo.Volumen[0]}%"
+                else:
+                    Texto = f"{Dispositivo.Volumen[0]}% - {Dispositivo.Volumen[1]}%"
 
             SalvarValor("data/pulse.json", Dispositivo.Nombre, Texto)
 
@@ -97,7 +93,7 @@ class MiPulse:
                     actual.Nombre = Linea.replace("Nombre:", "").strip()
                 if "Volumen:" in Linea:
                     Numero = re.findall("([0-9][0-9][0-9]|[0-9][0-9]|[0-9])%", Linea)
-                    actual.Volumen = Numero[0]
+                    actual.Volumen = Numero
                 if "Silencio:" in Linea:
                     if "sí" in Linea:
                         actual.Mute = True
@@ -111,5 +107,5 @@ class MiPulse:
 
 class Dispositivo(object):
     Nombre = None
-    Volumen = None
+    Volumen = [0, 0]
     Mute = None
