@@ -11,10 +11,11 @@ class miGui:
 
     def __init__(self):
 
-        self.folder = "?"
+        self.folder: str = "?"
         self.folderLabel = None
-        self.listaDispositivos = list()
-        self.listaAcciones = [""]
+        self.listaDispositivos: list = list()
+        self.listaAcciones: list = list()
+        self.agregarAccion: callable = None
 
         # Datos de ejemplo para la tabla
         datos = [{"nombre": "Alice", "edad": 25, "ciudad": "Madrid"}, {"nombre": "Bob", "edad": 30, "ciudad": "Barcelona"}, {"nombre": "Carlos", "edad": 35, "ciudad": "Valencia"}]
@@ -110,28 +111,38 @@ class miGui:
             nombre = self.editorNombre.value
             tecla = self.editorTecla.value
             acción = self.editorAcción.value
-            folder = self.folder
-            dispositivo = self.pestañas.value
-            if nombre and tecla and acción:
-                print(nombre, tecla, acción, folder, dispositivo)
+            nombreDispositivo = self.pestañas.value
+            if nombre and tecla and acción and nombreDispositivo:
+                for dispositivo in self.listaDispositivos:
+                    if dispositivo.get("nombre") == nombreDispositivo:
+                        folder = dispositivo.get("folder")
+                        print(nombre, tecla, acción, folder, nombreDispositivo)
                 # datos.append({"nombre": nombre, "edad": edad, "ciudad": ciudad})
+                accionNueva = {"nombre": nombre, "key": tecla, "accion": acción}
+                # self.agregarAccion(accionNueva, dispositivo, folder)
                 self.mostrarPestañas()
                 ui.notify(f"Agregando acción {nombre}")
                 limpiar_formulario()
+            else:
+                ui.notify("Falta información")
 
         def limpiar_formulario():
             global fila_seleccionada
             fila_seleccionada = None
+            self.botonAgregar.text = "Agregar"
             self.editorNombre.value = ""
             self.editorTecla.value = ""
             self.editorAcción.value = ""
+            self.editorOpción.value = ""
 
-        ui.label("Agregar").classes("h2")
         self.editorNombre = ui.input("Nombre")  # .style("width: 100px")
         self.editorTecla = ui.input("Tecla")  # .style("width: 50px")
-        self.editorAcción = ui.select(self.listaAcciones, label="acción").style("width: 150px")
+        self.editorAcción = ui.select(self.listaAcciones, label="acción").style("width: 200px")
+        self.editorOpción = ui.textarea(label="Opciones", placeholder="").style("width: 200px")
 
-        ui.button("Agregar", on_click=agregarAcción)
+        with ui.button_group():
+            self.botonAgregar = ui.button("Agregar", on_click=agregarAcción)
+            ui.button("Limpiar", on_click=limpiar_formulario)
 
     def mostrarPestañas(self):
 
@@ -148,11 +159,13 @@ class miGui:
             tipo = dispositivo.get("tipo")
             input = dispositivo.get("input")
             clase = dispositivo.get("clase")
+            folder = dispositivo.get("folder")
             with self.paneles:
                 with ui.tab_panel(dispositivo.get("pestaña")).classes("h-svh"):
                     with ui.row():
                         ui.markdown(f"**Tipo**: {tipo}")
                         ui.markdown(f"**clase**: {clase}")
+                        ui.markdown(f"**Folder**: {folder}")
                     acciones = dispositivo.get("acciones")
 
                     with ui.scroll_area().classes("h-96 border border-2 border-teal-600"):
@@ -176,15 +189,27 @@ class miGui:
                                 ui.label(nombreAcción).style("width: 100px")
                                 ui.label(teclaAcción).style("width: 100px")
                                 ui.label(acciónAcción).style("width: 125px")
-                                ui.button("Seleccionar", on_click=lambda a=acciónActual: self.seleccionarAcción(a))  # .style("width: 70px")
+                                ui.button("Editar", on_click=lambda a=acciónActual: self.seleccionarAcción(a))  # .style("width: 70px")
                                 # ui.button("Eliminar", on_click=lambda f=fila: eliminar_fila(f)).style("width: 70px")
                                 # ui.button("Editar", on_click=lambda f=fila: editar_fila(f)).style("width: 70px")
 
     def seleccionarAcción(self, accion):
         print(accion)
+        self.botonAgregar.text = "Editar"
         self.editorNombre.value = accion.get("nombre")
         self.editorTecla.value = accion.get("key")
         self.editorAcción.value = accion.get("accion")
+        textoOpciones = ""
+        opcionesActuales = accion.get("opciones")
+        if opcionesActuales:
+            if isinstance(opcionesActuales, dict):
+                for opcionInterna in opcionesActuales.keys():
+                    textoOpciones = textoOpciones + f"{opcionInterna}: {opcionesActuales.get(opcionInterna)}, "
+            elif isinstance(opcionesActuales, list):
+                for opcionInterna in opcionesActuales:
+                    for opcionesSecundarias in opcionInterna.keys():
+                        textoOpciones = textoOpciones + f"{opcionesSecundarias}: {opcionInterna.get(opcionesSecundarias)}, "
+        self.editorOpción.value = textoOpciones
 
     def estructura(self):
         with ui.header(elevated=True).style("background-color: #0b4c0d").classes("items-center justify-between"):
@@ -219,11 +244,14 @@ class miGui:
         self.mostrarPestañas()
 
     def agregarAcciones(self, listaAcciones: dict):
-        self.listaAcciones = listaAcciones
+        for accion in listaAcciones:
+            self.listaAcciones.append(accion)
+        self.listaAcciones.sort()
         self.editorAcción.options = self.listaAcciones
 
-    def actualizarAcciones(self, nombreDispositivo: str, acciones: list):
+    def actualizarAcciones(self, nombreDispositivo: str, acciones: list, folder: str):
         for dispositivo in self.listaDispositivos:
             if dispositivo.get("nombre") == nombreDispositivo:
                 dispositivo["acciones"] = acciones
+                dispositivo["folder"] = folder
         self.mostrarPestañas()

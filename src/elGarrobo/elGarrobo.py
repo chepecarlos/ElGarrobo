@@ -21,7 +21,7 @@ from .miLibrerias import (
     obtenerArchivoPaquete,
 )
 from .modulos.mi_obs import MiOBS
-from .modulos.pulse import MiPulse
+from .modulos.mi_pulse import MiPulse
 
 logger = ConfigurarLogging(__name__)
 
@@ -53,6 +53,7 @@ class elGarrobo(object):
 
         if self.ModuloGui:
             self.miGui = miGui()
+            self.miGui.agregarAccion = self.agregarAccion
 
         self.CargarData()
 
@@ -85,6 +86,8 @@ class elGarrobo(object):
         if self.ModuloPulse:
             self.ListaAcciones["salvar_pulse"]({})
 
+            # TODO: recivir acciones desde Modulo de Pulse
+            self.miGui.agregarAcciones(("salvar_pulse", "volumen", "mute"))
         if self.ModuloGui:
             self.miGui.iniciar()
             # TODO: cargar foldrer al inicio
@@ -427,7 +430,7 @@ class elGarrobo(object):
                     logger.info(f"Folder[Configurado] {nombreDispositivo}")
                     self.acciones[nombreDispositivo] = accionesDispositivo
                     if self.ModuloGui:
-                        self.miGui.actualizarAcciones(nombreDispositivo, accionesDispositivo)
+                        self.miGui.actualizarAcciones(nombreDispositivo, accionesDispositivo, self.PathActual)
                     Estado = True
         return Estado
 
@@ -709,10 +712,11 @@ class elGarrobo(object):
         if rutaActual == self.PathActual:
             logger.info(f"Folder[{rutaActual}] Actual")
             return
+        copiaPath = self.PathActual
+        self.PathActual = rutaActual
         encontrado = self.BuscarFolder(rutaActual)
         if encontrado:
             logger.info(f"Folder[{folder}]")
-            self.PathActual = rutaActual
             if self.ModuloDeck:
                 self.LimpiarDeck()
                 self.ActualizarDeck()
@@ -721,6 +725,7 @@ class elGarrobo(object):
 
         else:
             logger.warning(f"Folder[{folder}] No encontró")
+            self.PathActual = copiaPath
 
     def Actualizar_Folder(self, opciones):
         self.ActualizarDeck()
@@ -877,3 +882,22 @@ class elGarrobo(object):
             else:
                 opciones["mensaje"] = texto
                 self.ListaAcciones["mqtt"](opciones)
+
+    def agregarAccion(self, accion: list, dispositivo: str, folder: str):
+
+        print(accion, dispositivo, folder)
+        ListaDispositivos = ["teclados", "global", "deck", "pedal"]
+        for tipo in ListaDispositivos:
+            dataDispositivos = self.Data.get(tipo)
+            for dataActual in dataDispositivos:
+                if dispositivo == dataActual.get("nombre"):
+                    print("-" * 30)
+                    print(dataActual)
+                    print(self.acciones[dispositivo])
+                    # for self.acciones[dispositivo]:
+
+        # dispositivoActual = self.Data.get(Dispositivo)
+        # if dispositivoActual is not None:
+        #     for dispositivo in dispositivoActual:
+        #         nombreDispositivo = dispositivo.get("nombre")
+        #         accionesDispositivo = Data.get(nombreDispositivo)
