@@ -8,8 +8,10 @@ Logger = ConfigurarLogging(__name__)
 
 
 class MiPulse:
+    archivoPulse = "data/pulse.md"
+
     def __init__(self):
-        self.SolisitarDibujar = None
+        self.SolisitarDibujar: callable = None
 
     def DibujarDeck(self, Funcion):
         """Guarda Funcion para Solisitar iconos StringDeck."""
@@ -36,6 +38,35 @@ class MiPulse:
         elif Opcion == "incremento":
             simbolo = "+" if Valor > 0 else ""
             comando = f"pactl set-sink-volume {Dispositivo} {simbolo}{Valor}%"
+        elif Opcion == "balance":
+            texto: str = ObtenerValor(self.archivoPulse, Dispositivo)
+            if texto is None:
+                Logger.warning(f"Error con Disposition {Dispositivo}")
+                return
+
+            nivel: str = self.obtenerPorcentajes(texto)
+            if nivel is None:
+                Logger.warning(f"Error con Nivel de Disposition {Dispositivo}")
+                return
+            nivelIzquierda: int = 0
+            nivelDerecha: int = 0
+            if len(nivel) == 1:
+                nivelMax = nivel[0]
+            else:
+                nivelMax = nivel[0] if nivel[0] > nivel[1] else nivel[1]
+            nivelMax: int = int(nivelMax)
+            if Valor == 50:
+                nivelIzquierda = nivelMax
+                nivelDerecha = nivelMax
+            if Valor < 50:
+                nivelIzquierda = nivelMax
+                fuerza: float = 1 - (50 - Valor) / 50
+                nivelDerecha = int(nivelMax * fuerza)
+            if Valor > 50:
+                nivelDerecha = nivelMax
+                fuerza: float = 1 - (Valor - 50) / 50
+                nivelIzquierda = int(nivelMax * fuerza)
+            comando = f"pactl set-sink-volume {Dispositivo} {nivelIzquierda}% {nivelDerecha}%"
         else:
             Logger.info("Opción de audio no encontrada")
             return
@@ -69,15 +100,27 @@ class MiPulse:
 
         for Dispositivo in listaDispisitovos:
             Texto = "Error"
+            TextoBalance = "Error"
             if Dispositivo.Mute:
                 Texto = "Mute"
             elif Dispositivo.Volumen is not None:
-                if Dispositivo.Volumen[0] == Dispositivo.Volumen[1]:
-                    Texto = f"{Dispositivo.Volumen[0]}%"
+                Volumen = Dispositivo.Volumen
+                if Volumen[0] == Volumen[1]:
+                    Texto = f"{Volumen[0]}%"
+                    TextoBalance = "50%"
                 else:
-                    Texto = f"{Dispositivo.Volumen[0]}% - {Dispositivo.Volumen[1]}%"
+                    Texto = f"{Volumen[0]}% - {Volumen[1]}%"
+                    if Volumen[0] == Volumen[1]:
+                        TextoBalance = "50%"
+                    elif Volumen[0] > Volumen[1]:
+                        TextoBalance = "0%"
+                    else:
+                        TextoBalance = "100%"
 
-            SalvarValor("data/pulse.json", Dispositivo.Nombre, Texto)
+            # TODO: montar el avanza correctamente
+            SalvarValor(self.archivoPulse, f"{Dispositivo.Nombre}_balance", TextoBalance)
+
+            SalvarValor(self.archivoPulse, Dispositivo.Nombre, Texto)
 
         self.SolisitarDibujar()
 
@@ -92,7 +135,7 @@ class MiPulse:
                 if "Nombre:" in Linea:
                     actual.Nombre = Linea.replace("Nombre:", "").strip()
                 if "Volumen:" in Linea:
-                    Numero = re.findall("([0-9][0-9][0-9]|[0-9][0-9]|[0-9])%", Linea)
+                    Numero = self.obtenerPorcentajes(Linea)
                     actual.Volumen = Numero
                 if "Silencio:" in Linea:
                     if "sí" in Linea:
@@ -103,6 +146,9 @@ class MiPulse:
                 listaDispisitovos.append(actual)
 
         return listaDispisitovos
+
+    def obtenerPorcentajes(self, texto: str) -> list:
+        return re.findall("([0-9][0-9][0-9]|[0-9][0-9]|[0-9])%", texto)
 
 
 class Dispositivo(object):

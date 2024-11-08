@@ -1,8 +1,16 @@
 import os
 
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerArchivo, ObtenerFolderConfig, ObtenerValor, RelativoAbsoluto, UnirPath
 from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.ImageHelpers import PILHelper
+
+from elGarrobo.miLibrerias import (
+    ConfigurarLogging,
+    ObtenerArchivo,
+    ObtenerFolderConfig,
+    ObtenerValor,
+    RelativoAbsoluto,
+    UnirPath,
+)
 
 from .mi_deck_extra import BuscarDirecionImagen, PonerTexto
 
@@ -38,10 +46,12 @@ def ActualizarIcono(Deck, indice, accion):
 
     PonerImagen(ImagenBoton, DirecionImagen, accion, Deck.Folder)
 
-    if "cargar_titulo" in accion:
-        TextoCargar = accion["cargar_titulo"]
-        if "archivo" in TextoCargar and "atributo" in TextoCargar:
-            accion["titulo"] = ObtenerValor(TextoCargar["archivo"], TextoCargar["atributo"])
+    TextoCargar = accion.get("cargar_titulo")
+    if TextoCargar is not None:
+        archivoTexto = TextoCargar.get("archivo")
+        atributoTexto = TextoCargar.get("atributo")
+        if archivoTexto is not None and atributoTexto is not None:
+            accion["titulo"] = ObtenerValor(archivoTexto, atributoTexto)
 
     if "titulo" in accion:
         PonerTexto(ImagenBoton, accion, DirecionImagen)
