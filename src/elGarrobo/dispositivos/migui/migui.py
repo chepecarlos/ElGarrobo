@@ -16,84 +16,7 @@ class miGui:
         self.listaDispositivos: list = list()
         self.listaAcciones: list = list()
         self.agregarAccion: callable = None
-
-        # Datos de ejemplo para la tabla
-        datos = [{"nombre": "Alice", "edad": 25, "ciudad": "Madrid"}, {"nombre": "Bob", "edad": 30, "ciudad": "Barcelona"}, {"nombre": "Carlos", "edad": 35, "ciudad": "Valencia"}]
-
-        # Variable global para almacenar la fila que está siendo editada
-        fila_seleccionada = None
-
-        # Función para refrescar la tabla
-        def mostrar_tabla():
-            tabla_cont.clear()
-
-            # Encabezados de la tabla
-            with tabla_cont:
-                with ui.row():
-                    ui.label("Nombre").style("font-weight: bold; width: 100px")
-                    ui.label("Tecla").style("font-weight: bold; width: 50px")
-                    ui.label("Acción").style("font-weight: bold; width: 100px")
-                    ui.label("Acción").style("font-weight: bold; width: 180px")
-
-                # Crear filas de la tabla con botones en cada una
-                for fila in datos:
-                    with ui.row().classes("content border-2 border-teal-600"):
-                        ui.label(fila["nombre"]).style("width: 100px")
-                        ui.label(str(fila["edad"])).style("width: 50px")
-                        ui.label(fila["ciudad"]).style("width: 100px")
-                        ui.button("Seleccionar", on_click=lambda f=fila: seleccionar_fila(f))  # .style("width: 70px")
-                        ui.button("Eliminar", on_click=lambda f=fila: eliminar_fila(f)).style("width: 70px")
-                        ui.button("Editar", on_click=lambda f=fila: editar_fila(f)).style("width: 70px")
-
-        # Función para seleccionar una fila
-        def seleccionar_fila(fila):
-            ui.notify(f"Seleccionaste: {fila['nombre']} de {fila['ciudad']}")
-
-        # Función para eliminar una fila
-        def eliminar_fila(fila):
-            datos.remove(fila)
-            mostrar_tabla()
-
-        # Función para cargar los datos de la fila seleccionada en los campos de edición
-        def editar_fila(fila):
-            global fila_seleccionada
-            fila_seleccionada = fila  # Guardar la fila que se está editando
-            # Cargar los datos de la fila en los campos de entrada
-            nombre_input.value = fila["nombre"]
-            edad_input.value = str(fila["edad"])
-            ciudad_input.value = fila["ciudad"]
-            ui.notify(f"Editando: {fila['nombre']}")
-
-        # Función para guardar los cambios de la fila editada
-        def guardar_cambios():
-            if fila_seleccionada:
-                fila_seleccionada["nombre"] = nombre_input.value
-                fila_seleccionada["edad"] = int(edad_input.value)
-                fila_seleccionada["ciudad"] = ciudad_input.value
-                mostrar_tabla()
-                ui.notify("Cambios guardados")
-                limpiar_formulario()
-
-        # Función para agregar una fila nueva
-        def agregar_fila():
-            nombre = nombre_input.value
-            edad = int(edad_input.value)
-            ciudad = ciudad_input.value
-            if nombre and ciudad:
-                datos.append({"nombre": nombre, "edad": edad, "ciudad": ciudad})
-                mostrar_tabla()
-                ui.notify("Fila agregada")
-                limpiar_formulario()
-
-        # Función para limpiar los campos de entrada y la fila seleccionada
-        def limpiar_formulario():
-            global fila_seleccionada
-            fila_seleccionada = None
-            nombre_input.value = ""
-            edad_input.value = 0
-            ciudad_input.value = ""
-
-        # tabla_cont = ui.column()
+        self.actualizarIconos: callable = None
 
         with ui.splitter(value=20).classes("w-full") as splitter:
             with splitter.before:
@@ -112,19 +35,35 @@ class miGui:
             tecla = self.editorTecla.value
             acción = self.editorAcción.value
             nombreDispositivo = self.pestañas.value
-            if nombre and tecla and acción and nombreDispositivo:
-                for dispositivo in self.listaDispositivos:
-                    if dispositivo.get("nombre") == nombreDispositivo:
-                        folder = dispositivo.get("folder")
-                        print(nombre, tecla, acción, folder, nombreDispositivo)
-                # datos.append({"nombre": nombre, "edad": edad, "ciudad": ciudad})
-                accionNueva = {"nombre": nombre, "key": tecla, "accion": acción}
+            if not (nombre and tecla and acción and nombreDispositivo):
+                if not nombreDispositivo:
+                    ui.notify(f"Selecciones un dispositivo")
+                elif not nombre:
+                    ui.notify(f"Ingrese un nombre")
+                elif not tecla:
+                    ui.notify(f"Ingrese una tecla")
+                elif not acción:
+                    ui.notify(f"Seleccione una acción")
+                return
+
+            for dispositivo in self.listaDispositivos:
+                if dispositivo.get("nombre") == nombreDispositivo:
+                    tipoDispositivo = dispositivo.get("tipo")
+                    if tipoDispositivo == "steamdeck":
+                        try:
+                            tecla = int(tecla)
+                        except ValueError:
+                            ui.notify(f"Tecla tiene que ser un numero para {nombreDispositivo}")
+                            return
+                    accionesDispositivo = dispositivo.get("acciones")
+                    acciónNueva = {"nombre": nombre, "key": tecla, "accion": acción}
+                    accionesDispositivo.append(acciónNueva)
+                    accionesDispositivo.sort(key=lambda x: x.get("key"), reverse=False)
+                    folder = dispositivo.get("folder")
                 # self.agregarAccion(accionNueva, dispositivo, folder)
                 self.mostrarPestañas()
                 ui.notify(f"Agregando acción {nombre}")
                 limpiar_formulario()
-            else:
-                ui.notify("Falta información")
 
         def limpiar_formulario():
             global fila_seleccionada
@@ -135,8 +74,8 @@ class miGui:
             self.editorAcción.value = ""
             self.editorOpción.value = ""
 
-        self.editorNombre = ui.input("Nombre")  # .style("width: 100px")
-        self.editorTecla = ui.input("Tecla")  # .style("width: 50px")
+        self.editorNombre = ui.input("Nombre").style("width: 200px")
+        self.editorTecla = ui.input("Tecla").style("width: 200px")
         self.editorAcción = ui.select(self.listaAcciones, label="acción").style("width: 200px")
         self.editorOpción = ui.textarea(label="Opciones", placeholder="").style("width: 200px")
 
@@ -185,13 +124,16 @@ class miGui:
                             teclaAcción = acciónActual.get("key")
                             acciónAcción = acciónActual.get("accion")
 
-                            with ui.row().classes("content border-2 border-teal-600"):
+                            with ui.row().classes("content p-2 border-2 border-teal-600"):
                                 ui.label(nombreAcción).style("width: 100px")
                                 ui.label(teclaAcción).style("width: 100px")
                                 ui.label(acciónAcción).style("width: 125px")
-                                ui.button("Editar", on_click=lambda a=acciónActual: self.seleccionarAcción(a))  # .style("width: 70px")
-                                # ui.button("Eliminar", on_click=lambda f=fila: eliminar_fila(f)).style("width: 70px")
-                                # ui.button("Editar", on_click=lambda f=fila: editar_fila(f)).style("width: 70px")
+                                with ui.button_group():
+                                    ui.button("Editar", on_click=lambda a=acciónActual: self.seleccionarAcción(a))  # .style("width: 70px")
+                                    ui.button("Eliminar", on_click=lambda a=acciónActual: self.eliminarAccion(a))  # .style("width: 70px")
+        if self.actualizarIconos is not None:
+            self.actualizarIconos()
+        # ui.button("Editar", on_click=lambda f=fila: editar_fila(f)).style("width: 70px")
 
     def seleccionarAcción(self, accion):
         print(accion)
@@ -210,6 +152,18 @@ class miGui:
                     for opcionesSecundarias in opcionInterna.keys():
                         textoOpciones = textoOpciones + f"{opcionesSecundarias}: {opcionInterna.get(opcionesSecundarias)}, "
         self.editorOpción.value = textoOpciones
+
+    def eliminarAccion(self, accion):
+        nombreDispositivo = self.pestañas.value
+        if nombreDispositivo is None:
+            ui.notify(f"Falta seleccionar dispositivo")
+            return
+
+        for dispositivo in self.listaDispositivos:
+            if dispositivo.get("nombre") == nombreDispositivo:
+                acciones = dispositivo.get("acciones")
+                acciones.remove(accion)
+                self.mostrarPestañas()
 
     def estructura(self):
         with ui.header(elevated=True).style("background-color: #0b4c0d").classes("items-center justify-between"):
@@ -248,6 +202,7 @@ class miGui:
             self.listaAcciones.append(accion)
         self.listaAcciones.sort()
         self.editorAcción.options = self.listaAcciones
+        self.editorAcción.update()
 
     def actualizarAcciones(self, nombreDispositivo: str, acciones: list, folder: str):
         for dispositivo in self.listaDispositivos:
