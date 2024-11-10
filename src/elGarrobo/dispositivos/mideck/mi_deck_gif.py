@@ -4,9 +4,16 @@ import threading
 import time
 from fractions import Fraction
 
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, ObtenerValor, RelativoAbsoluto, UnirPath
 from PIL import Image, ImageDraw, ImageFont, ImageSequence
 from StreamDeck.ImageHelpers import PILHelper
+
+from elGarrobo.miLibrerias import (
+    ConfigurarLogging,
+    ObtenerFolderConfig,
+    ObtenerValor,
+    RelativoAbsoluto,
+    UnirPath,
+)
 
 from .mi_deck_extra import BuscarDirecionImagen, PonerTexto
 
@@ -43,7 +50,7 @@ class DeckGif(threading.Thread):
                     # self.ListaGifCargar = []
 
                 for Gif in self.ListaGif:
-                    if "gif_cargado" in Gif:
+                    if "__gif_cargado" in Gif:
                         self.DibujarGif(Gif)
                 self.SiquienteFrame += self.EsperaGif
                 TiempoEspera = float(self.SiquienteFrame) - time.monotonic()
@@ -56,7 +63,7 @@ class DeckGif(threading.Thread):
     def DibujarGif(self, accion):
         """Dibuja el siguiente frame de gif en StreamDeck."""
         if self.Activo:
-            self.Deck.set_key_image(accion["indice"], next(accion["gif_cargado"]))
+            self.Deck.set_key_image(accion["indice"], next(accion["__gif_cargado"]))
 
     def Limpiar(self):
         """Borra lista de gif actuales."""
@@ -74,7 +81,7 @@ class DeckGif(threading.Thread):
     def CargarGif(self, accion):
         """Extra frame de un gif y los guarda en una lista."""
         # TODO: Errro con git con estado no se desactiva
-        if "gif_cargado" in accion:
+        if "__gif_cargado" in accion:
             self.ListaGif.append(accion)
             return
 
@@ -107,7 +114,7 @@ class DeckGif(threading.Thread):
                 ImagenNativa = PILHelper.to_native_format(self.Deck, Gif_frame)
 
                 Gif.append(ImagenNativa)
-            accion["gif_cargado"] = itertools.cycle(Gif)
+            accion["__gif_cargado"] = itertools.cycle(Gif)
             self.ListaGif.append(accion)
         else:
             logger.warning(f"Deck[No Gifs] {DirecionGif}")

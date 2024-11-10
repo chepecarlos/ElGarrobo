@@ -15,7 +15,7 @@ class miGui:
         self.folderLabel = None
         self.listaDispositivos: list = list()
         self.listaAcciones: list = list()
-        self.agregarAccion: callable = None
+        self.salvarAcciones: callable = None
         self.actualizarIconos: callable = None
 
         with ui.splitter(value=20).classes("w-full") as splitter:
@@ -60,10 +60,10 @@ class miGui:
                     accionesDispositivo.append(acciónNueva)
                     accionesDispositivo.sort(key=lambda x: x.get("key"), reverse=False)
                     folder = dispositivo.get("folder")
-                # self.agregarAccion(accionNueva, dispositivo, folder)
-                self.mostrarPestañas()
-                ui.notify(f"Agregando acción {nombre}")
-                limpiar_formulario()
+                    self.salvarAcciones(accionesDispositivo, dispositivo, folder)
+            ui.notify(f"Agregando acción {nombre}")
+            self.mostrarPestañas()
+            limpiar_formulario()
 
         def limpiar_formulario():
             global fila_seleccionada
@@ -194,6 +194,10 @@ class miGui:
 
     def agregarDispositivos(self, dispositivo):
         dispositivo["acciones"] = None
+        for dispositivoActual in self.listaDispositivos:
+            if dispositivoActual.get("nombre") == dispositivo.get("nombre"):
+                return
+        print(f"GUI agregando Dispositivo {dispositivo.get('nombre')}")
         self.listaDispositivos.append(dispositivo)
         self.mostrarPestañas()
 

@@ -15,6 +15,7 @@ from .miLibrerias import (
     ObtenerListaFolder,
     ObtenerValor,
     RelativoAbsoluto,
+    SalvarArchivo,
     SalvarValor,
     UnirPath,
     leerData,
@@ -53,7 +54,7 @@ class elGarrobo(object):
 
         if self.ModuloGui:
             self.miGui = miGui()
-            self.miGui.agregarAccion = self.agregarAccion
+            self.miGui.salvarAcciones = self.salvarAcciones
 
         self.CargarData()
 
@@ -341,6 +342,8 @@ class elGarrobo(object):
                 self.ListaDeck.append(DeckActual)
 
             self.ListaDeck.sort(key=lambda x: x.id, reverse=False)
+            if self.ModuloGui:
+                self.miGui.actualizarIconos = self.ActualizarDeck
             #     self.ListaDeck.append(DeckActual)
             # CargarDeck = IniciarStreamDeck(self.Data['deck'], self.Evento)
             # for Deck in CargarDeck:
@@ -883,21 +886,25 @@ class elGarrobo(object):
                 opciones["mensaje"] = texto
                 self.ListaAcciones["mqtt"](opciones)
 
-    def agregarAccion(self, accion: list, dispositivo: str, folder: str):
-
-        print(accion, dispositivo, folder)
+    def salvarAcciones(self, acciones: list, dispositivo: str, folder: str):
+        nombreDispositivo = dispositivo.get("nombre")
         ListaDispositivos = ["teclados", "global", "deck", "pedal"]
         for tipo in ListaDispositivos:
             dataDispositivos = self.Data.get(tipo)
             for dataActual in dataDispositivos:
-                if dispositivo == dataActual.get("nombre"):
-                    print("-" * 30)
-                    print(dataActual)
-                    print(self.acciones[dispositivo])
-                    # for self.acciones[dispositivo]:
+                if nombreDispositivo == dataActual.get("nombre"):
+                    archivoDipositivos = f"{folder}/{dataActual.get('file')}"
+                    accionesSalvar = list()
+                    for accionesActual in acciones:
+                        if isinstance(accionesActual, list):
+                            print("falta para lista")
+                        elif isinstance(accionesActual, dict):
+                            accionNueva = dict()
+                            for propiedad, valor in accionesActual.items():
+                                if "__" in propiedad:
 
-        # dispositivoActual = self.Data.get(Dispositivo)
-        # if dispositivoActual is not None:
-        #     for dispositivo in dispositivoActual:
-        #         nombreDispositivo = dispositivo.get("nombre")
-        #         accionesDispositivo = Data.get(nombreDispositivo)
+                                    continue
+                                accionNueva[propiedad] = valor
+                            accionesSalvar.append(accionNueva)
+                    SalvarArchivo(archivoDipositivos, accionesSalvar)
+                    self.ReiniciarData()
