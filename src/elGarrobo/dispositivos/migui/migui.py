@@ -129,8 +129,8 @@ class miGui:
                                 ui.label(teclaAcción).style("width: 100px")
                                 ui.label(acciónAcción).style("width: 125px")
                                 with ui.button_group():
-                                    ui.button("Editar", on_click=lambda a=acciónActual: self.seleccionarAcción(a))  # .style("width: 70px")
-                                    ui.button("Eliminar", on_click=lambda a=acciónActual: self.eliminarAccion(a))  # .style("width: 70px")
+                                    ui.button(icon="edit", color="teal-300", on_click=lambda a=acciónActual: self.seleccionarAcción(a))
+                                    ui.button(icon="delete", color="teal-300", on_click=lambda a=acciónActual: self.eliminarAcción(a))
         if self.actualizarIconos is not None:
             self.actualizarIconos()
         # ui.button("Editar", on_click=lambda f=fila: editar_fila(f)).style("width: 70px")
@@ -153,8 +153,9 @@ class miGui:
                         textoOpciones = textoOpciones + f"{opcionesSecundarias}: {opcionInterna.get(opcionesSecundarias)}, "
         self.editorOpción.value = textoOpciones
 
-    def eliminarAccion(self, accion):
+    def eliminarAcción(self, accion):
         nombreDispositivo = self.pestañas.value
+
         if nombreDispositivo is None:
             ui.notify(f"Falta seleccionar dispositivo")
             return
@@ -163,6 +164,9 @@ class miGui:
             if dispositivo.get("nombre") == nombreDispositivo:
                 acciones = dispositivo.get("acciones")
                 acciones.remove(accion)
+                folder = dispositivo.get("folder")
+                self.salvarAcciones(acciones, dispositivo, folder)
+                ui.notify(f"Se elimino la accion {accion.get('nombre')}")
                 self.mostrarPestañas()
 
     def estructura(self):
