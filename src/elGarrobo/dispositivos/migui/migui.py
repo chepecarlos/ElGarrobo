@@ -1,7 +1,8 @@
 from nicegui import ui
 
-# https://nicegui.io/
-# https://tailwindcss.com/
+# librería https://nicegui.io/
+# estilo https://tailwindcss.com/
+# iconos https://fonts.google.com/icons
 
 
 class miGui:
@@ -68,7 +69,7 @@ class miGui:
         def limpiar_formulario():
             global fila_seleccionada
             fila_seleccionada = None
-            self.botonAgregar.text = "Agregar"
+            self.botonAgregar.icon = "add"
             self.editorNombre.value = ""
             self.editorTecla.value = ""
             self.editorAcción.value = ""
@@ -79,9 +80,9 @@ class miGui:
         self.editorAcción = ui.select(self.listaAcciones, label="acción").style("width: 200px")
         self.editorOpción = ui.textarea(label="Opciones", placeholder="").style("width: 200px")
 
-        with ui.button_group():
-            self.botonAgregar = ui.button("Agregar", on_click=agregarAcción)
-            ui.button("Limpiar", on_click=limpiar_formulario)
+        with ui.button_group().props("rounded"):
+            self.botonAgregar = ui.button(icon="add", color="teal-300", on_click=agregarAcción)
+            ui.button(icon="delete", color="teal-300", on_click=limpiar_formulario)
 
     def mostrarPestañas(self):
 
@@ -113,7 +114,7 @@ class miGui:
                             ui.label("No acciones")
                             continue
 
-                        with ui.row():
+                        with ui.row().classes("content p-2"):
                             ui.label("Nombre").style("font-weight: bold; width: 100px")
                             ui.label("Tecla").style("font-weight: bold; width: 100px")
                             ui.label("Acción").style("font-weight: bold; width: 125px")
@@ -128,7 +129,7 @@ class miGui:
                                 ui.label(nombreAcción).style("width: 100px")
                                 ui.label(teclaAcción).style("width: 100px")
                                 ui.label(acciónAcción).style("width: 125px")
-                                with ui.button_group():
+                                with ui.button_group().props("rounded"):
                                     ui.button(icon="edit", color="teal-300", on_click=lambda a=acciónActual: self.seleccionarAcción(a))
                                     ui.button(icon="delete", color="teal-300", on_click=lambda a=acciónActual: self.eliminarAcción(a))
         if self.actualizarIconos is not None:
@@ -137,7 +138,7 @@ class miGui:
 
     def seleccionarAcción(self, accion):
         print(accion)
-        self.botonAgregar.text = "Editar"
+        self.botonAgregar.icon = "edit"
         self.editorNombre.value = accion.get("nombre")
         self.editorTecla.value = accion.get("key")
         self.editorAcción.value = accion.get("accion")
