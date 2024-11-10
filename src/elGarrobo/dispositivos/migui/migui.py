@@ -24,7 +24,7 @@ class miGui:
                 self.mostraFormulario()
             with splitter.after:
                 # Contenedor para la tabla
-                self.pestañas = ui.tabs().classes("w-full")
+                self.pestañas = ui.tabs().classes("w-full bg-teal-700 text-white")
                 self.paneles = ui.tab_panels(self.pestañas).classes("w-full")
                 self.mostrarPestañas()
 
@@ -171,7 +171,7 @@ class miGui:
                 self.mostrarPestañas()
 
     def estructura(self):
-        with ui.header(elevated=True).style("background-color: #0b4c0d").classes("items-center justify-between"):
+        with ui.header(elevated=True).classes("bg-teal-900 items-center justify-between"):
             ui.label("ElGarrobo").classes("text-h4")
             with ui.row():
                 ui.markdown("**FolderRuta**:")
@@ -182,7 +182,7 @@ class miGui:
             right_drawer.toggle()
             ui.label("RIGHT DRAWER")
 
-        with ui.footer().style("background-color: #0b4c0d"):
+        with ui.footer().classes("bg-teal-900"):
             with ui.row():
                 ui.label("Creado por ChepeCarlos")
                 ui.space()
