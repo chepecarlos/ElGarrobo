@@ -36,6 +36,7 @@ class miGui:
             tecla = self.editorTecla.value
             acción = self.editorAcción.value
             nombreDispositivo = self.pestañas.value
+
             if not (nombre and tecla and acción and nombreDispositivo):
                 if not nombreDispositivo:
                     ui.notify(f"Selecciones un dispositivo")
@@ -57,32 +58,38 @@ class miGui:
                             ui.notify(f"Tecla tiene que ser un numero para {nombreDispositivo}")
                             return
                     accionesDispositivo = dispositivo.get("acciones")
-                    acciónNueva = {"nombre": nombre, "key": tecla, "accion": acción}
+                    acciónNueva: dict[str:any] = {"nombre": nombre, "key": tecla, "accion": acción}
+
+                    if tipoDispositivo == "steamdeck" and self.editorTitulo != "":
+                        acciónNueva["titulo"] = self.editorTitulo.value
+
                     accionesDispositivo.append(acciónNueva)
                     accionesDispositivo.sort(key=lambda x: x.get("key"), reverse=False)
                     folder = dispositivo.get("folder")
                     self.salvarAcciones(accionesDispositivo, dispositivo, folder)
             ui.notify(f"Agregando acción {nombre}")
+            print(f"Agregando acción {nombre} a {nombreDispositivo}")
             self.mostrarPestañas()
-            limpiar_formulario()
-
-        def limpiar_formulario():
-            global fila_seleccionada
-            fila_seleccionada = None
-            self.botonAgregar.icon = "add"
-            self.editorNombre.value = ""
-            self.editorTecla.value = ""
-            self.editorAcción.value = ""
-            self.editorOpción.value = ""
+            self.limpiar_formulario()
 
         self.editorNombre = ui.input("Nombre").style("width: 200px")
+        self.editorTitulo = ui.input("Titulo").style("width: 200px")
+        self.editorTitulo.visible = False
         self.editorTecla = ui.input("Tecla").style("width: 200px")
         self.editorAcción = ui.select(self.listaAcciones, label="acción").style("width: 200px")
         self.editorOpción = ui.textarea(label="Opciones", placeholder="").style("width: 200px")
 
         with ui.button_group().props("rounded"):
             self.botonAgregar = ui.button(icon="add", color="teal-300", on_click=agregarAcción)
-            ui.button(icon="delete", color="teal-300", on_click=limpiar_formulario)
+            ui.button(icon="delete", color="teal-300", on_click=self.limpiar_formulario)
+
+    def limpiar_formulario(self):
+        self.botonAgregar.icon = "add"
+        self.editorNombre.value = ""
+        self.editorTecla.value = ""
+        self.editorAcción.value = ""
+        self.editorOpción.value = ""
+        self.editorTitulo.value = ""
 
     def mostrarPestañas(self):
 
@@ -90,9 +97,11 @@ class miGui:
         self.paneles.clear()
 
         with self.pestañas:
+
             for dispositivo in self.listaDispositivos:
                 nombre = dispositivo.get("nombre")
                 dispositivo["pestaña"] = ui.tab(nombre)
+                dispositivo["pestaña"].on("click", self.actualizarEditor)
 
         for dispositivo in self.listaDispositivos:
             nombre = dispositivo.get("nombre")
@@ -116,6 +125,8 @@ class miGui:
 
                         with ui.row().classes("content p-2"):
                             ui.label("Nombre").style("font-weight: bold; width: 100px")
+                            if tipo == "steamdeck":
+                                ui.label("Titulo").style("font-weight: bold; width: 100px")
                             ui.label("Tecla").style("font-weight: bold; width: 100px")
                             ui.label("Acción").style("font-weight: bold; width: 125px")
                             ui.label("Opciones").style("font-weight: bold; width: 180px")
@@ -124,9 +135,12 @@ class miGui:
                             nombreAcción = acciónActual.get("nombre")
                             teclaAcción = acciónActual.get("key")
                             acciónAcción = acciónActual.get("accion")
+                            tituloAcción = acciónActual.get("titulo")
 
                             with ui.row().classes("content p-2 border-2 border-teal-600"):
                                 ui.label(nombreAcción).style("width: 100px")
+                                if tipo == "steamdeck":
+                                    ui.label(tituloAcción).style("width: 100px")
                                 ui.label(teclaAcción).style("width: 100px")
                                 ui.label(acciónAcción).style("width: 125px")
                                 with ui.button_group().props("rounded"):
@@ -154,8 +168,30 @@ class miGui:
                         textoOpciones = textoOpciones + f"{opcionesSecundarias}: {opcionInterna.get(opcionesSecundarias)}, "
         self.editorOpción.value = textoOpciones
 
+        nombreDispositivo = self.pestañas.value
+        for dispositivo in self.listaDispositivos:
+            if dispositivo.get("nombre") == nombreDispositivo:
+                tipo = dispositivo.get("tipo")
+                if tipo == "steamdeck":
+                    self.editorTitulo.value = accion.get("titulo")
+
+    def actualizarEditor(self):
+        nombreDispositivo = self.pestañas.value
+        for dispositivo in self.listaDispositivos:
+            if dispositivo.get("nombre") == nombreDispositivo:
+                tipo = dispositivo.get("tipo")
+                if tipo == "steamdeck":
+                    self.editorTitulo.visible = True
+                else:
+                    self.editorTitulo.visible = False
+        self.limpiar_formulario()
+
     def eliminarAcción(self, accion):
         nombreDispositivo = self.pestañas.value
+        for dispositivo in self.listaDispositivos:
+            if dispositivo.get("nombre") == nombreDispositivo:
+                tipo = dispositivo.get("tipo")
+                print(tipo)
 
         if nombreDispositivo is None:
             ui.notify(f"Falta seleccionar dispositivo")
