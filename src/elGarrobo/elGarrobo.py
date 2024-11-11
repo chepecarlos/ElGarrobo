@@ -805,6 +805,7 @@ class elGarrobo(object):
         #     logger.error("No existe archivo config.md")
         #     os._exit(0)
 
+        folderAnterior = self.PathActual
         self.DataUsuario = leerData("config")
         if self.DataUsuario is not None:
             logger.info("Cargando config usuario")
@@ -816,6 +817,9 @@ class elGarrobo(object):
         if self.ModuloGui:
             self.miGui.actualizarFolder(self.PathActual)
         self.BuscarFolder(self.PathActual)
+        # TODO: no necesario reiniciar streamdeck
+        self.Entrar_Folder({"folder": folderAnterior})
+        self.PathActual = folderAnterior
         self.IniciarStreamDeck()
 
     def CargarOBS(self):
@@ -886,7 +890,7 @@ class elGarrobo(object):
                 opciones["mensaje"] = texto
                 self.ListaAcciones["mqtt"](opciones)
 
-    def salvarAcciones(self, acciones: list, dispositivo: str, folder: str):
+    def salvarAcciones(self, acciones: list, dispositivo: list, folder: str):
         nombreDispositivo = dispositivo.get("nombre")
         ListaDispositivos = ["teclados", "global", "deck", "pedal"]
         for tipo in ListaDispositivos:
