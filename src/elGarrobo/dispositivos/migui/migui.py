@@ -18,6 +18,7 @@ class miGui:
         self.listaAcciones: list = list()
         self.salvarAcciones: callable = None
         self.actualizarIconos: callable = None
+        self.accionEditar: dict = None
 
         with ui.splitter(value=20).classes("w-full") as splitter:
             with splitter.before:
@@ -35,6 +36,7 @@ class miGui:
             nombre = self.editorNombre.value
             tecla = self.editorTecla.value
             acción = self.editorAcción.value
+            titulo = self.editorTitulo.value
             nombreDispositivo = self.pestañas.value
 
             if not (nombre and tecla and acción and nombreDispositivo):
@@ -58,17 +60,25 @@ class miGui:
                             ui.notify(f"Tecla tiene que ser un numero para {nombreDispositivo}")
                             return
                     accionesDispositivo = dispositivo.get("acciones")
-                    acciónNueva: dict[str:any] = {"nombre": nombre, "key": tecla, "accion": acción}
 
-                    if tipoDispositivo == "steamdeck" and self.editorTitulo != "":
-                        acciónNueva["titulo"] = self.editorTitulo.value
-
-                    accionesDispositivo.append(acciónNueva)
+                    if self.botonAgregar.icon == "edit":
+                        self.accionEditar["nombre"] = nombre
+                        self.accionEditar["key"] = tecla
+                        self.accionEditar["accion"] = acción
+                        if tipoDispositivo == "steamdeck" and titulo != "":
+                            self.accionEditar["titulo"] = titulo
+                        ui.notify(f"Editar acción {nombre}")
+                        print(f"Editar acción {nombre} a {nombreDispositivo}")
+                    else:
+                        acciónNueva: dict[str:any] = {"nombre": nombre, "key": tecla, "accion": acción}
+                        if tipoDispositivo == "steamdeck" and titulo != "":
+                            acciónNueva["titulo"] = titulo
+                        accionesDispositivo.append(acciónNueva)
+                        ui.notify(f"Agregando acción {nombre}")
+                        print(f"Agregando acción {nombre} a {nombreDispositivo}")
                     accionesDispositivo.sort(key=lambda x: x.get("key"), reverse=False)
                     folder = dispositivo.get("folder")
                     self.salvarAcciones(accionesDispositivo, dispositivo, folder)
-            ui.notify(f"Agregando acción {nombre}")
-            print(f"Agregando acción {nombre} a {nombreDispositivo}")
             self.mostrarPestañas()
             self.limpiar_formulario()
 
@@ -90,6 +100,7 @@ class miGui:
         self.editorAcción.value = ""
         self.editorOpción.value = ""
         self.editorTitulo.value = ""
+        self.accionEditar = None
 
     def mostrarPestañas(self):
 
@@ -151,7 +162,7 @@ class miGui:
         # ui.button("Editar", on_click=lambda f=fila: editar_fila(f)).style("width: 70px")
 
     def seleccionarAcción(self, accion):
-        print(accion)
+        self.accionEditar = accion
         self.botonAgregar.icon = "edit"
         self.editorNombre.value = accion.get("nombre")
         self.editorTecla.value = accion.get("key")
