@@ -172,6 +172,7 @@ class elGarrobo(object):
                 listaAccion.append(accion)
             for accion in self.listaClasesAcciones.keys():
                 listaAccion.append(accion)
+            self.miGui.listaAccionesOPP = self.listaClasesAcciones
             self.miGui.agregarAcciones(listaAccion)
 
     def CargarData(self):

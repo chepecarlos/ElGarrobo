@@ -16,6 +16,7 @@ class miGui:
         self.folderLabel = None
         self.listaDispositivos: list = list()
         self.listaAcciones: list = list()
+        self.listaAccionesOPP: dict = dict()
         self.salvarAcciones: callable = None
         self.actualizarIconos: callable = None
         self.accionEditar: dict = None
@@ -82,11 +83,24 @@ class miGui:
             self.mostrarPestañas()
             self.limpiar_formulario()
 
+        def mostrarOpciones():
+            self.editorDescripcion.text = ""
+            accionOpciones = self.editorAcción.value
+            for acción in self.listaAccionesOPP.keys():
+                if acción == accionOpciones:
+                    claseAccion = self.listaAccionesOPP.get(acción)
+                    acciónTmp = claseAccion()
+                    print(f"Descripción {acciónTmp.descripcion}")
+                    self.editorDescripcion.text = acciónTmp.descripcion
+                    for propiedad in acciónTmp.listaPropiedades:
+                        print(propiedad)
+
         self.editorNombre = ui.input("Nombre").style("width: 200px")
         self.editorTitulo = ui.input("Titulo").style("width: 200px")
         self.editorTitulo.visible = False
         self.editorTecla = ui.input("Tecla").style("width: 200px")
-        self.editorAcción = ui.select(self.listaAcciones, label="acción").style("width: 200px")
+        self.editorAcción = ui.select(options=self.listaAcciones, with_input=True, label="acción", on_change=mostrarOpciones).style("width: 200px")
+        self.editorDescripcion = ui.label("")
         self.editorOpción = ui.textarea(label="Opciones", placeholder="").style("width: 200px")
 
         with ui.button_group().props("rounded"):
@@ -100,6 +114,7 @@ class miGui:
         self.editorAcción.value = ""
         self.editorOpción.value = ""
         self.editorTitulo.value = ""
+        self.editorDescripcion.text = ""
         self.accionEditar = None
 
     def mostrarPestañas(self):
@@ -253,7 +268,7 @@ class miGui:
         self.listaDispositivos.append(dispositivo)
         self.mostrarPestañas()
 
-    def agregarAcciones(self, listaAcciones: dict):
+    def agregarAcciones(self, listaAcciones: list):
         for accion in listaAcciones:
             self.listaAcciones.append(accion)
         self.listaAcciones.sort()
