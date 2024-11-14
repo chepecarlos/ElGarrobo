@@ -69,6 +69,10 @@ class miGui:
                         if tipoDispositivo == "steamdeck" and titulo != "":
                             self.accionEditar["titulo"] = titulo
                         ui.notify(f"Editar acción {nombre}")
+
+                        if self.opcionesEditar is not None:
+                            self.accionEditar["opciones"] = obtenerPropiedades()
+
                         print(f"Editar acción {nombre} a {nombreDispositivo}")
                     else:
                         acciónNueva: dict[str:any] = {"nombre": nombre, "key": tecla, "accion": acción}
@@ -76,6 +80,10 @@ class miGui:
                             acciónNueva["titulo"] = titulo
                         accionesDispositivo.append(acciónNueva)
                         ui.notify(f"Agregando acción {nombre}")
+
+                        if self.opcionesEditar is not None:
+                            acciónNueva["opciones"] = obtenerPropiedades()
+
                         print(f"Agregando acción {nombre} a {nombreDispositivo}")
                     accionesDispositivo.sort(key=lambda x: x.get("key"), reverse=False)
                     folder = dispositivo.get("folder")
@@ -83,24 +91,43 @@ class miGui:
             self.mostrarPestañas()
             self.limpiar_formulario()
 
+        def obtenerPropiedades():
+            accionSeleccionada = self.editorAcción.value
+
+            if self.opcionesEditar is not None:
+                opciones = dict()
+                for opcionesEditor in self.opcionesEditar.keys():
+                    objetoEditor = self.opcionesEditar.get(opcionesEditor)
+                    valor = objetoEditor.value
+                    accionActual = self.listaAccionesOPP[accionSeleccionada]()
+                    for propiedad in accionActual.listaPropiedades:
+                        nombrePropiedad = propiedad.nombre
+                        if opcionesEditor == nombrePropiedad:
+                            opciones[propiedad.atributo] = valor
+                return opciones
+
         def mostrarOpciones():
             self.editorDescripcion.text = ""
+            self.editorPropiedades.clear()
             accionOpciones = self.editorAcción.value
             for acción in self.listaAccionesOPP.keys():
                 if acción == accionOpciones:
                     claseAccion = self.listaAccionesOPP.get(acción)
                     acciónTmp = claseAccion()
-                    print(f"Descripción {acciónTmp.descripcion}")
                     self.editorDescripcion.text = acciónTmp.descripcion
-                    for propiedad in acciónTmp.listaPropiedades:
-                        print(propiedad)
+                    with self.editorPropiedades:
+                        self.opcionesEditar = dict()
+                        for propiedad in acciónTmp.listaPropiedades:
+                            nombre = propiedad.nombre
+                            self.opcionesEditar[nombre] = ui.input(nombre)
 
         self.editorNombre = ui.input("Nombre").style("width: 200px")
         self.editorTitulo = ui.input("Titulo").style("width: 200px")
         self.editorTitulo.visible = False
         self.editorTecla = ui.input("Tecla").style("width: 200px")
         self.editorAcción = ui.select(options=self.listaAcciones, with_input=True, label="acción", on_change=mostrarOpciones).style("width: 200px")
-        self.editorDescripcion = ui.label("")
+        self.editorDescripcion = ui.label("").classes()
+        self.editorPropiedades = ui.column()
         self.editorOpción = ui.textarea(label="Opciones", placeholder="").style("width: 200px")
 
         with ui.button_group().props("rounded"):
@@ -113,9 +140,12 @@ class miGui:
         self.editorTecla.value = ""
         self.editorAcción.value = ""
         self.editorOpción.value = ""
+        self.editorOpción.visible = False
         self.editorTitulo.value = ""
         self.editorDescripcion.text = ""
+        self.editorPropiedades.clear()
         self.accionEditar = None
+        self.opcionesEditar = None
 
     def mostrarPestañas(self):
 
@@ -184,15 +214,29 @@ class miGui:
         self.editorAcción.value = accion.get("accion")
         textoOpciones = ""
         opcionesActuales = accion.get("opciones")
+        self.editorOpción.visible = False
+
         if opcionesActuales:
-            if isinstance(opcionesActuales, dict):
+
+            claseAccion = self.listaAccionesOPP.get(self.editorAcción.value)
+            if claseAccion is not None:
+
+                objetoClase = claseAccion()
+                listaPropiedades = objetoClase.listaPropiedades
+                if isinstance(opcionesActuales, dict):
+                    for propiedadAccion in opcionesActuales.keys():
+                        for propiedad in listaPropiedades:
+                            if propiedad.atributo == propiedadAccion:
+                                objetoPropiedad = self.opcionesEditar.get(propiedad.nombre)
+                                objetoPropiedad.value = opcionesActuales.get(propiedadAccion)
+            else:
+                self.editorOpción.visible = True
                 for opcionInterna in opcionesActuales.keys():
-                    textoOpciones = textoOpciones + f"{opcionInterna}: {opcionesActuales.get(opcionInterna)}, "
-            elif isinstance(opcionesActuales, list):
-                for opcionInterna in opcionesActuales:
-                    for opcionesSecundarias in opcionInterna.keys():
-                        textoOpciones = textoOpciones + f"{opcionesSecundarias}: {opcionInterna.get(opcionesSecundarias)}, "
-        self.editorOpción.value = textoOpciones
+
+                    valorOpcion = opcionesActuales.get(opcionInterna)
+                    textoOpciones = textoOpciones + f"{opcionInterna}: {valorOpcion}, "
+
+                self.editorOpción.value = textoOpciones
 
         nombreDispositivo = self.pestañas.value
         for dispositivo in self.listaDispositivos:
