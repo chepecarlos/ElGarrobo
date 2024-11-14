@@ -114,6 +114,7 @@ class miGui:
                 if acción == accionOpciones:
                     claseAccion = self.listaAccionesOPP.get(acción)
                     acciónTmp = claseAccion()
+                    self.editorDescripcion.visible = True
                     self.editorDescripcion.text = acciónTmp.descripcion
                     with self.editorPropiedades:
                         self.opcionesEditar = dict()
@@ -121,12 +122,13 @@ class miGui:
                             nombre = propiedad.nombre
                             self.opcionesEditar[nombre] = ui.input(nombre)
 
-        self.editorNombre = ui.input("Nombre").style("width: 200px")
-        self.editorTitulo = ui.input("Titulo").style("width: 200px")
+        self.editorNombre = ui.input("Nombre").style("width: 200px").props("clearable")
+        self.editorTitulo = ui.input("Titulo").style("width: 200px").props("clearable")
         self.editorTitulo.visible = False
-        self.editorTecla = ui.input("Tecla").style("width: 200px")
+        self.editorTecla = ui.input("Tecla").style("width: 200px").props("clearable")
         self.editorAcción = ui.select(options=self.listaAcciones, with_input=True, label="acción", on_change=mostrarOpciones).style("width: 200px")
-        self.editorDescripcion = ui.label("").classes()
+        self.editorDescripcion = ui.label("").style("width: 200px").classes("bg-teal-700 p-2 text-white rounded-lg")
+        self.editorDescripcion.visible = False
         self.editorPropiedades = ui.column()
         self.editorOpción = ui.textarea(label="Opciones", placeholder="").style("width: 200px")
 
@@ -143,6 +145,7 @@ class miGui:
         self.editorOpción.visible = False
         self.editorTitulo.value = ""
         self.editorDescripcion.text = ""
+        self.editorDescripcion.visible = False
         self.editorPropiedades.clear()
         self.accionEditar = None
         self.opcionesEditar = None
