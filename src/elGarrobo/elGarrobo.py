@@ -171,6 +171,7 @@ class elGarrobo(object):
             for accion in self.ListaAcciones.keys():
                 listaAccion.append(accion)
             for accion in self.listaClasesAcciones.keys():
+                # TODO: agregar nombre en ves de comando
                 listaAccion.append(accion)
             self.miGui.listaAccionesOPP = self.listaClasesAcciones
             self.miGui.agregarAcciones(listaAccion)
@@ -896,6 +897,8 @@ class elGarrobo(object):
         ListaDispositivos = ["teclados", "global", "deck", "pedal"]
         for tipo in ListaDispositivos:
             dataDispositivos = self.Data.get(tipo)
+            if dataDispositivos is None:
+                continue
             for dataActual in dataDispositivos:
                 if nombreDispositivo == dataActual.get("nombre"):
                     archivoDipositivos = f"{folder}/{dataActual.get('file')}"
@@ -907,9 +910,9 @@ class elGarrobo(object):
                             accionNueva = dict()
                             for propiedad, valor in accionesActual.items():
                                 if "__" in propiedad:
-
                                     continue
                                 accionNueva[propiedad] = valor
                             accionesSalvar.append(accionNueva)
                     SalvarArchivo(archivoDipositivos, accionesSalvar)
                     self.ReiniciarData()
+                    return

@@ -12,3 +12,4 @@ simpleaudio
 requests
 # sphinx
 nicegui>=2.5.0
+pillow

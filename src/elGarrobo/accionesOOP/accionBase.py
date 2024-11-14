@@ -1,6 +1,7 @@
 from .heramientas.propiedadAccion import propiedadAccion
 from .heramientas.valoresAccion import valoresAcciones
 
+
 class accionBase:
     """
     clase base de las acciones del sistema.
@@ -10,18 +11,18 @@ class accionBase:
         self.nombre = nombre
         self.comando = comando
         self.descripcion = descripcion
-        self.listaPropiedades = []
+        self.listaPropiedades: list[propiedadAccion] = []
         self.listaValores = list()
         self.funcion = None
         self.gui = True
         self.error = False
 
-    def agregarPropiedad(self, lista:dict=None) -> None:
+    def agregarPropiedad(self, lista: dict = None) -> None:
         """Agrega propiedad a la accion"""
         nuevaPropiedad = propiedadAccion(lista)
         self.listaPropiedades.append(nuevaPropiedad)
 
-    def configurar(self, lista:dict=None) -> None:
+    def configurar(self, lista: dict = None) -> None:
         """Recive la lista propiedades para ejecutar"""
 
         self.listaValores = []
@@ -54,7 +55,7 @@ class accionBase:
         """Confirmar que se tiene todos los atributos necesarios"""
         if self.error:
             return False
-        
+
         listaObligatoria = []
         for propiedad in self.listaPropiedades:
             if propiedad.obligatorio:
@@ -77,7 +78,7 @@ class accionBase:
                 return True
         return False
 
-    def obtenerValor(self, atributo:str):
+    def obtenerValor(self, atributo: str):
         """Devuelve el valores configurado"""
         for valor in self.listaValores:
             if atributo == valor.atributo:

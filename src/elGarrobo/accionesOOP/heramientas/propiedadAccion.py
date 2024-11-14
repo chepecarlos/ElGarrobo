@@ -1,20 +1,20 @@
 from .valoresAccion import valoresAcciones
 
+
 class propiedadAccion:
     """
     clase de las propiedad de una accion
     """
 
-    def __init__(self, lista:dict=None) -> None:
+    def __init__(self, lista: dict = None) -> None:
         if isinstance(lista, dict):
-            self.nombre = lista["nombre"]
-            self.atributo = lista["atributo"]
+            self.nombre: str = lista["nombre"]
+            self.atributo: str = lista["atributo"]
             self.tipo = lista["tipo"]
             self.obligatorio = lista["obligatorio"]
             self.descripcion = lista["descripcion"]
             self.ejemplo = lista.get("ejemplo")
             self.defecto = lista.get("defecto")
-
 
     def mismoTipo(self, valor) -> bool:
         return type(valor) == self.tipo
