@@ -1,11 +1,12 @@
 """Lista de Acciones."""
 
-from .accionDelay import accionDelay
-from .accionOS import accionOS
-from .accionFolder import accionFolder
-from .accionTelegram import accionTelegram
 from .accionControl import accionControl
+from .accionDelay import accionDelay
+from .accionFolder import accionFolder
 from .accionNotificacion import accionNotificacion
+from .accionOS import accionOS
+from .accionTeclas import accionTeclas
+from .accionTelegram import accionTelegram
 
 
 def cargarAcciones():
@@ -20,4 +21,5 @@ def cargarAcciones():
         "telegram": accionTelegram,
         "control": accionControl,
         "notificacion": accionNotificacion,
+        "teclas": accionTeclas,
     }

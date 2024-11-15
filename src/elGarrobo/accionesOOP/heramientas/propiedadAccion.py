@@ -17,6 +17,10 @@ class propiedadAccion:
             self.defecto = lista.get("defecto")
 
     def mismoTipo(self, valor) -> bool:
+        if isinstance(self.tipo, list):
+            for tipoActual in self.tipo:
+                if type(valor) == tipoActual:
+                    return True
         return type(valor) == self.tipo
 
     def mismoAtributo(self, atributo) -> bool:

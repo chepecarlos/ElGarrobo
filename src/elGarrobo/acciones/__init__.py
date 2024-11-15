@@ -33,7 +33,7 @@ def CargarAcciones():
         # "os": accionOS,
         # "notificacion": Notificacion,
         # Precionas teclas
-        "teclas": comandoTeclas,
+        # "teclas": comandoTeclas,
         "escribir": comandoEscribir,
         "pegar": comandoPegar,
         "copiar": CopiarTexto,
