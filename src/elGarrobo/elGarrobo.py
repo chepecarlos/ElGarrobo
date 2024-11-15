@@ -54,6 +54,7 @@ class elGarrobo(object):
 
         if self.ModuloGui:
             self.miGui = miGui()
+            self.miGui.ejecutaEvento = self.EjecutandoEvento
             self.miGui.salvarAcciones = self.salvarAcciones
 
         self.CargarData()

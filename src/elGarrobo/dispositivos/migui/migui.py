@@ -19,6 +19,7 @@ class miGui:
         self.listaAccionesOPP: dict = dict()
         self.salvarAcciones: callable = None
         self.actualizarIconos: callable = None
+        self.ejecutaEvento: callable = None
         self.accionEditar: dict = None
 
         with ui.splitter(value=20).classes("w-full") as splitter:
@@ -27,6 +28,7 @@ class miGui:
             with splitter.after:
                 # Contenedor para la tabla
                 self.pestañas = ui.tabs().classes("w-full bg-teal-700 text-white")
+
                 self.paneles = ui.tab_panels(self.pestañas).classes("w-full")
                 self.mostrarPestañas()
 
@@ -108,6 +110,7 @@ class miGui:
 
         def mostrarOpciones():
             self.editorDescripcion.text = ""
+            self.editorDescripcion.visible = False
             self.editorPropiedades.clear()
             accionOpciones = self.editorAcción.value
             for acción in self.listaAccionesOPP.keys():
@@ -122,15 +125,18 @@ class miGui:
                             nombre = propiedad.nombre
                             self.opcionesEditar[nombre] = ui.input(nombre)
 
-        self.editorNombre = ui.input("Nombre").style("width: 200px").props("clearable")
-        self.editorTitulo = ui.input("Titulo").style("width: 200px").props("clearable")
-        self.editorTitulo.visible = False
-        self.editorTecla = ui.input("Tecla").style("width: 200px").props("clearable")
-        self.editorAcción = ui.select(options=self.listaAcciones, with_input=True, label="acción", on_change=mostrarOpciones).style("width: 200px")
-        self.editorDescripcion = ui.label("").style("width: 200px").classes("bg-teal-700 p-2 text-white rounded-lg")
-        self.editorDescripcion.visible = False
-        self.editorPropiedades = ui.column()
-        self.editorOpción = ui.textarea(label="Opciones", placeholder="").style("width: 200px")
+        with ui.scroll_area().style("height: 65vh"):
+
+            self.editorNombre = ui.input("Nombre").style("width: 200px").props("clearable")
+            self.editorTitulo = ui.input("Titulo").style("width: 200px").props("clearable")
+            self.editorTitulo.visible = False
+            self.editorTecla = ui.input("Tecla").style("width: 200px").props("clearable")
+            self.editorAcción = ui.select(options=self.listaAcciones, with_input=True, label="acción", on_change=mostrarOpciones).style("width: 200px")
+            self.editorDescripcion = ui.label("").style("width: 200px").classes("bg-teal-700 p-2 text-white rounded-lg")
+            self.editorDescripcion.visible = False
+            self.editorPropiedades = ui.column()
+            self.editorOpción = ui.textarea(label="Opciones", placeholder="").style("width: 200px")
+            self.editorOpciónvisible = False
 
         with ui.button_group().props("rounded"):
             self.botonAgregar = ui.button(icon="add", color="teal-300", on_click=agregarAcción)
@@ -161,6 +167,7 @@ class miGui:
                 nombre = dispositivo.get("nombre")
                 dispositivo["pestaña"] = ui.tab(nombre)
                 dispositivo["pestaña"].on("click", self.actualizarEditor)
+            # self.listaDispositivos[0].sel
 
         for dispositivo in self.listaDispositivos:
             nombre = dispositivo.get("nombre")
@@ -203,11 +210,18 @@ class miGui:
                                 ui.label(teclaAcción).style("width: 100px")
                                 ui.label(acciónAcción).style("width: 125px")
                                 with ui.button_group().props("rounded"):
+                                    ui.button(icon="play_arrow", color="teal-300", on_click=lambda a=acciónActual: self.ejecutaEvento(a, True))
                                     ui.button(icon="edit", color="teal-300", on_click=lambda a=acciónActual: self.seleccionarAcción(a))
                                     ui.button(icon="delete", color="teal-300", on_click=lambda a=acciónActual: self.eliminarAcción(a))
+
         if self.actualizarIconos is not None:
             self.actualizarIconos()
-        # ui.button("Editar", on_click=lambda f=fila: editar_fila(f)).style("width: 70px")
+
+        for dispositivo in self.listaDispositivos:
+            nombreDispositivo = dispositivo.get("nombre")
+            self.paneles.value = nombreDispositivo
+            self.paneles.update()
+            return
 
     def seleccionarAcción(self, accion):
         self.accionEditar = accion
@@ -299,7 +313,12 @@ class miGui:
                 ui.link("Tiktok", "https://www.tiktok.com/@chepecarlo")
 
     def iniciar(self):
-        ui.run(title="ElGarrobo", reload=False, show=False)
+        ui.run(
+            title="ElGarrobo",
+            reload=False,
+            show=False,
+        )
+        # interesante native=True para app
         # ui.run(uvicorn_logging_level="debug", reload=False)
 
     def actualizarFolder(self, folder: str):
