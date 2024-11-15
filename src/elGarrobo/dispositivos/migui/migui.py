@@ -123,7 +123,8 @@ class miGui:
                         self.opcionesEditar = dict()
                         for propiedad in acciónTmp.listaPropiedades:
                             nombre = propiedad.nombre
-                            self.opcionesEditar[nombre] = ui.input(nombre)
+                            ejemplo = propiedad.ejemplo
+                            self.opcionesEditar[nombre] = ui.input(nombre, placeholder=ejemplo)
 
         with ui.scroll_area().style("height: 65vh"):
 
