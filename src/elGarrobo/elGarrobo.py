@@ -34,11 +34,10 @@ class elGarrobo(object):
 
         logger.info(f"Abri[config]")
 
-        self.Data = obtenerArchivoPaquete("elGarrobo", "elGarrobo/data/config.md")
+        self.Data = obtenerArchivoPaquete("elGarrobo", "data/config.md")
         if self.Data is None:
             logger.error("No existe archivo Interno config.md")
-            # TODO: reparar error en carga data
-            # os._exit(0)
+            os._exit(0)
 
         self.DataUsuario = leerData("config")
         if self.DataUsuario is not None:
@@ -803,7 +802,7 @@ class elGarrobo(object):
         """
         Reinicia data de los Botones Actuales.
         """
-        # self.Data = obtenerArchivoPaquete("elGarrobo", "elGarrobo/data/config.md")
+        # self.Data = obtenerArchivoPaquete("elGarrobo", "data/config.md")
         # if self.Data is None:
         #     logger.error("No existe archivo config.md")
         #     os._exit(0)
