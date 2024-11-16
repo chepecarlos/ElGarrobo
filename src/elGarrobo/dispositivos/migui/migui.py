@@ -21,6 +21,7 @@ class miGui:
         self.actualizarIconos: callable = None
         self.ejecutaEvento: callable = None
         self.accionEditar: dict = None
+        self.opcionesEditar = None
 
         with ui.splitter(value=20).classes("w-full") as splitter:
             with splitter.before:
@@ -136,7 +137,7 @@ class miGui:
                             ejemplo = propiedad.ejemplo
                             self.opcionesEditar[nombre] = ui.input(nombre, placeholder=ejemplo)
 
-        with ui.scroll_area().style("height: 65vh"):
+        with ui.scroll_area().style("height: 75vh"):
 
             self.editorNombre = ui.input("Nombre").style("width: 200px").props("clearable")
             self.editorTitulo = ui.input("Titulo").style("width: 200px").props("clearable")
@@ -147,7 +148,7 @@ class miGui:
             self.editorDescripcion.visible = False
             self.editorPropiedades = ui.column()
             self.editorOpción = ui.textarea(label="Opciones", placeholder="").style("width: 200px")
-            self.editorOpciónvisible = False
+            self.editorOpción.visible = False
 
         with ui.button_group().props("rounded"):
             self.botonAgregar = ui.button(icon="add", color="teal-300", on_click=agregarAcción)
@@ -194,7 +195,7 @@ class miGui:
                         ui.markdown(f"**Folder**: {folder}")
                     acciones = dispositivo.get("acciones")
 
-                    with ui.scroll_area().classes("h-96 border border-2 border-teal-600"):
+                    with ui.scroll_area().classes("h-96 border border-2 border-teal-600h").style("height: 65vh"):
 
                         if acciones is None:
                             ui.label("No acciones")
@@ -314,8 +315,8 @@ class miGui:
                 self.mostrarPestañas()
 
     def estructura(self):
-        with ui.header(elevated=True).classes("bg-teal-900 items-center justify-between"):
-            ui.label("ElGarrobo").classes("text-h4")
+        with ui.header(elevated=True).classes("bg-teal-900 items-center justify-between").style("height: 5vh; padding: 1px"):
+            ui.label("ElGarrobo").classes("text-h5")
             with ui.row():
                 ui.markdown("**FolderRuta**:")
                 self.folderLabel = ui.markdown(self.folder)
@@ -325,8 +326,8 @@ class miGui:
             right_drawer.toggle()
             ui.label("RIGHT DRAWER")
 
-        with ui.footer().classes("bg-teal-900"):
-            with ui.row():
+        with ui.footer().classes("bg-teal-900").style("height: 5vh; padding: 1px"):
+            with ui.row().classes("w-full"):
                 ui.label("Creado por ChepeCarlos")
                 ui.space()
                 ui.link("Youtube", "https://www.youtube.com/@chepecarlo")
