@@ -249,7 +249,7 @@ class miGui:
                                 objetoPropiedad.value = opcionesActuales.get(propiedadAccion)
             else:
                 self.editorOpción.visible = True
-                if isinstance(opcionesActuales, list):
+                if isinstance(opcionesActuales, dict):
                     for opcionInterna in opcionesActuales.keys():
                         valorOpcion = opcionesActuales.get(opcionInterna)
                         textoOpciones = textoOpciones + f"{opcionInterna}: {valorOpcion}, "
