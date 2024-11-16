@@ -1,5 +1,7 @@
 from nicegui import ui
 
+from elGarrobo.accionesOOP import accionBase
+
 # librería https://nicegui.io/
 # estilo https://tailwindcss.com/
 # iconos https://fonts.google.com/icons
@@ -57,9 +59,7 @@ class miGui:
             tipo = self.tipoDispositivoSeleccionado()
             if tipo == "steamdeck":
                 try:
-                    print(tecla, type(tecla))
                     tecla = int(tecla) - 1
-                    print(tecla)
                 except:
                     ui.notify("Error con tecla no numero")
                     return
@@ -81,22 +81,28 @@ class miGui:
                         self.accionEditar["accion"] = acción
                         if tipoDispositivo == "steamdeck" and titulo != "":
                             self.accionEditar["titulo"] = titulo
-                        ui.notify(f"Editar acción {nombre}")
 
                         if self.opcionesEditar is not None:
-                            self.accionEditar["opciones"] = obtenerPropiedades()
+                            try:
+                                self.accionEditar["opciones"] = obtenerPropiedades()
+                            except Exception as e:
+                                return
 
+                        ui.notify(f"Editar acción {nombre}")
                         print(f"Editar acción {nombre} a {nombreDispositivo}")
                     else:
                         acciónNueva: dict[str:any] = {"nombre": nombre, "key": tecla, "accion": acción}
                         if tipoDispositivo == "steamdeck" and titulo != "":
                             acciónNueva["titulo"] = titulo
                         accionesDispositivo.append(acciónNueva)
-                        ui.notify(f"Agregando acción {nombre}")
 
                         if self.opcionesEditar is not None:
-                            acciónNueva["opciones"] = obtenerPropiedades()
+                            try:
+                                acciónNueva["opciones"] = obtenerPropiedades()
+                            except Exception as e:
+                                return
 
+                        ui.notify(f"Agregando acción {nombre}")
                         print(f"Agregando acción {nombre} a {nombreDispositivo}")
                     accionesDispositivo.sort(key=lambda x: x.get("key"), reverse=False)
                     folder = dispositivo.get("folder")
@@ -116,6 +122,11 @@ class miGui:
                     for propiedad in accionActual.listaPropiedades:
                         nombrePropiedad = propiedad.nombre
                         if opcionesEditor == nombrePropiedad:
+                            obligatorioPropiedad = propiedad.obligatorio
+                            if obligatorioPropiedad and valor == "":
+                                ui.notify(f"Error {nombrePropiedad} es Obligatorio")
+                                print(f"Error {nombrePropiedad} es Obligatorio")
+                                raise Exception("Falta Propiedades")
                             opciones[propiedad.atributo] = valor
                 return opciones
 
@@ -127,15 +138,19 @@ class miGui:
             for acción in self.listaAccionesOPP.keys():
                 if acción == accionOpciones:
                     claseAccion = self.listaAccionesOPP.get(acción)
-                    acciónTmp = claseAccion()
+                    acciónTmp: accionBase = claseAccion()
                     self.editorDescripcion.visible = True
                     self.editorDescripcion.text = acciónTmp.descripcion
                     with self.editorPropiedades:
                         self.opcionesEditar = dict()
                         for propiedad in acciónTmp.listaPropiedades:
                             nombre = propiedad.nombre
+                            etiqueta = nombre
                             ejemplo = propiedad.ejemplo
-                            self.opcionesEditar[nombre] = ui.input(nombre, placeholder=ejemplo)
+                            obligatorio = propiedad.obligatorio
+                            if obligatorio:
+                                etiqueta = "* " + etiqueta
+                            self.opcionesEditar[nombre] = ui.input(label=etiqueta, placeholder=ejemplo)
 
         with ui.scroll_area().style("height: 75vh"):
 
