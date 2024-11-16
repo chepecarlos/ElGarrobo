@@ -4,12 +4,11 @@ from .accion_os import accionOS
 from .archivos import escribirArchivo, escribirValor, escribirValores, leerValor
 from .delay import delay
 from .emular_raton import precionarRaton
-from .emular_teclado import (
+from .emular_teclado import (  # comandoTeclas,
     CopiarTexto,
     comandoEscribir,
     comandoPegar,
     comandoPortapapeles,
-    comandoTeclas,
 )
 from .mqtt import mensajeMQTT
 from .notificacion import Notificacion
@@ -28,7 +27,7 @@ def CargarAcciones():
     return {
         # "delay": delay,
         "contrain": OperacionConstrain,
-        "mqtt": mensajeMQTT,
+        # "mqtt": mensajeMQTT,
         # OS
         # "os": accionOS,
         # "notificacion": Notificacion,
