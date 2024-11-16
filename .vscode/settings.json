@@ -5,7 +5,7 @@
     "venv": true,
     "**/__pycache__": true
   },
-  "cSpell.words": ["elgatoalsw", "MQTT", "ElGarrobo"],
+  "cSpell.words": ["ElGarrobo", "elgatoalsw", "MQTT", "steamdeck"],
   "editor.formatOnSave": true,
   "[python]": {
     "editor.formatOnSave": true,

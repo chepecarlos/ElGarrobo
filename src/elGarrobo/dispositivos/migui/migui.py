@@ -53,6 +53,16 @@ class miGui:
                     ui.notify(f"Seleccione una acción")
                 return
 
+            tipo = self.tipoDispositivoSeleccionado()
+            if tipo == "steamdeck":
+                try:
+                    print(tecla, type(tecla))
+                    tecla = int(tecla) - 1
+                    print(tecla)
+                except:
+                    ui.notify("Error con tecla no numero")
+                    return
+
             for dispositivo in self.listaDispositivos:
                 if dispositivo.get("nombre") == nombreDispositivo:
                     tipoDispositivo = dispositivo.get("tipo")
@@ -204,6 +214,9 @@ class miGui:
                             acciónAcción = acciónActual.get("accion")
                             tituloAcción = acciónActual.get("titulo")
 
+                            if tipo == "steamdeck":
+                                teclaAcción = int(teclaAcción) + 1
+
                             with ui.row().classes("content p-2 border-2 border-teal-600"):
                                 ui.label(nombreAcción).style("width: 100px")
                                 if tipo == "steamdeck":
@@ -228,7 +241,11 @@ class miGui:
         self.accionEditar = accion
         self.botonAgregar.icon = "edit"
         self.editorNombre.value = accion.get("nombre")
-        self.editorTecla.value = accion.get("key")
+        tipo = self.tipoDispositivoSeleccionado()
+        if tipo == "steamdeck":
+            self.editorTecla.value = int(accion.get("key")) + 1
+        else:
+            self.editorTecla.value = accion.get("key")
         self.editorAcción.value = accion.get("accion")
         textoOpciones = ""
         opcionesActuales = accion.get("opciones")
@@ -256,23 +273,25 @@ class miGui:
 
                 self.editorOpción.value = textoOpciones
 
-        nombreDispositivo = self.pestañas.value
-        for dispositivo in self.listaDispositivos:
-            if dispositivo.get("nombre") == nombreDispositivo:
-                tipo = dispositivo.get("tipo")
-                if tipo == "steamdeck":
-                    self.editorTitulo.value = accion.get("titulo")
+        tipo = self.tipoDispositivoSeleccionado()
 
-    def actualizarEditor(self):
+        if tipo == "steamdeck":
+            self.editorTitulo.value = accion.get("titulo")
+
+    def actualizarEditor(self) -> None:
+        tipo = self.tipoDispositivoSeleccionado()
+
+        if tipo == "steamdeck":
+            self.editorTitulo.visible = True
+        else:
+            self.editorTitulo.visible = False
+        self.limpiar_formulario()
+
+    def tipoDispositivoSeleccionado(self) -> str:
         nombreDispositivo = self.pestañas.value
         for dispositivo in self.listaDispositivos:
             if dispositivo.get("nombre") == nombreDispositivo:
-                tipo = dispositivo.get("tipo")
-                if tipo == "steamdeck":
-                    self.editorTitulo.visible = True
-                else:
-                    self.editorTitulo.visible = False
-        self.limpiar_formulario()
+                return dispositivo.get("tipo")
 
     def eliminarAcción(self, accion):
         nombreDispositivo = self.pestañas.value
