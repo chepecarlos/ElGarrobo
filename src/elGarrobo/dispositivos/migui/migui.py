@@ -147,10 +147,14 @@ class miGui:
                             nombre = propiedad.nombre
                             etiqueta = nombre
                             ejemplo = propiedad.ejemplo
+                            descripción = propiedad.descripcion
                             obligatorio = propiedad.obligatorio
                             if obligatorio:
                                 etiqueta = "* " + etiqueta
                             self.opcionesEditar[nombre] = ui.input(label=etiqueta, placeholder=ejemplo)
+                            with self.opcionesEditar[nombre]:
+                                with ui.button(on_click=lambda d=descripción: ui.notify(d)).props("flat dense"):
+                                    ui.icon("help", color="teal-300")
 
         with ui.scroll_area().style("height: 75vh"):
 
