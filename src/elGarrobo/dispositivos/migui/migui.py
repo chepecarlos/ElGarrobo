@@ -25,7 +25,7 @@ class miGui:
         self.accionEditar: dict = None
         self.opcionesEditar = None
 
-        with ui.splitter(value=20).classes("w-full") as splitter:
+        with ui.splitter(value=20, limits=(15, 50)).classes("w-full") as splitter:
             with splitter.before:
                 self.mostraFormulario()
             with splitter.after:
