@@ -6,6 +6,7 @@ from .accionFolder import accionFolder
 from .accionMQTT import accionMQTT
 from .accionNotificacion import accionNotificacion
 from .accionOS import accionOS
+from .accionSalir import accionSalir
 from .accionTeclas import accionTeclas
 from .accionTelegram import accionTelegram
 
@@ -22,6 +23,7 @@ def cargarAcciones():
         "mqtt": accionMQTT,
         "notificacion": accionNotificacion,
         "os": accionOS,
+        "salir": accionSalir,
         "teclas": accionTeclas,
         "telegram": accionTelegram,
     }

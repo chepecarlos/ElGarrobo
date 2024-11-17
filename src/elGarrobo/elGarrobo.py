@@ -3,6 +3,7 @@ import random
 
 from .acciones import CargarAcciones
 from .accionesOOP import cargarAcciones
+from .accionesOOP.accionSalir import accionSalir
 from .dispositivos.mideck.mi_deck_extra import DefinirFuente, DefinirImagenes
 from .dispositivos.mideck.mi_streamdeck import MiStreamDeck
 from .dispositivos.migui.migui import miGui
@@ -141,6 +142,9 @@ class elGarrobo(object):
         Inicializa las acciones del Sistema en dict nombre de la accion y la funcion asociada
         """
         logger.info("ElGarrobo[Acciones] Cargando")
+
+        accionSalir.funcion = self.Salir
+
         ListaAcciones = CargarAcciones()
         listaClasesAcciones = cargarAcciones()
 
@@ -151,7 +155,6 @@ class elGarrobo(object):
         ListaAcciones["random"] = self.AccionRandom
 
         # Acciones Sistema
-        ListaAcciones["salir"] = self.Salir
         ListaAcciones["reiniciar_data"] = self.Reiniciar
         ListaAcciones["entrar_folder"] = self.Entrar_Folder
         ListaAcciones["regresar_folder"] = self.Regresar_Folder
@@ -851,7 +854,7 @@ class elGarrobo(object):
     def __del__(self):
         print("I'm being automatically destroyed. Goodbye!")
 
-    def Salir(self, opciones):
+    def Salir(self) -> None:
         """
         Cierra el programa.
         """
