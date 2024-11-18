@@ -2,8 +2,8 @@ import os
 import random
 
 from .acciones import CargarAcciones
-from .accionesOOP import cargarAcciones
-from .accionesOOP.accionSalir import accionSalir
+from .accionesOOP import accionEntrarFolder, accionSalir, cargarAcciones
+from .accionesOOP.heramientas.valoresAccion import valoresAcciones
 from .dispositivos.mideck.mi_deck_extra import DefinirFuente, DefinirImagenes
 from .dispositivos.mideck.mi_streamdeck import MiStreamDeck
 from .dispositivos.migui.migui import miGui
@@ -143,7 +143,8 @@ class elGarrobo(object):
         """
         logger.info("ElGarrobo[Acciones] Cargando")
 
-        accionSalir.funcion = self.Salir
+        accionSalir.funcionExterna = self.Salir
+        accionEntrarFolder.funcionExterna = self.Entrar_Folder
 
         ListaAcciones = CargarAcciones()
         listaClasesAcciones = cargarAcciones()
@@ -156,7 +157,6 @@ class elGarrobo(object):
 
         # Acciones Sistema
         ListaAcciones["reiniciar_data"] = self.Reiniciar
-        ListaAcciones["entrar_folder"] = self.Entrar_Folder
         ListaAcciones["regresar_folder"] = self.Regresar_Folder
 
         # Acciones Deck
@@ -704,14 +704,11 @@ class elGarrobo(object):
         else:
             logger.warning(f"Regresar[En base]")
 
-    def Entrar_Folder(self, opciones):
+    def Entrar_Folder(self, opciones: list[valoresAcciones]):
         """
         Entra en folder
-
-        folder -> str
-            folder a entrar
         """
-        folder: str = opciones.get("folder")
+        folder: str = self.obtenerValor(opciones, "folder")
         if folder is None:
             logger.warning(f"Folder[no encontrado]")
             return
@@ -854,7 +851,7 @@ class elGarrobo(object):
     def __del__(self):
         print("I'm being automatically destroyed. Goodbye!")
 
-    def Salir(self) -> None:
+    def Salir(self, opciones: list) -> None:
         """
         Cierra el programa.
         """
@@ -919,3 +916,9 @@ class elGarrobo(object):
                     SalvarArchivo(archivoDipositivos, accionesSalvar)
                     self.ReiniciarData()
                     return
+
+    def obtenerValor(self, listaValores: list[valoresAcciones], atributo: str):
+        """Devuelve el valores configurado"""
+        for valor in listaValores:
+            if atributo == valor.atributo:
+                return valor.valor

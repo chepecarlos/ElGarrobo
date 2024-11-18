@@ -16,7 +16,7 @@ class accionControl(accionBase):
         super().__init__(nombre, comando, descripcion)
 
         propiedadHost = {
-            "nombre": "host",
+            "nombre": "Host",
             "tipo": str,
             "obligatorio": True,
             "atributo": "host",
@@ -25,7 +25,7 @@ class accionControl(accionBase):
         }
 
         propiedadAccion = {
-            "nombre": "accion",
+            "nombre": "Accion",
             "tipo": str,
             "obligatorio": True,
             "atributo": "accion",
@@ -34,7 +34,7 @@ class accionControl(accionBase):
         }
 
         propiedadOpciones = {
-            "nombre": "opciones",
+            "nombre": "Opciones",
             "tipo": dict,
             "obligatorio": False,
             "atributo": "opciones",

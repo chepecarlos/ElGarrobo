@@ -7,14 +7,15 @@ class accionBase:
     clase base de las acciones del sistema.
     """
 
-    funcion = None
+    funcion: callable = None
+    funcionExterna: callable = None
 
     def __init__(self, nombre: str, comando: str, descripcion: str) -> None:
         self.nombre = nombre
         self.comando = comando
         self.descripcion = descripcion
         self.listaPropiedades: list[propiedadAccion] = []
-        self.listaValores = list()
+        self.listaValores: list[valoresAcciones] = list()
         self.gui = True
         self.error = False
 
@@ -46,8 +47,12 @@ class accionBase:
             print("AcciónPOO[Error] - Falta Propiedades.")
             return False
 
-        if self.funcion is not None:
+        if callable(self.funcion):
             self.funcion()
+            return True
+
+        if callable(self.funcionExterna):
+            self.funcionExterna(self.listaValores)
             return True
 
         print("AcciónPOO[Error] - Falta Función.")

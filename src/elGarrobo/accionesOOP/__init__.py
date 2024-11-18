@@ -2,6 +2,7 @@
 
 from .accionControl import accionControl
 from .accionDelay import accionDelay
+from .accionEntrarFolder import accionEntrarFolder
 from .accionFolder import accionFolder
 from .accionMQTT import accionMQTT
 from .accionNotificacion import accionNotificacion
@@ -19,6 +20,7 @@ def cargarAcciones():
     return {
         "control": accionControl,
         "delay": accionDelay,
+        "entrar_folder": accionEntrarFolder,
         "folder": accionFolder,
         "mqtt": accionMQTT,
         "notificacion": accionNotificacion,
