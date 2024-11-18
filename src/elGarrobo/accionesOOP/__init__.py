@@ -7,12 +7,13 @@ from .accionFolder import accionFolder
 from .accionMQTT import accionMQTT
 from .accionNotificacion import accionNotificacion
 from .accionOS import accionOS
+from .accionRegresarFolder import accionRegresarFolder
 from .accionSalir import accionSalir
 from .accionTeclas import accionTeclas
 from .accionTelegram import accionTelegram
 
 
-def cargarAcciones():
+def cargarAcciones() -> dict[str:]:
     """
     Carga las acciones en una dic con nombre de accion y función asociada.
     """
@@ -25,6 +26,7 @@ def cargarAcciones():
         "mqtt": accionMQTT,
         "notificacion": accionNotificacion,
         "os": accionOS,
+        "regresar_folder": accionRegresarFolder,
         "salir": accionSalir,
         "teclas": accionTeclas,
         "telegram": accionTelegram,

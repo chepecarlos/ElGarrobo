@@ -2,7 +2,12 @@ import os
 import random
 
 from .acciones import CargarAcciones
-from .accionesOOP import accionEntrarFolder, accionSalir, cargarAcciones
+from .accionesOOP import (
+    accionEntrarFolder,
+    accionRegresarFolder,
+    accionSalir,
+    cargarAcciones,
+)
 from .accionesOOP.heramientas.valoresAccion import valoresAcciones
 from .dispositivos.mideck.mi_deck_extra import DefinirFuente, DefinirImagenes
 from .dispositivos.mideck.mi_streamdeck import MiStreamDeck
@@ -145,6 +150,7 @@ class elGarrobo(object):
 
         accionSalir.funcionExterna = self.Salir
         accionEntrarFolder.funcionExterna = self.Entrar_Folder
+        accionRegresarFolder.funcionExterna = self.Regresar_Folder
 
         ListaAcciones = CargarAcciones()
         listaClasesAcciones = cargarAcciones()
@@ -157,7 +163,6 @@ class elGarrobo(object):
 
         # Acciones Sistema
         ListaAcciones["reiniciar_data"] = self.Reiniciar
-        ListaAcciones["regresar_folder"] = self.Regresar_Folder
 
         # Acciones Deck
         if self.ModuloDeck:
@@ -687,7 +692,7 @@ class elGarrobo(object):
         logger.info("Reiniciar data ElGatoALSW")
         self.ReiniciarData()
 
-    def Regresar_Folder(self, opciones):
+    def Regresar_Folder(self, opciones: list):
         Direcion = self.PathActual.split("/")
         self.PathActual = "/".join(Direcion[:-1])
         if self.PathActual == "":
