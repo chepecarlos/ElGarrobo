@@ -31,7 +31,6 @@ class miGui:
             with splitter.after:
                 # Contenedor para la tabla
                 self.pestañas = ui.tabs().classes("w-full bg-teal-700 text-white")
-
                 self.paneles = ui.tab_panels(self.pestañas).classes("w-full")
                 self.mostrarPestañas()
 
@@ -255,8 +254,11 @@ class miGui:
 
         for dispositivo in self.listaDispositivos:
             nombreDispositivo = dispositivo.get("nombre")
+            tipo = dispositivo.get("tipo")
             self.paneles.value = nombreDispositivo
             self.paneles.update()
+            if tipo == "steamdeck":
+                self.editorTitulo.visible = True
             return
 
     def seleccionarAcción(self, accion):
