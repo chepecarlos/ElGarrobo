@@ -5,6 +5,7 @@ from .accionDelay import accionDelay
 from .accionEntrarFolder import accionEntrarFolder
 from .accionFolder import accionFolder
 from .accionMQTT import accionMQTT
+from .accionNavegador import accionNavegador
 from .accionNotificacion import accionNotificacion
 from .accionOS import accionOS
 from .accionRegresarFolder import accionRegresarFolder
@@ -24,6 +25,7 @@ def cargarAcciones() -> dict[str:]:
         "entrar_folder": accionEntrarFolder,
         "folder": accionFolder,
         "mqtt": accionMQTT,
+        "navegador": accionNavegador,
         "notificacion": accionNotificacion,
         "os": accionOS,
         "regresar_folder": accionRegresarFolder,
