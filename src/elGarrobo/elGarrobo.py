@@ -825,7 +825,7 @@ class elGarrobo(object):
             self.miGui.actualizarFolder(self.PathActual)
         self.BuscarFolder(self.PathActual)
         # TODO: no necesario reiniciar streamdeck
-        self.Entrar_Folder({"folder": folderAnterior})
+        self.Entrar_Folder([valoresAcciones("folder", folderAnterior)])
         self.PathActual = folderAnterior
         self.IniciarStreamDeck()
 

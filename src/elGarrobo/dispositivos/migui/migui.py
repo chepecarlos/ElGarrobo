@@ -127,6 +127,8 @@ class miGui:
                                 ui.notify(f"Error {nombrePropiedad} es Obligatorio")
                                 print(f"Error {nombrePropiedad} es Obligatorio")
                                 raise Exception("Falta Propiedades")
+                            if valor == "":
+                                continue
                             opciones[propiedad.atributo] = valor
                 return opciones
 
