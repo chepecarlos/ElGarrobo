@@ -1,5 +1,6 @@
 """Lista de Acciones."""
 
+from .accionAbirGUI import accionAbirGUI
 from .accionControl import accionControl
 from .accionDelay import accionDelay
 from .accionEntrarFolder import accionEntrarFolder
@@ -20,6 +21,7 @@ def cargarAcciones() -> dict[str:]:
     """
 
     return {
+        "abir_gui": accionAbirGUI,
         "control": accionControl,
         "delay": accionDelay,
         "entrar_folder": accionEntrarFolder,
