@@ -41,6 +41,11 @@ class miGui:
             nombre = self.editorNombre.value
             tecla = self.editorTecla.value
             acción = self.editorAcción.value
+            for AtributoAccion in self.listaAccionesOPP.keys():
+                objetoClase = self.listaAccionesOPP[AtributoAccion]()
+                if objetoClase.nombre == acción:
+                    acción = objetoClase.comando
+                    break
             titulo = self.editorTitulo.value
             nombreDispositivo = self.pestañas.value
 
@@ -83,7 +88,7 @@ class miGui:
 
                         if self.opcionesEditar is not None:
                             try:
-                                self.accionEditar["opciones"] = obtenerPropiedades()
+                                self.accionEditar["opciones"] = obtenerPropiedades(acción)
                             except Exception as e:
                                 return
 
@@ -97,7 +102,7 @@ class miGui:
 
                         if self.opcionesEditar is not None:
                             try:
-                                acciónNueva["opciones"] = obtenerPropiedades()
+                                acciónNueva["opciones"] = obtenerPropiedades(acción)
                             except Exception as e:
                                 return
 
@@ -109,15 +114,13 @@ class miGui:
             self.mostrarPestañas()
             self.limpiar_formulario()
 
-        def obtenerPropiedades():
-            accionSeleccionada = self.editorAcción.value
-
+        def obtenerPropiedades(acciónSeleccionada: str) -> dict:
             if self.opcionesEditar is not None:
                 opciones = dict()
                 for opcionesEditor in self.opcionesEditar.keys():
                     objetoEditor = self.opcionesEditar.get(opcionesEditor)
                     valor = objetoEditor.value
-                    accionActual = self.listaAccionesOPP[accionSeleccionada]()
+                    accionActual = self.listaAccionesOPP[acciónSeleccionada]()
                     for propiedad in accionActual.listaPropiedades:
                         nombrePropiedad = propiedad.nombre
                         if opcionesEditor == nombrePropiedad:
@@ -131,39 +134,13 @@ class miGui:
                             opciones[propiedad.atributo] = valor
                 return opciones
 
-        def mostrarOpciones():
-            self.editorDescripcion.text = ""
-            self.editorDescripcion.visible = False
-            self.editorPropiedades.clear()
-            accionOpciones = self.editorAcción.value
-            for acción in self.listaAccionesOPP.keys():
-                if acción == accionOpciones:
-                    claseAccion = self.listaAccionesOPP.get(acción)
-                    acciónTmp: accionBase = claseAccion()
-                    self.editorDescripcion.visible = True
-                    self.editorDescripcion.text = acciónTmp.descripcion
-                    with self.editorPropiedades:
-                        self.opcionesEditar = dict()
-                        for propiedad in acciónTmp.listaPropiedades:
-                            nombre = propiedad.nombre
-                            etiqueta = nombre
-                            ejemplo = propiedad.ejemplo
-                            descripción = propiedad.descripcion
-                            obligatorio = propiedad.obligatorio
-                            if obligatorio:
-                                etiqueta = "* " + etiqueta
-                            self.opcionesEditar[nombre] = ui.input(label=etiqueta, placeholder=ejemplo)
-                            with self.opcionesEditar[nombre]:
-                                with ui.button(on_click=lambda d=descripción: ui.notify(d)).props("flat dense"):
-                                    ui.icon("help", color="teal-300")
-
         with ui.scroll_area().style("height: 75vh"):
 
             self.editorNombre = ui.input("Nombre").style("width: 200px").props("clearable")
             self.editorTitulo = ui.input("Titulo").style("width: 200px").props("clearable")
             self.editorTitulo.visible = False
             self.editorTecla = ui.input("Tecla").style("width: 200px").props("clearable")
-            self.editorAcción = ui.select(options=self.listaAcciones, with_input=True, label="acción", on_change=mostrarOpciones).style("width: 200px")
+            self.editorAcción = ui.select(options=self.listaAcciones, with_input=True, label="acción", on_change=self.mostrarOpciones).style("width: 200px")
             self.editorDescripcion = ui.label("").style("width: 200px").classes("bg-teal-700 p-2 text-white rounded-lg")
             self.editorDescripcion.visible = False
             self.editorPropiedades = ui.column()
@@ -173,6 +150,36 @@ class miGui:
         with ui.button_group().props("rounded"):
             self.botonAgregar = ui.button(icon="add", color="teal-300", on_click=agregarAcción)
             ui.button(icon="delete", color="teal-300", on_click=self.limpiar_formulario)
+
+    def mostrarOpciones(self):
+        self.editorDescripcion.text = ""
+        self.editorDescripcion.visible = False
+        self.editorPropiedades.clear()
+        if self.accionEditar:
+            accionOpciones = self.accionEditar.get("accion")
+        else:
+            accionOpciones = self.editorAcción.value
+
+        for acción in self.listaAccionesOPP.keys():
+            claseAccion = self.listaAccionesOPP.get(acción)
+            acciónTmp: accionBase = claseAccion()
+            if acción == accionOpciones or acciónTmp.nombre == accionOpciones:
+                self.editorDescripcion.visible = True
+                self.editorDescripcion.text = acciónTmp.descripcion
+                with self.editorPropiedades:
+                    self.opcionesEditar = dict()
+                    for propiedad in acciónTmp.listaPropiedades:
+                        nombre = propiedad.nombre
+                        etiqueta = nombre
+                        ejemplo = propiedad.ejemplo
+                        descripción = propiedad.descripcion
+                        obligatorio = propiedad.obligatorio
+                        if obligatorio:
+                            etiqueta = "* " + etiqueta
+                        self.opcionesEditar[nombre] = ui.input(label=etiqueta, placeholder=ejemplo)
+                        with self.opcionesEditar[nombre]:
+                            with ui.button(on_click=lambda d=descripción: ui.notify(d)).props("flat dense"):
+                                ui.icon("help", color="teal-300")
 
     def limpiar_formulario(self):
         self.botonAgregar.icon = "add"
@@ -243,7 +250,16 @@ class miGui:
                                 if tipo == "steamdeck":
                                     ui.label(tituloAcción).style("width: 100px")
                                 ui.label(teclaAcción).style("width: 100px")
-                                ui.label(acciónAcción).style("width: 125px")
+
+                                claseAcción = self.obtenerAcciónOop(acciónAcción)
+                                if claseAcción is None:
+                                    ui.label(f"{acciónAcción}-vieja").style("width: 125px")
+                                    # TODO: montar función viejas
+                                else:
+                                    objetoAcción = claseAcción()
+                                    nombreClase = objetoAcción.nombre
+                                    ui.label(f"{nombreClase}").style("width: 125px")
+
                                 with ui.button_group().props("rounded"):
                                     ui.button(icon="play_arrow", color="teal-300", on_click=lambda a=acciónActual: self.ejecutaEvento(a, True))
                                     ui.button(icon="edit", color="teal-300", on_click=lambda a=acciónActual: self.seleccionarAcción(a))
@@ -270,17 +286,24 @@ class miGui:
             self.editorTecla.value = int(accion.get("key")) + 1
         else:
             self.editorTecla.value = accion.get("key")
-        self.editorAcción.value = accion.get("accion")
+
+        claseAcción = self.obtenerAcciónOop(accion.get("accion"))
+        if claseAcción is None:
+            self.editorAcción.value = accion.get("accion")
+        else:
+            objetoClase = claseAcción()
+            self.editorAcción.value = objetoClase.nombre
+        self.mostrarOpciones()
         textoOpciones = ""
         opcionesActuales = accion.get("opciones")
         self.editorOpción.visible = False
 
         if opcionesActuales:
 
-            claseAccion = self.listaAccionesOPP.get(self.editorAcción.value)
-            if claseAccion is not None:
+            claseAcción = self.listaAccionesOPP.get(self.accionEditar.get("accion"))
+            if claseAcción is not None:
 
-                objetoClase = claseAccion()
+                objetoClase = claseAcción()
                 listaPropiedades = objetoClase.listaPropiedades
                 if isinstance(opcionesActuales, dict):
                     for propiedadAccion in opcionesActuales.keys():
@@ -391,3 +414,8 @@ class miGui:
                 dispositivo["acciones"] = acciones
                 dispositivo["folder"] = folder
         self.mostrarPestañas()
+
+    def obtenerAcciónOop(self, comandoAcción: str):
+        if comandoAcción in self.listaAccionesOPP:
+            return self.listaAccionesOPP[comandoAcción]
+        return None
