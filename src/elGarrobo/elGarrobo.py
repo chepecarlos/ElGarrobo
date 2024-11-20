@@ -179,8 +179,9 @@ class elGarrobo(object):
             for accion in self.ListaAcciones.keys():
                 listaAccion.append(accion)
             for accion in self.listaClasesAcciones.keys():
-                # TODO: agregar nombre en ves de comando
-                listaAccion.append(accion)
+                objetoAccion = self.listaClasesAcciones[accion]()
+                nombreAccion = objetoAccion.nombre
+                listaAccion.append(nombreAccion)
             self.miGui.listaAccionesOPP = self.listaClasesAcciones
             self.miGui.agregarAcciones(listaAccion)
 
