@@ -380,11 +380,7 @@ class miGui:
                 ui.link("Tiktok", "https://www.tiktok.com/@chepecarlo")
 
     def iniciar(self):
-        ui.run(
-            title="ElGarrobo",
-            reload=False,
-            show=False,
-        )
+        ui.run(title="ElGarrobo", reload=False, show=False, dark=True)
         # interesante native=True para app
         # ui.run(uvicorn_logging_level="debug", reload=False)
 
