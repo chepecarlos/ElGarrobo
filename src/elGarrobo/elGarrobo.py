@@ -3,9 +3,12 @@ import random
 
 from .acciones import CargarAcciones
 from .accionesOOP import (
+    accionActualizarPagina,
+    accionAnteriorPagina,
     accionEntrarFolder,
     accionRegresarFolder,
     accionSalir,
+    accionSiquientePagina,
     cargarAcciones,
 )
 from .accionesOOP.heramientas.valoresAccion import valoresAcciones
@@ -166,9 +169,9 @@ class elGarrobo(object):
 
         # Acciones Deck
         if self.ModuloDeck:
-            ListaAcciones["siquiente_pagina"] = self.Siquiente_Pagina
-            ListaAcciones["anterior_pagina"] = self.Anterior_Pagina
-            ListaAcciones["actualizar_pagina"] = self.Actualizar_Folder
+            accionSiquientePagina.funcionExterna = self.Siquiente_Pagina
+            accionAnteriorPagina.funcionExterna = self.Anterior_Pagina
+            accionActualizarPagina.funcionExterna = self.Actualizar_Folder
             ListaAcciones["deck_brillo"] = self.DeckBrillo
 
         self.ListaAcciones = ListaAcciones
@@ -738,13 +741,13 @@ class elGarrobo(object):
             logger.warning(f"Folder[{folder}] No encontró")
             self.PathActual = copiaPath
 
-    def Actualizar_Folder(self, opciones):
+    def Actualizar_Folder(self, opciones: list[valoresAcciones]):
         self.ActualizarDeck()
 
-    def Siquiente_Pagina(self, opciones):
+    def Siquiente_Pagina(self, opciones: list[valoresAcciones]):
         self.MoverPagina("siquiente")
 
-    def Anterior_Pagina(self, opciones):
+    def Anterior_Pagina(self, opciones: list[valoresAcciones]):
         self.MoverPagina("anterior")
 
     def DeckBrillo(self, opciones):
@@ -895,8 +898,10 @@ class elGarrobo(object):
             if opciones is None:
                 logger.error("error en configuracciones")
             else:
+                print(opciones, texto)
                 opciones["mensaje"] = texto
-                self.ListaAcciones["mqtt"](opciones)
+                # TODO: enviar mensajes por mqtt
+                # self.ListaAcciones["mqtt"](opciones)
 
     def salvarAcciones(self, acciones: list, dispositivo: list, folder: str):
         nombreDispositivo = dispositivo.get("nombre")

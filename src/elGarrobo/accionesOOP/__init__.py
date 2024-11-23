@@ -1,6 +1,11 @@
 """Lista de Acciones."""
 
 from .accionAbirGUI import accionAbirGUI
+from .accionCambiarPagina import (
+    accionActualizarPagina,
+    accionAnteriorPagina,
+    accionSiquientePagina,
+)
 from .accionControl import accionControl
 from .accionDelay import accionDelay
 from .accionEntrarFolder import accionEntrarFolder
@@ -22,6 +27,9 @@ def cargarAcciones() -> dict[str:]:
 
     return {
         "abir_gui": accionAbirGUI,
+        "anterior_pagina": accionAnteriorPagina,
+        "siquiente_pagina": accionSiquientePagina,
+        "actualizar_pagina": accionActualizarPagina,
         "control": accionControl,
         "delay": accionDelay,
         "entrar_folder": accionEntrarFolder,
