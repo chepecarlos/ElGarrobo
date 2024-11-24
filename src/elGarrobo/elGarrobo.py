@@ -889,7 +889,7 @@ class elGarrobo(object):
                 self.ActualizarDeckIcono()
                 self.BanderaActualizarDeck = False
 
-    def SolisitarNotifiacacion(self, texto, opciones):
+    def SolisitarNotifiacacion(self, texto, opciones: dict[valoresAcciones]):
         if self.ModuloOBSNotificacion:
             objetoAccion = self.listaClasesAcciones["notificacion"]()
             objetoAccion.configurar({"texto": texto})
@@ -898,10 +898,10 @@ class elGarrobo(object):
             if opciones is None:
                 logger.error("error en configuracciones")
             else:
-                print(opciones, texto)
                 opciones["mensaje"] = texto
-                # TODO: enviar mensajes por mqtt
-                # self.ListaAcciones["mqtt"](opciones)
+                accionMQTT = self.listaClasesAcciones["mqtt"]()
+                accionMQTT.configurar(opciones)
+                accionMQTT.ejecutar()
 
     def salvarAcciones(self, acciones: list, dispositivo: list, folder: str):
         nombreDispositivo = dispositivo.get("nombre")
