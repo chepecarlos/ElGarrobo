@@ -5,6 +5,7 @@ from .acciones import CargarAcciones
 from .accionesOOP import (
     accionActualizarPagina,
     accionAnteriorPagina,
+    accionBase,
     accionEntrarFolder,
     accionRegresarFolder,
     accionSalir,
@@ -540,7 +541,9 @@ class elGarrobo(object):
                             "topic": f"{self.ModuloMonitorESP['topic']}/accion",
                         }
 
-                        self.ListaAcciones["mqtt"](opciones)
+                        accionMqtt: accionBase = self.listaClasesAcciones["mqtt"]()
+                        accionMqtt.configurar(opciones)
+                        accionMqtt.ejecutar()
 
                 objetoAccion = self.listaClasesAcciones[comandoAccion]()
                 objetoAccion.configurar(opcionesAccion)
