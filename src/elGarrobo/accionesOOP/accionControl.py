@@ -46,19 +46,20 @@ class accionControl(accionBase):
         self.agregarPropiedad(propiedadAccion)
         self.agregarPropiedad(propiedadOpciones)
 
-        # TODO: usar configuraciones globales
-        data = ObtenerArchivo("modulos/control/mqtt.md")
-
-        if data is None:
-            Logger.warning("No se encontro informacion mqtt modulos/control/mqtt.md")
-            return
-
-        self.topicControl = data.get("topic", "control")
-
         self.funcion = self.controlDistancia
 
     def controlDistancia(self):
         """espera un tiempo"""
+
+        # TODO: usar configuraciones globales
+        data = ObtenerArchivo("modulos/control/mqtt.md")
+
+        if data is None:
+            Logger.warning("No se encontró información mqtt modulos/control/mqtt.md")
+            return
+
+        self.topicControl = data.get("topic", "control")
+
         host = self.obtenerValor("host")
         accionHost = self.obtenerValor("accion")
         opcionesHost = self.obtenerValor("opciones")
