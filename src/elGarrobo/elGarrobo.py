@@ -1,5 +1,6 @@
 import os
 import random
+from pathlib import Path
 
 from .acciones import CargarAcciones
 from .accionesOOP import (
@@ -35,6 +36,19 @@ from .modulos.mi_obs import MiOBS
 from .modulos.mi_pulse import MiPulse
 
 logger = ConfigurarLogging(__name__)
+
+
+class color:
+    PURPLE = "\033[95m"
+    CYAN = "\033[96m"
+    DARKCYAN = "\033[36m"
+    BLUE = "\033[94m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    END = "\033[0m"
 
 
 class elGarrobo(object):
@@ -282,17 +296,27 @@ class elGarrobo(object):
 
         if ListaArchivos is not None:
             for Archivo in ListaArchivos:
-                if ".md" in Archivo or ".json" in Archivo:
-                    Archivo = Archivo.replace(".json", "")
-                    Archivo = Archivo.replace(".md", "")
+                tipoArchivo = Path(Archivo).suffix
+                if tipoArchivo in [".md", ".json"]:
+                    ArchivoSin = Path(Archivo).stem
+
                     encontrado = False
                     if self.ModuloTeclado:
-                        encontrado = self.CargarArchivos("teclados", Data, Archivo)
+                        encontrado = self.CargarArchivos("teclados", Data, ArchivoSin)
                     if self.ModuloDeck and not encontrado:
-                        encontrado = encontrado or self.CargarArchivos("global", Data, Archivo)
-                        encontrado = encontrado or self.CargarArchivos("deck", Data, Archivo)
-                    if self.ModuloPulse and not encontrado:
-                        self.CargarArchivos("pedal", Data, Archivo)
+                        encontrado = encontrado or self.CargarArchivos("global", Data, ArchivoSin)
+                        encontrado = encontrado or self.CargarArchivos("deck", Data, ArchivoSin)
+                    if self.ModuloPedal and not encontrado:
+                        encontrado = encontrado or self.CargarArchivos("pedal", Data, ArchivoSin)
+                    if not encontrado:
+                        logger.warning(f"No sabe importar {tipoArchivo} - {Archivo} - {Data['folder_path']}")
+
+                elif tipoArchivo in [".gif", ".png", ".jpg", ".svg"]:  # no hacer nada con imágenes
+                    pass
+                elif tipoArchivo in [".wav", ".mp3"]:  # no hacen nada con audios
+                    pass
+                else:
+                    logger.warning(f" No sabe importar {tipoArchivo} - {Archivo} - {Data['folder_path']}")
 
         if ListaFolder is not None:
             Data["folder"] = []
@@ -308,18 +332,23 @@ class elGarrobo(object):
         """
         Carga la informacion de un dispositivo
         """
-        if Dispositivo in self.Data:
-            for ArchivoDispositivo in self.Data[Dispositivo]:
-                fileDispositivo = ArchivoDispositivo.get("file")
-                fileDispositivo = fileDispositivo.replace(".json", "")
-                fileDispositivo = fileDispositivo.replace(".md", "")
-                if fileDispositivo == Archivo:
-                    Ruta = UnirPath(Data["folder_path"], fileDispositivo)
-                    Info = leerData(Ruta)
-                    Atributo = ArchivoDispositivo.get("nombre")
-                    if Info is not None:
-                        Data[Atributo] = Info
-                        return True
+
+        DataDispositivo = self.Data.get(Dispositivo)
+
+        for ArchivoDispositivo in DataDispositivo:
+            fileDispositivo = ArchivoDispositivo.get("file")
+            fileDispositivo = Path(fileDispositivo).stem
+            if fileDispositivo == Archivo:
+                Ruta = UnirPath(Data["folder_path"], fileDispositivo)
+                Info = leerData(Ruta)
+
+                Atributo = ArchivoDispositivo.get("nombre")
+                if Info is not None:
+                    Data[Atributo] = Info
+                    return True
+                else:
+                    logger.warning(f"{color.RED}Error cargando: {Ruta}{color.END}")
+
         return False
 
     def cargarTeclados(self):
@@ -413,17 +442,8 @@ class elGarrobo(object):
         Data = self.Keys
         folderes = folder.split("/")
 
-        folderActual = folderes[-1]
-        if self.ModuloMonitorESP:
-            if "topic" in self.ModuloMonitorESP:
-                Mensaje = {"folder": folderActual, "direccion": folder}
-                opciones = {
-                    "opciones": Mensaje,
-                    "topic": f"{self.ModuloMonitorESP['topic']}/folder",
-                }
-                AccionMQTT = self.listaClasesAcciones["mqtt"]()
-                AccionMQTT.configurar(opciones)
-                AccionMQTT.ejecutar()
+        Mensaje = {"folder": folder}
+        self.mensajeMonitorESP(Mensaje, "folder")
 
         if folderes:
             Data = self.BuscarDentroFolder(folderes, Data)
@@ -525,77 +545,70 @@ class elGarrobo(object):
             if comandoAccion in self.listaClasesAcciones:
                 print(f"intentando ejecutar OOP-{comandoAccion}")
                 opcionesAccion = accion.get("opciones", {})
+                teclaAccion = accion.get("key")
                 nombreAccion = accion.get("nombre")
                 logger.info(f"AccionOOP[{comandoAccion}] - {nombreAccion}")
 
-                if self.ModuloMonitorESP:
-                    if "topic" in self.ModuloMonitorESP:
-                        Mensaje = {"accion": nombreAccion}
-                        if "key" in accion:
-                            Mensaje["key"] = accion["key"]
-                        if nombreAccion is not None:
-                            Mensaje["nombre"] = nombreAccion
+                Mensaje = {"accion": comandoAccion}
+                if nombreAccion:
+                    Mensaje["nombre"] = nombreAccion
+                if teclaAccion:
+                    Mensaje["key"] = teclaAccion
 
-                        opciones = {
-                            "opciones": Mensaje,
-                            "topic": f"{self.ModuloMonitorESP['topic']}/accion",
-                        }
-
-                        accionMqtt: accionBase = self.listaClasesAcciones["mqtt"]()
-                        accionMqtt.configurar(opciones)
-                        accionMqtt.ejecutar()
+                self.mensajeMonitorESP(Mensaje, "accion")
 
                 objetoAccion = self.listaClasesAcciones[comandoAccion]()
                 objetoAccion.configurar(opcionesAccion)
                 return objetoAccion.ejecutar()
 
         if "accion" in accion:
-            NombreAccion = accion["accion"]
-            if NombreAccion in self.ListaAcciones:
+            comandoAccion = accion["accion"]
+            if comandoAccion in self.ListaAcciones:
                 opcionesAccion = dict()
                 Nombre = None
                 presionado = accion.get("__estado")
+                nombreAccion = accion.get("nombre")
+                teclaAccion = accion.get("key")
 
-                if "nombre" in accion:
-                    Nombre = accion["nombre"]
+                if nombreAccion:
                     if isinstance(presionado, str):
-                        logger.info(f"Accion[{NombreAccion}-{presionado}] - {Nombre}")
+                        logger.info(f"Accion[{comandoAccion}-{presionado}] - {Nombre}")
                     else:
-                        logger.info(f"Accion[{NombreAccion}] - {Nombre}")
+                        logger.info(f"Accion[{comandoAccion}] - {Nombre}")
                 else:
-                    logger.info(f"Accion[{NombreAccion}]")
+                    logger.info(f"Accion[{comandoAccion}]")
 
                 if "opciones" in accion:
                     opcionesAccion = accion["opciones"]
 
                 # TODO solo recibir opciones como lista o dicionario
+                # if NombreAccion == "macro":
+                #     print(type(opcionesAccion))
                 if isinstance(opcionesAccion, dict):
                     opcionesAccion.update({"__estado": presionado})
                 elif isinstance(opcionesAccion, list):
-                    opcionesAccion.append({"__estado": presionado})
+                    # TODO: agregar
+                    for opciones in opcionesAccion:
+                        opciones["__estado"] = presionado
+                print()
+                print("opciones:", opcionesAccion)
 
-                # TODO: Mover a funcion aparte
-                if self.ModuloMonitorESP:
-                    if "topic" in self.ModuloMonitorESP:
-                        Mensaje = {"accion": NombreAccion}
-                        if "key" in accion:
-                            Mensaje["key"] = accion["key"]
-                        if Nombre is not None:
-                            Mensaje["nombre"] = Nombre
+                # opcionesAccion.append({"__estado": presionado})
 
-                        opciones = {
-                            "opciones": Mensaje,
-                            "topic": f"{self.ModuloMonitorESP['topic']}/accion",
-                        }
+                Mensaje = {"accion": comandoAccion}
+                if nombreAccion:
+                    Mensaje["nombre"] = nombreAccion
+                if teclaAccion:
+                    Mensaje["key"] = teclaAccion
 
-                        self.ListaAcciones["mqtt"](opciones)
+                self.mensajeMonitorESP(Mensaje, "accion")
 
                 # try:
-                return self.ListaAcciones[NombreAccion](opcionesAccion)
+                return self.ListaAcciones[comandoAccion](opcionesAccion)
                 # except Exception as Error:
                 #     logger.info(f"Accion[Error] {Error}")
             else:
-                logger.info(f"Accion[No Encontrada] {NombreAccion}")
+                logger.info(f"Accion[No Encontrada] {comandoAccion}")
         else:
             logger.info(f"Accion[No Atributo]")
 
@@ -938,3 +951,18 @@ class elGarrobo(object):
         for valor in listaValores:
             if atributo == valor.atributo:
                 return valor.valor
+
+    def mensajeMonitorESP(self, mensaje: dict, tema: str):
+        """Envia mensaje por mqtt de las acciones del ElGarrobo"""
+        if self.ModuloMonitorESP:
+            topicBase = self.ModuloMonitorESP.get("topic")
+            if topicBase:
+                opciones = {
+                    "mensaje": mensaje,
+                    "topic": f"{topicBase}/{tema}",
+                }
+                AccionMQTT = self.listaClasesAcciones["mqtt"]()
+                AccionMQTT.configurar(opciones)
+                AccionMQTT.ejecutar()
+            else:
+                logger.warning("Falta Topic en Modulo MonitorESP")

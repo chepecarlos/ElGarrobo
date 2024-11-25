@@ -1,3 +1,4 @@
+import json
 import multiprocessing
 
 from elGarrobo.miLibrerias import ConfigurarLogging, EnviarMensajeMQTT
@@ -16,7 +17,7 @@ class accionMQTT(accionBase):
 
         propiedadMensaje = {
             "nombre": "Mensaje",
-            "tipo": str,
+            "tipo": [str, dict],
             "obligatorio": True,
             "atributo": "mensaje",
             "descripcion": "Mensaje a enviar por mqtt",
@@ -90,6 +91,9 @@ class accionMQTT(accionBase):
         if mensaje is None or topic is None:
             Logger.warning(f"MQTT[Falta Mensaje o topic]")
             return
+
+        if isinstance(mensaje, dict):
+            mensaje = json.dumps(mensaje)
 
         procesoSonido = multiprocessing.Process(
             target=EnviarMensajeMQTT,
