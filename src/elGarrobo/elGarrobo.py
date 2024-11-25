@@ -133,7 +133,7 @@ class elGarrobo(object):
                 self.ModuloOBSNotificacion = Modulos["obs_notificacion"]
 
             if Modulos.get("monitor_esp", False):
-                self.ModuloMonitorESP = leerData("modulos/monidor_esp/mqtt")
+                self.ModuloMonitorESP = leerData("modulos/monitor_esp/mqtt")
 
             self.ModuloOBS = Modulos.get("obs", False)
             self.ModuloDeck = Modulos.get("deck", False)
@@ -420,7 +420,9 @@ class elGarrobo(object):
                     "opciones": Mensaje,
                     "topic": f"{self.ModuloMonitorESP['topic']}/folder",
                 }
-                self.ListaAcciones["mqtt"](opciones)
+                AccionMQTT = self.listaClasesAcciones["mqtt"]()
+                AccionMQTT.configurar(opciones)
+                AccionMQTT.ejecutar()
 
         if folderes:
             Data = self.BuscarDentroFolder(folderes, Data)
