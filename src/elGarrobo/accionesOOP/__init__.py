@@ -9,6 +9,7 @@ from .accionCambiarPagina import (
 from .accionControl import accionControl
 from .accionDelay import accionDelay
 from .accionEntrarFolder import accionEntrarFolder
+from .accionEscribirTexto import accionEscribirTexto
 from .accionFolder import accionFolder
 from .accionMQTT import accionMQTT
 from .accionNavegador import accionNavegador
@@ -33,6 +34,7 @@ def cargarAcciones() -> dict[str:]:
         "control": accionControl,
         "delay": accionDelay,
         "entrar_folder": accionEntrarFolder,
+        "escribir": accionEscribirTexto,
         "folder": accionFolder,
         "mqtt": accionMQTT,
         "navegador": accionNavegador,

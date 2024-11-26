@@ -1,12 +1,15 @@
-from .accionBase import accionBase
 import time
 
 from elGarrobo.miLibrerias import ConfigurarLogging
+
+from .accionBase import accionBase
 
 Logger = ConfigurarLogging(__name__)
 
 
 class accionDelay(accionBase):
+    """Esperar una cantidad de tiempo"""
+
     def __init__(self) -> None:
         nombre = "Delay"
         comando = "delay"
@@ -30,7 +33,7 @@ class accionDelay(accionBase):
         """espera un tiempo"""
         tiempo = self.obtenerValor("tiempo")
         if tiempo is not None:
-        # TODO: confirmar que es un numero
+            # TODO: confirmar que es un numero
             if isinstance(tiempo, str):
                 pedadosTiempo = tiempo.split(":")
                 segundos = int(pedadosTiempo[-1])

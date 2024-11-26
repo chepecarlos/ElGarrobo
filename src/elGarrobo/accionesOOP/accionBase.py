@@ -90,6 +90,10 @@ class accionBase:
         for valor in self.listaValores:
             if atributo == valor.atributo:
                 return valor.valor
+        for propiedad in self.listaPropiedades:
+            if atributo == propiedad.atributo:
+                if propiedad.defecto is not None:
+                    return propiedad.defecto
 
     def __str__(self) -> str:
         return f"Accion: {self.nombre}[{self.atributo}]"
