@@ -1,10 +1,13 @@
 from nicegui import ui
 
 from elGarrobo.accionesOOP import accionBase
+from elGarrobo.miLibrerias import ConfigurarLogging
 
 # librería https://nicegui.io/
 # estilo https://tailwindcss.com/
 # iconos https://fonts.google.com/icons
+
+logger = ConfigurarLogging(__name__)
 
 
 class miGui:
@@ -93,7 +96,7 @@ class miGui:
                                 return
 
                         ui.notify(f"Editar acción {nombre}")
-                        print(f"Editar acción {nombre} a {nombreDispositivo}")
+                        logger.info(f"Editar acción {nombre} a {nombreDispositivo}")
                     else:
                         acciónNueva: dict[str:any] = {"nombre": nombre, "key": tecla, "accion": acción}
                         if tipoDispositivo == "steamdeck" and titulo != "":
@@ -107,7 +110,7 @@ class miGui:
                                 return
 
                         ui.notify(f"Agregando acción {nombre}")
-                        print(f"Agregando acción {nombre} a {nombreDispositivo}")
+                        logger.info(f"Agregando acción {nombre} a {nombreDispositivo}")
                     accionesDispositivo.sort(key=lambda x: x.get("key"), reverse=False)
                     folder = dispositivo.get("folder")
                     self.salvarAcciones(accionesDispositivo, dispositivo, folder)
@@ -127,7 +130,7 @@ class miGui:
                             obligatorioPropiedad = propiedad.obligatorio
                             if obligatorioPropiedad and valor == "":
                                 ui.notify(f"Error {nombrePropiedad} es Obligatorio")
-                                print(f"Error {nombrePropiedad} es Obligatorio")
+                                logger.warning(f"Error {nombrePropiedad} es Obligatorio")
                                 raise Exception("Falta Propiedades")
                             if valor == "":
                                 continue
@@ -232,6 +235,7 @@ class miGui:
                             ui.label("Nombre").style("font-weight: bold; width: 100px")
                             if tipo == "steamdeck":
                                 ui.label("Titulo").style("font-weight: bold; width: 100px")
+                                ui.label("Imagen").style("font-weight: bold; width: 150px")
                             ui.label("Tecla").style("font-weight: bold; width: 100px")
                             ui.label("Acción").style("font-weight: bold; width: 125px")
                             ui.label("Opciones").style("font-weight: bold; width: 180px")
@@ -241,6 +245,7 @@ class miGui:
                             teclaAcción = acciónActual.get("key")
                             acciónAcción = acciónActual.get("accion")
                             tituloAcción = acciónActual.get("titulo")
+                            imagenAcción = acciónActual.get("imagen")
 
                             if tipo == "steamdeck":
                                 teclaAcción = int(teclaAcción) + 1
@@ -249,6 +254,7 @@ class miGui:
                                 ui.label(nombreAcción).style("width: 100px")
                                 if tipo == "steamdeck":
                                     ui.label(tituloAcción).style("width: 100px")
+                                    ui.label(imagenAcción).style("width: 150px")
                                 ui.label(teclaAcción).style("width: 100px")
 
                                 claseAcción = self.obtenerAcciónOop(acciónAcción)
@@ -345,7 +351,6 @@ class miGui:
         for dispositivo in self.listaDispositivos:
             if dispositivo.get("nombre") == nombreDispositivo:
                 tipo = dispositivo.get("tipo")
-                print(tipo)
 
         if nombreDispositivo is None:
             ui.notify(f"Falta seleccionar dispositivo")
@@ -380,6 +385,7 @@ class miGui:
                 ui.link("Tiktok", "https://www.tiktok.com/@chepecarlo")
 
     def iniciar(self):
+        logger.info("Iniciando GUI")
         ui.run(title="ElGarrobo", reload=False, show=False, dark=True)
         # interesante native=True para app
         # ui.run(uvicorn_logging_level="debug", reload=False)
@@ -393,7 +399,7 @@ class miGui:
         for dispositivoActual in self.listaDispositivos:
             if dispositivoActual.get("nombre") == dispositivo.get("nombre"):
                 return
-        print(f"GUI agregando Dispositivo {dispositivo.get('nombre')}")
+        logger.info(f"GUI agregando Dispositivo: {dispositivo.get('nombre')}")
         self.listaDispositivos.append(dispositivo)
         self.mostrarPestañas()
 
