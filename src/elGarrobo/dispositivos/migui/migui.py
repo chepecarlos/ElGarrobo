@@ -27,17 +27,31 @@ class miGui:
         self.ejecutaEvento: callable = None
         self.accionEditar: dict = None
         self.opcionesEditar = None
+        self.pestañas = None
+        self.paneles = None
+        self.editorAcción = None
 
-        with ui.splitter(value=20, limits=(15, 50)).classes("w-full") as splitter:
-            with splitter.before:
-                self.mostraFormulario()
-            with splitter.after:
-                # Contenedor para la tabla
-                self.pestañas = ui.tabs().classes("w-full bg-teal-700 text-white")
-                self.paneles = ui.tab_panels(self.pestañas).classes("w-full")
-                self.mostrarPestañas()
+        @ui.page("/")
+        def paginaAcciones():
+            with ui.splitter(value=20, limits=(15, 50)).classes("w-full") as splitter:
+                with splitter.before:
+                    self.mostraFormulario()
+                with splitter.after:
+                    # Contenedor para la tabla
+                    self.pestañas = ui.tabs().classes("w-full bg-teal-700 text-white")
+                    self.paneles = ui.tab_panels(self.pestañas).classes("w-full")
+                    self.mostrarPestañas()
+            self.estructura()
 
-        self.estructura()
+        @ui.page("/modulos")
+        def paginaModulos():
+            ui.label("Pagina Módulos")
+            self.estructura()
+
+        @ui.page("/dispositivos")
+        def paginaDispositivos():
+            ui.label("Pagina Dispositivos")
+            self.estructura()
 
     def mostraFormulario(self):
         def agregarAcción():
@@ -200,6 +214,9 @@ class miGui:
 
     def mostrarPestañas(self):
 
+        if self.pestañas is None or self.paneles is None:
+            return
+
         self.pestañas.clear()
         self.paneles.clear()
 
@@ -254,7 +271,15 @@ class miGui:
                                 ui.label(nombreAcción).style("width: 100px")
                                 if tipo == "steamdeck":
                                     ui.label(tituloAcción).style("width: 100px")
-                                    ui.label(imagenAcción).style("width: 150px")
+                                    # ui.image(imagenAcción)
+
+                                    imagenAcción = self.obtenerRutaImagen(imagenAcción, folder)
+                                    if imagenAcción is not None:
+                                        # ui.label(imagenAcción).style("width: 150px")
+                                        pass
+                                    else:
+                                        ui.label("").style("width: 150px")
+
                                 ui.label(teclaAcción).style("width: 100px")
 
                                 claseAcción = self.obtenerAcciónOop(acciónAcción)
@@ -371,11 +396,11 @@ class miGui:
             with ui.row():
                 ui.markdown("**FolderRuta**:")
                 self.folderLabel = ui.markdown(self.folder)
-            ui.button(on_click=lambda: right_drawer.toggle(), icon="menu").props("flat color=white")
-
-        with ui.right_drawer(fixed=False).style("background-color: #ebf1fa").props("bordered") as right_drawer:
-            right_drawer.toggle()
-            ui.label("RIGHT DRAWER")
+            with ui.button(icon="menu").props("flat color=white"):
+                with ui.menu() as menu:
+                    ui.menu_item("Acciones", on_click=lambda: ui.navigate.to("/"))
+                    ui.menu_item("Módulos", on_click=lambda: ui.navigate.to("/modulos"))
+                    ui.menu_item("Dispositivos", on_click=lambda: ui.navigate.to("/dispositivos"))
 
         with ui.footer().classes("bg-teal-900").style("height: 5vh; padding: 1px"):
             with ui.row().classes("w-full"):
@@ -392,7 +417,8 @@ class miGui:
 
     def actualizarFolder(self, folder: str):
         self.folder = folder
-        self.folderLabel.content = self.folder
+        if self.folderLabel is not None:
+            self.folderLabel.content = self.folder
 
     def agregarDispositivos(self, dispositivo):
         dispositivo["acciones"] = None
@@ -407,8 +433,9 @@ class miGui:
         for accion in listaAcciones:
             self.listaAcciones.append(accion)
         self.listaAcciones.sort()
-        self.editorAcción.options = self.listaAcciones
-        self.editorAcción.update()
+        if self.editorAcción is not None:
+            self.editorAcción.options = self.listaAcciones
+            self.editorAcción.update()
 
     def actualizarAcciones(self, nombreDispositivo: str, acciones: list, folder: str):
         for dispositivo in self.listaDispositivos:
@@ -421,3 +448,8 @@ class miGui:
         if comandoAcción in self.listaAccionesOPP:
             return self.listaAccionesOPP[comandoAcción]
         return None
+
+    def obtenerRutaImagen(self, Imagen: str, folder: str):
+        if Imagen is None:
+            return
+        pass
