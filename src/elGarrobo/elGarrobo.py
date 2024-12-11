@@ -543,7 +543,7 @@ class elGarrobo(object):
         comandoAccion = accion.get("accion")
         if comandoAccion is not None:
             if comandoAccion in self.listaClasesAcciones:
-                print(f"intentando ejecutar OOP-{comandoAccion}")
+                logger.debug(f"intentando ejecutar OOP-{comandoAccion}")
                 opcionesAccion = accion.get("opciones", {})
                 teclaAccion = accion.get("key")
                 nombreAccion = accion.get("nombre")
@@ -882,7 +882,7 @@ class elGarrobo(object):
         """
         Cierra el programa.
         """
-        logger.info("ElGatoALSW[Saliendo] - Adios :) ")
+        logger.info("ElGarrobo[Saliendo] - Adios :) ")
         if self.ModuloOBS:
             self.OBS.Desconectar()
         if self.ModuloTeclado:
@@ -894,6 +894,8 @@ class elGarrobo(object):
         if self.ModuloMQTT:
             for Servidor in self.ListaMQTT:
                 Servidor.Desconectar()
+        if self.ModuloGui:
+            self.miGui.Desconectar()
         # self.LimpiarDeck()
         # raise SystemExit
         os._exit(0)

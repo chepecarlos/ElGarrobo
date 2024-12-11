@@ -7,7 +7,7 @@ from math import log
 
 from obswebsocket import events, obsws, requests
 
-from elGarrobo.acciones import mensajeMQTT
+from elGarrobo.accionesOOP import accionMQTT
 from elGarrobo.miLibrerias import (
     ConfigurarLogging,
     ObtenerValor,
@@ -28,7 +28,7 @@ class MiOBS:
         self.archivoEstado = "data/obs/obs"
         self.audioMonitoriar = list()
         self.dibujar = None
-        self.notificaciones = None
+        self.notificaciones: callable = None
         self.procesoTiempo = None
         self.Reiniciar()
 
@@ -170,7 +170,9 @@ class MiOBS:
                 tiempoGrabando = estadoGracion.datain["outputTimecode"]
                 tiempoGrabando = tiempoGrabando.split(".")[0]
                 opciones = {"mensaje": tiempoGrabando, "topic": "alsw/tiempo_obs"}
-                mensajeMQTT(opciones)
+                objetoMQTT = accionMQTT()
+                objetoMQTT.configurar(opciones)
+                objetoMQTT.ejecutar()
             else:
                 break
             time.sleep(1)
@@ -331,7 +333,7 @@ class MiOBS:
         """Recibe mensaje de entradas de Audio"""
 
         def convertir(nivel):
-            return round(20 * log(nivel, 10), 1) if nivel > 0 else -200.0
+            return str(round(20 * log(nivel, 10), 1) if nivel > 0 else -200.0)
 
         canales = mensaje.datain["inputs"]
         for canal in canales:
@@ -340,7 +342,9 @@ class MiOBS:
                     if len(canal["inputLevelsMul"]) > 0:
                         nivel = canal["inputLevelsMul"][0][1]
                         opciones = {"mensaje": convertir(nivel), "topic": f"{self.audioTopico}/{nombres}"}
-                        mensajeMQTT(opciones)
+                        objetoMQTT = accionMQTT()
+                        objetoMQTT.configurar(opciones)
+                        objetoMQTT.ejecutar()
 
     def CambiarEscena(self, opciones):
         """Envía solicitud de cambiar de Escena."""

@@ -1,4 +1,4 @@
-from nicegui import ui
+from nicegui import app, ui
 
 from elGarrobo.accionesOOP import accionBase
 from elGarrobo.miLibrerias import ConfigurarLogging
@@ -292,9 +292,9 @@ class miGui:
                                     ui.label(f"{nombreClase}").style("width: 125px")
 
                                 with ui.button_group().props("rounded"):
-                                    ui.button(icon="play_arrow", color="teal-300", on_click=lambda a=acciónActual: self.ejecutaEvento(a, True))
-                                    ui.button(icon="edit", color="teal-300", on_click=lambda a=acciónActual: self.seleccionarAcción(a))
-                                    ui.button(icon="delete", color="teal-300", on_click=lambda a=acciónActual: self.eliminarAcción(a))
+                                    ui.button(icon="play_arrow", color="teal-500", on_click=lambda a=acciónActual: self.ejecutaEvento(a, True))
+                                    ui.button(icon="edit", color="teal-500", on_click=lambda a=acciónActual: self.seleccionarAcción(a))
+                                    ui.button(icon="delete", color="teal-500", on_click=lambda a=acciónActual: self.eliminarAcción(a))
 
         if self.actualizarIconos is not None:
             self.actualizarIconos()
@@ -410,10 +410,16 @@ class miGui:
                 ui.link("Tiktok", "https://www.tiktok.com/@chepecarlo")
 
     def iniciar(self):
+
         logger.info("Iniciando GUI")
-        ui.run(title="ElGarrobo", reload=False, show=False, dark=True)
+        ui.run(title="ElGarrobo", reload=False, show=False, dark=True, language="es", uvicorn_logging_level="warning")
+
         # interesante native=True para app
         # ui.run(uvicorn_logging_level="debug", reload=False)
+
+    def Desconectar(self) -> None:
+        logger.info("Saliendo de NiceGUI")
+        app.shutdown()
 
     def actualizarFolder(self, folder: str):
         self.folder = folder
