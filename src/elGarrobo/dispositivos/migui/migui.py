@@ -78,7 +78,7 @@ class miGui:
                 return
 
             tipo = self.tipoDispositivoSeleccionado()
-            if tipo == "steamdeck":
+            if tipo in ["steamdeck", "padal"]:
                 try:
                     tecla = int(tecla) - 1
                 except:
@@ -88,7 +88,7 @@ class miGui:
             for dispositivo in self.listaDispositivos:
                 if dispositivo.get("nombre") == nombreDispositivo:
                     tipoDispositivo = dispositivo.get("tipo")
-                    if tipoDispositivo == "steamdeck":
+                    if tipoDispositivo in ["steamdeck", "pedal"]:
                         try:
                             tecla = int(tecla)
                         except ValueError:
@@ -264,7 +264,7 @@ class miGui:
                             tituloAcción = acciónActual.get("titulo")
                             imagenAcción = acciónActual.get("imagen")
 
-                            if tipo == "steamdeck":
+                            if tipo in ["steamdeck", "pedal"]:
                                 teclaAcción = int(teclaAcción) + 1
 
                             with ui.row().classes("content p-2 border-2 border-teal-600"):
@@ -313,7 +313,7 @@ class miGui:
         self.botonAgregar.icon = "edit"
         self.editorNombre.value = accion.get("nombre")
         tipo = self.tipoDispositivoSeleccionado()
-        if tipo == "steamdeck":
+        if tipo in ["steamdeck", "pedal"]:
             self.editorTecla.value = int(accion.get("key")) + 1
         else:
             self.editorTecla.value = accion.get("key")
@@ -412,7 +412,7 @@ class miGui:
     def iniciar(self):
 
         logger.info("Iniciando GUI")
-        ui.run(title="ElGarrobo", reload=False, show=False, dark=True, language="es", uvicorn_logging_level="warning")
+        ui.run(title="ElGarrobo", reload=False, show=False, dark=True, language="es", uvicorn_logging_level="warning", favicon="🦎")
 
         # interesante native=True para app
         # ui.run(uvicorn_logging_level="debug", reload=False)
