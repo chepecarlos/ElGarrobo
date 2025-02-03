@@ -7,7 +7,7 @@ from .operaciones import OperacionConstrain, operacionAsignar, operacionConcaten
 from .sonidos import PararReproducion, Reproducir
 from .textbox import VentanaTexto
 from .textovoz import TextoVoz
-from .ventanas import cerrarVentana, mostarVentana
+from .ventanas import cerrarVentana  # mostarVentana
 
 
 def CargarAcciones():
@@ -40,7 +40,7 @@ def CargarAcciones():
         "escribir_archivo": escribirArchivo,
         # Manejo de Ventanas
         "cerrar_ventana": cerrarVentana,
-        "mostrar_ventana": mostarVentana,
+        # "mostrar_ventana": mostarVentana,
         # Input
         "ventana_texto": VentanaTexto,
         # Operacion
