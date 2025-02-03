@@ -1,3 +1,4 @@
+import logging
 import socket
 
 from elGarrobo.miLibrerias import ConfigurarLogging
@@ -12,9 +13,9 @@ class accionAbirGUI(accionBase):
     """Esperar una cantidad de tiempo"""
 
     def __init__(self) -> None:
-        nombre = "Abir GUI"
+        nombre = "Abri GUI"
         comando = "abir_gui"
-        descripcion = "Abri la interface del ElGarrobo en Navegador"
+        descripcion = "Abri la Configuración del ElGarrobo en Navegador"
         super().__init__(nombre, comando, descripcion)
 
         self.funcion = self.abirGUI
@@ -34,10 +35,8 @@ class accionAbirGUI(accionBase):
         finally:
             s.close()
 
-        print(IP)
         url = f"{IP}:8080"
-        print(url)
-
+        Logger.info(f"Abriendo GUI {url}")
         acción = accionNavegador()
         acción.configurar({"url": url})
         acción.ejecutar()
