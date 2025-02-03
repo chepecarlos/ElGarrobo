@@ -1,12 +1,14 @@
 """Acciones de Sonido."""
 
 # https://github.com/jiaaro/pydub
-import multiprocessing
+# https://stackoverflow.com/questions/47596007/stop-the-audio-from-playing-in-pydub
+# import multiprocessing
+from multiprocessing import Process
 
 from pydub import AudioSegment
-from pydub.playback import play
+from pydub.playback import _play_with_simpleaudio
 
-from elGarrobo.miLibrerias import (ConfigurarLogging, ObtenerFolderConfig, UnirPath)
+from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, UnirPath
 
 logger = ConfigurarLogging(__name__)
 
@@ -19,23 +21,6 @@ def AccionSonido(accionActual, folder):
         PararReproducion()
     else:
         Reproducir(accionActual, folder)
-
-
-def Sonido(Archivo, Ganancia):
-    """Reproducir sonido."""
-    try:
-        if Archivo.endswith(".wav"):
-            sound = AudioSegment.from_file(Archivo, format="wav")
-        elif Archivo.endswith(".mp3"):
-            sound = AudioSegment.from_file(Archivo, format="mp3")
-        else:
-            logger.warning(f"Formato no soportado {Archivo}")
-            return
-        logger.info(f"Reproducir[{Archivo}]")
-        play(sound + Ganancia)
-        logger.info(f"Termino[{Archivo}]")
-    except FileNotFoundError:
-        logger.warning(f"No se encontro {Archivo}")
 
 
 def Reproducir(opciones):
@@ -54,21 +39,31 @@ def Reproducir(opciones):
 
     if archivo is not None:
         ganancia = opciones.get("ganancia", 0)
-        folder = opciones.get("folder", ObtenerFolderConfig()) 
-        ganancia = opciones.get("ganancia", 0)
+        folder = opciones.get("folder", ObtenerFolderConfig())
         archivo = UnirPath(folder, archivo)
 
-        procesoSonido = multiprocessing.Process(target=Sonido, args=(archivo, ganancia))
-        procesoSonido.start()
-        listaSonidos.append(procesoSonido)
+        try:
+            if archivo.endswith(".wav"):
+                sound = AudioSegment.from_file(archivo, format="wav")
+            elif archivo.endswith(".mp3"):
+                sound = AudioSegment.from_file(archivo, format="mp3")
+            else:
+                logger.warning(f"Formato no soportado {archivo}")
+                return
+            logger.info(f"Reproducir[{archivo}]")
+            playback = _play_with_simpleaudio(sound + ganancia)
+            listaSonidos.append(playback)
+            logger.info(f"Termino[{archivo}]")
+        except FileNotFoundError:
+            logger.warning(f"No se encontro {archivo}")
 
 
 def PararReproducion(opciones):
     """
-    Parar todos los susprocesos de repoduccion de sonido.
+    Parar todos los subprocess de reproducción de sonido.
     """
     global listaSonidos
     logger.info(f"Parar Sonidos [{len(listaSonidos)}]")
     for Sonido in listaSonidos:
-        Sonido.terminate()
+        Sonido.stop()
     listaSonidos = []
