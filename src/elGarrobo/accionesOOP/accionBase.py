@@ -1,33 +1,53 @@
+"Clase Base que manera las propiedad y si se puede ejecución"
+
+from elGarrobo.miLibrerias import ConfigurarLogging
+
 from .heramientas.propiedadAccion import propiedadAccion
 from .heramientas.valoresAccion import valoresAcciones
+
+logger = ConfigurarLogging(__name__)
 
 
 class accionBase:
     """
-    clase base de las acciones del sistema.
+    clase base de las acciones del sistema
     """
 
+    nombre: str
+    "Nombre de la acción"
+    comando: str
+    "Identificador de la acción"
+    descripcion: str
+    "Descripción de la acción"
+    listaPropiedades: list[propiedadAccion] = []
+    "Lista Propiedad para ejecutar la acciones"
+    listaValores: list[valoresAcciones] = list()
+    "Valores para ejecutar la acción"
     funcion: callable = None
+    "Función a ejecutarse"
     funcionExterna: callable = None
+    "Función a ejecutarse implementada externamente"
+    gui: bool = True
+    "Montar acción en InterfaceWeb"
+    error: bool = False
+    "Error de ejecución de la acción"
 
     def __init__(self, nombre: str, comando: str, descripcion: str) -> None:
+        "Inicializa la información de la acción hijo"
         self.nombre = nombre
         self.comando = comando
         self.descripcion = descripcion
-        self.listaPropiedades: list[propiedadAccion] = []
-        self.listaValores: list[valoresAcciones] = list()
-        self.gui = True
-        self.error = False
 
     def agregarPropiedad(self, lista: dict = None) -> None:
-        """Agrega propiedad a la accion"""
+        """Agrega propiedad a la acción"""
         nuevaPropiedad = propiedadAccion(lista)
         self.listaPropiedades.append(nuevaPropiedad)
 
     def configurar(self, lista: dict = None) -> None:
-        """Recive la lista propiedades para ejecutar"""
+        """Recibe la lista propiedades para ejecutar"""
 
-        self.listaValores = []
+        self.listaValores = list()
+
         if lista is None:
             return
 
@@ -38,13 +58,13 @@ class accionBase:
                     valorActual = valoresAcciones(atributo, valor)
                     self.listaValores.append(valorActual)
                 else:
-                    print(f"AcciónPOO[Error] Atribulo {atributo} incorrecto {type(valor)}")
+                    logger.error(f"AcciónPOO[Error] Atribulo {atributo} incorrecto {type(valor)}")
                     self.error = True
 
     def ejecutar(self) -> bool:
-        """Ejecuta la accion si es posible"""
+        """Ejecuta la acción si es posible"""
         if not self.sePuedeEjecutar():
-            print("AcciónPOO[Error] - Falta Propiedades.")
+            logger.error("AcciónPOO[Error] - Falta Propiedades.")
             return False
 
         if callable(self.funcion):
@@ -55,7 +75,7 @@ class accionBase:
             self.funcionExterna(self.listaValores)
             return True
 
-        print("AcciónPOO[Error] - Falta Función.")
+        logger.error("AcciónPOO[Error] - Falta Función.")
         return False
 
     def sePuedeEjecutar(self) -> bool:
@@ -75,10 +95,11 @@ class accionBase:
                     if propiedad.mismoAtributo(valor):
                         encontrado = True
                 if not encontrado:
+                    logger.error(f"No encontrada propiedad {propiedad.nombre}")
                     return False
         return True
 
-    def confirmarPropiedad(self, atributo, valor) -> bool:
+    def confirmarPropiedad(self, atributo: str, valor) -> bool:
         """Ver si es una propiedad correcta"""
         for propiedad in self.listaPropiedades:
             if propiedad.mismoAtributo(atributo) and propiedad.mismoTipo(valor):
@@ -96,4 +117,4 @@ class accionBase:
                     return propiedad.defecto
 
     def __str__(self) -> str:
-        return f"Accion: {self.nombre}[{self.atributo}]"
+        return f"Acción: {self.nombre}[{self.atributo}]"
