@@ -28,6 +28,7 @@ def Parametros():
     parser = argparse.ArgumentParser(description="Herramientas de Macros de ALSW")
     parser.add_argument("--gui", "-g", help="Sistema interface gráfica", action="store_true")
     parser.add_argument("--configurar", "-c", help="Sistema configuración del programa", action="store_true")
+    parser.add_argument("--depuracion", "-d", help="Activa la depuración", action="store_true")
 
     return parser.parse_args()
 
