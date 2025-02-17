@@ -23,4 +23,13 @@ class accionEntrarFolder(accionBase):
             "ejemplo": "/blender/animar",
         }
 
+        propiedadDispositivo = {
+            "nombre": "Dispositivo",
+            "tipo": str,
+            "atributo": "dispositivo",
+            "descripcion": "A que dispositivo a buscar las acciones",
+            "ejemplo": "Teclado Manor",
+        }
+
         self.agregarPropiedad(propiedadFolder)
+        self.agregarPropiedad(propiedadDispositivo)

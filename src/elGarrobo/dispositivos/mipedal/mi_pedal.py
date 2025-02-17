@@ -1,27 +1,31 @@
 # https://python-elgato-streamdeck.readthedocs.io/en/stable/index.html
 
-from elGarrobo.miLibrerias import ConfigurarLogging
-
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Transport.Transport import TransportError
+
+from elGarrobo.dispositivos.dispositivoBase import dispositivoBase
+from elGarrobo.miLibrerias import ConfigurarLogging
 
 logger = ConfigurarLogging(__name__)
 
 
-class MiPedal(object):
-    def __init__(self, data, evento):
-        self.id = data.get("id")
-        self.nombre = data.get("nombre")
-        self.serial = data.get("serial")
-        self.file = data.get("file")
-        self.conectado = False
-        self.deck = None
-        self.evento = evento
-        self.index = -1
+class MiPedal(dispositivoBase):
 
-    def conectar(self, indexUsados):
+    def __init__(self, data, ejecutarAcción):
+        self.id = data.get("id")
+        nombre: str = data.get("nombre")
+        self.serial: str = data.get("serial")
+        self.archivo: str = data.get("archivo")
+        self.conectado: bool = False
+        self.deck = None
+        self.index: int = -1
+        super().__init__(nombre, self.serial, self.archivo)
+        self.ejecutarAcción: callable = ejecutarAcción
+        self.tipo = "pedal"
+
+    def conectar(self, indexUsados) -> int:
         streamdecks = DeviceManager().enumerate()
-       
+
         for index, deck in enumerate(streamdecks):
             probarIndex = True
             for indexUsado in indexUsados:
@@ -32,6 +36,7 @@ class MiPedal(object):
                 try:
                     self.deck = deck
                     self.deck.open()
+                    self.deck.reset()
                     if self.deck.get_serial_number() == self.serial and self.deck.deck_type() == "Stream Deck Pedal":
                         self.conectado = True
                         self.cantidad = self.deck.key_count()
@@ -42,20 +47,25 @@ class MiPedal(object):
                         self.deck.close()
                 except TransportError as error:
                     self.Conectado = False
-                    self.Deck = None
+                    self.deck = None
                     logger.exception(f"Error 1 {error}")
+                    logger.error(f"Error 1 {error}")
                 except Exception as error:
                     self.Conectado = False
-                    self.Deck = None
+                    self.deck = None
                     logger.exception(f"Error 2 {error}")
+                    logger.error(f"Error 2 {error}")
 
-    def actualizarBoton(self, Deck, Key, Estado):
+    def actualizarBoton(self, Deck, Key: int, Estado: bool):
         data = {
             "nombre": self.nombre,
-            "key": Key,
+            "key": Key + 1,
             "estado": Estado,
         }
-        self.evento(data)
+        self.buscarAcción(data)
+        # print(f"Se precioso {self.tipo} {data}")
+        # print(f"Lista acciones {self.listaAcciones}")
+        # self.evento(data)
 
     def desconectar(self):
         if self.conectado:

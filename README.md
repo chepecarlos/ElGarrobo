@@ -24,8 +24,7 @@ Heramienta para aumentar la eficiencia y rapidez, en desarrollo y trabajo en pro
 
 ## Acciones
 
-- [Acciones Base](./documentacion/Lista_Acciones.md)
-- [OBS Websocket](./documentacion/OBS_Acciones.md)
+- [Lista de acciones](./elGarrobo/accionesOOP)
 
 ### Cosas por hacer
 

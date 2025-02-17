@@ -14,6 +14,7 @@ from .accionesOOP import (
     cargarAcciones,
 )
 from .accionesOOP.heramientas.valoresAccion import valoresAcciones
+from .dispositivos.dispositivoBase import dispositivoBase
 from .dispositivos.mideck.mi_deck_extra import DefinirFuente, DefinirImagenes
 from .dispositivos.mideck.mi_streamdeck import MiStreamDeck
 from .dispositivos.migui.migui import miGui
@@ -54,9 +55,19 @@ class color:
 class elGarrobo(object):
     """Clase base de Sistema de Macro ElGarrobo de ChepeCarlos."""
 
+    folderPerfil: str = "default"
+    "Folder donde se buscan las acciones"
+
+    listaDispositivos: list[dispositivoBase] = list()
+    "Lista de dispositivos disponibles "
+
+    # FIXME: mover a mover a objeto de streamdeck
+    ListaDeck = None
+    PathActual = None
+
     def __init__(self) -> None:
 
-        logger.info(f"Abri[config]")
+        logger.info(f"Abrí[config]")
 
         self.Data = obtenerArchivoPaquete("elGarrobo", "data/config.md")
         if self.Data is None:
@@ -113,6 +124,9 @@ class elGarrobo(object):
 
             # TODO: recivir acciones desde Modulo de Pulse
             self.miGui.agregarAcciones(("salvar_pulse", "volumen", "mute"))
+
+        self.cargarFolder()
+
         if self.ModuloGui:
             self.miGui.iniciar()
             # TODO: cargar foldrer al inicio
@@ -203,14 +217,24 @@ class elGarrobo(object):
             self.miGui.listaAccionesOPP = self.listaClasesAcciones
             self.miGui.agregarAcciones(listaAccion)
 
+    def cargarFolder(self):
+
+        logger.info("Cargando acciones desde inicio")
+        self.Entrar_Folder({valoresAcciones("folder", "/")})
+
     def CargarData(self):
         """
         Cargando Data para Dispisitivo.
         """
+
+        logger.info("Cargando[Perfil]")
+        self.folderPerfil = self.Data.get("folder_perfil", "default")
+
         logger.info("Cargando[Eventos]")
         if self.ModuloDeck:
             self.BanderaActualizarDeck = False
             deck_file = self.Data.get("deck_file")
+
             if deck_file is not None:
                 DataDeck = leerData(deck_file)
                 if DataDeck is not None:
@@ -223,7 +247,7 @@ class elGarrobo(object):
                         pedal = {"nombre": nombre, "tipo": "steamdeck", "clase": "null", "input": input, "archivo": archivo}
                         self.miGui.agregarDispositivos(pedal)
                 else:
-                    logger.error(f"Falta {deck_file}")
+                    logger.error(f"Falta Deck File {deck_file}")
             else:
                 logger.error("Falta atribulo deck_file en config")
 
@@ -291,6 +315,7 @@ class elGarrobo(object):
         """
         Carga recursivamente las configuración de los diferentes eventos por dispositivos.
         """
+        # FIXME: ya no cargar data al inicio
         ListaFolder = ObtenerListaFolder(Data["folder_path"])
         ListaArchivos = ObtenerListaArhivos(Data["folder_path"])
 
@@ -306,8 +331,8 @@ class elGarrobo(object):
                     if self.ModuloDeck and not encontrado:
                         encontrado = encontrado or self.CargarArchivos("global", Data, ArchivoSin)
                         encontrado = encontrado or self.CargarArchivos("deck", Data, ArchivoSin)
-                    if self.ModuloPedal and not encontrado:
-                        encontrado = encontrado or self.CargarArchivos("pedal", Data, ArchivoSin)
+                    # if self.ModuloPedal and not encontrado:
+                    #     encontrado = encontrado or self.CargarArchivos("pedal", Data, ArchivoSin)
                     if not encontrado:
                         logger.warning(f"No sabe importar {tipoArchivo} - {Archivo} - {Data['folder_path']}")
 
@@ -330,10 +355,15 @@ class elGarrobo(object):
 
     def CargarArchivos(self, Dispositivo, Data, Archivo):
         """
-        Carga la informacion de un dispositivo
+        Carga la información de un dispositivo
         """
 
         DataDispositivo = self.Data.get(Dispositivo)
+
+        # print(Dispositivo, DataDispositivo)
+        if DataDispositivo is None:
+            logger.warning(f"Error cargando {Dispositivo}")
+            return
 
         for ArchivoDispositivo in DataDispositivo:
             fileDispositivo = ArchivoDispositivo.get("file")
@@ -365,9 +395,11 @@ class elGarrobo(object):
                 estado = teclado.get("enable", True)
                 if estado:
                     if nombre is not None and archivo is not None and input is not None:
-                        tecladoActual = MiTecladoMacro(nombre, input, archivo, self.Evento)
-                        tecladoActual.Conectar()
+                        tecladoActual: dispositivoBase = MiTecladoMacro(nombre, input, archivo, self.Evento)
+                        tecladoActual.conectar()
                         self.ListaTeclados.append(tecladoActual)
+                        # TODO: Re agregar a dispositivo
+                        # self.listaDispositivos.append(tecladoActual)
 
     def CargarStreamDeck(self):
         """Configurando streamdeck."""
@@ -378,8 +410,9 @@ class elGarrobo(object):
             logger.info("StreamDeck[Cargando]")
             Cantidad_Base = 0
             self.ListaDeck = []
-            for InfoDeck in self.Data["deck"]:
+            for InfoDeck in self.Data.get("deck"):
                 DeckActual = MiStreamDeck(InfoDeck, self.Evento, Cantidad_Base)
+                DeckActual.CambiarFolder(self.PathActual)
                 indexActual = DeckActual.Conectar(self.listaIndex)
                 self.listaIndex.append(indexActual)
                 Cantidad_Base += DeckActual.Cantidad
@@ -388,7 +421,7 @@ class elGarrobo(object):
             self.ListaDeck.sort(key=lambda x: x.id, reverse=False)
             if self.ModuloGui:
                 self.miGui.actualizarIconos = self.ActualizarDeck
-            #     self.ListaDeck.append(DeckActual)
+                # self.ListaDeck.append(DeckActual)
             # CargarDeck = IniciarStreamDeck(self.Data['deck'], self.Evento)
             # for Deck in CargarDeck:
             #     DeckActual = MiStreamDeck(Deck)
@@ -401,10 +434,11 @@ class elGarrobo(object):
             logger.info("Pedal[Cargando]")
             self.listaPedales = []
             for infoPedales in self.Data.get("pedal"):
-                pedalActual = MiPedal(infoPedales, self.Evento)
+                pedalActual = MiPedal(infoPedales, self.ejecutarAcción)
                 indexActual = pedalActual.conectar(self.listaIndex)
                 self.listaIndex.append(indexActual)
                 self.listaPedales.append(pedalActual)
+                self.listaDispositivos.append(pedalActual)
             self.ListaDeck.sort(key=lambda x: x.id, reverse=False)
         else:
             self.listaPedales = None
@@ -412,23 +446,25 @@ class elGarrobo(object):
     def ActualizarDeck(self):
         for Deck in self.ListaDeck:
             if "streamdeck" in self.acciones:
-                Deck.CambiarFolder(self.PathActual)
+                # Deck.CambiarFolder(self.PathActual)
                 Deck.ActualizarIconos(self.acciones["streamdeck"], self.desfaceDeck, Unido=True)
 
             elif Deck.Nombre in self.acciones:
-                Deck.CambiarFolder(self.PathActual)
+                # Deck.CambiarFolder(self.PathActual)
                 Deck.ActualizarIconos(self.acciones[Deck.Nombre], self.desfaceDeck)
 
-    def ActualizarDeckIcono(self):
+    # def ActualizarDeckIcono(self):
 
-        # TODO: Problemar cuando funcion se llama muchas veces el gifs empieza a fallar
-        if self.ListaDeck is not None:
-            for Deck in self.ListaDeck:
-                if "streamdeck" in self.acciones:
-                    Deck.ActualizarIconos(self.acciones["streamdeck"], self.desfaceDeck, Unido=True)
+    #     # TODO: Problemar cuando funcion se llama muchas veces el gifs empieza a fallar
+    #     if self.ListaDeck is not None:
+    #         for Deck in self.ListaDeck:
+    #             if "streamdeck" in self.acciones:
+    #                 Deck.ActualizarIconos(self.acciones["streamdeck"], self.desfaceDeck, Unido=True)
 
-                elif Deck.Nombre in self.acciones:
-                    Deck.ActualizarIconos(self.acciones[Deck.Nombre], self.desfaceDeck)
+    #             elif Deck.Nombre in self.acciones:
+    #                 Deck.ActualizarIconos(self.acciones[Deck.Nombre], self.desfaceDeck)
+
+    # def
 
     def LimpiarDeck(self):
         for Deck in self.ListaDeck:
@@ -438,7 +474,8 @@ class elGarrobo(object):
                 Deck.Limpiar()
 
     def BuscarFolder(self, folder: str):
-        ListaDispositivo = ["teclados", "global", "deck", "pedal"]
+        # ListaDispositivo = ["teclados", "global", "deck", "pedal"]
+        ListaDispositivo = ["teclados", "global", "deck"]
         Data = self.Keys
         folderes = folder.split("/")
 
@@ -452,10 +489,13 @@ class elGarrobo(object):
                 for Dispositivo in ListaDispositivo:
                     Estado = self.CargarAcciones(Dispositivo, Data)
                     Encontrado = Estado or Encontrado
+                    if Encontrado and Dispositivo == "deck":
+                        if "streamdeck" in self.acciones:
+                            self.desfaceDeck = 0
+                        if self.ListaDeck is not None:
+                            for deck in self.ListaDeck:
+                                deck.CambiarFolder(folder)
 
-                if Encontrado:
-                    if "streamdeck" in self.acciones:
-                        self.desfaceDeck = 0
                 return Encontrado
 
     def CargarAcciones(self, Dispositivo, Data):
@@ -491,7 +531,7 @@ class elGarrobo(object):
                     return Data
         return None
 
-    def Evento(self, Evento):
+    def Evento(self, Evento: dict):
         NombreEvento = Evento.get("nombre")
         if NombreEvento in self.acciones:
             for accion in self.acciones[NombreEvento]:
@@ -530,25 +570,30 @@ class elGarrobo(object):
                 if "accion" in evento:
                     evento["__estado"] = estado
                     # TODO: Ver como pasar estado entre macros
-                    self.BuscarAccion(evento)
+                    self.ejecutarAcción(evento)
                 else:
                     logger.info("Evento[no accion]")
         elif isinstance(estado, str):
             evento["__estado"] = estado
             accion = evento.get("accion")
             if accion == "presionar" or estado == "presionado":
-                self.BuscarAccion(evento)
+                self.ejecutarAcción(evento)
 
-    def BuscarAccion(self, accion):
-        comandoAccion = accion.get("accion")
-        if comandoAccion is not None:
-            if comandoAccion in self.listaClasesAcciones:
-                logger.debug(f"intentando ejecutar OOP-{comandoAccion}")
-                opcionesAccion = accion.get("opciones", {})
-                teclaAccion = accion.get("key")
-                nombreAccion = accion.get("nombre")
-                logger.info(f"AccionOOP[{comandoAccion}] - {nombreAccion}")
+    def ejecutarAcción(self, accion: dict):
+        comandoAccion: str = accion.get("accion")
 
+        if comandoAccion is None:
+            logger.info(f"Accion[No Atributo] - {accion}")
+
+        if comandoAccion in self.listaClasesAcciones:
+            logger.debug(f"intentando ejecutar OOP-{comandoAccion}")
+            opcionesAccion = accion.get("opciones", {})
+            teclaAccion = accion.get("key")
+            nombreAccion = accion.get("nombre")
+
+            logger.info(f"AccionOOP[{comandoAccion}] - {nombreAccion}")
+
+            if self.ModuloMonitorESP:
                 Mensaje = {"accion": comandoAccion}
                 if nombreAccion:
                     Mensaje["nombre"] = nombreAccion
@@ -557,60 +602,56 @@ class elGarrobo(object):
 
                 self.mensajeMonitorESP(Mensaje, "accion")
 
-                objetoAccion = self.listaClasesAcciones[comandoAccion]()
-                objetoAccion.configurar(opcionesAccion)
-                return objetoAccion.ejecutar()
+            objetoAccion = self.listaClasesAcciones[comandoAccion]()
+            objetoAccion.configurar(opcionesAccion)
+            return objetoAccion.ejecutar()
 
-        if "accion" in accion:
-            comandoAccion = accion["accion"]
-            if comandoAccion in self.ListaAcciones:
-                opcionesAccion = dict()
-                Nombre = None
-                presionado = accion.get("__estado")
-                nombreAccion = accion.get("nombre")
-                teclaAccion = accion.get("key")
+        elif comandoAccion in self.ListaAcciones:
+            opcionesAccion = dict()
+            Nombre = None
+            presionado = accion.get("__estado")
+            nombreAccion = accion.get("nombre")
+            teclaAccion = accion.get("key")
 
-                if nombreAccion:
-                    if isinstance(presionado, str):
-                        logger.info(f"Accion[{comandoAccion}-{presionado}] - {Nombre}")
-                    else:
-                        logger.info(f"Accion[{comandoAccion}] - {Nombre}")
+            if nombreAccion:
+                if isinstance(presionado, str):
+                    logger.info(f"Accion[{comandoAccion}-{presionado}] - {Nombre}")
                 else:
-                    logger.info(f"Accion[{comandoAccion}]")
-
-                if "opciones" in accion:
-                    opcionesAccion = accion["opciones"]
-
-                # TODO solo recibir opciones como lista o dicionario
-                # if NombreAccion == "macro":
-                #     print(type(opcionesAccion))
-                if isinstance(opcionesAccion, dict):
-                    opcionesAccion.update({"__estado": presionado})
-                elif isinstance(opcionesAccion, list):
-                    # TODO: agregar
-                    for opciones in opcionesAccion:
-                        opciones["__estado"] = presionado
-                print()
-                print("opciones:", opcionesAccion)
-
-                # opcionesAccion.append({"__estado": presionado})
-
-                Mensaje = {"accion": comandoAccion}
-                if nombreAccion:
-                    Mensaje["nombre"] = nombreAccion
-                if teclaAccion:
-                    Mensaje["key"] = teclaAccion
-
-                self.mensajeMonitorESP(Mensaje, "accion")
-
-                # try:
-                return self.ListaAcciones[comandoAccion](opcionesAccion)
-                # except Exception as Error:
-                #     logger.info(f"Accion[Error] {Error}")
+                    logger.info(f"Accion[{comandoAccion}] - {Nombre}")
             else:
-                logger.info(f"Accion[No Encontrada] {comandoAccion}")
+                logger.info(f"Accion[{comandoAccion}]")
+
+            if "opciones" in accion:
+                opcionesAccion = accion["opciones"]
+
+            # TODO solo recibir opciones como lista o dicionario
+            # if NombreAccion == "macro":
+            #     print(type(opcionesAccion))
+            if isinstance(opcionesAccion, dict):
+                opcionesAccion.update({"__estado": presionado})
+            elif isinstance(opcionesAccion, list):
+                # TODO: agregar
+                for opciones in opcionesAccion:
+                    opciones["__estado"] = presionado
+            print()
+            print("opciones:", opcionesAccion)
+
+            # opcionesAccion.append({"__estado": presionado})
+
+            Mensaje = {"accion": comandoAccion}
+            if nombreAccion:
+                Mensaje["nombre"] = nombreAccion
+            if teclaAccion:
+                Mensaje["key"] = teclaAccion
+
+            self.mensajeMonitorESP(Mensaje, "accion")
+
+            # try:
+            return self.ListaAcciones[comandoAccion](opcionesAccion)
+            # except Exception as Error:
+            #     logger.info(f"Accion[Error] {Error}")
         else:
-            logger.info(f"Accion[No Atributo]")
+            logger.info(f"Accion[No Encontrada] {comandoAccion}")
 
         return None
 
@@ -628,7 +669,7 @@ class elGarrobo(object):
 
             self.solisitaMacro(comando, cajon)
 
-            respuesta = self.BuscarAccion(comando)
+            respuesta = self.ejecutarAcción(comando)
 
             self.respuestaMacro(comando, respuesta, cajon)
 
@@ -646,7 +687,7 @@ class elGarrobo(object):
         if accion is None:
             return
 
-        return self.BuscarAccion(accion)
+        return self.ejecutarAcción(accion)
 
     def AccionesAlias(self, opciones):
         """
@@ -659,7 +700,7 @@ class elGarrobo(object):
         if nombre is not None:
             for accion in self.Data["alias"]:
                 if nombre == accion.get("nombre"):
-                    self.BuscarAccion(accion)
+                    self.ejecutarAcción(accion)
 
     def solisitaMacro(self, comando, cajon):
         if "macro_opciones" in comando:
@@ -705,7 +746,7 @@ class elGarrobo(object):
         """
         logger.info("Lanzando Datos")
         Selecion = random.choice(opciones)
-        return self.BuscarAccion(Selecion)
+        return self.ejecutarAcción(Selecion)
 
     def Reiniciar(self, opciones):
         """
@@ -736,9 +777,21 @@ class elGarrobo(object):
         Entra en folder
         """
         folder: str = self.obtenerValor(opciones, "folder")
+        nombreDispositovo: str = self.obtenerValor(opciones, "dispositivo")
+
         if folder is None:
             logger.warning(f"Folder[no encontrado]")
             return
+
+        if nombreDispositovo is None:
+            for disposito in self.listaDispositivos:
+                disposito.cargarAccionesFolder(self.folderPerfil, folder)
+        else:
+            for disposito in self.listaDispositivos:
+                if disposito.nombre.lower() == nombreDispositovo.lower():
+                    print(f"Cambiando por dispositovo {disposito.nombre}")
+                    disposito.cargarAccionesFolder(self.folderPerfil, folder)
+                    return
 
         rutaActual = RelativoAbsoluto(folder, self.PathActual)
         if rutaActual == self.PathActual:
@@ -820,7 +873,7 @@ class elGarrobo(object):
         # todo: no existe mqtt.json
         if "mqtt" in self.Data and self.Data["mqtt"] is not None:
             for DataMQTT in self.Data["mqtt"]:
-                ServidorMQTT = MiMQTT(DataMQTT, self.BuscarAccion)
+                ServidorMQTT = MiMQTT(DataMQTT, self.ejecutarAcción)
                 self.ListaMQTT.append(ServidorMQTT)
             for ServidorMQTT in self.ListaMQTT:
                 ServidorMQTT.Conectar()
@@ -887,7 +940,7 @@ class elGarrobo(object):
             self.OBS.Desconectar()
         if self.ModuloTeclado:
             for Teclado in self.ListaTeclados:
-                Teclado.Desconectar()
+                Teclado.desconectar()
         if self.ModuloDeck:
             for deck in self.ListaDeck:
                 deck.Desconectar()
@@ -896,6 +949,8 @@ class elGarrobo(object):
                 Servidor.Desconectar()
         if self.ModuloGui:
             self.miGui.Desconectar()
+        for dispositivo in self.listaDispositivos:
+            dispositivo.desconectar()
         # self.LimpiarDeck()
         # raise SystemExit
         os._exit(0)
@@ -906,7 +961,7 @@ class elGarrobo(object):
             self.BanderaActualizarDeck = True
 
             if self.BanderaActualizarDeck:
-                self.ActualizarDeckIcono()
+                self.ActualizarDeck()
                 self.BanderaActualizarDeck = False
 
     def SolisitarNotifiacacion(self, texto, opciones: dict[valoresAcciones]):
