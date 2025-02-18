@@ -39,6 +39,7 @@ from .accionMQTT import accionMQTT
 from .accionNavegador import accionNavegador
 from .accionNotificacion import accionNotificacion
 from .accionOS import accionOS
+from .accionRecargarFolder import accionRecargarFolder
 from .accionRegresarFolder import accionRegresarFolder
 from .accionSalir import accionSalir
 from .accionTeclas import accionTeclas
@@ -65,6 +66,7 @@ def cargarAcciones() -> dict[str:]:
         "navegador": accionNavegador,
         "notificacion": accionNotificacion,
         "os": accionOS,
+        "reiniciar_data": accionRecargarFolder,
         "regresar_folder": accionRegresarFolder,
         "salir": accionSalir,
         "teclas": accionTeclas,

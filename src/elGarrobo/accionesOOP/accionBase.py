@@ -34,13 +34,14 @@ class accionBase:
 
     def __init__(self, nombre: str, comando: str, descripcion: str) -> None:
         "Inicializa la información de la acción hijo"
-        self.nombre = nombre
-        self.comando = comando
-        self.descripcion = descripcion
+        self.nombre: str = nombre
+        self.comando: str = comando
+        self.descripcion: str = descripcion
+        self.listaPropiedades: list[propiedadAccion] = []
 
-    def agregarPropiedad(self, lista: dict = None) -> None:
+    def agregarPropiedad(self, data: dict) -> None:
         """Agrega propiedad a la acción"""
-        nuevaPropiedad = propiedadAccion(lista)
+        nuevaPropiedad = propiedadAccion(data)
         self.listaPropiedades.append(nuevaPropiedad)
 
     def configurar(self, lista: dict = None) -> None:
@@ -64,7 +65,7 @@ class accionBase:
     def ejecutar(self) -> bool:
         """Ejecuta la acción si es posible"""
         if not self.sePuedeEjecutar():
-            logger.error("AcciónPOO[Error] - Falta Propiedades.")
+            logger.error(f"AcciónPOO[Error] {self.nombre} - Falta Propiedades.")
             return False
 
         if callable(self.funcion):
@@ -83,20 +84,20 @@ class accionBase:
         if self.error:
             return False
 
-        listaObligatoria = []
+        valoresFaltan: list = list()
         for propiedad in self.listaPropiedades:
             if propiedad.obligatorio:
-                listaObligatoria.append(propiedad)
-
-        if listaObligatoria:
-            for propiedad in listaObligatoria:
-                encontrado = False
+                encontrado: bool = False
                 for valor in self.listaValores:
-                    if propiedad.mismoAtributo(valor):
+                    if propiedad == valor:
                         encontrado = True
                 if not encontrado:
-                    logger.error(f"No encontrada propiedad {propiedad.nombre}")
-                    return False
+                    valoresFaltan.append(propiedad.nombre)
+        if len(valoresFaltan) > 0:
+            print(len(valoresFaltan), valoresFaltan)
+            logger.error(f"No encontrada propiedades: {valoresFaltan}")
+            return False
+
         return True
 
     def confirmarPropiedad(self, atributo: str, valor) -> bool:

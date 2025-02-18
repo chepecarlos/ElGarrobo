@@ -8,6 +8,7 @@ from .accionesOOP import (
     accionAnteriorPagina,
     accionBase,
     accionEntrarFolder,
+    accionRecargarFolder,
     accionRegresarFolder,
     accionSalir,
     accionSiquientePagina,
@@ -183,6 +184,7 @@ class elGarrobo(object):
         accionSalir.funcionExterna = self.Salir
         accionEntrarFolder.funcionExterna = self.Entrar_Folder
         accionRegresarFolder.funcionExterna = self.Regresar_Folder
+        accionRecargarFolder.funcionExterna = self.Reiniciar
 
         ListaAcciones = CargarAcciones()
         listaClasesAcciones = cargarAcciones()
@@ -192,9 +194,6 @@ class elGarrobo(object):
         ListaAcciones["presionar"] = self.AccionesPresionar  # TODO: ver lista que puede usar estado
         ListaAcciones["alias"] = self.AccionesAlias
         ListaAcciones["random"] = self.AccionRandom
-
-        # Acciones Sistema
-        ListaAcciones["reiniciar_data"] = self.Reiniciar
 
         # Acciones Deck
         if self.ModuloDeck:
@@ -753,9 +752,31 @@ class elGarrobo(object):
         Reinicia la data del programa.
         """
         logger.info("Reiniciar data ElGatoALSW")
+
+        nombreDispositovo: str = self.obtenerValor(opciones, "dispositivo")
+
+        if nombreDispositovo is None:
+            for dispositivo in self.listaDispositivos:
+                dispositivo.recargarAccionesFolder(self.folderPerfil)
+        else:
+            for disposito in self.listaDispositivos:
+                if disposito.nombre.lower() == nombreDispositovo.lower():
+                    disposito.recargarAccionesFolder(self.folderPerfil, directo=True)
+
         self.ReiniciarData()
 
     def Regresar_Folder(self, opciones: list):
+
+        nombreDispositovo: str = self.obtenerValor(opciones, "dispositivo")
+
+        if nombreDispositovo is None:
+            for dispositivo in self.listaDispositivos:
+                dispositivo.cargarAccionesRegresarFolder(self.folderPerfil)
+        else:
+            for disposito in self.listaDispositivos:
+                if disposito.nombre.lower() == nombreDispositovo.lower():
+                    disposito.cargarAccionesRegresarFolder(self.folderPerfil, directo=True)
+
         Direcion = self.PathActual.split("/")
         self.PathActual = "/".join(Direcion[:-1])
         if self.PathActual == "":
@@ -789,8 +810,7 @@ class elGarrobo(object):
         else:
             for disposito in self.listaDispositivos:
                 if disposito.nombre.lower() == nombreDispositovo.lower():
-                    print(f"Cambiando por dispositovo {disposito.nombre}")
-                    disposito.cargarAccionesFolder(self.folderPerfil, folder)
+                    disposito.cargarAccionesFolder(self.folderPerfil, folder, directo=True)
                     return
 
         rutaActual = RelativoAbsoluto(folder, self.PathActual)

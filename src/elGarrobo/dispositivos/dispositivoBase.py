@@ -45,14 +45,14 @@ class dispositivoBase:
     def actualizar(self):
         pass
 
-    def cargarAccionesFolder(self, folderPerfil: str, folder: str, directo: bool = False):
+    def cargarAccionesFolder(self, folderPerfil: str, folder: str, directo: bool = False, recargar: bool = False):
         "Busca y carga acciones en un folder, si existen"
         folderBase = str(ObtenerFolderConfig())
         rutaRelativa = self._calcularRutaRelativa(folder)
 
-        if self.folder == rutaRelativa or self.folder is None:
+        if self.folder == rutaRelativa or self.folder is None and not recargar:
             if directo:
-                logger.info(f"{self.nombre}[Acciones-Cargadas] - Ya cargado")
+                logger.info(f"{self.nombre}[Acciones-Cargadas] - {self.folder} - Ya cargado")
             return
 
         archivo = os.path.abspath(os.path.join(folderBase, folderPerfil, rutaRelativa, self.archivo))
@@ -64,7 +64,7 @@ class dispositivoBase:
                 self.folder = "/"
             else:
                 self.folder = rutaRelativa
-            logger.info(f"{self.nombre}[Acciones-Cargadas] - {self.folder}[{len(self.listaAcciones)}]")
+            logger.info(f"{self.nombre}[Acciones-Cargadas] - {self.folder} - Acciones:[{len(self.listaAcciones)}]")
         elif directo:
             logger.warning(f"{self.nombre}[{self.tipo}] - No se puede cargar {archivo}")
 
@@ -80,6 +80,10 @@ class dispositivoBase:
     def cargarAccionesRegresarFolder(self, folderPerfil: str, directo: bool = False):
         print(f"Intentando subir folder {self.nombre}- {self.folder}")
         self.cargarAccionesFolder(folderPerfil, "../", directo)
+
+    def recargarAccionesFolder(self, folderPerfil: str, directo: bool = False):
+        "Recarga las acciones del folder actual"
+        self.cargarAccionesFolder(folderPerfil, ".", directo, recargar=True)
 
     def cargarData(self, archivo: str):
 

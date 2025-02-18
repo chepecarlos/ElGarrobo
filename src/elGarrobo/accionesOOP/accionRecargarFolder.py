@@ -5,13 +5,13 @@ from .accionBase import accionBase
 Logger = ConfigurarLogging(__name__)
 
 
-class accionRegresarFolder(accionBase):
+class accionRecargarFolder(accionBase):
     """Sube un nivel los folder y carga las acciones por Dispositivos"""
 
     def __init__(self) -> None:
-        nombre = "Regresar Folder"
-        comando = "regresar_folder"
-        descripcion = "Sube un nivel los folder y carga las acciones por Dispositivos"
+        nombre = "Recargar Acciones"
+        comando = "reiniciar_data"
+        descripcion = "Recarga las acciones desde el folder actual"
         super().__init__(nombre, comando, descripcion)
 
         propiedadDispositivo = {
