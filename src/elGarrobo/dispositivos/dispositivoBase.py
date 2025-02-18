@@ -51,7 +51,8 @@ class dispositivoBase:
         rutaRelativa = self._calcularRutaRelativa(folder)
 
         if self.folder == rutaRelativa or self.folder is None:
-            print("Ya cargado")
+            if directo:
+                logger.info(f"{self.nombre}[Acciones-Cargadas] - Ya cargado")
             return
 
         archivo = os.path.abspath(os.path.join(folderBase, folderPerfil, rutaRelativa, self.archivo))
@@ -63,7 +64,7 @@ class dispositivoBase:
                 self.folder = "/"
             else:
                 self.folder = rutaRelativa
-            logger.info(f"{self.nombre}[Acciones-Cargadas] - {self.folder}")
+            logger.info(f"{self.nombre}[Acciones-Cargadas] - {self.folder}[{len(self.listaAcciones)}]")
         elif directo:
             logger.warning(f"{self.nombre}[{self.tipo}] - No se puede cargar {archivo}")
 
