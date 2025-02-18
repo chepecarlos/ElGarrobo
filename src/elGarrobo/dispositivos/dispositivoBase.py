@@ -30,7 +30,7 @@ class dispositivoBase:
         self.dispositivo = dispositivo
         self.archivo = archivo
         self.listaAcciones: list[dict] = list()
-        self.folder = None
+        self.folder = "/"
         self.ejecutarAcción = None
         self.tipo = ""
 
@@ -48,25 +48,37 @@ class dispositivoBase:
     def cargarAccionesFolder(self, folderPerfil: str, folder: str, directo: bool = False):
         "Busca y carga acciones en un folder, si existen"
         folderBase = str(ObtenerFolderConfig())
-        print(folder[0])
-        if folder[0] == "/":
-            folder = folder[1:]
-        else:
-            # TODO; ver como entrar en subfolder
-            pass
-        print(folderBase, folderPerfil, folder, self.archivo)
-        if self.folder == folder and self.folder is None:
+        rutaRelativa = self._calcularRutaRelativa(folder)
+
+        if self.folder == rutaRelativa or self.folder is None:
+            print("Ya cargado")
             return
 
-        archivo = os.path.join(folderBase, folderPerfil, folder, self.archivo)
-        print(archivo)
+        archivo = os.path.abspath(os.path.join(folderBase, folderPerfil, rutaRelativa, self.archivo))
         data = self.cargarData(archivo)
 
         if data is not None:
             self.listaAcciones = data
-            print("Data salvada", self.listaAcciones)
+            if rutaRelativa in (".", "..", ""):
+                self.folder = "/"
+            else:
+                self.folder = rutaRelativa
+            logger.info(f"{self.nombre}[Acciones-Cargadas] - {self.folder}")
         elif directo:
             logger.warning(f"{self.nombre}[{self.tipo}] - No se puede cargar {archivo}")
+
+    def _calcularRutaRelativa(self, folder: str) -> str:
+        "Calcula la ruta relativa basada en el folder actual y el nuevo folder"
+        if folder.startswith("/"):
+            return folder.lstrip("/")
+        elif self.folder == "/" and folder in ("../", ".", ".."):
+            return ""
+        else:
+            return os.path.normpath(os.path.join(self.folder.lstrip("/"), folder))
+
+    def cargarAccionesRegresarFolder(self, folderPerfil: str, directo: bool = False):
+        print(f"Intentando subir folder {self.nombre}- {self.folder}")
+        self.cargarAccionesFolder(folderPerfil, "../", directo)
 
     def cargarData(self, archivo: str):
 
