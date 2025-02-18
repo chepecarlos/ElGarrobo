@@ -91,6 +91,7 @@ class elGarrobo(object):
             self.miGui = miGui()
             self.miGui.ejecutaEvento = self.EjecutandoEvento
             self.miGui.salvarAcciones = self.salvarAcciones
+            self.miGui.listaDispositivos = self.listaDispositivos
 
         self.CargarData()
 
@@ -968,7 +969,7 @@ class elGarrobo(object):
             for Servidor in self.ListaMQTT:
                 Servidor.Desconectar()
         if self.ModuloGui:
-            self.miGui.Desconectar()
+            self.miGui.desconectar()
         for dispositivo in self.listaDispositivos:
             dispositivo.desconectar()
         # self.LimpiarDeck()

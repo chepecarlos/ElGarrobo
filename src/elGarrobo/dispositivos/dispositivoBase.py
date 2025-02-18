@@ -24,6 +24,8 @@ class dispositivoBase:
     "Lista de Acciones cargadas"
     tipo: str
     "Tipo de dispositivo"
+    clase: str
+    "Sub Categoria del dispositivo"
 
     def __init__(self, nombre: str, dispositivo: str, archivo: str):
         self.nombre = nombre
@@ -33,6 +35,7 @@ class dispositivoBase:
         self.folder = "/"
         self.ejecutarAcción = None
         self.tipo = ""
+        self.clase = ""
 
     def conectar(self):
         "Intenta conectar el dispositivo"
@@ -112,4 +115,4 @@ class dispositivoBase:
             print(f"No se encontró {keyAcción}-{self.nombre}")
 
     def __str__(self):
-        print(f"{self.nombre}[{self.tipo}]")
+        return f"{self.nombre}[{self.tipo}]"

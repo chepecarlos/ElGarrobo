@@ -1,6 +1,9 @@
 from nicegui import app, ui
+from PIL import Image
 
 from elGarrobo.accionesOOP import accionBase
+from elGarrobo.dispositivos.dispositivoBase import dispositivoBase
+from elGarrobo.dispositivos.mideck.mi_deck_imagen import ObtenerImagen
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 # librería https://nicegui.io/
@@ -10,16 +13,18 @@ from elGarrobo.miLibrerias import ConfigurarLogging
 logger = ConfigurarLogging(__name__)
 
 
-class miGui:
+class miGui(dispositivoBase):
     """
     Interface Web del ElGarrobo
     """
+
+    listaDispositivos: list[dispositivoBase]
 
     def __init__(self):
 
         self.folder: str = "?"
         self.folderLabel = None
-        self.listaDispositivos: list = list()
+        self.listaDispositivosVieja: list = list()
         self.listaAcciones: list = list()
         self.listaAccionesOPP: dict = dict()
         self.salvarAcciones: callable = None
@@ -30,6 +35,9 @@ class miGui:
         self.pestañas = None
         self.paneles = None
         self.editorAcción = None
+
+        self.listaDispositivos = list()
+        self.tipo = "GUI"
 
         @ui.page("/")
         def paginaAcciones():
@@ -85,7 +93,7 @@ class miGui:
                     ui.notify("Error con tecla no numero")
                     return
 
-            for dispositivo in self.listaDispositivos:
+            for dispositivo in self.listaDispositivosVieja:
                 if dispositivo.get("nombre") == nombreDispositivo:
                     tipoDispositivo = dispositivo.get("tipo")
                     if tipoDispositivo in ["steamdeck", "pedal"]:
@@ -223,12 +231,90 @@ class miGui:
         with self.pestañas:
 
             for dispositivo in self.listaDispositivos:
-                nombre = dispositivo.get("nombre")
+                nombre = dispositivo.nombre
+                dispositivo.pestaña = ui.tab(dispositivo.nombre)
+                dispositivo.pestaña.on("click", self.actualizarEditor)
+
+            for dispositivo in self.listaDispositivosVieja:
+                nombre = dispositivo.get("nombre") + " Viejo"
                 dispositivo["pestaña"] = ui.tab(nombre)
                 dispositivo["pestaña"].on("click", self.actualizarEditor)
-            # self.listaDispositivos[0].sel
 
         for dispositivo in self.listaDispositivos:
+            nombre = dispositivo.nombre
+            tipo = dispositivo.tipo
+            input = dispositivo.dispositivo
+            folder = dispositivo.folder
+            clase = dispositivo.clase
+            with self.paneles:
+                with ui.tab_panel(dispositivo.pestaña).classes("h-svh"):
+                    with ui.row():
+                        ui.markdown(f"**Tipo**: {tipo}")
+                        ui.markdown(f"**clase**: {clase}")
+                        ui.markdown(f"**Folder**: {folder}")
+                    acciones = dispositivo.listaAcciones
+
+                    with ui.scroll_area().classes("h-96 border border-2 border-teal-600h").style("height: 65vh"):
+
+                        if acciones is None:
+                            ui.label("No acciones")
+                            continue
+
+                        with ui.row().classes("content p-2"):
+                            ui.label("Nombre").style("font-weight: bold; width: 100px")
+                            ui.label("Titulo").style("font-weight: bold; width: 100px")
+                            # ui.label("Imagen").style("font-weight: bold; width: 150px")
+                            ui.label("Tecla").style("font-weight: bold; width: 100px")
+                            ui.label("Acción").style("font-weight: bold; width: 125px")
+                            ui.label("Opciones").style("font-weight: bold; width: 180px")
+
+                        for acciónActual in acciones:
+                            nombreAcción = acciónActual.get("nombre")
+                            teclaAcción = acciónActual.get("key")
+                            acciónAcción = acciónActual.get("accion")
+                            tituloAcción = acciónActual.get("titulo")
+                            imagenAcción = acciónActual.get("imagen")
+
+                            # if tipo in ["steamdeck", "pedal"]:
+                            #     teclaAcción = int(teclaAcción) + 1
+
+                            with ui.row().classes("content p-2 border-2 border-teal-600"):
+                                ui.label(nombreAcción).style("width: 100px")
+                                # if tipo == "steamdeck":
+                                ui.label(tituloAcción).style("width: 100px")
+                                # ui.image(imagenAcción)
+
+                                imagenAcción = self.obtenerRutaImagen(imagenAcción, folder)
+                                if imagenAcción is not None:
+                                    # ui.label(imagenAcción).style("width: 150px")
+                                    pass
+                                else:
+                                    pass
+                                    # ColorFondo = "black"
+                                    # image: Image = Image.new("RGB", [100, 100], color=ColorFondo)
+                                    # ObtenerImagen(image, acciónActual, folder)
+
+                                    # imagen = ui.image(image).classes("w-12").style("width: 150px")
+                                    # imagen.on("click", lambda a=acciónActual: self.seleccionarAcción(a))
+                                    # ui.label("").style("width: 150px")
+
+                                ui.label(teclaAcción).style("width: 100px")
+
+                                claseAcción = self.obtenerAcciónOop(acciónAcción)
+                                if claseAcción is None:
+                                    ui.label(f"{acciónAcción}-vieja").style("width: 125px")
+                                    # TODO: montar función viejas
+                                else:
+                                    objetoAcción = claseAcción()
+                                    nombreClase = objetoAcción.nombre
+                                    ui.label(f"{nombreClase}").style("width: 125px")
+
+                                with ui.button_group().props("rounded"):
+                                    ui.button(icon="play_arrow", color="teal-500", on_click=lambda a=acciónActual: self.ejecutaEvento(a, True))
+                                    ui.button(icon="edit", color="teal-500", on_click=lambda a=acciónActual: self.seleccionarAcción(a))
+                                    ui.button(icon="delete", color="teal-500", on_click=lambda a=acciónActual: self.eliminarAcción(a))
+
+        for dispositivo in self.listaDispositivosVieja:
             nombre = dispositivo.get("nombre")
             tipo = dispositivo.get("tipo")
             input = dispositivo.get("input")
@@ -250,9 +336,9 @@ class miGui:
 
                         with ui.row().classes("content p-2"):
                             ui.label("Nombre").style("font-weight: bold; width: 100px")
-                            if tipo == "steamdeck":
-                                ui.label("Titulo").style("font-weight: bold; width: 100px")
-                                ui.label("Imagen").style("font-weight: bold; width: 150px")
+                            # if tipo == "steamdeck":
+                            ui.label("Titulo").style("font-weight: bold; width: 100px")
+                            ui.label("Imagen").style("font-weight: bold; width: 150px")
                             ui.label("Tecla").style("font-weight: bold; width: 100px")
                             ui.label("Acción").style("font-weight: bold; width: 125px")
                             ui.label("Opciones").style("font-weight: bold; width: 180px")
@@ -269,16 +355,23 @@ class miGui:
 
                             with ui.row().classes("content p-2 border-2 border-teal-600"):
                                 ui.label(nombreAcción).style("width: 100px")
-                                if tipo == "steamdeck":
-                                    ui.label(tituloAcción).style("width: 100px")
-                                    # ui.image(imagenAcción)
+                                # if tipo == "steamdeck":
+                                ui.label(tituloAcción).style("width: 100px")
+                                # ui.image(imagenAcción)
 
-                                    imagenAcción = self.obtenerRutaImagen(imagenAcción, folder)
-                                    if imagenAcción is not None:
-                                        # ui.label(imagenAcción).style("width: 150px")
-                                        pass
-                                    else:
-                                        ui.label("").style("width: 150px")
+                                imagenAcción = self.obtenerRutaImagen(imagenAcción, folder)
+                                if imagenAcción is not None:
+                                    # ui.label(imagenAcción).style("width: 150px")
+                                    pass
+                                else:
+                                    pass
+                                    # ColorFondo = "black"
+                                    # image: Image = Image.new("RGB", [100, 100], color=ColorFondo)
+                                    # ObtenerImagen(image, acciónActual, folder)
+
+                                    # imagen = ui.image(image).classes("w-12").style("width: 150px")
+                                    # imagen.on("click", lambda a=acciónActual: self.seleccionarAcción(a))
+                                    # ui.label("").style("width: 150px")
 
                                 ui.label(teclaAcción).style("width: 100px")
 
@@ -299,7 +392,7 @@ class miGui:
         if self.actualizarIconos is not None:
             self.actualizarIconos()
 
-        for dispositivo in self.listaDispositivos:
+        for dispositivo in self.listaDispositivosVieja:
             nombreDispositivo = dispositivo.get("nombre")
             tipo = dispositivo.get("tipo")
             self.paneles.value = nombreDispositivo
@@ -367,13 +460,13 @@ class miGui:
 
     def tipoDispositivoSeleccionado(self) -> str:
         nombreDispositivo = self.pestañas.value
-        for dispositivo in self.listaDispositivos:
+        for dispositivo in self.listaDispositivosVieja:
             if dispositivo.get("nombre") == nombreDispositivo:
                 return dispositivo.get("tipo")
 
     def eliminarAcción(self, accion):
         nombreDispositivo = self.pestañas.value
-        for dispositivo in self.listaDispositivos:
+        for dispositivo in self.listaDispositivosVieja:
             if dispositivo.get("nombre") == nombreDispositivo:
                 tipo = dispositivo.get("tipo")
 
@@ -381,7 +474,7 @@ class miGui:
             ui.notify(f"Falta seleccionar dispositivo")
             return
 
-        for dispositivo in self.listaDispositivos:
+        for dispositivo in self.listaDispositivosVieja:
             if dispositivo.get("nombre") == nombreDispositivo:
                 acciones = dispositivo.get("acciones")
                 acciones.remove(accion)
@@ -417,7 +510,7 @@ class miGui:
         # interesante native=True para app
         # ui.run(uvicorn_logging_level="debug", reload=False)
 
-    def Desconectar(self) -> None:
+    def desconectar(self) -> None:
         logger.info("Saliendo de NiceGUI")
         app.shutdown()
 
@@ -428,11 +521,11 @@ class miGui:
 
     def agregarDispositivos(self, dispositivo):
         dispositivo["acciones"] = None
-        for dispositivoActual in self.listaDispositivos:
+        for dispositivoActual in self.listaDispositivosVieja:
             if dispositivoActual.get("nombre") == dispositivo.get("nombre"):
                 return
         logger.info(f"GUI agregando Dispositivo: {dispositivo.get('nombre')}")
-        self.listaDispositivos.append(dispositivo)
+        self.listaDispositivosVieja.append(dispositivo)
         self.mostrarPestañas()
 
     def agregarAcciones(self, listaAcciones: list):
@@ -444,7 +537,7 @@ class miGui:
             self.editorAcción.update()
 
     def actualizarAcciones(self, nombreDispositivo: str, acciones: list, folder: str):
-        for dispositivo in self.listaDispositivos:
+        for dispositivo in self.listaDispositivosVieja:
             if dispositivo.get("nombre") == nombreDispositivo:
                 dispositivo["acciones"] = acciones
                 dispositivo["folder"] = folder
