@@ -25,8 +25,8 @@ class miGui(dispositivoBase):
         self.folder: str = "?"
         self.folderLabel = None
         self.listaDispositivosVieja: list = list()
-        self.listaAcciones: list = list()
-        self.listaAccionesOPP: dict = dict()
+        self.listaClasesAcciones: list = list()
+        self.listaClasesAccionesOPP: dict = dict()
         self.salvarAcciones: callable = None
         self.actualizarIconos: callable = None
         self.ejecutaEvento: callable = None
@@ -66,8 +66,8 @@ class miGui(dispositivoBase):
             nombre = self.editorNombre.value
             tecla = self.editorTecla.value
             acción = self.editorAcción.value
-            for AtributoAccion in self.listaAccionesOPP.keys():
-                objetoClase = self.listaAccionesOPP[AtributoAccion]()
+            for AtributoAccion in self.listaClasesAccionesOPP.keys():
+                objetoClase = self.listaClasesAccionesOPP[AtributoAccion]()
                 if objetoClase.nombre == acción:
                     acción = objetoClase.comando
                     break
@@ -145,7 +145,7 @@ class miGui(dispositivoBase):
                 for opcionesEditor in self.opcionesEditar.keys():
                     objetoEditor = self.opcionesEditar.get(opcionesEditor)
                     valor = objetoEditor.value
-                    accionActual = self.listaAccionesOPP[acciónSeleccionada]()
+                    accionActual = self.listaClasesAccionesOPP[acciónSeleccionada]()
                     for propiedad in accionActual.listaPropiedades:
                         nombrePropiedad = propiedad.nombre
                         if opcionesEditor == nombrePropiedad:
@@ -165,7 +165,7 @@ class miGui(dispositivoBase):
             self.editorTitulo = ui.input("Titulo").style("width: 200px").props("clearable")
             self.editorTitulo.visible = False
             self.editorTecla = ui.input("Tecla").style("width: 200px").props("clearable")
-            self.editorAcción = ui.select(options=self.listaAcciones, with_input=True, label="acción", on_change=self.mostrarOpciones).style("width: 200px")
+            self.editorAcción = ui.select(options=self.listaClasesAcciones, with_input=True, label="acción", on_change=self.mostrarOpciones).style("width: 200px")
             self.editorDescripcion = ui.label("").style("width: 200px").classes("bg-teal-700 p-2 text-white rounded-lg")
             self.editorDescripcion.visible = False
             self.editorPropiedades = ui.column()
@@ -185,8 +185,8 @@ class miGui(dispositivoBase):
         else:
             accionOpciones = self.editorAcción.value
 
-        for acción in self.listaAccionesOPP.keys():
-            claseAccion = self.listaAccionesOPP.get(acción)
+        for acción in self.listaClasesAccionesOPP.keys():
+            claseAccion = self.listaClasesAccionesOPP.get(acción)
             acciónTmp: accionBase = claseAccion()
             if acción == accionOpciones or acciónTmp.nombre == accionOpciones:
                 self.editorDescripcion.visible = True
@@ -241,78 +241,8 @@ class miGui(dispositivoBase):
                 dispositivo["pestaña"].on("click", self.actualizarEditor)
 
         for dispositivo in self.listaDispositivos:
-            nombre = dispositivo.nombre
-            tipo = dispositivo.tipo
-            input = dispositivo.dispositivo
-            folder = dispositivo.folder
-            clase = dispositivo.clase
-            with self.paneles:
-                with ui.tab_panel(dispositivo.pestaña).classes("h-svh"):
-                    with ui.row():
-                        ui.markdown(f"**Tipo**: {tipo}")
-                        ui.markdown(f"**clase**: {clase}")
-                        ui.markdown(f"**Folder**: {folder}")
-                    acciones = dispositivo.listaAcciones
 
-                    with ui.scroll_area().classes("h-96 border border-2 border-teal-600h").style("height: 65vh"):
-
-                        if acciones is None:
-                            ui.label("No acciones")
-                            continue
-
-                        with ui.row().classes("content p-2"):
-                            ui.label("Nombre").style("font-weight: bold; width: 100px")
-                            ui.label("Titulo").style("font-weight: bold; width: 100px")
-                            # ui.label("Imagen").style("font-weight: bold; width: 150px")
-                            ui.label("Tecla").style("font-weight: bold; width: 100px")
-                            ui.label("Acción").style("font-weight: bold; width: 125px")
-                            ui.label("Opciones").style("font-weight: bold; width: 180px")
-
-                        for acciónActual in acciones:
-                            nombreAcción = acciónActual.get("nombre")
-                            teclaAcción = acciónActual.get("key")
-                            acciónAcción = acciónActual.get("accion")
-                            tituloAcción = acciónActual.get("titulo")
-                            imagenAcción = acciónActual.get("imagen")
-
-                            # if tipo in ["steamdeck", "pedal"]:
-                            #     teclaAcción = int(teclaAcción) + 1
-
-                            with ui.row().classes("content p-2 border-2 border-teal-600"):
-                                ui.label(nombreAcción).style("width: 100px")
-                                # if tipo == "steamdeck":
-                                ui.label(tituloAcción).style("width: 100px")
-                                # ui.image(imagenAcción)
-
-                                imagenAcción = self.obtenerRutaImagen(imagenAcción, folder)
-                                if imagenAcción is not None:
-                                    # ui.label(imagenAcción).style("width: 150px")
-                                    pass
-                                else:
-                                    pass
-                                    # ColorFondo = "black"
-                                    # image: Image = Image.new("RGB", [100, 100], color=ColorFondo)
-                                    # ObtenerImagen(image, acciónActual, folder)
-
-                                    # imagen = ui.image(image).classes("w-12").style("width: 150px")
-                                    # imagen.on("click", lambda a=acciónActual: self.seleccionarAcción(a))
-                                    # ui.label("").style("width: 150px")
-
-                                ui.label(teclaAcción).style("width: 100px")
-
-                                claseAcción = self.obtenerAcciónOop(acciónAcción)
-                                if claseAcción is None:
-                                    ui.label(f"{acciónAcción}-vieja").style("width: 125px")
-                                    # TODO: montar función viejas
-                                else:
-                                    objetoAcción = claseAcción()
-                                    nombreClase = objetoAcción.nombre
-                                    ui.label(f"{nombreClase}").style("width: 125px")
-
-                                with ui.button_group().props("rounded"):
-                                    ui.button(icon="play_arrow", color="teal-500", on_click=lambda a=acciónActual: self.ejecutaEvento(a, True))
-                                    ui.button(icon="edit", color="teal-500", on_click=lambda a=acciónActual: self.seleccionarAcción(a))
-                                    ui.button(icon="delete", color="teal-500", on_click=lambda a=acciónActual: self.eliminarAcción(a))
+            self.actualizarPestañas(dispositivo)
 
         for dispositivo in self.listaDispositivosVieja:
             nombre = dispositivo.get("nombre")
@@ -424,7 +354,7 @@ class miGui(dispositivoBase):
 
         if opcionesActuales:
 
-            claseAcción = self.listaAccionesOPP.get(self.accionEditar.get("accion"))
+            claseAcción = self.listaClasesAccionesOPP.get(self.accionEditar.get("accion"))
             if claseAcción is not None:
 
                 objetoClase = claseAcción()
@@ -515,6 +445,7 @@ class miGui(dispositivoBase):
         app.shutdown()
 
     def actualizarFolder(self, folder: str):
+        # TODO: quitar función
         self.folder = folder
         if self.folderLabel is not None:
             self.folderLabel.content = self.folder
@@ -528,12 +459,12 @@ class miGui(dispositivoBase):
         self.listaDispositivosVieja.append(dispositivo)
         self.mostrarPestañas()
 
-    def agregarAcciones(self, listaAcciones: list):
-        for accion in listaAcciones:
-            self.listaAcciones.append(accion)
-        self.listaAcciones.sort()
+    def agregarAcciones(self, listaClasesAcciones: list):
+        for accion in listaClasesAcciones:
+            self.listaClasesAcciones.append(accion)
+        self.listaClasesAcciones.sort()
         if self.editorAcción is not None:
-            self.editorAcción.options = self.listaAcciones
+            self.editorAcción.options = self.listaClasesAcciones
             self.editorAcción.update()
 
     def actualizarAcciones(self, nombreDispositivo: str, acciones: list, folder: str):
@@ -544,11 +475,90 @@ class miGui(dispositivoBase):
         self.mostrarPestañas()
 
     def obtenerAcciónOop(self, comandoAcción: str):
-        if comandoAcción in self.listaAccionesOPP:
-            return self.listaAccionesOPP[comandoAcción]
+        if comandoAcción in self.listaClasesAccionesOPP:
+            return self.listaClasesAccionesOPP[comandoAcción]
         return None
 
     def obtenerRutaImagen(self, Imagen: str, folder: str):
         if Imagen is None:
             return
         pass
+
+    def actualizarPestañaDispositivo(self, dispositivo: dispositivoBase):
+        print(f"Intentando Actualizar pestañas de {dispositivo.nombre}")
+        self.actualizarPestañas(dispositivo)
+
+    def actualizarPestañas(self, dispositivo: dispositivoBase):
+        nombre = dispositivo.nombre
+        tipo = dispositivo.tipo
+        input = dispositivo.dispositivo
+        folder = dispositivo.folder
+        clase = dispositivo.clase
+
+        with self.paneles:
+            with ui.tab_panel(dispositivo.pestaña).classes("h-svh"):
+                with ui.row():
+                    ui.markdown(f"**Tipo**: {tipo}")
+                    ui.markdown(f"**clase**: {clase}")
+                    ui.markdown(f"**Folder**: {folder}")
+                acciones = dispositivo.listaAcciones
+
+                with ui.scroll_area().classes("h-96 border border-2 border-teal-600h").style("height: 65vh"):
+
+                    if acciones is None:
+                        ui.label("No acciones")
+                        return
+
+                    with ui.row().classes("content p-2"):
+                        ui.label("Nombre").style("font-weight: bold; width: 100px")
+                        ui.label("Titulo").style("font-weight: bold; width: 100px")
+                        # ui.label("Imagen").style("font-weight: bold; width: 150px")
+                        ui.label("Tecla").style("font-weight: bold; width: 100px")
+                        ui.label("Acción").style("font-weight: bold; width: 125px")
+                        ui.label("Opciones").style("font-weight: bold; width: 180px")
+
+                    for acciónActual in acciones:
+                        nombreAcción = acciónActual.get("nombre")
+                        teclaAcción = acciónActual.get("key")
+                        acciónAcción = acciónActual.get("accion")
+                        tituloAcción = acciónActual.get("titulo")
+                        imagenAcción = acciónActual.get("imagen")
+
+                        # if tipo in ["steamdeck", "pedal"]:
+                        #     teclaAcción = int(teclaAcción) + 1
+
+                        with ui.row().classes("content p-2 border-2 border-teal-600"):
+                            ui.label(nombreAcción).style("width: 100px")
+                            # if tipo == "steamdeck":
+                            ui.label(tituloAcción).style("width: 100px")
+                            # ui.image(imagenAcción)
+
+                            imagenAcción = self.obtenerRutaImagen(imagenAcción, folder)
+                            if imagenAcción is not None:
+                                # ui.label(imagenAcción).style("width: 150px")
+                                pass
+                            else:
+                                pass
+                                # ColorFondo = "black"
+                                # image: Image = Image.new("RGB", [100, 100], color=ColorFondo)
+                                # ObtenerImagen(image, acciónActual, folder)
+
+                                # imagen = ui.image(image).classes("w-12").style("width: 150px")
+                                # imagen.on("click", lambda a=acciónActual: self.seleccionarAcción(a))
+                                # ui.label("").style("width: 150px")
+
+                            ui.label(teclaAcción).style("width: 100px")
+
+                            claseAcción = self.obtenerAcciónOop(acciónAcción)
+                            if claseAcción is None:
+                                ui.label(f"{acciónAcción}-vieja").style("width: 125px")
+                                # TODO: montar función viejas
+                            else:
+                                objetoAcción = claseAcción()
+                                nombreClase = objetoAcción.nombre
+                                ui.label(f"{nombreClase}").style("width: 125px")
+
+                            with ui.button_group().props("rounded"):
+                                ui.button(icon="play_arrow", color="teal-500", on_click=lambda a=acciónActual: self.ejecutaEvento(a, True))
+                                ui.button(icon="edit", color="teal-500", on_click=lambda a=acciónActual: self.seleccionarAcción(a))
+                                ui.button(icon="delete", color="teal-500", on_click=lambda a=acciónActual: self.eliminarAcción(a))

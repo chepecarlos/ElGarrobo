@@ -5,6 +5,7 @@ import time
 from evdev import InputDevice, categorize, ecodes
 from evdev.eventio import EvdevError
 
+from elGarrobo.dispositivos.dispositivoBase import dispositivoBase
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 logger = ConfigurarLogging(__name__)
@@ -12,19 +13,20 @@ logger = ConfigurarLogging(__name__)
 # TODO  Hacer con clase threading
 
 
-class MiTecladoMacro:
+class MiTecladoMacro(dispositivoBase):
     """Clase de Teclado Macro para Linux."""
 
-    def __init__(self, Nombre, Dispositivo, File, Evento):
+    def __init__(self, nombre: str, dispositivo: str, archivo: str, Evento):
         """Inicializando Dispositivo de teclado."""
-        self.Nombre = Nombre
-        self.Dispositivo = Dispositivo
-        self.File = File
+        # self.nombre = nombre
+        # self.nombre = nombre
+        self.Dispositivo = dispositivo
+        self.File = archivo
         self.Evento = Evento
         self.Conectado = False
         self.Activo = True
         self.EsperaReconectar = 5
-        # super(MiTecladoMacro, self).__init__()
+        super().__init__(nombre, dispositivo, archivo)
 
     # def run(self):
     #     """Dibuja un frame de cada gif y espera a siguiente frame."""
@@ -32,9 +34,9 @@ class MiTecladoMacro:
     #         with self.lock:
     #             print("hola :D")
 
-    def Conectar(self):
+    def conectar(self):
         """Conecta con un teclado para escuchas botones presionados."""
-        self.HiloTeclado = threading.Thread(name="teclados-" + self.Nombre, target=self.HiloRaton)
+        self.HiloTeclado = threading.Thread(name="teclados-" + self.nombre, target=self.HiloRaton)
         self.HiloTeclado.start()
 
     def HiloRaton(self):
@@ -46,7 +48,7 @@ class MiTecladoMacro:
                         if event.type == ecodes.EV_KEY:
                             key = categorize(event)
                             data = dict()
-                            data.update({"nombre": self.Nombre, "key": key.keycode})
+                            data.update({"nombre": self.nombre, "key": key.keycode})
 
                             match key.keystate:
                                 case key.key_down:
@@ -58,23 +60,23 @@ class MiTecladoMacro:
                             self.Evento(data)
                 except Exception as error:
                     self.Conectado = False
-                    logger.info(f"Teclado[Desconectado] {self.Nombre} Error[{error.errno}]")
+                    logger.info(f"Teclado[Desconectado] {self.nombre} Error[{error.errno}]")
             else:
                 try:
-                    logger.info(f"Teclado[Conectándose] {self.Nombre}")
+                    logger.info(f"Teclado[Conectándose] {self.nombre}")
                     self.Teclado = InputDevice(self.Dispositivo)
                     self.Teclado.grab()
                     self.Conectado = True
-                    logger.info(f"Teclado[Conectado] {self.Nombre}")
+                    logger.info(f"Teclado[Conectado] {self.nombre}")
                 except Exception as error:
-                    logger.warning(f"Teclado[Error] {self.Nombre} Re-Intensando en {self.EsperaReconectar} Error {error.errno}")
+                    logger.warning(f"Teclado[Error] {self.nombre} Re-Intensando en {self.EsperaReconectar} Error {error.errno}")
                     if self.EsperaReconectar < 60:
                         self.EsperaReconectar += 5
                     time.sleep(self.EsperaReconectar)
                     self.Conectado = False
 
-    def Desconectar(self):
-        logger.info(f"Teclado[Desconectando] {self.Nombre}")
+    def desconectar(self):
+        logger.info(f"Teclado[Desconectando] {self.nombre}")
         self.Activo = False
         self.Teclado.ungrab()
         self.Teclado.close()

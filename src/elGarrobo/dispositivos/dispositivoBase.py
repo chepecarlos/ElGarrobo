@@ -26,16 +26,19 @@ class dispositivoBase:
     "Tipo de dispositivo"
     clase: str
     "Sub Categoria del dispositivo"
+    actualizarGUI: callable
+    "función que actualiza la pestaña del dispositivo con nuevas acciones"
 
     def __init__(self, nombre: str, dispositivo: str, archivo: str):
         self.nombre = nombre
         self.dispositivo = dispositivo
         self.archivo = archivo
-        self.listaAcciones: list[dict] = list()
+        self._listaAcciones: list[dict] = list()
         self.folder = "/"
         self.ejecutarAcción = None
         self.tipo = ""
         self.clase = ""
+        self.actualizarGUI = None
 
     def conectar(self):
         "Intenta conectar el dispositivo"
@@ -113,6 +116,16 @@ class dispositivoBase:
                 return
         if estado:
             print(f"No se encontró {keyAcción}-{self.nombre}")
+
+    @property
+    def listaAcciones(self):
+        return self._listaAcciones
+
+    @listaAcciones.setter
+    def listaAcciones(self, data: list[dict]):
+        if self.actualizarGUI is not None:
+            self.actualizarGUI(self)
+        self._listaAcciones = data
 
     def __str__(self):
         return f"{self.nombre}[{self.tipo}]"

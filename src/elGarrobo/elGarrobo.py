@@ -130,6 +130,8 @@ class elGarrobo(object):
         self.cargarFolder()
 
         if self.ModuloGui:
+            for dispositivo in self.listaDispositivos:
+                dispositivo.actualizarGUI = self.miGui.actualizarPestañaDispositivo
             self.miGui.iniciar()
             # TODO: cargar foldrer al inicio
             self.miGui.actualizarFolder(self.PathActual)
