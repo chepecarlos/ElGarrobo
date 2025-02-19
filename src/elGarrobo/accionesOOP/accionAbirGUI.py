@@ -12,17 +12,17 @@ Logger = ConfigurarLogging(__name__)
 class accionAbirGUI(accionBase):
     """Esperar una cantidad de tiempo"""
 
+    nombre = "Abri GUI"
+    comando = "abir_gui"
+    descripcion = "Abri la Configuración del ElGarrobo en Navegador"
+
     def __init__(self) -> None:
-        nombre = "Abri GUI"
-        comando = "abir_gui"
-        descripcion = "Abri la Configuración del ElGarrobo en Navegador"
-        super().__init__(nombre, comando, descripcion)
+        super().__init__(self.nombre, self.comando, self.descripcion)
 
         self.funcion = self.abirGUI
 
     def abirGUI(self):
-        """espera un tiempo"""
-        tiempo = self.obtenerValor("tiempo")
+        """Abre la interface en el Navegador"""
 
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.settimeout(0)
@@ -35,7 +35,7 @@ class accionAbirGUI(accionBase):
         finally:
             s.close()
 
-        url = f"{IP}:8080"
+        url = f"{IP}:8181"
         Logger.info(f"Abriendo GUI {url}")
         acción = accionNavegador()
         acción.configurar({"url": url})

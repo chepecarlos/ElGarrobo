@@ -225,20 +225,27 @@ class miGui(dispositivoBase):
         if self.pestañas is None or self.paneles is None:
             return
 
-        self.pestañas.clear()
-        self.paneles.clear()
+        # self.pestañas.clear()
+        # self.paneles.clear()
 
         with self.pestañas:
 
             for dispositivo in self.listaDispositivos:
                 nombre = dispositivo.nombre
-                dispositivo.pestaña = ui.tab(dispositivo.nombre)
-                dispositivo.pestaña.on("click", self.actualizarEditor)
+                if dispositivo.pestaña is None:
+                    print(f"Creae pestaña {dispositivo.nombre}")
+                    dispositivo.pestaña = ui.tab(dispositivo.nombre)
+                    dispositivo.pestaña.on("click", self.actualizarEditor)
+                    with self.paneles:
+                        dispositivo.panel = ui.tab_panel(dispositivo.pestaña).classes("h-svh")
 
             for dispositivo in self.listaDispositivosVieja:
-                nombre = dispositivo.get("nombre") + " Viejo"
-                dispositivo["pestaña"] = ui.tab(nombre)
-                dispositivo["pestaña"].on("click", self.actualizarEditor)
+                if dispositivo.get("pestaña") is None:
+                    nombre = dispositivo.get("nombre") + " Viejo"
+                    dispositivo["pestaña"] = ui.tab(nombre)
+                    dispositivo["pestaña"].on("click", self.actualizarEditor)
+                    with self.paneles:
+                        dispositivo["panel"] = ui.tab_panel(dispositivo.get("pestaña")).classes("h-svh")
 
         for dispositivo in self.listaDispositivos:
 
@@ -251,7 +258,8 @@ class miGui(dispositivoBase):
             clase = dispositivo.get("clase")
             folder = dispositivo.get("folder")
             with self.paneles:
-                with ui.tab_panel(dispositivo.get("pestaña")).classes("h-svh"):
+                dispositivo["panel"].clear()
+                with dispositivo["panel"]:
                     with ui.row():
                         ui.markdown(f"**Tipo**: {tipo}")
                         ui.markdown(f"**clase**: {clase}")
@@ -435,7 +443,7 @@ class miGui(dispositivoBase):
     def iniciar(self):
 
         logger.info("Iniciando GUI")
-        ui.run(title="ElGarrobo", reload=False, show=False, dark=True, language="es", uvicorn_logging_level="warning", favicon="🦎")
+        ui.run(title="ElGarrobo", port=8181, reload=False, show=False, dark=True, language="es", uvicorn_logging_level="warning", favicon="🦎")
 
         # interesante native=True para app
         # ui.run(uvicorn_logging_level="debug", reload=False)
@@ -484,7 +492,7 @@ class miGui(dispositivoBase):
             return
         pass
 
-    def actualizarPestañaDispositivo(self, dispositivo: dispositivoBase):
+    def actualizarPestaña(self, dispositivo: dispositivoBase):
         print(f"Intentando Actualizar pestañas de {dispositivo.nombre}")
         self.actualizarPestañas(dispositivo)
 
@@ -496,12 +504,14 @@ class miGui(dispositivoBase):
         clase = dispositivo.clase
 
         with self.paneles:
-            with ui.tab_panel(dispositivo.pestaña).classes("h-svh"):
+            dispositivo.panel.clear()
+            with dispositivo.panel:
                 with ui.row():
                     ui.markdown(f"**Tipo**: {tipo}")
                     ui.markdown(f"**clase**: {clase}")
                     ui.markdown(f"**Folder**: {folder}")
                 acciones = dispositivo.listaAcciones
+                print(f"Lista de acciones {acciones}")
 
                 with ui.scroll_area().classes("h-96 border border-2 border-teal-600h").style("height: 65vh"):
 
@@ -523,9 +533,6 @@ class miGui(dispositivoBase):
                         acciónAcción = acciónActual.get("accion")
                         tituloAcción = acciónActual.get("titulo")
                         imagenAcción = acciónActual.get("imagen")
-
-                        # if tipo in ["steamdeck", "pedal"]:
-                        #     teclaAcción = int(teclaAcción) + 1
 
                         with ui.row().classes("content p-2 border-2 border-teal-600"):
                             ui.label(nombreAcción).style("width: 100px")
@@ -558,7 +565,12 @@ class miGui(dispositivoBase):
                                 nombreClase = objetoAcción.nombre
                                 ui.label(f"{nombreClase}").style("width: 125px")
 
-                            with ui.button_group().props("rounded"):
-                                ui.button(icon="play_arrow", color="teal-500", on_click=lambda a=acciónActual: self.ejecutaEvento(a, True))
-                                ui.button(icon="edit", color="teal-500", on_click=lambda a=acciónActual: self.seleccionarAcción(a))
-                                ui.button(icon="delete", color="teal-500", on_click=lambda a=acciónActual: self.eliminarAcción(a))
+                            # with ui.button_group().props("rounded"):
+                            # ui.button(icon="play_arrow", color="teal-500", on_click=lambda a=acciónActual: self.ejecutaEvento(a, True))
+                            # ui.button(icon="edit", color="teal-500", on_click=lambda a=acciónActual: self.seleccionarAcción(a))
+                            ui.button(icon="delete", color="teal-500", on_click=lambda a=acciónActual, d=dispositivo: self.borrarAcción(a, d))
+            dispositivo.pestaña.update()
+
+    def borrarAcción(self, accion, dispositivo: dispositivoBase):
+        dispositivo.listaAcciones.remove(accion)
+        self.actualizarPestañas(dispositivo)

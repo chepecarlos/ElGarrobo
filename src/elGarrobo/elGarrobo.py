@@ -131,7 +131,7 @@ class elGarrobo(object):
 
         if self.ModuloGui:
             for dispositivo in self.listaDispositivos:
-                dispositivo.actualizarGUI = self.miGui.actualizarPestañaDispositivo
+                dispositivo.actualizarPestaña = self.miGui.actualizarPestaña
             self.miGui.iniciar()
             # TODO: cargar foldrer al inicio
             self.miGui.actualizarFolder(self.PathActual)
@@ -277,13 +277,13 @@ class elGarrobo(object):
                 DataPedal = leerData(pedal_file)
                 if DataPedal is not None:
                     self.Data["pedal"] = DataPedal
-                    if self.ModuloGui:
-                        for pedal in self.Data["pedal"]:
-                            nombre = pedal.get("nombre")
-                            archivo = pedal.get("file")
-                            input = pedal.get("serial")
-                            pedal = {"nombre": nombre, "tipo": "pedal", "clase": "null", "input": input, "archivo": archivo, "estado": True}
-                            self.miGui.agregarDispositivos(pedal)
+                    # if self.ModuloGui:
+                    #     for pedal in self.Data["pedal"]:
+                    #         nombre = pedal.get("nombre")
+                    #         archivo = pedal.get("file")
+                    #         input = pedal.get("serial")
+                    #         pedal = {"nombre": nombre, "tipo": "pedal", "clase": "null", "input": input, "archivo": archivo, "estado": True}
+                    #         self.miGui.agregarDispositivos(pedal)
                 else:
                     logger.error(f"Falta {pedal_file}")
 

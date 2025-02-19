@@ -26,7 +26,7 @@ class dispositivoBase:
     "Tipo de dispositivo"
     clase: str
     "Sub Categoria del dispositivo"
-    actualizarGUI: callable
+    actualizarPestaña: callable
     "función que actualiza la pestaña del dispositivo con nuevas acciones"
 
     def __init__(self, nombre: str, dispositivo: str, archivo: str):
@@ -38,7 +38,9 @@ class dispositivoBase:
         self.ejecutarAcción = None
         self.tipo = ""
         self.clase = ""
-        self.actualizarGUI = None
+        self.actualizarPestaña = None
+        self.pestaña = None
+        self.panel = None
 
     def conectar(self):
         "Intenta conectar el dispositivo"
@@ -123,9 +125,9 @@ class dispositivoBase:
 
     @listaAcciones.setter
     def listaAcciones(self, data: list[dict]):
-        if self.actualizarGUI is not None:
-            self.actualizarGUI(self)
         self._listaAcciones = data
+        if self.actualizarPestaña is not None:
+            self.actualizarPestaña(self)
 
     def __str__(self):
         return f"{self.nombre}[{self.tipo}]"
