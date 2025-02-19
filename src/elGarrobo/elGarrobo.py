@@ -216,7 +216,7 @@ class elGarrobo(object):
                 objetoAccion = self.listaClasesAcciones[accion]()
                 nombreAccion = objetoAccion.nombre
                 listaAccion.append(nombreAccion)
-            self.miGui.listaAccionesOPP = self.listaClasesAcciones
+            self.miGui.listaClasesAccionesOPP = self.listaClasesAcciones
             self.miGui.agregarAcciones(listaAccion)
 
     def cargarFolder(self):
