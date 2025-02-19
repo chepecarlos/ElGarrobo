@@ -20,6 +20,7 @@ class dispositivoBase:
     "El dispositivo esta listo para usarse"
     folder: str
     "Ruta de las acciones cargadas"
+    folderPerfil: str
     listaAcciones: list
     "Lista de Acciones cargadas"
     tipo: str
@@ -29,12 +30,13 @@ class dispositivoBase:
     actualizarPestaña: callable
     "función que actualiza la pestaña del dispositivo con nuevas acciones"
 
-    def __init__(self, nombre: str, dispositivo: str, archivo: str):
+    def __init__(self, nombre: str, dispositivo: str, archivo: str, folderPerfil: str):
         self.nombre = nombre
         self.dispositivo = dispositivo
         self.archivo = archivo
         self._listaAcciones: list[dict] = list()
         self.folder = "/"
+        self.folderPerfil = folderPerfil
         self.ejecutarAcción = None
         self.tipo = ""
         self.clase = ""
@@ -53,7 +55,7 @@ class dispositivoBase:
     def actualizar(self):
         pass
 
-    def cargarAccionesFolder(self, folderPerfil: str, folder: str, directo: bool = False, recargar: bool = False):
+    def cargarAccionesFolder(self, folder: str, directo: bool = False, recargar: bool = False):
         "Busca y carga acciones en un folder, si existen"
         folderBase = str(ObtenerFolderConfig())
         rutaRelativa = self._calcularRutaRelativa(folder)
@@ -63,7 +65,7 @@ class dispositivoBase:
                 logger.info(f"{self.nombre}[Acciones-Cargadas] - {self.folder} - Ya cargado")
             return
 
-        archivo = os.path.abspath(os.path.join(folderBase, folderPerfil, rutaRelativa, self.archivo))
+        archivo = os.path.abspath(os.path.join(folderBase, self.folderPerfil, rutaRelativa, self.archivo))
         data = self.cargarData(archivo)
 
         if data is not None:
@@ -85,13 +87,13 @@ class dispositivoBase:
         else:
             return os.path.normpath(os.path.join(self.folder.lstrip("/"), folder))
 
-    def cargarAccionesRegresarFolder(self, folderPerfil: str, directo: bool = False):
+    def cargarAccionesRegresarFolder(self, directo: bool = False):
         print(f"Intentando subir folder {self.nombre}- {self.folder}")
-        self.cargarAccionesFolder(folderPerfil, "../", directo)
+        self.cargarAccionesFolder(self.folderPerfil, "../", directo)
 
-    def recargarAccionesFolder(self, folderPerfil: str, directo: bool = False):
+    def recargarAccionesFolder(self, directo: bool = False):
         "Recarga las acciones del folder actual"
-        self.cargarAccionesFolder(folderPerfil, ".", directo, recargar=True)
+        self.cargarAccionesFolder(self.folderPerfil, ".", directo, recargar=True)
 
     def cargarData(self, archivo: str):
 
@@ -128,6 +130,10 @@ class dispositivoBase:
         self._listaAcciones = data
         if self.actualizarPestaña is not None:
             self.actualizarPestaña(self)
+
+    def salvarAcciones(self):
+        print("Intentando salvar acciones")
+        pass
 
     def __str__(self):
         return f"{self.nombre}[{self.tipo}]"

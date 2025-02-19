@@ -397,7 +397,7 @@ class elGarrobo(object):
                 estado = teclado.get("enable", True)
                 if estado:
                     if nombre is not None and archivo is not None and input is not None:
-                        tecladoActual: dispositivoBase = MiTecladoMacro(nombre, input, archivo, self.Evento)
+                        tecladoActual: dispositivoBase = MiTecladoMacro(nombre, input, archivo, self.Evento, self.folderPerfil)
                         tecladoActual.conectar()
                         self.ListaTeclados.append(tecladoActual)
                         # TODO: Re agregar a dispositivo
@@ -436,7 +436,7 @@ class elGarrobo(object):
             logger.info("Pedal[Cargando]")
             self.listaPedales = []
             for infoPedales in self.Data.get("pedal"):
-                pedalActual = MiPedal(infoPedales, self.ejecutarAcción)
+                pedalActual = MiPedal(infoPedales, self.ejecutarAcción, self.folderPerfil)
                 indexActual = pedalActual.conectar(self.listaIndex)
                 self.listaIndex.append(indexActual)
                 self.listaPedales.append(pedalActual)
@@ -760,11 +760,11 @@ class elGarrobo(object):
 
         if nombreDispositovo is None:
             for dispositivo in self.listaDispositivos:
-                dispositivo.recargarAccionesFolder(self.folderPerfil)
+                dispositivo.recargarAccionesFolder()
         else:
             for disposito in self.listaDispositivos:
                 if disposito.nombre.lower() == nombreDispositovo.lower():
-                    disposito.recargarAccionesFolder(self.folderPerfil, directo=True)
+                    disposito.recargarAccionesFolder(directo=True)
 
         self.ReiniciarData()
 
@@ -774,11 +774,11 @@ class elGarrobo(object):
 
         if nombreDispositovo is None:
             for dispositivo in self.listaDispositivos:
-                dispositivo.cargarAccionesRegresarFolder(self.folderPerfil)
+                dispositivo.cargarAccionesRegresarFolder()
         else:
             for disposito in self.listaDispositivos:
                 if disposito.nombre.lower() == nombreDispositovo.lower():
-                    disposito.cargarAccionesRegresarFolder(self.folderPerfil, directo=True)
+                    disposito.cargarAccionesRegresarFolder(directo=True)
 
         Direcion = self.PathActual.split("/")
         self.PathActual = "/".join(Direcion[:-1])
@@ -809,11 +809,11 @@ class elGarrobo(object):
 
         if nombreDispositovo is None:
             for disposito in self.listaDispositivos:
-                disposito.cargarAccionesFolder(self.folderPerfil, folder)
+                disposito.cargarAccionesFolder(folder)
         else:
             for disposito in self.listaDispositivos:
                 if disposito.nombre.lower() == nombreDispositovo.lower():
-                    disposito.cargarAccionesFolder(self.folderPerfil, folder, directo=True)
+                    disposito.cargarAccionesFolder(folder, directo=True)
                     return
 
         rutaActual = RelativoAbsoluto(folder, self.PathActual)

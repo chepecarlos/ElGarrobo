@@ -16,7 +16,7 @@ logger = ConfigurarLogging(__name__)
 class MiTecladoMacro(dispositivoBase):
     """Clase de Teclado Macro para Linux."""
 
-    def __init__(self, nombre: str, dispositivo: str, archivo: str, Evento):
+    def __init__(self, nombre: str, dispositivo: str, archivo: str, Evento, folderPerfil: str):
         """Inicializando Dispositivo de teclado."""
         # self.nombre = nombre
         # self.nombre = nombre
@@ -26,7 +26,7 @@ class MiTecladoMacro(dispositivoBase):
         self.Conectado = False
         self.Activo = True
         self.EsperaReconectar = 5
-        super().__init__(nombre, dispositivo, archivo)
+        super().__init__(nombre, dispositivo, archivo, folderPerfil)
 
     # def run(self):
     #     """Dibuja un frame de cada gif y espera a siguiente frame."""

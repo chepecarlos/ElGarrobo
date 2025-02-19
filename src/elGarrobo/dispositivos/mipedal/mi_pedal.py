@@ -11,15 +11,15 @@ logger = ConfigurarLogging(__name__)
 
 class MiPedal(dispositivoBase):
 
-    def __init__(self, data, ejecutarAcción):
+    def __init__(self, data: dict, ejecutarAcción: callable, folderPerfil: str):
         self.id = data.get("id")
         nombre: str = data.get("nombre")
+        archivo: str = data.get("archivo")
         self.serial: str = data.get("serial")
-        self.archivo: str = data.get("archivo")
         self.conectado: bool = False
         self.deck = None
         self.index: int = -1
-        super().__init__(nombre, self.serial, self.archivo)
+        super().__init__(nombre, self.serial, archivo, folderPerfil)
         self.ejecutarAcción: callable = ejecutarAcción
         self.tipo = "pedal"
 
