@@ -1,6 +1,11 @@
 import os
 
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerArchivo, ObtenerFolderConfig
+from elGarrobo.miLibrerias import (
+    ConfigurarLogging,
+    ObtenerArchivo,
+    ObtenerFolderConfig,
+    SalvarArchivo,
+)
 
 logger = ConfigurarLogging(__name__)
 
@@ -89,11 +94,11 @@ class dispositivoBase:
 
     def cargarAccionesRegresarFolder(self, directo: bool = False):
         print(f"Intentando subir folder {self.nombre}- {self.folder}")
-        self.cargarAccionesFolder(self.folderPerfil, "../", directo)
+        self.cargarAccionesFolder("../", directo)
 
     def recargarAccionesFolder(self, directo: bool = False):
         "Recarga las acciones del folder actual"
-        self.cargarAccionesFolder(self.folderPerfil, ".", directo, recargar=True)
+        self.cargarAccionesFolder(".", directo, recargar=True)
 
     def cargarData(self, archivo: str):
 
@@ -132,8 +137,17 @@ class dispositivoBase:
             self.actualizarPestaña(self)
 
     def salvarAcciones(self):
-        print("Intentando salvar acciones")
-        pass
+        folderBase = str(ObtenerFolderConfig())
+        archivo = os.path.abspath(os.path.join(folderBase, self.folderPerfil, self.folder.lstrip("/"), self.archivo))
+        accionesSalvar = self.listaAcciones.copy()
+
+        for acción in accionesSalvar:
+            if isinstance(acción, dict):
+                for propiedad, valor in acción.items():
+                    if "__" in propiedad:
+                        del acción[propiedad]
+
+        SalvarArchivo(f"{archivo}.md", accionesSalvar)
 
     def __str__(self):
         return f"{self.nombre}[{self.tipo}]"
