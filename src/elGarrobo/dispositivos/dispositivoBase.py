@@ -117,7 +117,7 @@ class dispositivoBase:
         estado: bool = data.get("estado")
 
         for acción in self.listaAcciones:
-            if acción.get("key") == keyAcción:
+            if str(acción.get("key")) == keyAcción:
                 if self.ejecutarAcción is not None:
                     if estado:
                         print(f"Ejecutando acción: {acción}")
