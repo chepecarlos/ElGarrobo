@@ -32,16 +32,18 @@ class accionDelay(accionBase):
     def esperarTiempo(self):
         """espera un tiempo"""
         tiempo = self.obtenerValor("tiempo")
-        if tiempo is not None:
-            # TODO: confirmar que es un numero
-            if isinstance(tiempo, str):
-                pedadosTiempo = tiempo.split(":")
-                segundos = int(pedadosTiempo[-1])
-                if len(pedadosTiempo) > 1:
-                    segundos += int(pedadosTiempo[-2]) * 60
-                if len(pedadosTiempo) > 2:
-                    segundos += int(pedadosTiempo[-3]) * 3600
-                tiempo = segundos
+        if tiempo is None:
+            Logger.error("No se dio tiempo")
+            return
+
+        if isinstance(tiempo, str):
+            pedadosTiempo: str = tiempo.split(":")
+            segundos: int = int(pedadosTiempo[-1])
+            if len(pedadosTiempo) > 1:
+                segundos += int(pedadosTiempo[-2]) * 60
+            if len(pedadosTiempo) > 2:
+                segundos += int(pedadosTiempo[-3]) * 3600
+            tiempo = segundos
 
         Logger.info(f"Delay[{tiempo}s]")
         time.sleep(tiempo)

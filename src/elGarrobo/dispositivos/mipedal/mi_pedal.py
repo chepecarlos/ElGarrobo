@@ -59,7 +59,7 @@ class MiPedal(dispositivoBase):
     def actualizarBoton(self, Deck, Key: int, Estado: bool):
         data = {
             "nombre": self.nombre,
-            "key": Key + 1,
+            "key": str(Key + 1),
             "estado": Estado,
         }
         self.buscarAcción(data)
