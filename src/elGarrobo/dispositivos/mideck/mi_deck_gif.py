@@ -25,9 +25,10 @@ logger = ConfigurarLogging(__name__)
 class DeckGif(threading.Thread):
     """Clase de Gif para StreamDeck."""
 
-    def __init__(self, Deck):
+    def __init__(self, Deck, folder: str) -> None:
         """Carga Configuraciones para usar gif."""
         self.Deck = Deck
+        self.folder = folder
         # self.lock = threading.RLock()
         self.ListaGif = []
         self.ListaGifCargar = []
@@ -70,8 +71,10 @@ class DeckGif(threading.Thread):
         self.ListaGif = []
         self.ListaGifCargar = []
 
-    def ActualizarGif(self, indice, accion):
+    def ActualizarGif(self, indice, accion, folder):
         """Carga los frame si no estas precargado y lo agrega a lista actual gifs."""
+        
+        self.folder = folder
 
         Encontrado = list(filter(lambda Gif: Gif["nombre"] == accion["nombre"], self.ListaGif))
         if not Encontrado:
@@ -97,7 +100,7 @@ class DeckGif(threading.Thread):
             if "fondo" in opciones:
                 ColorFondo = opciones["fondo"]
 
-        DirecionGif = RelativoAbsoluto(DirecionGif, self.Deck.Folder)
+        DirecionGif = RelativoAbsoluto(DirecionGif, self.folder)
         DirecionGif = UnirPath(ObtenerFolderConfig(), DirecionGif)
         if os.path.exists(DirecionGif):
             GifArchivo = Image.open(DirecionGif)

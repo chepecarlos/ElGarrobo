@@ -5,6 +5,7 @@ import time
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Transport.Transport import TransportError
 
+from elGarrobo.dispositivos.dispositivoBase import dispositivoBase
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor
 
 from .mi_deck_extra import BuscarDirecionImagen
@@ -14,21 +15,25 @@ from .mi_deck_imagen import ActualizarIcono, LimpiarIcono
 logger = ConfigurarLogging(__name__)
 
 
-class MiStreamDeck(object):
+class MiStreamDeck(dispositivoBase):
+
+    Folder: str = None
+
     def __init__(self, Data, Evento, Base):
         self.id = Data["id"]
-        self.Nombre = Data["nombre"]
-        self.Serial = Data["serial"]
-        self.File = Data["file"]
-        self.Conectado = False
+        self.Nombre: str = Data["nombre"]
+        self.Serial: str = Data["serial"]
+        self.File: str = Data["file"]
+        self.Folder: str = None
+        self.Conectado: bool = False
         self.Deck = None
         self.DeckGif = None
-        self.Cantidad = 0
+        self.Cantidad: int = 0
         self.Base = Base
         self.Evento = Evento
         self.ultimoDibujo = None
-        self.tiempoDibujar = 0.4
-        self.index = -1
+        self.tiempoDibujar: float = 0.4
+        self.index: int = -1
         self.archivoImagen = None
 
     def Conectar(self, indexUsados):
@@ -52,7 +57,7 @@ class MiStreamDeck(object):
                         Brillo = ObtenerValor("data/streamdeck.json", "brillo")
                         # Todo: brillo no es un int
                         self.Deck.set_brightness(Brillo)
-                        self.DeckGif = DeckGif(self.Deck)
+                        self.DeckGif = DeckGif(self.Deck, self.Folder)
                         self.DeckGif.start()
                         self.Deck.set_key_callback(self.ActualizarBoton)
                         self.index = index
@@ -69,7 +74,7 @@ class MiStreamDeck(object):
                     self.Deck = None
                     logger.exception(f"Error 2 {error}")
 
-    def ActualizarIconos(self, acciones, desface, Unido=False):
+    def ActualizarIconos(self, acciones: dict, desface: int, Unido: bool=False):
         """Refresca iconos, tomando en cuenta pagina actual."""
         if not self.Conectado:
             return
@@ -110,9 +115,9 @@ class MiStreamDeck(object):
 
                     DirecionImagen = BuscarDirecionImagen(accionAcual)
                     if DirecionImagen is not None and DirecionImagen.endswith(".gif"):
-                        self.DeckGif.ActualizarGif(i, accionAcual)
+                        self.DeckGif.ActualizarGif(i, accionAcual, self.Folder)
                     else:
-                        ActualizarIcono(self.Deck, i, accionAcual)
+                        ActualizarIcono(self.Deck, i, accionAcual, self.Folder)
 
     def Limpiar(self):
         """Borra iconos de todo los botones de StreamDeck."""
@@ -128,11 +133,12 @@ class MiStreamDeck(object):
             self.Deck.set_brightness(Brillo)
 
     def CambiarFolder(self, Folder):
-        if self.Conectado:
-            self.Deck.Folder = Folder
-            self.ultimoDibujo = -self.tiempoDibujar
+        logger.debug(f"Entrando a {Folder}")
+        self.Folder = Folder
+        self.ultimoDibujo = -self.tiempoDibujar
 
     def ActualizarBoton(self, Deck, Key, Estado):
+        # TODO: agregar estado precionsado y soltar
         data = {"nombre": self.Nombre, "key": Key, "deck": True, "base": self.Base, "estado": Estado}
         self.Evento(data)
 
