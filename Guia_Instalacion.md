@@ -6,7 +6,7 @@
 ### Linux Mint
 
 ```bash
-sudo apt install python3-pip python3-setuptools python3-tk python3-dev ffmpeg git 
+sudo apt install python3-pip python3-setuptools python3-tk python3-dev pipx ffmpeg git 
 ```
 
 ### fedora 
@@ -65,17 +65,19 @@ sudo apt install xdotool
 sudo apt install espeak
 ```
 
+### Configurar pipx
+Agregar ruta de pipx si aun no se a agregado
+
+```bash
+pipx ensurepath
+pipx completions
+```
+
 ### instalar de paquetes
 
 ```bash
-pip install .
+pipx install .
 ``` 
-
-## Agregar binarios a sistema 
-
-```bash
-echo 'PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-```
 
 ## Reiniciar PC 
 
