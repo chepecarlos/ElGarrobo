@@ -55,6 +55,9 @@ class accionBase:
         if isinstance(lista, dict):
             for atributo in lista:
                 valor = lista[atributo]
+                if not self.confirmarAtributo(atributo):
+                    logger.debug(f"AcciónPOO[Error] Atributo Extra {atributo} no encontrado")
+                    continue
                 if self.confirmarPropiedad(atributo, valor):
                     valorActual = valoresAcciones(atributo, valor)
                     self.listaValores.append(valorActual)
@@ -99,6 +102,13 @@ class accionBase:
             return False
 
         return True
+    
+    def confirmarAtributo(self, atributo: str) -> bool:
+        """Ver si es una propiedad esta en la lista"""
+        for propiedad in self.listaPropiedades:
+            if propiedad.mismoAtributo(atributo):
+                return True
+        return False
 
     def confirmarPropiedad(self, atributo: str, valor) -> bool:
         """Ver si es una propiedad correcta"""
