@@ -1,5 +1,5 @@
 
-# Guiá de instalación
+# Guía de instalación
 
 ## Paquetes a instalar dependencias
 
@@ -7,12 +7,6 @@
 
 ```bash
 sudo apt install python3-pip python3-setuptools python3-tk python3-dev pipx ffmpeg git 
-```
-
-### fedora 
-
-```bash
-sudo dnf install python3-pip python3-setuptools python3-tkinter python3-devel git 
 ```
 
 # Clonar 
