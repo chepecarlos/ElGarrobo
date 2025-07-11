@@ -12,7 +12,7 @@ from .accionesOOP import (
     accionRegresarFolder,
     accionSalir,
     accionSiquientePagina,
-    cargarAcciones,
+    cargarClasesAcciones,
 )
 from .accionesOOP.heramientas.valoresAccion import valoresAcciones
 from .dispositivos.dispositivoBase import dispositivoBase
@@ -65,6 +65,8 @@ class elGarrobo(object):
     # FIXME: mover a mover a objeto de streamdeck
     ListaDeck = None
     PathActual = None
+    
+    listaClasesAcciones = dict()
 
     def __init__(self) -> None:
 
@@ -190,7 +192,7 @@ class elGarrobo(object):
         accionRecargarFolder.funcionExterna = self.Reiniciar
 
         ListaAcciones = CargarAcciones()
-        listaClasesAcciones = cargarAcciones()
+        listaClasesAcciones = cargarClasesAcciones()
 
         # Acciones Macro
         ListaAcciones["macro"] = self.AccionesMacros
@@ -423,7 +425,9 @@ class elGarrobo(object):
             self.ListaDeck.sort(key=lambda x: x.id, reverse=False)
             if self.ModuloGui:
                 self.miGui.actualizarIconos = self.ActualizarDeck
-                # self.ListaDeck.append(DeckActual)
+                
+            for Deck in self.ListaDeck:
+                logger.info(Deck)
             # CargarDeck = IniciarStreamDeck(self.Data['deck'], self.Evento)
             # for Deck in CargarDeck:
             #     DeckActual = MiStreamDeck(Deck)
@@ -944,7 +948,7 @@ class elGarrobo(object):
         """
         self.Pulse = MiPulse()
         self.Pulse.DibujarDeck(self.SolisitarDibujar)
-        self.Pulse.IniciarAcciones(self.ListaAcciones)
+        self.Pulse.IniciarAcciones(self.ListaAcciones, self.listaClasesAcciones)
 
     def __exit__(self, exc_type, exc_value, traceback):
         print("Hora de matar todo XD")

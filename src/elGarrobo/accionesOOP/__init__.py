@@ -46,7 +46,7 @@ from .accionTeclas import accionTeclas
 from .accionTelegram import accionTelegram
 
 
-def cargarAcciones() -> dict[str:]:
+def cargarClasesAcciones() -> dict[str:]:
     """
     Carga las acciones en una dic con nombre de accion y función asociada.
     """

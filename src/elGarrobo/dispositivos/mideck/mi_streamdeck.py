@@ -29,6 +29,7 @@ class MiStreamDeck(dispositivoBase):
         self.Deck = None
         self.DeckGif = None
         self.Cantidad: int = 0
+        self.layout = None
         self.Base = Base
         self.Evento = Evento
         self.ultimoDibujo = None
@@ -54,6 +55,7 @@ class MiStreamDeck(dispositivoBase):
                     if self.Deck.get_serial_number() == self.Serial:
                         self.Conectado = True
                         self.Cantidad = self.Deck.key_count()
+                        self.layout = self.Deck.key_layout()
                         Brillo = ObtenerValor("data/streamdeck.json", "brillo")
                         # Todo: brillo no es un int
                         self.Deck.set_brightness(Brillo)
@@ -68,11 +70,11 @@ class MiStreamDeck(dispositivoBase):
                 except TransportError as error:
                     self.Conectado = False
                     self.Deck = None
-                    logger.exception(f"Error 1 {error}")
+                    logger.exception(f"Error 1 StreamDeck {error}")
                 except Exception as error:
                     self.Conectado = False
                     self.Deck = None
-                    logger.exception(f"Error 2 {error}")
+                    logger.exception(f"Error 2 StreamDeck {error}")
 
     def ActualizarIconos(self, acciones: dict, desface: int, Unido: bool=False):
         """Refresca iconos, tomando en cuenta pagina actual."""
@@ -149,6 +151,9 @@ class MiStreamDeck(dispositivoBase):
             self.Conectado = False
             self.Deck.reset()
             self.Deck.close()
+            
+    def __str__(self):
+        return f"MiStreamDeck(id={self.id}, nombre={self.Nombre}, serial={self.Serial}, layout={self.layout})"
 
 
 def IniciarStreamDeck(Datas, FuncionEvento):
