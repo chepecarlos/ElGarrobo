@@ -26,6 +26,7 @@ class MiOBS:
         """Crea confección básica con OBS Websocket."""
         logger.info("OBS[Iniciando]")
         self.archivoEstado = "data/obs/obs"
+        """Archivo de estado de OBS."""
         self.audioMonitoriar = list()
         self.dibujar = None
         self.notificaciones: callable = None
@@ -110,7 +111,7 @@ class MiOBS:
                 self.OBS = obsws(self.host, self.port, self.password, on_connect=self.conectarOBS, on_disconnect=self.desconectarOBS)
             self.OBS.connect(input_volume_meters=monitorAudio)
         except Exception as error:
-            logger.warning(f"OBS[Error] {error}")
+            logger.warning(f"OBS[Error] Coneccion {error}")
             self.LimpiarTemporales()
             self.conectado = False
             SalvarValor(self.archivoEstado, "obs_conectar", False)
@@ -126,6 +127,7 @@ class MiOBS:
         self.AgregarEvento(self.EventoVisibilidadFuente, events.SceneItemEnableStateChanged)
         self.AgregarEvento(self.EventoVisibilidadFiltro, events.SourceFilterEnableStateChanged)
         self.AgregarEvento(self.eventoVendendor, events.VendorEvent)
+        self.AgregarEvento(self.eventoExtra, events.CustomEvent)
         self.AgregarEvento(self.EventoSalir, events.ExitStarted)
         self.AgregarEvento(self.eventoVolumen, events.InputVolumeMeters)
         # self.OBS.register(self.on_event, events.StreamStatus)
@@ -160,13 +162,23 @@ class MiOBS:
 
         self.procesoTiempo = threading.Thread(target=self.consultaTiempo)
         self.procesoTiempo.start()
+        # TODO; parar hilo si obe se desconecta
 
         self.SalvarFuente()
 
     def consultaTiempo(self):
         while True:
             if self.conectado:
-                estadoGracion = self.OBS.call(requests.GetRecordStatus())
+                
+                try:
+                    estadoGracion = self.OBS.call(requests.GetRecordStatus())
+                except Exception as error:
+                    logger.warning(f"OBS[Error] Tiempo {error}")
+                    print(f"Conectado: {self.conectado}")
+                    # mi_obs-consultaTiempo[WARNING]: OBS[Error] Tiempo [Errno 32] Broken pipe
+                    time.sleep(10)
+                    continue
+                
                 tiempoGrabando = estadoGracion.datain["outputTimecode"]
                 tiempoGrabando = tiempoGrabando.split(".")[0]
                 opciones = {"mensaje": tiempoGrabando, "topic": "alsw/tiempo_obs"}
@@ -174,8 +186,9 @@ class MiOBS:
                 objetoMQTT.configurar(opciones)
                 objetoMQTT.ejecutar()
             else:
-                break
+                pass
             time.sleep(1)
+        logger.info("OBS[Consulta Tiempo] - Terminado")
 
     def SalvarFuente(self):
         HiloFuentes = threading.Thread(target=self.HiloFuenteArchivo)
@@ -204,6 +217,9 @@ class MiOBS:
     def AgregarEvento(self, Funcion, Evento):
         """Registra evento de OBS a una funcion."""
         self.OBS.register(Funcion, Evento)
+        
+    def eventoExtra(self, mensaje):
+        logger.info(f"OBS[Evento] {mensaje}")
 
     def EventoEscena(self, mensaje):
         """Recibe nueva escena actual."""
@@ -263,7 +279,7 @@ class MiOBS:
         try:
             self.Desconectar()
         except Exception as error:
-            logger.warning(f"OBS[Error] {error}")
+            logger.warning(f"OBS[Error] Salida {error}")
             self.conectado = False
         self.LimpiarTemporales()
         self.actualizarDeck()
@@ -313,6 +329,8 @@ class MiOBS:
         vendedor = mensaje.datain["vendorName"]
         if vendedor == "aitum-vertical-canvas":
             self.eventoVertical(mensaje)
+        else:
+            logger.info(f"OBS[Plugin] {vendedor} - {mensaje.datain['eventType']}")
 
     def eventoVertical(self, mensaje):
         """Recibe mensajes para el plugin de Vertical"""
@@ -327,6 +345,8 @@ class MiOBS:
         elif tipo == "recording_stopping":
             self.Notificar("obs-no-grabando-vertival")
             SalvarValor(self.archivoEstado, "obs_grabar_vertical", False)
+        else:
+            logger.info(f"OBS[Vertical] No procesar: {tipo}")
         self.actualizarDeck()
 
     def eventoVolumen(self, mensaje):
@@ -362,7 +382,7 @@ class MiOBS:
             self.Notificar("OBS-No-Encontrado")
 
     def CambiarFuente(self, opciones=False, fuente=None):
-        """Envia solisitud de Cambia el estado de una fuente."""
+        """Envía solicitud de Cambia el estado de una fuente."""
 
         esenaActual = ObtenerValor(self.archivoEstado, "obs_escena")
         if fuente is None:
@@ -385,7 +405,7 @@ class MiOBS:
             self.Notificar("OBS-No-Conectado")
 
     def CambiarFiltro(self, opciones):
-        """Envia solisitud de cambiar estado de filtro."""
+        """Envía solicitud de cambiar estado de filtro."""
         filtro = opciones.get("filtro")
         fuente = opciones.get("fuente")
         estado = opciones.get("estado")
@@ -396,7 +416,7 @@ class MiOBS:
 
         if self.conectado:
             if estado is None:
-                estado = ObtenerValor(unirPath(self.archivoEstado, "filtro"), [fuente, filtro])
+                estado = ObtenerValor(unirPath(self.archivoEstado, "_filtro"), [fuente, filtro])
                 if estado is not None:
                     estado = not estado
 
@@ -524,7 +544,7 @@ class MiOBS:
         self.Desconectar()
 
     def EventoPrueva(self, Mensaje):
-        print(Mensaje)
+        logger.info("Evento pruva OBS", Mensaje)
 
     def Notificar(self, Mensaje):
         if self.notificaciones is not None:

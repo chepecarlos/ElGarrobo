@@ -586,6 +586,7 @@ class elGarrobo(object):
                 self.ejecutarAcción(evento)
 
     def ejecutarAcción(self, accion: dict):
+        """Ejecuta una acción según el comando y las opciones proporcionadas."""
         comandoAccion: str = accion.get("accion")
 
         if comandoAccion is None:
@@ -639,18 +640,20 @@ class elGarrobo(object):
                 # TODO: agregar
                 for opciones in opcionesAccion:
                     opciones["__estado"] = presionado
-            print()
-            print("opciones:", opcionesAccion)
+
+            # print(comandoAccion)
+            # print("opciones:", opcionesAccion)
 
             # opcionesAccion.append({"__estado": presionado})
+            
+            if self.ModuloMonitorESP:
+                Mensaje = {"accion": comandoAccion}
+                if nombreAccion:
+                    Mensaje["nombre"] = nombreAccion
+                if teclaAccion:
+                    Mensaje["key"] = teclaAccion
 
-            Mensaje = {"accion": comandoAccion}
-            if nombreAccion:
-                Mensaje["nombre"] = nombreAccion
-            if teclaAccion:
-                Mensaje["key"] = teclaAccion
-
-            self.mensajeMonitorESP(Mensaje, "accion")
+                self.mensajeMonitorESP(Mensaje, "accion")
 
             # try:
             return self.ListaAcciones[comandoAccion](opcionesAccion)
@@ -671,7 +674,8 @@ class elGarrobo(object):
         cajon = {}
         for numero, comando in enumerate(ListaComando):
 
-            logger.info(f"Macro[{numero}]")
+            logger.info(f"Macro[{numero+1}/{len(ListaComando)}]")
+            print("Comando", comando)
 
             self.solisitaMacro(comando, cajon)
 
