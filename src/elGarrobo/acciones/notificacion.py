@@ -26,7 +26,7 @@ def Notificacion(opciones):
 
         noti = Notify()
         noti.message = texto
-        noti.application_name = "ElGatoALSW"
+        noti.application_name = "ElGarrobo"
         noti.title = titulo
 
         if icono is not None:

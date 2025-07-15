@@ -1,5 +1,6 @@
 import json
 import multiprocessing
+from typing import Any
 
 from elGarrobo.miLibrerias import ConfigurarLogging, EnviarMensajeMQTT
 
@@ -17,14 +18,14 @@ class accionMQTT(accionBase):
 
         propiedadMensaje = {
             "nombre": "Mensaje",
-            "tipo": [str, dict],
+            "tipo": [str, dict, bool],
             "obligatorio": True,
             "atributo": "mensaje",
             "descripcion": "Mensaje a enviar por mqtt",
             "ejemplo": "Hola Mundo",
         }
 
-        propiedadTopic = {
+        propiedadTopic: dict[str, Any] = {
             "nombre": "Topic",
             "tipo": str,
             "obligatorio": True,
@@ -36,7 +37,6 @@ class accionMQTT(accionBase):
         propiedadUsuario = {
             "nombre": "Usuario",
             "tipo": str,
-            "obligatorio": False,
             "atributo": "usuario",
             "descripcion": "Nombre del usuario para conectarse a Servidor MQTT",
             "ejemplo": "chepecarlos",
@@ -100,3 +100,4 @@ class accionMQTT(accionBase):
             args=(topic, mensaje, usuario, contraseña, servidor, puerto),
         )
         procesoSonido.start()
+        # todo: error con mqtt
