@@ -58,6 +58,7 @@ class MiOBS:
         listaAcciones["obs_escena"] = self.CambiarEscena
         listaAcciones["obs_fuente"] = self.CambiarFuente
         listaAcciones["obs_filtro"] = self.CambiarFiltro
+        listaAcciones["obs_filtro_propiedad"] = self.CambiarFiltroPropiedad
         listaAcciones["obs_estado"] = self.EstadoOBS
         listaAcciones["obs_tiempo_grabando"] = self.TiempoGrabando
         listaAcciones["obs_tiempo_envivo"] = self.TiempoEnVivo
@@ -126,6 +127,7 @@ class MiOBS:
         self.AgregarEvento(self.EventoWebCamara, events.VirtualcamStateChanged)
         self.AgregarEvento(self.EventoVisibilidadFuente, events.SceneItemEnableStateChanged)
         self.AgregarEvento(self.EventoVisibilidadFiltro, events.SourceFilterEnableStateChanged)
+        self.AgregarEvento(self.EventoCambioFiltro, events.SourceFilterSettingsChanged)
         self.AgregarEvento(self.eventoVendendor, events.VendorEvent)
         self.AgregarEvento(self.eventoExtra, events.CustomEvent)
         self.AgregarEvento(self.EventoSalir, events.ExitStarted)
@@ -169,7 +171,7 @@ class MiOBS:
     def consultaTiempo(self):
         while True:
             if self.conectado:
-                
+
                 try:
                     estadoGracion = self.OBS.call(requests.GetRecordStatus())
                 except Exception as error:
@@ -178,7 +180,7 @@ class MiOBS:
                     # mi_obs-consultaTiempo[WARNING]: OBS[Error] Tiempo [Errno 32] Broken pipe
                     time.sleep(10)
                     continue
-                
+
                 tiempoGrabando = estadoGracion.datain["outputTimecode"]
                 tiempoGrabando = tiempoGrabando.split(".")[0]
                 opciones = {"mensaje": tiempoGrabando, "topic": "alsw/tiempo_obs"}
@@ -217,7 +219,7 @@ class MiOBS:
     def AgregarEvento(self, Funcion, Evento):
         """Registra evento de OBS a una funcion."""
         self.OBS.register(Funcion, Evento)
-        
+
     def eventoExtra(self, mensaje):
         logger.info(f"OBS[Evento] {mensaje}")
 
@@ -304,8 +306,13 @@ class MiOBS:
         nombreFuente = mensaje.datain["sourceName"]
         visibilidad = mensaje.datain["filterEnabled"]
         logger.info(f"OBS[{nombreFiltro}] {visibilidad}")
-        SalvarValor(unirPath(self.archivoEstado, "_filtro"), [nombreFuente, nombreFiltro], visibilidad)
+        SalvarValor(unirPath(self.archivoEstado, "filtro"), [nombreFuente, nombreFiltro], visibilidad)
         self.actualizarDeck()
+
+    def EventoCambioFiltro(self, mensaje):
+        """Recibe cambio de configuracion de filtro."""
+        print("Evento Cambio Filtro")
+        print(mensaje)
 
     def SalvarFiltroFuente(self, fuente):
         """Salva el estado de los filtros de una fuente."""
@@ -316,13 +323,10 @@ class MiOBS:
         for filtro in filtros:
             nombreFiltro = filtro["filterName"]
             estadoFiltro = filtro["filterEnabled"]
+            propiedadesFiltro = filtro.get("filterSettings", {})
             SalvarValor(unirPath(self.archivoEstado, "filtro"), [fuente, nombreFiltro], estadoFiltro)
-
-    def SalvarFiltroConfiguraciones(self, Filtro, lista):
-        for elemento in lista:
-            Data = Filtro.copy()
-            Data.append(elemento)
-            SalvarValor(unirPath(self.archivoEstado, "filtro_opciones"), Data, lista[elemento])
+            for propiedad in propiedadesFiltro:
+                SalvarValor(unirPath(self.archivoEstado, "filtro_propiedades"), [fuente, nombreFiltro, propiedad], propiedadesFiltro[propiedad])
 
     def eventoVendendor(self, mensaje):
         """Recibe mensajes de plugins extras"""
@@ -416,13 +420,43 @@ class MiOBS:
 
         if self.conectado:
             if estado is None:
-                estado = ObtenerValor(unirPath(self.archivoEstado, "_filtro"), [fuente, filtro])
+                estado = ObtenerValor(unirPath(self.archivoEstado, "filtro"), [fuente, filtro])
                 if estado is not None:
                     estado = not estado
 
             if estado is not None:
                 logger.info(f"OBS[Filtro] {fuente}[{filtro}]={estado}")
                 self.OBS.call(requests.SetSourceFilterEnabled(sourceName=fuente, filterName=filtro, filterEnabled=estado))
+        else:
+            logger.info("OBS[no Conectado]")
+            self.Notificar("OBS-No-Conectado")
+
+    def CambiarFiltroPropiedad(self, opciones):
+        """Envía solicitud de cambiar propiedades de un filtro."""
+        filtro = opciones.get("filtro")
+        fuente = opciones.get("fuente")
+        agregar = opciones.get("agregar", False)
+        propiedad = opciones.get("propiedad")
+        valor = opciones.get("valor")
+
+        self.SalvarFiltroFuente(fuente)
+
+        PropiedadesAnteriores = ObtenerValor(unirPath(self.archivoEstado, "filtro_propiedades"), [fuente, filtro])
+
+        if fuente is None or filtro is None or propiedad is None or valor is None:
+            logger.info("OBS[Falta Atributo]")
+            return
+
+        if PropiedadesAnteriores is not None and agregar:
+            for llaveAnterior, valorAnterior in PropiedadesAnteriores.items():
+                if llaveAnterior == propiedad:
+                    valor = valor + valorAnterior
+                    logger.info(f"OBS[Filtro] agregando {valorAnterior} + {valor - valorAnterior} = {valor}")
+
+        if self.conectado:
+            logger.info(f"OBS[Filtro Asignar] {fuente}[{filtro}-{propiedad}]={valor}")
+            self.OBS.call(requests.SetSourceFilterSettings(sourceName=fuente, filterName=filtro, filterSettings={propiedad: valor}))
+            self.SalvarFiltroFuente(fuente)
         else:
             logger.info("OBS[no Conectado]")
             self.Notificar("OBS-No-Conectado")
@@ -525,6 +559,7 @@ class MiOBS:
         SalvarArchivo(self.archivoEstado, dict())
         SalvarArchivo(unirPath(self.archivoEstado, "fuente"), dict())
         SalvarArchivo(unirPath(self.archivoEstado, "filtro"), dict())
+        SalvarArchivo(unirPath(self.archivoEstado, "filtro_propiedades"), dict())
         SalvarArchivo(unirPath(self.archivoEstado, "filtro_opciones"), dict())
         SalvarArchivo(unirPath(self.archivoEstado, "fuente_id"), dict())
 
