@@ -320,12 +320,25 @@ class MiOBS:
         if filtros is None:
             return
 
+        dataPropiedades = leerData(unirPath(self.archivoEstado, "filtro_propiedades"))
+        if dataPropiedades is not None:
+            dataFuenteAnterior = dataPropiedades.get(fuente)
+
         for filtro in filtros:
-            nombreFiltro = filtro["filterName"]
-            estadoFiltro = filtro["filterEnabled"]
+            nombreFiltro = filtro.get("filterName")
+            estadoFiltro = filtro.get("filterEnabled")
             propiedadesFiltro = filtro.get("filterSettings", {})
+
             SalvarValor(unirPath(self.archivoEstado, "filtro"), [fuente, nombreFiltro], estadoFiltro)
             for propiedad in propiedadesFiltro:
+
+                if dataFuenteAnterior is not None:
+                    dataFiltroAnterior = dataFuenteAnterior.get(nombreFiltro)
+                    if dataFiltroAnterior is not None:
+                        valorPropiedadAnterior = dataFiltroAnterior.get(propiedad)
+                        if valorPropiedadAnterior is not None and valorPropiedadAnterior == propiedadesFiltro[propiedad]:
+                            continue
+
                 SalvarValor(unirPath(self.archivoEstado, "filtro_propiedades"), [fuente, nombreFiltro, propiedad], propiedadesFiltro[propiedad])
 
     def eventoVendendor(self, mensaje):
@@ -440,6 +453,7 @@ class MiOBS:
         valor = opciones.get("valor")
 
         self.SalvarFiltroFuente(fuente)
+        # TODO: reintentar consulta si falla
 
         PropiedadesAnteriores = ObtenerValor(unirPath(self.archivoEstado, "filtro_propiedades"), [fuente, filtro])
 
