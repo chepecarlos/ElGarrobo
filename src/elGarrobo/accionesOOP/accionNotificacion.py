@@ -1,21 +1,26 @@
-from .accionBase import accionBase
+"""Muestra un mensaje de escritorio"""
 
-from elGarrobo.miLibrerias import ConfigurarLogging
-from elGarrobo.miLibrerias import ObtenerFolderConfig, UnirPath
 from notifypy import Notify
+
+from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, UnirPath
+
+from .accionBase import accionBase
 
 Logger = ConfigurarLogging(__name__)
 
 
 class accionNotificacion(accionBase):
+    """Muestra un mensaje de escritorio"""
+
+    nombre = "Notificacion"
+    comando = "notificacion"
+    descripcion = "Muestra un mensaje de escritorio"
+
     def __init__(self) -> None:
-        nombre = "Notificacion"
-        comando = "notificacion"
-        descripcion = "Muestra un mensaje de escritorio"
-        super().__init__(nombre, comando, descripcion)
+        super().__init__(self.nombre, self.comando, self.descripcion)
 
         propiedadTexto = {
-            "nombre": "texto",
+            "nombre": "Texto",
             "tipo": str,
             "obligatorio": True,
             "atributo": "texto",

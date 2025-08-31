@@ -1,3 +1,5 @@
+"""Abre la interface de ElGarrobo en el Navegador"""
+
 import logging
 import socket
 
@@ -10,7 +12,7 @@ Logger = ConfigurarLogging(__name__)
 
 
 class accionAbirGUI(accionBase):
-    """Esperar una cantidad de tiempo"""
+    """Abre la interface web del ElGarrobo"""
 
     nombre = "Abri GUI"
     comando = "abir_gui"
@@ -37,6 +39,6 @@ class accionAbirGUI(accionBase):
 
         url = f"{IP}:8181"
         Logger.info(f"Abriendo GUI {url}")
-        acción = accionNavegador()
+        acción: accionNavegador = accionNavegador()
         acción.configurar({"url": url})
         acción.ejecutar()

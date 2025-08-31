@@ -1,3 +1,5 @@
+"""Controla la PC a distancia"""
+
 import json
 import time
 
@@ -9,11 +11,14 @@ Logger = ConfigurarLogging(__name__)
 
 
 class accionControl(accionBase):
+    """Controla la PC a distancia"""
+
+    nombre = "Control MQTT"
+    comando = "control"
+    descripcion = "Controla la PC a distancia"
+
     def __init__(self) -> None:
-        nombre = "Control MQTT"
-        comando = "control"
-        descripcion = "Controla la PC a distancia"
-        super().__init__(nombre, comando, descripcion)
+        super().__init__(self.nombre, self.comando, self.descripcion)
 
         propiedadHost = {
             "nombre": "Host",

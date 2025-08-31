@@ -1,3 +1,5 @@
+"""Sube un nivel los folder y carga las acciones por Dispositivos"""
+
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 from .accionBase import accionBase
@@ -8,11 +10,12 @@ Logger = ConfigurarLogging(__name__)
 class accionRecargarFolder(accionBase):
     """Sube un nivel los folder y carga las acciones por Dispositivos"""
 
+    nombre = "Recargar Acciones"
+    comando = "reiniciar_data"
+    descripcion = "Recarga las acciones desde el folder actual"
+
     def __init__(self) -> None:
-        nombre = "Recargar Acciones"
-        comando = "reiniciar_data"
-        descripcion = "Recarga las acciones desde el folder actual"
-        super().__init__(nombre, comando, descripcion)
+        super().__init__(self.nombre, self.comando, self.descripcion)
 
         propiedadDispositivo = {
             "nombre": "Dispositivo",

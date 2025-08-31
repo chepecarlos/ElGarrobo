@@ -1,3 +1,5 @@
+"""Escribe un texto como un teclado"""
+
 import pyautogui
 
 from elGarrobo.accionesOOP.accionBase import accionBase
@@ -9,11 +11,12 @@ logger = ConfigurarLogging(__name__)
 class accionEscribirTexto(accionBase):
     """Escribe un texto como un teclado"""
 
+    nombre = "Escribir texto"
+    comando = "escribir"
+    descripcion = "Escribe un texto como un teclado"
+
     def __init__(self) -> None:
-        nombre = "Escribir texto"
-        comando = "escribir"
-        descripcion = "Escribe un texto como un teclado"
-        super().__init__(nombre, comando, descripcion)
+        super().__init__(self.nombre, self.comando, self.descripcion)
 
         propiedadTexto = {
             "nombre": "Texto",

@@ -1,29 +1,47 @@
-from .accionBase import accionBase
+"Acción que abre una ventana con nemo"
+
 from elGarrobo.miLibrerias import ConfigurarLogging
+
+from .accionBase import accionBase
 from .accionOS import accionOS
 
 logger = ConfigurarLogging(__name__)
+"@private"
 
 
 class accionFolder(accionBase):
+    "Acción que abre una ventana"
+
+    nombre = "Abri Folder"
+    comando = "folder"
+    descripcion = "Abre un Ventana folder"
+
+    propiedadRuta: dict = {
+        "nombre": "Folder",
+        "tipo": str,
+        "obligatorio": True,
+        "atributo": "ruta",
+        "descripcion": "ruta a abri en Nemo",
+        "ejemplo": "/home/usuario",
+    }
+    """
+        Propiedad para Ejecutar la acción:
+        * nombre: Folder
+        * tipo: str
+        * obligatorio: True
+        * atributo: ruta
+        * descripción: abre una ventana
+        * ejemplo: /home/usuario
+    """
+
     def __init__(self) -> None:
-        nombre = "Abir Folder"
-        comando = "folder"
-        descripcion = "Abre un folder"
-        super().__init__(nombre, comando, descripcion)
 
-        propiedadRuta = {
-            "nombre": "Folder",
-            "tipo": str,
-            "obligatorio": True,
-            "atributo": "ruta",
-            "descripcion": "comando de bash",
-            "ejemplo": "/home/usuario",
-        }
+        super().__init__(self.nombre, self.comando, self.descripcion)
 
-        self.agregarPropiedad(propiedadRuta)
+        self.agregarPropiedad(self.propiedadRuta)
 
-        self.funcion = self.abrirFolder
+        self.funcion: callable = self.abrirFolder
+        "@private Función a ejecutarse"
 
     def abrirFolder(self):
         ruta = self.obtenerValor("ruta")

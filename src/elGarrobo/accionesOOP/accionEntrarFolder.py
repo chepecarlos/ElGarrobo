@@ -1,3 +1,5 @@
+"""Entra a un Folder y Carga las acciones por Dispositivo"""
+
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 from .accionBase import accionBase
@@ -8,11 +10,12 @@ Logger = ConfigurarLogging(__name__)
 class accionEntrarFolder(accionBase):
     """Entra a un Folder y Carga las acciones por Dispositivo"""
 
+    nombre = "Entrar folder"
+    comando = "entrar_folder"
+    descripcion = "Entrar en un folder y cargar acciones por Dispositivo"
+
     def __init__(self) -> None:
-        nombre = "Entrar folder"
-        comando = "entrar_folder"
-        descripcion = "Entrar en un folder y cargar acciones por Dispositivo"
-        super().__init__(nombre, comando, descripcion)
+        super().__init__(self.nombre, self.comando, self.descripcion)
 
         propiedadFolder = {
             "nombre": "Folder",

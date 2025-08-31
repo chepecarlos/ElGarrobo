@@ -1,17 +1,23 @@
-from .accionBase import accionBase
+"""Esperar una cantidad de tiempo"""
+
 import time
 
 from elGarrobo.miLibrerias import ConfigurarLogging
+
+from .accionBase import accionBase
 
 Logger = ConfigurarLogging(__name__)
 
 
 class accionDelay(accionBase):
+    """Esperar una cantidad de tiempo"""
+
+    nombre = "Ratón"
+    comando = "raton"
+    descripcion = "Emula el funcionamiento de ratón"
+
     def __init__(self) -> None:
-        nombre = "Ratón"
-        comando = "raton"
-        descripcion = "Emula el funcionamiento de ratón"
-        super().__init__(nombre, comando, descripcion)
+        super().__init__(self.nombre, self.comando, self.descripcion)
 
         propiedadTiempo = {
             "nombre": "Tiempo",
@@ -30,7 +36,7 @@ class accionDelay(accionBase):
         """espera un tiempo"""
         tiempo = self.obtenerValor("tiempo")
         if tiempo is not None:
-        # TODO: confirmar que es un numero
+            # TODO: confirmar que es un numero
             if isinstance(tiempo, str):
                 pedadosTiempo = tiempo.split(":")
                 segundos = int(pedadosTiempo[-1])
@@ -44,15 +50,11 @@ class accionDelay(accionBase):
         time.sleep(tiempo)
 
 
-
-
-
-
-
 """Acciones de Emulacion de teclas."""
 # https://pyautogui.readthedocs.io/en/latest/install.html
 
 import pyautogui
+
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 logger = ConfigurarLogging(__name__)

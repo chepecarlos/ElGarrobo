@@ -1,3 +1,5 @@
+"""Esperar una cantidad de tiempo"""
+
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 from .accionBase import accionBase
@@ -9,11 +11,12 @@ Logger = ConfigurarLogging(__name__)
 class accionBuscarVentana(accionBase):
     """Esperar una cantidad de tiempo"""
 
+    nombre = "Buscar Ventana"
+    comando = "mostrar_ventana"
+    descripcion = "Buscar ventana con un nombre"
+
     def __init__(self) -> None:
-        nombre = "Buscar Ventana"
-        comando = "mostrar_ventana"
-        descripcion = "Buscar ventana con un nombre"
-        super().__init__(nombre, comando, descripcion)
+        super().__init__(self.nombre, self.comando, self.descripcion)
 
         propiedadTitulo = {
             "nombre": "Titulo",

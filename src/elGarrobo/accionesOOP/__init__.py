@@ -1,29 +1,36 @@
 """
 ## Acción Base
-- Clase que se herencia todas las funciones: [AccionBase](./accionesOOP/accionBase)
+- Clase que se herencia todas las acciones: [AccionBase](./accionesOOP/accionBase)
 
-## Lista de Acciones 
-- Abri Interface web: [accionAbirGUI](./accionesOOP/accionAbirGUI)
+# Lista de Acciones
 - Buscar Ventana: [accionBuscarVentana](./accionesOOP/accionBuscarVentana)
-- Siguiente pagina de StreamDeck: [accionAnteriorPagina](./accionesOOP/accionAnteriorPagina)
-- [accionSiquientePagina](./accionesOOP/accionSiquientePagina)
-- [accionActualizarPagina](./accionesOOP/accionActualizarPagina)
-- [accionControl](./accionesOOP/accionControl)
-- [accionDelay](./accionesOOP/accionDelay)
-- [accionEntrarFolder](./accionesOOP/accionEntrarFolder)
-- [accionEscribirTexto](./accionesOOP/accionEscribirTexto)
-- [accionFolder](./accionesOOP/accionFolder)
-- [accionMQTT](./accionesOOP/accionMQTT)
-- [accionNavegador](./accionesOOP/accionNavegador)
-- [accionNotificacion](./accionesOOP/accionNotificacion)
-- [accionOS](./accionesOOP/accionOS)
--  [accionRegresarFolder](./accionesOOP/accionRegresarFolder)
-- Cierra el programa: [accionSalir](./accionesOOP/accionSalir)
-- Preciosa una combinación de teclas: [accionTeclas](./accionesOOP/accionTeclas)
 - Envía mensaje por telegram: [accionTelegram](./accionesOOP/accionTelegram)
+- Envía mensaje por MQTT: [accionMQTT](./accionesOOP/accionMQTT)
+- Hace una espera: [accionDelay](./accionesOOP/accionDelay)
+- Escribe en un archivo: [accionEscribirTexto](./accionesOOP/accionEscribirTexto)
+- Abre una pagina web: [accionNavegador](./accionesOOP/accionNavegador)
+- Manda una notificación al escritorio: [accionNotificacion](./accionesOOP/accionNotificacion)
+- Ejecuta la comando en terminal: [accionOS](./accionesOOP/accionOS)
+- Preciosa una combinación de teclas: [accionTeclas](./accionesOOP/accionTeclas)
+- Controla la PC a distancia: [accionControl](./accionesOOP/accionControl)
+
+### Acciones de ElGarrobo
+- Abri interface web: [accionAbirGUI](./accionesOOP/accionAbirGUI)
+- Recarga acciones dentro del folder: [accionRecargarFolder](./accionesOOP/accionRecargarFolder)
+- Entra y carga acciones de un folder: [accionEntrarFolder](./accionesOOP/accionEntrarFolder)
+- Entra en un folder en los dispositivos: [accionFolder](./accionesOOP/accionFolder)
+- Sube un folder en los dispositivos: [accionRegresarFolder](./accionesOOP/accionRegresarFolder)
+- Cierra el programa: [accionSalir](./accionesOOP/accionSalir)
+
+### Acciones en StreamDeck
+- Anterior pagina de StreamDeck: [accionAnteriorPagina](./accionesOOP/accionAnteriorPagina)
+- Siguiente Pagina de StreamDeck: [accionSiquientePagina](./accionesOOP/accionSiquientePagina)
+- Actualiza la pagina de StreamDeck: [accionActualizarPagina](./accionesOOP/accionActualizarPagina)
+
 """
 
 from .accionAbirGUI import accionAbirGUI
+from .accionBase import accionBase
 from .accionBuscarVentana import accionBuscarVentana
 from .accionCambiarPagina import (
     accionActualizarPagina,
@@ -46,9 +53,12 @@ from .accionTeclas import accionTeclas
 from .accionTelegram import accionTelegram
 
 
-def cargarClasesAcciones() -> dict[str:]:
+def cargarClasesAcciones() -> dict[str, accionBase]:
     """
     Carga las acciones en una dic con nombre de accion y función asociada.
+
+    Returns:
+        (dict): Diccionario con las acciones cargadas
     """
 
     return {

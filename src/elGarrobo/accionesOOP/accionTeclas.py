@@ -1,3 +1,5 @@
+"""Preciona una combinación de teclas"""
+
 import pyautogui
 
 from elGarrobo.miLibrerias import ConfigurarLogging
@@ -8,11 +10,14 @@ Logger = ConfigurarLogging(__name__)
 
 
 class accionTeclas(accionBase):
+    """Preciona una combinación de teclas"""
+
+    nombre = "Teclas"
+    comando = "teclas"
+    descripcion = "Preciona una combinación de teclas"
+
     def __init__(self) -> None:
-        nombre = "Teclas"
-        comando = "teclas"
-        descripcion = "Preciona una combinación de teclas"
-        super().__init__(nombre, comando, descripcion)
+        super().__init__(self.nombre, self.comando, self.descripcion)
 
         propiedadTeclas = {
             "nombre": "Teclas",

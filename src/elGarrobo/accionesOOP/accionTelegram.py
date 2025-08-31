@@ -1,17 +1,21 @@
-from .accionBase import accionBase
-from elGarrobo.miLibrerias import EnviarMensajeTelegram
+"""Manda un mensaje por TelegramBot"""
 
-from elGarrobo.miLibrerias import ConfigurarLogging
+from elGarrobo.miLibrerias import ConfigurarLogging, EnviarMensajeTelegram
+
+from .accionBase import accionBase
 
 Logger = ConfigurarLogging(__name__)
 
 
 class accionTelegram(accionBase):
+    """Manda un mensaje por TelegramBot"""
+
+    nombre = "TelegramBot"
+    comando = "telegram"
+    descripcion = "Envia un mensaje por TelegramBot"
+
     def __init__(self) -> None:
-        nombre = "TelegramBot"
-        comando = "telegram"
-        descripcion = "Envia un mensaje por TelegramBot"
-        super().__init__(nombre, comando, descripcion)
+        super().__init__(self.nombre, self.comando, self.descripcion)
 
         propiedadMensaje = {
             "nombre": "Mensaje",
@@ -39,7 +43,7 @@ class accionTelegram(accionBase):
             "atributo": "id",
             "descripcion": "Token para controlar Bot",
             "ejemplo": "1234:ABCD",
-            "defecto": "Usando data/TelegramBot.json - ID_Chat"
+            "defecto": "Usando data/TelegramBot.json - ID_Chat",
         }
 
         self.agregarPropiedad(propiedadMensaje)
@@ -55,5 +59,5 @@ class accionTelegram(accionBase):
 
         if mensaje is None:
             return
-      
+
         EnviarMensajeTelegram(mensaje, tokenBot, idChat)

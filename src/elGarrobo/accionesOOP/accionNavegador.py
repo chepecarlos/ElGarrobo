@@ -1,3 +1,5 @@
+"""Esperar una cantidad de tiempo"""
+
 import webbrowser
 
 from elGarrobo.miLibrerias import ConfigurarLogging
@@ -10,11 +12,12 @@ Logger = ConfigurarLogging(__name__)
 class accionNavegador(accionBase):
     """Esperar una cantidad de tiempo"""
 
+    nombre: str = "Navegador"
+    comando: str = "navegador"
+    descripción: str = "Abre una url en navegador preterminado"
+
     def __init__(self) -> None:
-        nombre = "Navegador"
-        comando = "navegador"
-        descripcion = "Abre una url en navegador preterminado"
-        super().__init__(nombre, comando, descripcion)
+        super().__init__(self.nombre, self.comando, self.descripción)
 
         propiedadURL = {
             "nombre": "URL",
@@ -31,7 +34,7 @@ class accionNavegador(accionBase):
 
     def abrirNavegador(self):
         """espera un tiempo"""
-        url = self.obtenerValor("url")
+        url: str = self.obtenerValor("url")
 
-        print(f"abriendo[{url}]")
+        Logger.info(f"abriendo[{url}]")
         webbrowser.open(url)

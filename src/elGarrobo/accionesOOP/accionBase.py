@@ -23,7 +23,7 @@ class accionBase:
     "Lista Propiedad para ejecutar la acciones"
     listaValores: list[valoresAcciones] = list()
     "Valores para ejecutar la acción"
-    funcion: callable = None
+    funcion: callable
     "Función a ejecutarse"
     funcionExterna: callable = None
     "Función a ejecutarse implementada externamente"
@@ -33,7 +33,13 @@ class accionBase:
     "Error de ejecución de la acción"
 
     def __init__(self, nombre: str, comando: str, descripcion: str) -> None:
-        "Inicializa la información de la acción hijo"
+        """Inicializa la información de la acción hijo
+
+        Args:
+            nombre (str): Nombre de la acción
+            comando (str): Identificador de la acción
+            descripcion (str): Descripción de la acción
+        """
         self.nombre: str = nombre
         self.comando: str = comando
         self.descripcion: str = descripcion
@@ -66,7 +72,11 @@ class accionBase:
                     self.error = True
 
     def ejecutar(self) -> bool:
-        """Ejecuta la acción si es posible"""
+        """Ejecuta la acción si es posible
+
+        Returns:
+            bool: True si se ejecutó, False si no
+        """
         if not self.sePuedeEjecutar():
             logger.error(f"AcciónPOO[Error] {self.nombre} - Falta Propiedades.")
             return False
@@ -102,9 +112,17 @@ class accionBase:
             return False
 
         return True
-    
+
     def confirmarAtributo(self, atributo: str) -> bool:
-        """Ver si es una propiedad esta en la lista"""
+        """Ver si es una propiedad esta en la lista
+
+        Args:
+            atributo (str): Atributo a buscar
+
+        Returns:
+            bool: True si existe, False si no
+
+        """
         for propiedad in self.listaPropiedades:
             if propiedad.mismoAtributo(atributo):
                 return True

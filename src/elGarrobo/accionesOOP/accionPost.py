@@ -1,17 +1,23 @@
-from .accionBase import accionBase
+"""Realiza un consulta post para usar API"""
+
 import requests
 
 from elGarrobo.miLibrerias import ConfigurarLogging
+
+from .accionBase import accionBase
 
 Logger = ConfigurarLogging(__name__)
 
 
 class accionPost(accionBase):
+    """Realiza un consulta post para usar API"""
+
+    nombre = "Post"
+    comando = "post"
+    descripcion = "Realiza un consulta post para usar API"
+
     def __init__(self) -> None:
-        nombre = "Post"
-        comando = "post"
-        descripcion = "Realiza un consulta post para usar API"
-        super().__init__(nombre, comando, descripcion)
+        super().__init__(self.nombre, self.comando, self.descripcion)
 
         propiedadURL = {
             "nombre": "url",

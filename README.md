@@ -10,21 +10,24 @@ Heramienta para aumentar la eficiencia y rapidez, en desarrollo y trabajo en pro
 -   control MQTT
 -   Linux y Python3
 
+## Acciones
+
+Acciones disponibles para ejecutarse en acciones
+
+- [Lista de acciones](./elGarrobo/accionesOOP)
+
 ## Dispositvo de Entrada
 
 - Teclado USB
 - StreamDeck
 - MQTT
+- [Lista de dispositivos](./elGarrobo/dispositivos)
 
 ## Modulos 
 
 - Monitor ESP
 - OBS Websocket
 - Pulse
-
-## Acciones
-
-- [Lista de acciones](./elGarrobo/accionesOOP)
 
 ### Cosas por hacer
 

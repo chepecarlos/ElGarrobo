@@ -1,3 +1,5 @@
+"""Acción para esperar un tiempo"""
+
 import time
 
 from elGarrobo.miLibrerias import ConfigurarLogging
@@ -10,11 +12,12 @@ Logger = ConfigurarLogging(__name__)
 class accionDelay(accionBase):
     """Esperar una cantidad de tiempo"""
 
+    nombre = "Delay"
+    comando = "delay"
+    descripcion = "Espera una cantidad de tiempo"
+
     def __init__(self) -> None:
-        nombre = "Delay"
-        comando = "delay"
-        descripcion = "Espera una cantidad de tiempo"
-        super().__init__(nombre, comando, descripcion)
+        super().__init__(self.nombre, self.comando, self.descripcion)
 
         propiedadTiempo = {
             "nombre": "Tiempo",

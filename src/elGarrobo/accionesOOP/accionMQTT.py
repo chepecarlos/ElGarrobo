@@ -1,3 +1,5 @@
+"""Acción que envía un mensaje por mqtt"""
+
 import json
 import multiprocessing
 from typing import Any
@@ -10,11 +12,14 @@ Logger = ConfigurarLogging(__name__)
 
 
 class accionMQTT(accionBase):
+    """Envía un mensaje por mqtt"""
+
+    nombre = "MQTT"
+    comando = "mqtt"
+    descripcion = "Envía un mensaje por mqtt"
+
     def __init__(self) -> None:
-        nombre = "MQTT"
-        comando = "mqtt"
-        descripcion = "Envía un mensaje por mqtt"
-        super().__init__(nombre, comando, descripcion)
+        super().__init__(self.nombre, self.comando, self.descripcion)
 
         propiedadMensaje = {
             "nombre": "Mensaje",
