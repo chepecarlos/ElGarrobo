@@ -40,6 +40,7 @@ class accionBase:
             comando (str): Identificador de la acción
             descripcion (str): Descripción de la acción
         """
+        self.funcion = None
         self.nombre: str = nombre
         self.comando: str = comando
         self.descripcion: str = descripcion

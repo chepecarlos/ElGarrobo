@@ -3,15 +3,17 @@
 - Clase que se herencia todas las acciones: [AccionBase](./accionesOOP/accionBase)
 
 # Lista de Acciones
+- Preciosa una combinación de teclas: [accionTeclas](./accionesOOP/accionTeclas)
 - Buscar Ventana: [accionBuscarVentana](./accionesOOP/accionBuscarVentana)
 - Envía mensaje por telegram: [accionTelegram](./accionesOOP/accionTelegram)
 - Envía mensaje por MQTT: [accionMQTT](./accionesOOP/accionMQTT)
 - Hace una espera: [accionDelay](./accionesOOP/accionDelay)
 - Escribe en un archivo: [accionEscribirTexto](./accionesOOP/accionEscribirTexto)
 - Abre una pagina web: [accionNavegador](./accionesOOP/accionNavegador)
+- Cierra la ventana usando el cursor: [accionCerrarVentana](./accionesOOP/accionCerrarVentana)
+- Copia texto a papelera: [accionCopiarPapelera](./accionesOOP/accionCopiarPapelera)
 - Manda una notificación al escritorio: [accionNotificacion](./accionesOOP/accionNotificacion)
 - Ejecuta la comando en terminal: [accionOS](./accionesOOP/accionOS)
-- Preciosa una combinación de teclas: [accionTeclas](./accionesOOP/accionTeclas)
 - Controla la PC a distancia: [accionControl](./accionesOOP/accionControl)
 
 ### Acciones de ElGarrobo
@@ -37,7 +39,9 @@ from .accionCambiarPagina import (
     accionAnteriorPagina,
     accionSiquientePagina,
 )
+from .accionCerrarVentana import accionCerrarVentana
 from .accionControl import accionControl
+from .accionCopiarPapelera import accionCopiarPapelera
 from .accionDelay import accionDelay
 from .accionEntrarFolder import accionEntrarFolder
 from .accionEscribirTexto import accionEscribirTexto
@@ -81,4 +85,6 @@ def cargarClasesAcciones() -> dict[str, accionBase]:
         "salir": accionSalir,
         "teclas": accionTeclas,
         "telegram": accionTelegram,
+        "cerrar_ventana": accionCerrarVentana,
+        "copiar": accionCopiarPapelera,
     }
