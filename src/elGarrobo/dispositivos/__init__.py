@@ -7,11 +7,12 @@
 
 """
 
+from .mipedal.mi_pedal import MiPedal
 from .miteclado.mi_teclado_macro import MiTecladoMacro
 
 
 def cargarDispositivos() -> list:
 
-    listaDispositivos: list = [MiTecladoMacro]
+    listaDispositivos: list = [MiTecladoMacro, MiPedal]
 
     return listaDispositivos

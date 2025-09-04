@@ -37,8 +37,9 @@ class dispositivoBase:
     "Tipo de dispositivo"
     clase: str
     "Sub Categoria del dispositivo"
-    actualizarPestaña: callable
+    actualizarPestaña: callable = None
     "función que actualiza la pestaña del dispositivo con nuevas acciones"
+    pestaña = None
     modulo: str = ""
     "Modulo para cargar dispositivo"
     archivoConfiguracion: str = ""
@@ -46,6 +47,8 @@ class dispositivoBase:
     "Si el dispositivo esta activo o no"
     ejecutarAcción: callable = None
     "Función que se llama para ejecutar una acción"
+
+    listaIndexUsados: list = list()
 
     def __init__(self, nombre: str = None, dispositivo: str = None, archivo: str = None, folderPerfil: str = None):
         """Inicializa un dispositivo base.
@@ -95,6 +98,10 @@ class dispositivoBase:
         logger.info(f"{claseDispositivo.tipo}[Cargando]")
 
         dataDispositivos = ObtenerArchivo(claseDispositivo.archivoConfiguracion)
+
+        if dataDispositivos is None:
+            logger.warning(f"Falta Informacion para cargar {claseDispositivo.tipo} {claseDispositivo.archivoConfiguracion}")
+            return
 
         for dataActual in dataDispositivos:
             dispositivoActual = claseDispositivo(dataActual)
@@ -233,7 +240,7 @@ class dispositivoBase:
 
     def buscarAccion(self, tecla: str, estado: estadoTecla):
         for acción in self.listaAcciones:
-            if acción.get("key") == tecla:
+            if str(acción.get("key")) == str(tecla):
                 if estado == self.estadoTecla.PRESIONADA:
                     logger.info(f"Evento[{acción.get('nombre')}] {self.nombre}[{tecla}-{estado.name}]")
                     self.ejecutarAcción(acción, True)
@@ -244,6 +251,11 @@ class dispositivoBase:
         if estado == self.estadoTecla.PRESIONADA:
             logger.info(f"Evento[No asignado] {self.nombre}[{tecla}]")
         return None
+
+    @staticmethod
+    def agregarIndexUsado(indexUsado: int):
+        dispositivoBase.listaIndexUsados.append(indexUsado)
+        pass
 
     def __str__(self):
         return f"{self.nombre}[{self.tipo}]"

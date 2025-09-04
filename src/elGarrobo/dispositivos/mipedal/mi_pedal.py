@@ -11,38 +11,48 @@ logger = ConfigurarLogging(__name__)
 
 class MiPedal(dispositivoBase):
 
-    def __init__(self, data: dict, ejecutarAcción: callable, folderPerfil: str):
-        self.id = data.get("id")
-        nombre: str = data.get("nombre")
-        archivo: str = data.get("archivo")
-        self.serial: str = data.get("serial")
-        self.conectado: bool = False
-        self.deck = None
-        self.index: int = -1
-        super().__init__(nombre, self.serial, archivo, folderPerfil)
-        self.ejecutarAcción: callable = ejecutarAcción
-        self.tipo = "pedal"
+    modulo = "pedal"
+    tipo = "pedal"
+    archivoConfiguracion = "pedal.md"
+    deck: DeviceManager = None
+    idDeck: int = -1
 
-    def conectar(self, indexUsados) -> int:
+    def __init__(self, dataConfiguracion: dict) -> None:
+        """Inicializando Dispositivo de teclado
+
+        Args:
+            dataConfiguracion (dict): Datos de configuración del dispositivo
+        """
+
+        self.nombre = dataConfiguracion.get("nombre", "pedal")
+        self.dispositivo = dataConfiguracion.get("dispositivo", "")
+        self.archivo = dataConfiguracion.get("archivo", "")
+        self.id = dataConfiguracion.get("id", "")
+        self.conectado: bool = False
+
+    def conectar(self) -> None:
         streamdecks = DeviceManager().enumerate()
 
-        for index, deck in enumerate(streamdecks):
-            probarIndex = True
-            for indexUsado in indexUsados:
-                if index == indexUsado:
-                    probarIndex = False
+        listaIdUsados = dispositivoBase.listaIndexUsados
 
-            if probarIndex:
+        for idActual, deck in enumerate(streamdecks):
+            idProbar = True
+            for idUsado in listaIdUsados:
+                if idActual == idUsado:
+                    idProbar = False
+
+            if idProbar:
                 try:
                     self.deck = deck
                     self.deck.open()
                     self.deck.reset()
-                    if self.deck.get_serial_number() == self.serial and self.deck.deck_type() == "Stream Deck Pedal":
+                    if self.deck.get_serial_number() == self.dispositivo and self.deck.deck_type() == "Stream Deck Pedal":
                         self.conectado = True
                         self.cantidad = self.deck.key_count()
                         self.deck.set_key_callback(self.actualizarBoton)
-                        self.index = index
-                        return self.index
+                        self.idDeck = idActual
+                        dispositivoBase.agregarIndexUsado(self.idDeck)
+                        return
                     else:
                         self.deck.close()
                 except TransportError as error:
@@ -57,18 +67,10 @@ class MiPedal(dispositivoBase):
                     logger.error(f"Error 2 {error}")
 
     def actualizarBoton(self, Deck, Key: int, Estado: bool):
-        data = {
-            "nombre": self.nombre,
-            "key": str(Key + 1),
-            "estado": Estado,
-        }
         if Estado:
             self.buscarAccion(str(Key + 1), self.estadoTecla.PRESIONADA)
         else:
             self.buscarAccion(str(Key + 1), self.estadoTecla.LIBERADA)
-        # print(f"Se precioso {self.tipo} {data}")
-        # print(f"Lista acciones {self.listaAcciones}")
-        # self.evento(data)
 
     def desconectar(self):
         if self.conectado:

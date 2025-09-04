@@ -21,8 +21,6 @@ from .dispositivos.mideck.mi_deck_extra import DefinirFuente, DefinirImagenes
 from .dispositivos.mideck.mi_streamdeck import MiStreamDeck
 from .dispositivos.migui.migui import miGui
 from .dispositivos.mimqtt.mi_mqtt import MiMQTT
-from .dispositivos.mipedal.mi_pedal import MiPedal
-from .dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro
 from .miLibrerias import (
     ConfigurarLogging,
     ObtenerListaArhivos,
@@ -101,7 +99,7 @@ class elGarrobo(object):
 
         self.BuscarFolder(self.PathActual)
 
-        if self.ModuloPedal or self.ModuloDeck:
+        if self.ModuloDeck:
             self.listaIndex = []
 
         if self.ModuloOBS:
@@ -114,19 +112,7 @@ class elGarrobo(object):
             self.CargarStreamDeck()
             self.IniciarStreamDeck()
 
-        if self.ModuloPedal:
-            self.cargarPedal()
-
-        self.dispositivosDisponibles: list[dispositivoBase] = cargarDispositivos()
-
-        for claseDispositivo in self.dispositivosDisponibles:
-            self.listaDispositivos.extend(claseDispositivo.cargarDispositivos(self.modulos, claseDispositivo))
-
-        for dispositivo in self.listaDispositivos:
-            dispositivo.ejecutarAcción = self.EjecutandoEvento
-            dispositivo.asignarPerfil(self.folderPerfil)
-            if dispositivo.activado and not dispositivo.conectado:
-                dispositivo.conectar()
+        self.iniciarDispositivos()
 
         if self.ModuloMQTT:
             self.IniciarMQTT()
@@ -147,6 +133,18 @@ class elGarrobo(object):
             self.miGui.actualizarFolder(self.PathActual)
 
         pass
+
+    def iniciarDispositivos(self):
+        self.dispositivosDisponibles: list[dispositivoBase] = cargarDispositivos()
+
+        for claseDispositivo in self.dispositivosDisponibles:
+            self.listaDispositivos.extend(claseDispositivo.cargarDispositivos(self.modulos, claseDispositivo))
+
+        for dispositivo in self.listaDispositivos:
+            dispositivo.ejecutarAcción = self.EjecutandoEvento
+            dispositivo.asignarPerfil(self.folderPerfil)
+            if dispositivo.activado and not dispositivo.conectado:
+                dispositivo.conectar()
 
     def IniciarModulo(self) -> None:
         """
@@ -170,7 +168,6 @@ class elGarrobo(object):
         self.ModuloPulse = False
         self.ModuloMonitorESP = False
         self.ModuloAlias = False
-        self.ModuloPedal = False
         self.ModuloGui = False
 
         if Modulos is not None:
@@ -182,7 +179,6 @@ class elGarrobo(object):
 
             self.ModuloOBS = Modulos.get("obs", False)
             self.ModuloDeck = Modulos.get("deck", False)
-            self.ModuloPedal = Modulos.get("pedal", False)
             self.ModuloMQTT = Modulos.get("mqtt", False)
             self.ModuloMQTTEstado = Modulos.get("mqtt_estado", False)
             self.ModuloPulse = Modulos.get("pulse", False)
@@ -263,22 +259,6 @@ class elGarrobo(object):
                     logger.error(f"Falta Deck File {deck_file}")
             else:
                 logger.error("Falta atribulo deck_file en config")
-
-        if self.ModuloPedal:
-            pedal_file = self.Data.get("pedal_file")
-            if pedal_file is not None:
-                DataPedal = leerData(pedal_file)
-                if DataPedal is not None:
-                    self.Data["pedal"] = DataPedal
-                    # if self.ModuloGui:
-                    #     for pedal in self.Data["pedal"]:
-                    #         nombre = pedal.get("nombre")
-                    #         archivo = pedal.get("file")
-                    #         input = pedal.get("serial")
-                    #         pedal = {"nombre": nombre, "tipo": "pedal", "clase": "null", "input": input, "archivo": archivo, "estado": True}
-                    #         self.miGui.agregarDispositivos(pedal)
-                else:
-                    logger.error(f"Falta {pedal_file}")
 
         pathActual = self.Data.get("folder_path")
         if pathActual is not None:
@@ -401,21 +381,6 @@ class elGarrobo(object):
             #     DeckActual = MiStreamDeck(Deck)
         else:
             self.ListaDeck = None
-
-    def cargarPedal(self):
-        """Configura los Pedales de StreamDeck"""
-        if "pedal" in self.Data:
-            logger.info("Pedal[Cargando]")
-            self.listaPedales = []
-            for infoPedales in self.Data.get("pedal"):
-                pedalActual = MiPedal(infoPedales, self.ejecutarAcción, self.folderPerfil)
-                indexActual = pedalActual.conectar(self.listaIndex)
-                self.listaIndex.append(indexActual)
-                self.listaPedales.append(pedalActual)
-                self.listaDispositivos.append(pedalActual)
-            self.ListaDeck.sort(key=lambda x: x.id, reverse=False)
-        else:
-            self.listaPedales = None
 
     def ActualizarDeck(self):
         for Deck in self.ListaDeck:
