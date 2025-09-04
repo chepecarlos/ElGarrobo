@@ -62,7 +62,10 @@ class MiPedal(dispositivoBase):
             "key": str(Key + 1),
             "estado": Estado,
         }
-        self.buscarAcción(data)
+        if Estado:
+            self.buscarAccion(str(Key + 1), self.estadoTecla.PRESIONADA)
+        else:
+            self.buscarAccion(str(Key + 1), self.estadoTecla.LIBERADA)
         # print(f"Se precioso {self.tipo} {data}")
         # print(f"Lista acciones {self.listaAcciones}")
         # self.evento(data)

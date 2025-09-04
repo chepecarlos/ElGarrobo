@@ -16,30 +16,28 @@ logger = ConfigurarLogging(__name__)
 class MiTecladoMacro(dispositivoBase):
     """Clase de Teclado Macro para Linux."""
 
-    def __init__(self, nombre: str, dispositivo: str, archivo: str, Evento, folderPerfil: str) -> None:
+    modulo = "teclado"
+    tipo = "teclado"
+    archivoConfiguracion = "teclados.md"
+
+    teclado: InputDevice
+    "Objeto del teclado"
+
+    def __init__(self, dataConfiguracion: dict) -> None:
         """Inicializando Dispositivo de teclado
 
         Args:
-            nombre (str): Nombre del dispositivo
-            dispositivo (str): Ruta del dispositivo
-            archivo (str): Ruta del archivo de configuración
-            Evento (callable): Función a llamar en caso de evento
-            folderPerfil (str): Carpeta del perfil
-
+            dataConfiguracion (dict): Datos de configuración del dispositivo
         """
-        self.Dispositivo = dispositivo
-        self.File = archivo
-        self.Evento = Evento
-        self.Conectado = False
+        self.nombre = dataConfiguracion.get("nombre", "Teclado")
+        self.dispositivo = dataConfiguracion.get("dispositivo", "")
+        self.archivo = dataConfiguracion.get("archivo", "")
+        self.activado = dataConfiguracion.get("activado", True)
+        self.conectado = False
         self.Activo = True
-        self.EsperaReconectar = 5
-        super().__init__(nombre, dispositivo, archivo, folderPerfil)
+        self.esperaReconectar = 5
 
-    # def run(self):
-    #     """Dibuja un frame de cada gif y espera a siguiente frame."""
-    #     while True:
-    #         with self.lock:
-    #             print("hola :D")
+        super().__init__()
 
     def conectar(self):
         """Conecta con un teclado para escuchas botones presionados."""
@@ -49,42 +47,42 @@ class MiTecladoMacro(dispositivoBase):
     def HiloRaton(self):
         """Hilo del estado del Teclado."""
         while self.Activo:
-            if self.Conectado:
+            if self.conectado:
                 try:
-                    for event in self.Teclado.read_loop():
+                    for event in self.teclado.read_loop():
                         if event.type == ecodes.EV_KEY:
                             key = categorize(event)
-                            data = dict()
-                            data.update({"nombre": self.nombre, "key": key.keycode})
 
                             match key.keystate:
                                 case key.key_down:
-                                    data.update({"estado": "presionado"})
+                                    self.buscarAccion(key.keycode, self.estadoTecla.PRESIONADA)
                                 case key.key_hold:
-                                    data.update({"estado": "mantener"})
+                                    self.buscarAccion(key.keycode, self.estadoTecla.MANTENIDA)
                                 case key.key_up:
-                                    data.update({"estado": "soltar"})
-                            self.Evento(data)
+                                    self.buscarAccion(key.keycode, self.estadoTecla.LIBERADA)
+
                 except Exception as error:
-                    self.Conectado = False
+                    self.conectado = False
+                    logger.exception("Error en Coneccion del Teclado")
                     logger.info(f"Teclado[Desconectado] {self.nombre} Error[{error.errno}]")
             else:
                 try:
-                    logger.info(f"Teclado[Conectándose] {self.nombre}")
-                    self.Teclado = InputDevice(self.Dispositivo)
-                    self.Teclado.grab()
-                    self.Conectado = True
+                    logger.info(f"Teclado[Conectándose] {self.nombre} - {self.dispositivo}")
+                    self.teclado = InputDevice(self.dispositivo)
+                    self.teclado.grab()
+                    self.conectado = True
                     logger.info(f"Teclado[Conectado] {self.nombre}")
                 except Exception as error:
-                    logger.warning(f"Teclado[Error] {self.nombre} Re-Intensando en {self.EsperaReconectar} Error {error.errno}")
-                    if self.EsperaReconectar < 60:
-                        self.EsperaReconectar += 5
-                    time.sleep(self.EsperaReconectar)
-                    self.Conectado = False
+                    logger.exception("An error occurred during division.")
+                    logger.warning(f"Teclado[Error] {self.nombre} Re-Intensando en {self.esperaReconectar} Error {error.errno}")
+                    if self.esperaReconectar < 60:
+                        self.esperaReconectar += 5
+                    time.sleep(self.esperaReconectar)
+                    self.conectado = False
 
     def desconectar(self):
         logger.info(f"Teclado[Desconectando] {self.nombre}")
         self.Activo = False
-        self.Teclado.ungrab()
-        self.Teclado.close()
+        self.teclado.ungrab()
+        self.teclado.close()
         # self.HiloTeclado.join()

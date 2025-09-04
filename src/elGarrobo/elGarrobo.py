@@ -61,7 +61,7 @@ class elGarrobo(object):
     "Folder donde se buscan las acciones"
 
     listaDispositivos: list[dispositivoBase] = list()
-    "Lista de dispositivos disponibles "
+    "Lista de dispositivos disponibles"
     listaClasesAcciones: dict[str,] = dict()
 
     # FIXME: mover a mover a objeto de streamdeck
@@ -117,8 +117,16 @@ class elGarrobo(object):
         if self.ModuloPedal:
             self.cargarPedal()
 
-        if self.ModuloTeclado:
-            self.cargarTeclados()
+        self.dispositivosDisponibles: list[dispositivoBase] = cargarDispositivos()
+
+        for claseDispositivo in self.dispositivosDisponibles:
+            self.listaDispositivos.extend(claseDispositivo.cargarDispositivos(self.modulos, claseDispositivo))
+
+        for dispositivo in self.listaDispositivos:
+            dispositivo.ejecutarAcción = self.EjecutandoEvento
+            dispositivo.asignarPerfil(self.folderPerfil)
+            if dispositivo.activado and not dispositivo.conectado:
+                dispositivo.conectar()
 
         if self.ModuloMQTT:
             self.IniciarMQTT()
@@ -138,12 +146,15 @@ class elGarrobo(object):
             # TODO: cargar foldrer al inicio
             self.miGui.actualizarFolder(self.PathActual)
 
+        pass
+
     def IniciarModulo(self) -> None:
         """
         Carga los modulos activos.
         """
         logger.info(f"Configurando[Modulos]")
         Modulos = leerData("modulos/modulos")
+        self.modulos = Modulos
 
         if Modulos is None:
             logger.error("No existe archivo modulos.md")
@@ -154,7 +165,6 @@ class elGarrobo(object):
         self.ModuloOBS = False
         self.ModuloOBSNotificacion = False
         self.ModuloDeck = False
-        self.ModuloTeclado = False
         self.ModuloMQTT = False
         self.ModuloMQTTEstado = False
         self.ModuloPulse = False
@@ -172,7 +182,6 @@ class elGarrobo(object):
 
             self.ModuloOBS = Modulos.get("obs", False)
             self.ModuloDeck = Modulos.get("deck", False)
-            self.ModuloTeclado = Modulos.get("teclado", False)
             self.ModuloPedal = Modulos.get("pedal", False)
             self.ModuloMQTT = Modulos.get("mqtt", False)
             self.ModuloMQTTEstado = Modulos.get("mqtt_estado", False)
@@ -255,24 +264,6 @@ class elGarrobo(object):
             else:
                 logger.error("Falta atribulo deck_file en config")
 
-        if self.ModuloTeclado:
-            teclados_file = self.Data.get("teclados_file")
-            if teclados_file is not None:
-                DataTeclado = leerData(teclados_file)
-                if DataTeclado is not None:
-                    self.Data["teclados"] = DataTeclado
-                    if self.ModuloGui:
-                        for teclado in self.Data["teclados"]:
-                            nombre = teclado.get("nombre")
-                            archivo = teclado.get("file")
-                            input = teclado.get("input")
-                            teclado = {"nombre": nombre, "tipo": "teclado", "clase": "null", "input": input, "archivo": archivo, "estado": True}
-                            self.miGui.agregarDispositivos(teclado)
-                else:
-                    logger.error(f"Falta {deck_file}")
-            else:
-                logger.error("Falta atribulo teclados_file en config")
-
         if self.ModuloPedal:
             pedal_file = self.Data.get("pedal_file")
             if pedal_file is not None:
@@ -330,8 +321,6 @@ class elGarrobo(object):
                     ArchivoSin = Path(Archivo).stem
 
                     encontrado = False
-                    if self.ModuloTeclado:
-                        encontrado = self.CargarArchivos("teclados", Data, ArchivoSin)
                     if self.ModuloDeck and not encontrado:
                         encontrado = encontrado or self.CargarArchivos("global", Data, ArchivoSin)
                         encontrado = encontrado or self.CargarArchivos("deck", Data, ArchivoSin)
@@ -364,7 +353,6 @@ class elGarrobo(object):
 
         DataDispositivo = self.Data.get(Dispositivo)
 
-        # print(Dispositivo, DataDispositivo)
         if DataDispositivo is None:
             logger.warning(f"Error cargando {Dispositivo}")
             return
@@ -384,26 +372,6 @@ class elGarrobo(object):
                     logger.warning(f"{color.RED}Error cargando: {Ruta}{color.END}")
 
         return False
-
-    def cargarTeclados(self):
-        """
-        Configurando Teclados Macros.
-        """
-        self.ListaTeclados = []
-        if "teclados" in self.Data:
-            logger.info("Teclados[Cargando]")
-            for teclado in self.Data["teclados"]:
-                nombre = teclado.get("nombre")
-                archivo = teclado.get("file")
-                input = teclado.get("input")
-                estado = teclado.get("enable", True)
-                if estado:
-                    if nombre is not None and archivo is not None and input is not None:
-                        tecladoActual: dispositivoBase = MiTecladoMacro(nombre, input, archivo, self.Evento, self.folderPerfil)
-                        tecladoActual.conectar()
-                        self.ListaTeclados.append(tecladoActual)
-                        # TODO: Re agregar a dispositivo
-                        # self.listaDispositivos.append(tecladoActual)
 
     def CargarStreamDeck(self):
         """Configurando streamdeck."""
@@ -675,7 +643,7 @@ class elGarrobo(object):
         for numero, comando in enumerate(ListaComando):
 
             logger.info(f"Macro[{numero+1}/{len(ListaComando)}]")
-            print("Comando", comando)
+            # print("Comando", comando)
 
             self.solisitaMacro(comando, cajon)
 
@@ -969,9 +937,6 @@ class elGarrobo(object):
         logger.info("ElGarrobo[Saliendo] - Adios :) ")
         if self.ModuloOBS:
             self.OBS.Desconectar()
-        if self.ModuloTeclado:
-            for Teclado in self.ListaTeclados:
-                Teclado.desconectar()
         if self.ModuloDeck:
             for deck in self.ListaDeck:
                 deck.Desconectar()

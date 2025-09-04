@@ -1,4 +1,6 @@
 import os
+from enum import Enum
+from typing import Type
 
 from elGarrobo.miLibrerias import (
     ConfigurarLogging,
@@ -13,6 +15,8 @@ logger = ConfigurarLogging(__name__)
 class dispositivoBase:
     "Clase base de dispositovos fisicos que ejecutan las acciones"
 
+    estadoTecla = Enum("estadoTecla", [("PRESIONADA", 1), ("LIBERADA", 2), ("MANTENIDA", 3)])
+
     nombre: str
     "Nombre propio del dispositivo"
     dispositivo: str
@@ -26,16 +30,24 @@ class dispositivoBase:
     folder: str
     "Ruta de las acciones cargadas"
     folderPerfil: str
+    "Carpeta del perfil actual"
     listaAcciones: list
     "Lista de Acciones cargadas"
-    tipo: str
+    tipo: str = ""
     "Tipo de dispositivo"
     clase: str
     "Sub Categoria del dispositivo"
     actualizarPestaña: callable
     "función que actualiza la pestaña del dispositivo con nuevas acciones"
+    modulo: str = ""
+    "Modulo para cargar dispositivo"
+    archivoConfiguracion: str = ""
+    activado: bool = True
+    "Si el dispositivo esta activo o no"
+    ejecutarAcción: callable = None
+    "Función que se llama para ejecutar una acción"
 
-    def __init__(self, nombre: str, dispositivo: str, archivo: str, folderPerfil: str):
+    def __init__(self, nombre: str = None, dispositivo: str = None, archivo: str = None, folderPerfil: str = None):
         """Inicializa un dispositivo base.
 
         Args:
@@ -44,22 +56,51 @@ class dispositivoBase:
             archivo (str): Ruta del archivo de configuración
             folderPerfil (str): Carpeta del perfil
         """
-        self.nombre = nombre
-        self.dispositivo = dispositivo
-        self.archivo = archivo
+        if nombre is not None:
+            self.nombre = nombre
+        if dispositivo is not None:
+            self.dispositivo = dispositivo
+        if archivo is not None:
+            self.archivo = archivo
         self._listaAcciones: list[dict] = list()
         self.folder = "/"
-        self.folderPerfil = folderPerfil
+        if folderPerfil is not None:
+            self.folderPerfil = folderPerfil
         self.ejecutarAcción = None
-        self.tipo = ""
+        # self.tipo = ""
         self.clase = ""
         self.actualizarPestaña = None
         self.pestaña = None
         self.panel = None
 
     @staticmethod
-    def cargarConfiguraciones():
-        pass
+    def cargarDispositivos(modulosCargados: dict, claseDispositivo: type["dispositivoBase"]) -> list[Type["dispositivoBase"]]:
+        """
+        Preparara la informacion de los dispositivos en base a una clase
+
+        Args:
+            modulosCargados (dict): Dispositivos cargados y desactivados
+            claseDispositivo (dispositivoBase): Clase del dispositivo a cargar es basada es dispositivoBase
+
+        Returns:
+            list (dispositivoBase): Lista de dispositivos configurados
+        """
+
+        listaDispositivos: list[Type[dispositivoBase]] = list()
+
+        moduloCargado = modulosCargados.get(claseDispositivo.modulo)
+        if moduloCargado is None or moduloCargado is False:
+            logger.error(f"No cargado {claseDispositivo.tipo}")
+            return listaDispositivos
+        logger.info(f"{claseDispositivo.tipo}[Cargando]")
+
+        dataDispositivos = ObtenerArchivo(claseDispositivo.archivoConfiguracion)
+
+        for dataActual in dataDispositivos:
+            dispositivoActual = claseDispositivo(dataActual)
+            listaDispositivos.append(dispositivoActual)
+
+        return listaDispositivos
 
     def conectar(self) -> bool:
         """Intenta conectar el dispositivo
@@ -85,6 +126,10 @@ class dispositivoBase:
             recargar (boo, optional):
 
         """
+
+        if not self.activado:
+            return
+
         folderBase = str(ObtenerFolderConfig())
         rutaRelativa = self._calcularRutaRelativa(folder)
 
@@ -178,6 +223,27 @@ class dispositivoBase:
                         del acción[propiedad]
 
         SalvarArchivo(f"{archivo}.md", accionesSalvar)
+
+    def asignarPerfil(self, folderPerfil: str):
+        self.folderPerfil = folderPerfil
+        self.folder = "/"
+        # TODO: Cargar las acciones si es necesario
+        # self.listaAcciones = list()
+        # self.cargarAccionesFolder(".", directo=True, recargar=True)
+
+    def buscarAccion(self, tecla: str, estado: estadoTecla):
+        for acción in self.listaAcciones:
+            if acción.get("key") == tecla:
+                if estado == self.estadoTecla.PRESIONADA:
+                    logger.info(f"Evento[{acción.get('nombre')}] {self.nombre}[{tecla}-{estado.name}]")
+                    self.ejecutarAcción(acción, True)
+                    return
+                elif estado == self.estadoTecla.LIBERADA:
+                    self.ejecutarAcción(acción, False)
+                    return
+        if estado == self.estadoTecla.PRESIONADA:
+            logger.info(f"Evento[No asignado] {self.nombre}[{tecla}]")
+        return None
 
     def __str__(self):
         return f"{self.nombre}[{self.tipo}]"
