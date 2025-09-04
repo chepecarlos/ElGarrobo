@@ -16,10 +16,17 @@ logger = ConfigurarLogging(__name__)
 class MiTecladoMacro(dispositivoBase):
     """Clase de Teclado Macro para Linux."""
 
-    def __init__(self, nombre: str, dispositivo: str, archivo: str, Evento, folderPerfil: str):
-        """Inicializando Dispositivo de teclado."""
-        # self.nombre = nombre
-        # self.nombre = nombre
+    def __init__(self, nombre: str, dispositivo: str, archivo: str, Evento, folderPerfil: str) -> None:
+        """Inicializando Dispositivo de teclado
+
+        Args:
+            nombre (str): Nombre del dispositivo
+            dispositivo (str): Ruta del dispositivo
+            archivo (str): Ruta del archivo de configuración
+            Evento (callable): Función a llamar en caso de evento
+            folderPerfil (str): Carpeta del perfil
+
+        """
         self.Dispositivo = dispositivo
         self.File = archivo
         self.Evento = Evento

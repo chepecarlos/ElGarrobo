@@ -9,23 +9,24 @@ logger = ConfigurarLogging(__name__)
 
 
 class MiMQTT:
-    def __init__(self, data, Evento):
-        self.Conectado = False
-        self.Evento = Evento
+    def __init__(self, data: dict, Evento: callable):
+        self.Conectado: bool = False
+        self.Evento: callable = Evento
 
-        self.nombre = data.get("nombre")
-        self.broker = data.get("broker","test.mosquitto.org")
-        self.puerto = data.get("puerto", 1883)
-        self.topicControl = data.get("topic")
-        self.usuario = data.get("usuario")
-        self.contrasenna = data.get("contrasenna")
-        self.hostControl = data.get("host", "fulanito")
+        self.nombre: str = data.get("nombre")
+        self.broker: str = data.get("broker", "test.mosquitto.org")
+        self.puerto: int = data.get("puerto", 1883)
+        self.topicControl: str = data.get("topic")
+        self.usuario: str = data.get("usuario")
+        self.contrasenna: str = data.get("contrasenna")
+        self.hostControl: str = data.get("host", "fulanito")
 
         logger.info(f"MQTT[Iniciando] - {self.nombre}")
         self.cliente = mqtt.Client(client_id=self.hostControl)
         self.cliente.on_connect = self.EventoConectar
         self.cliente.on_disconnect = self.EventoDesconectando
         self.cliente.on_message = self.MensajeMQTT
+        # TODO: re intear reconeccion
 
     def Conectar(self):
         """Conectar a Broker MQTT."""
@@ -54,7 +55,7 @@ class MiMQTT:
             logger.info(f"MQTT[Accion-Control] - [{self.hostControl}]:{self.topicControl}")
             client.subscribe(self.topicControl)
             client.publish(f"{self.topicControl}/{self.hostControl}", "conectado")
-           
+
     def EventoDesconectando(self, client, userdata, rc):
         logger.info(f"MQTT[Desconectando] - {self.nombre}")
         self.Conectado = False

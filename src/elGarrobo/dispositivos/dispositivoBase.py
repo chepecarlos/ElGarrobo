@@ -36,6 +36,14 @@ class dispositivoBase:
     "función que actualiza la pestaña del dispositivo con nuevas acciones"
 
     def __init__(self, nombre: str, dispositivo: str, archivo: str, folderPerfil: str):
+        """Inicializa un dispositivo base.
+
+        Args:
+            nombre (str): Nombre del dispositivo
+            dispositivo (str): Ruta del dispositivo
+            archivo (str): Ruta del archivo de configuración
+            folderPerfil (str): Carpeta del perfil
+        """
         self.nombre = nombre
         self.dispositivo = dispositivo
         self.archivo = archivo
@@ -49,8 +57,16 @@ class dispositivoBase:
         self.pestaña = None
         self.panel = None
 
-    def conectar(self):
-        "Intenta conectar el dispositivo"
+    @staticmethod
+    def cargarConfiguraciones():
+        pass
+
+    def conectar(self) -> bool:
+        """Intenta conectar el dispositivo
+
+        Returns:
+            bool: False si fallo la conexión
+        """
         pass
 
     def desconectar(self):
@@ -61,7 +77,14 @@ class dispositivoBase:
         pass
 
     def cargarAccionesFolder(self, folder: str, directo: bool = False, recargar: bool = False):
-        "Busca y carga acciones en un folder, si existen"
+        """Busca y carga acciones en un folder, si existen
+
+        Args:
+            folder (str):
+            directo (bool, optional): . Defaults to False.
+            recargar (boo, optional):
+
+        """
         folderBase = str(ObtenerFolderConfig())
         rutaRelativa = self._calcularRutaRelativa(folder)
 
@@ -100,9 +123,16 @@ class dispositivoBase:
         "Recarga las acciones del folder actual"
         self.cargarAccionesFolder(".", directo, recargar=True)
 
-    def cargarData(self, archivo: str):
+    def cargarData(self, archivo: str) -> any:
+        """Carga datos desde un archivo.
+
+        Args:
+            archivo (str): Ruta del archivo a cargar.
+
+        """
 
         tipoArchivos = [".md", ".json"]
+        "Archivos a cargar información"
 
         if ".md" in archivo or ".json" in archivo:
             return ObtenerArchivo(archivo)

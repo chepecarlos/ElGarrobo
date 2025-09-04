@@ -15,6 +15,7 @@ from .accionesOOP import (
     cargarClasesAcciones,
 )
 from .accionesOOP.heramientas.valoresAccion import valoresAcciones
+from .dispositivos import cargarDispositivos
 from .dispositivos.dispositivoBase import dispositivoBase
 from .dispositivos.mideck.mi_deck_extra import DefinirFuente, DefinirImagenes
 from .dispositivos.mideck.mi_streamdeck import MiStreamDeck
@@ -61,12 +62,11 @@ class elGarrobo(object):
 
     listaDispositivos: list[dispositivoBase] = list()
     "Lista de dispositivos disponibles "
+    listaClasesAcciones: dict[str,] = dict()
 
     # FIXME: mover a mover a objeto de streamdeck
     ListaDeck = None
     PathActual = None
-    
-    listaClasesAcciones = dict()
 
     def __init__(self) -> None:
 
@@ -425,7 +425,7 @@ class elGarrobo(object):
             self.ListaDeck.sort(key=lambda x: x.id, reverse=False)
             if self.ModuloGui:
                 self.miGui.actualizarIconos = self.ActualizarDeck
-                
+
             for Deck in self.ListaDeck:
                 logger.info(Deck)
             # CargarDeck = IniciarStreamDeck(self.Data['deck'], self.Evento)
@@ -645,7 +645,7 @@ class elGarrobo(object):
             # print("opciones:", opcionesAccion)
 
             # opcionesAccion.append({"__estado": presionado})
-            
+
             if self.ModuloMonitorESP:
                 Mensaje = {"accion": comandoAccion}
                 if nombreAccion:

@@ -1,7 +1,7 @@
 import re
 import subprocess as sp
 
-from elGarrobo.acciones.accion_os import accionOS
+from elGarrobo.accionesOOP.accionOS import accionOS
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor, SalvarValor
 
 Logger = ConfigurarLogging(__name__)
@@ -17,7 +17,7 @@ class MiPulse:
         """Guarda Funcion para Solisitar iconos StringDeck."""
         self.SolisitarDibujar = Funcion
 
-    def IniciarAcciones(self, ListaAcciones):
+    def IniciarAcciones(self, ListaAcciones, ListaClasesAcciones):
         ListaAcciones["volumen"] = self.CambiarVolumen
         ListaAcciones["mute"] = self.CambiarMute
         ListaAcciones["salvar_pulse"] = self.SalvarPulse
@@ -71,7 +71,10 @@ class MiPulse:
             Logger.info("Opción de audio no encontrada")
             return
 
-        accionOS({"comando": comando})
+        accionVolumen = accionOS()
+        accionVolumen.configurar({"comando": comando})
+        accionVolumen.ejecutar()
+
         self.SalvarPulse()
 
     def CambiarMute(self, opciones):
@@ -90,7 +93,10 @@ class MiPulse:
 
         comando = f"pactl set-{Tipo}-mute {Dispositivo} toggle"
 
-        accionOS({"comando": comando})
+        accionVolumen = accionOS()
+        accionVolumen.configurar({"comando": comando})
+        accionVolumen.ejecutar()
+
         self.SalvarPulse()
 
     def SalvarPulse(self, opciones=None):

@@ -1,6 +1,6 @@
 """Esperar una cantidad de tiempo"""
 
-import time
+import pyautogui
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
@@ -9,7 +9,7 @@ from .accionBase import accionBase
 Logger = ConfigurarLogging(__name__)
 
 
-class accionDelay(accionBase):
+class accionEmularRaton(accionBase):
     """Esperar una cantidad de tiempo"""
 
     nombre = "Ratón"
@@ -19,55 +19,28 @@ class accionDelay(accionBase):
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
 
-        propiedadTiempo = {
-            "nombre": "Tiempo",
-            "tipo": str,
-            "obligatorio": True,
-            "atributo": "tiempo",
-            "descripcion": "duración de la espera",
-            "ejemplo": "1:32",
-        }
+        propiedadEstado = {"nombre": "Estado", "tipo": bool, "obligatorio": False, "atributo": "estado", "descripcion": "estado del boton", "ejemplo": "True", "defecto": True}
 
-        self.agregarPropiedad(propiedadTiempo)
+        propiedadBoton = {"nombre": "Botón", "tipo": str, "obligatorio": True, "atributo": "boton", "descripcion": "botón a presionar", "ejemplo": "izquierdo", "defecto": "izquierdo"}
 
-        self.funcion = self.esperarTiempo
+        self.agregarPropiedad(propiedadEstado)
+        self.agregarPropiedad(propiedadBoton)
 
-    def esperarTiempo(self):
-        """espera un tiempo"""
-        tiempo = self.obtenerValor("tiempo")
-        if tiempo is not None:
-            # TODO: confirmar que es un numero
-            if isinstance(tiempo, str):
-                pedadosTiempo = tiempo.split(":")
-                segundos = int(pedadosTiempo[-1])
-                if len(pedadosTiempo) > 1:
-                    segundos += int(pedadosTiempo[-2]) * 60
-                if len(pedadosTiempo) > 2:
-                    segundos += int(pedadosTiempo[-3]) * 3600
-                tiempo = segundos
+        self.funcion = self.precionarRaton
 
-        Logger.info(f"Delay[{tiempo}s]")
-        time.sleep(tiempo)
+    def precionarRaton(self):
+        """Precionar boton del raton."""
 
+        listaBotones = {"izquierdo": "left", "centro": "middle", "derecho": "right"}
 
-"""Acciones de Emulacion de teclas."""
-# https://pyautogui.readthedocs.io/en/latest/install.html
+        boton = self.obtenerValor("boton")
+        boton = listaBotones.get(boton)
+        estado = self.obtenerValor("estado")
 
-import pyautogui
-
-from elGarrobo.miLibrerias import ConfigurarLogging
-
-logger = ConfigurarLogging(__name__)
-
-
-def precionarRaton(opciones):
-    """Precionar boton del raton."""
-
-    boton = opciones.get("boton", "letf")
-    estado = opciones.get("estado")
-
-    if estado is not None:
-        if estado:
-            pyautogui.mouseDown(button=boton)
+        if estado is not None:
+            if estado:
+                pyautogui.mouseDown(button=boton)
+            else:
+                pyautogui.mouseUp(button=boton)
         else:
-            pyautogui.mouseUp(button=boton)
+            Logger.warning("Falta el estado del boton")

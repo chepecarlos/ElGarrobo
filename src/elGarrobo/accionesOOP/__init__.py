@@ -43,6 +43,7 @@ from .accionCerrarVentana import accionCerrarVentana
 from .accionControl import accionControl
 from .accionCopiarPapelera import accionCopiarPapelera
 from .accionDelay import accionDelay
+from .accionEmularRaton import accionEmularRaton
 from .accionEntrarFolder import accionEntrarFolder
 from .accionEscribirTexto import accionEscribirTexto
 from .accionFolder import accionFolder
@@ -84,6 +85,7 @@ def cargarClasesAcciones() -> dict[str, accionBase]:
         "regresar_folder": accionRegresarFolder,
         "salir": accionSalir,
         "teclas": accionTeclas,
+        "raton": accionEmularRaton,
         "telegram": accionTelegram,
         "cerrar_ventana": accionCerrarVentana,
         "copiar": accionCopiarPapelera,

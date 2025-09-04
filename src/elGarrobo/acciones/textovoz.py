@@ -1,6 +1,8 @@
 """Acciones de texto a voz."""
+
 # https://pypi.org/project/pyttsx3/
 import pyttsx3
+
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 logger = ConfigurarLogging(__name__)
@@ -12,10 +14,9 @@ def TextoVoz(opciones):
     """
     mensaje = opciones.get("mensaje")
     volumen = opciones.get("volumen", 1)
-    velocidad = opciones.get('velocidad', 180)
+    velocidad = opciones.get("velocidad", 180)
     lenguaje = opciones.get("lenguaje", "spanish")
     esperar = opciones.get("esperar", True)
-
 
     if mensaje is None:
         logger.info("falta mensaje a reproduccir")

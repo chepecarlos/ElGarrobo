@@ -1,13 +1,16 @@
 """Lista de Acciones."""
 
 from .archivos import escribirArchivo, escribirValor, escribirValores, leerValor
-from .emular_raton import precionarRaton
-from .emular_teclado import CopiarTexto, comandoPegar, comandoPortapapeles
+
+# from .emular_teclado import CopiarTexto, comandoPegar, comandoPortapapeles
+from .emular_teclado import comandoPegar, comandoPortapapeles
 from .operaciones import OperacionConstrain, operacionAsignar, operacionConcatenar
 from .sonidos import PararReproducion, Reproducir
 from .textbox import VentanaTexto
 from .textovoz import TextoVoz
-from .ventanas import cerrarVentana  # mostarVentana
+
+# from .emular_raton import precionarRaton
+# from .ventanas import cerrarVentana  # mostarVentana
 
 
 def CargarAcciones():
@@ -26,9 +29,9 @@ def CargarAcciones():
         # "teclas": comandoTeclas,
         # "escribir": comandoEscribir,
         "pegar": comandoPegar,
-        "copiar": CopiarTexto,
+        # "copiar": CopiarTexto,
         "portapapeles": comandoPortapapeles,
-        "raton": precionarRaton,
+        # "raton": precionarRaton,
         # Audio
         "reproducion": Reproducir,
         "detener_reproducion": PararReproducion,
@@ -39,7 +42,7 @@ def CargarAcciones():
         "escribir_valores": escribirValores,
         "escribir_archivo": escribirArchivo,
         # Manejo de Ventanas
-        "cerrar_ventana": cerrarVentana,
+        # "cerrar_ventana": cerrarVentana,
         # "mostrar_ventana": mostarVentana,
         # Input
         "ventana_texto": VentanaTexto,

@@ -14,7 +14,7 @@ class propiedadAccion:
     obligatorio: bool
     descripcion: str
     ejemplo: str
-    defecto: str
+    defecto: any
 
     def __init__(self, lista: dict = None) -> None:
         if isinstance(lista, dict):
@@ -24,7 +24,7 @@ class propiedadAccion:
             self.obligatorio: bool = lista.get("obligatorio", False)
             self.descripcion: str = lista.get("descripcion")
             self.ejemplo: str = lista.get("ejemplo")
-            self.defecto: str = lista.get("defecto")
+            self.defecto: any = lista.get("defecto")
 
     def mismoTipo(self, valor: any) -> bool:
         if isinstance(self.tipo, list):

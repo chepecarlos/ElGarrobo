@@ -574,7 +574,6 @@ class MiOBS:
         SalvarArchivo(unirPath(self.archivoEstado, "fuente"), dict())
         SalvarArchivo(unirPath(self.archivoEstado, "filtro"), dict())
         SalvarArchivo(unirPath(self.archivoEstado, "filtro_propiedades"), dict())
-        SalvarArchivo(unirPath(self.archivoEstado, "filtro_opciones"), dict())
         SalvarArchivo(unirPath(self.archivoEstado, "fuente_id"), dict())
 
     def Desconectar(self, opciones=False):

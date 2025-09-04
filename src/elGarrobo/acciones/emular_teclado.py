@@ -1,4 +1,5 @@
 """Acciones de Emulacion de teclas."""
+
 # https://pyautogui.readthedocs.io/en/latest/install.html
 
 import pyautogui
@@ -6,7 +7,7 @@ import pyperclip
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .delay import delay
+# from .delay import delay
 
 # https://pyautogui.readthedocs.io/en/latest/
 
@@ -18,23 +19,23 @@ from .delay import delay
 logger = ConfigurarLogging(__name__)
 
 
-def comandoTeclas(opciones):
-    """
-    Preciona una combinacion de tecla.
+# def comandoTeclas(opciones):
+#     """
+#     Preciona una combinacion de tecla.
 
-    teclas -> list
-        combinaciones de teclas
-    """
-    teclas = opciones.get("teclas")
+#     teclas -> list
+#         combinaciones de teclas
+#     """
+#     teclas = opciones.get("teclas")
 
-    if teclas is not None:
-        logger.info(f"Teclas{teclas}")
-        for tecla in teclas:
-            pyautogui.keyDown(tecla)
-        for tecla in reversed(teclas):
-            pyautogui.keyUp(tecla)
-    else:
-        logger.info("Teclas[no asignadas]")
+#     if teclas is not None:
+#         logger.info(f"Teclas{teclas}")
+#         for tecla in teclas:
+#             pyautogui.keyDown(tecla)
+#         for tecla in reversed(teclas):
+#             pyautogui.keyUp(tecla)
+#     else:
+#         logger.info("Teclas[no asignadas]")
 
 
 def comandoPegar(opciones):
@@ -105,10 +106,10 @@ def ComandoPrecionar(opciones):
             pyautogui.keyUp(tecla)
 
 
-def CopiarTexto(opciones):
-    """
-    Copia texto de papelera.
-    """
-    pyautogui.hotkey("ctrl", "c")
-    delay({"tiempo": 0.1})
-    return pyperclip.paste()
+# def CopiarTexto(opciones):
+#     """
+#     Copia texto de papelera.
+#     """
+#     pyautogui.hotkey("ctrl", "c")
+#     delay({"tiempo": 0.1})
+#     return pyperclip.paste()

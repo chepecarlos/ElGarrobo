@@ -12,11 +12,14 @@ from elGarrobo.miLibrerias import (
 logger = ConfigurarLogging(__name__)
 
 
-def PonerTexto(Imagen, accion, DirecionImagen=None):
+def PonerTexto(Imagen, accion, DirecionImagen=None, cortePalabra: bool = False):
     """Agrega Texto a Botones de StreamDeck."""
-    Titulo: str = str(accion["titulo"])
+    Titulo: str = str(accion.get("titulo"))
     Lineas = Titulo.split("\\n")
     Titulo = "\n".join(Lineas)
+    if cortePalabra:
+        Lineas = Titulo.split(" ")
+        Titulo = "\n".join(Lineas)
     Titulo_Color = "white"
     Tamanno: int = 40
     Ajustar: bool = True
@@ -53,6 +56,7 @@ def PonerTexto(Imagen, accion, DirecionImagen=None):
 
         if Titulo_ancho < Imagen.width:
             break
+        # TODO: reducir tamaño si el alto es demasiado
         Tamanno -= 1
 
     Horizontal = (Imagen.width - Titulo_ancho) / 2
