@@ -33,8 +33,8 @@ def CargarAcciones():
         "portapapeles": comandoPortapapeles,
         # "raton": precionarRaton,
         # Audio
-        "reproducion": Reproducir,
-        "detener_reproducion": PararReproducion,
+        # "reproducion": Reproducir,
+        # "detener_reproducion": PararReproducion,
         "textovoz": TextoVoz,
         # Archivos
         "leer_valor": leerValor,

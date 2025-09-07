@@ -1,6 +1,8 @@
 "Clase Base que manera las propiedad y si se puede ejecución"
 
-from elGarrobo.miLibrerias import ConfigurarLogging
+from pathlib import Path
+
+from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig
 
 from .heramientas.propiedadAccion import propiedadAccion
 from .heramientas.valoresAccion import valoresAcciones
@@ -79,7 +81,7 @@ class accionBase:
             bool: True si se ejecutó, False si no
         """
         if not self.sePuedeEjecutar():
-            logger.error(f"AcciónPOO[Error] {self.nombre} - Falta Propiedades.")
+            logger.error(f"Acción[Error] {self.nombre} - Falta Propiedades.")
             return False
 
         if callable(self.funcion):
@@ -108,8 +110,7 @@ class accionBase:
                 if not encontrado:
                     valoresFaltan.append(propiedad.nombre)
         if len(valoresFaltan) > 0:
-            print(len(valoresFaltan), valoresFaltan)
-            logger.error(f"No encontrada propiedades: {valoresFaltan}")
+            logger.error(f"FaltaPropiedad[{self.nombre}] - {valoresFaltan}")
             return False
 
         return True
@@ -145,6 +146,22 @@ class accionBase:
             if atributo == propiedad.atributo:
                 if propiedad.defecto is not None:
                     return propiedad.defecto
+
+    def calcularRuta(self, ruta: str) -> str:
+
+        folderconfig = Path(ObtenerFolderConfig())
+        folderPerfil = "defaul"  # TODO: agregar perfil del sistema
+        folderActual = "."  # TODO: usar folder actual de dispositivo
+        rutaCalculada = None
+
+        folderPerfil = Path(folderconfig / folderPerfil)
+
+        if ruta.startswith("/"):
+            rutaCalculada = folderPerfil / ruta.lstrip("/")
+        else:
+            rutaCalculada = folderPerfil / folderActual / ruta
+
+        return str(rutaCalculada.resolve())
 
     def __str__(self) -> str:
         return f"Acción: {self.nombre}[{self.atributo}]"

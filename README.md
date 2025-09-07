@@ -1,4 +1,4 @@
-# ElGatoALSW
+# ElGarrobo
 
 Heramienta para aumentar la eficiencia y rapidez, en desarrollo y trabajo en produccion con diferentes heramientas, compatible con StreamDeck en Linux y multiples teclados
 
