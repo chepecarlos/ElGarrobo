@@ -187,7 +187,7 @@ class MiStreamDeck(dispositivoBase):
         else:
             self.buscarAccion(Key + self.baseTeclas, self.estadoTecla.LIBERADA)
 
-    def Desconectar(self):
+    def desconectar(self):
         if self.conectado:
             logger.info(f"Deck[Desconectando] - {self.nombre}")
             self.DeckGif.Desconectar()

@@ -132,3 +132,8 @@ class MiDeckCombinado(dispositivoBase):
 
         self.limpiarIconos()
         self.actualizarIconos()
+
+    def desconectar(self):
+
+        for deck in self.listaDeck:
+            deck.desconectar()
