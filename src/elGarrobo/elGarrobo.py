@@ -8,6 +8,7 @@ from .accionesOOP import (
     accionAnteriorPagina,
     accionBase,
     accionEntrarFolder,
+    accionPresionar,
     accionRecargarFolder,
     accionRegresarFolder,
     accionSalir,
@@ -61,7 +62,7 @@ class elGarrobo(object):
     listaClasesAcciones: dict[str,] = dict()
 
     # FIXME: mover a mover a objeto de streamdeck
-    ListaDeck = None
+    # ListaDeck = None
     PathActual = None
 
     def __init__(self) -> None:
@@ -194,13 +195,13 @@ class elGarrobo(object):
         accionEntrarFolder.funcionExterna = self.entrar_Folder
         accionRegresarFolder.funcionExterna = self.Regresar_Folder
         accionRecargarFolder.funcionExterna = self.Reiniciar
+        accionPresionar.funcionExterna = self.accionesPresionar
 
         ListaAcciones = CargarAcciones()
         listaClasesAcciones = cargarClasesAcciones()
 
         # Acciones Macro
         ListaAcciones["macro"] = self.AccionesMacros
-        ListaAcciones["presionar"] = self.AccionesPresionar  # TODO: ver lista que puede usar estado
         ListaAcciones["alias"] = self.AccionesAlias
         ListaAcciones["random"] = self.AccionRandom
 
@@ -331,21 +332,21 @@ class elGarrobo(object):
 
     def EjecutandoEvento(self, evento, estado):
 
-        if isinstance(estado, bool):
-            if estado:
-                if "accion" in evento:
-                    evento["__estado"] = estado
-                    # TODO: Ver como pasar estado entre macros
-                    self.ejecutarAcción(evento)
-                else:
-                    logger.info("Evento[no accion]")
-        elif isinstance(estado, str):
-            evento["__estado"] = estado
-            accion = evento.get("accion")
-            if accion == "presionar" or estado == "presionado":
-                self.ejecutarAcción(evento)
+        self.ejecutarAcción(evento, estado)
+        # if isinstance(estado, bool):
+        #     if estado:
+        #         if "accion" in evento:
+        #             evento["__estado"] = estado
+        #             # TODO: Ver como pasar estado entre macros
+        #         else:
+        #             logger.info("Evento[no accion]")
+        # elif isinstance(estado, str):
+        #     evento["__estado"] = estado
+        #     accion = evento.get("accion")
+        #     if accion == "presionar" or estado == "presionado":
+        #         self.ejecutarAcción(evento)
 
-    def ejecutarAcción(self, accion: dict):
+    def ejecutarAcción(self, accion: dict, estado: bool = True):
         """Ejecuta una acción según el comando y las opciones proporcionadas."""
         comandoAccion: str = accion.get("accion")
 
@@ -353,24 +354,29 @@ class elGarrobo(object):
             logger.info(f"Accion[No Atributo] - {accion}")
 
         if comandoAccion in self.listaClasesAcciones:
-            opcionesAccion = accion.get("opciones", {})
-            teclaAccion = accion.get("key")
-            nombreAccion = accion.get("nombre")
+            opcionesAccion: dict = accion.get("opciones", {})
+            teclaAccion: str = accion.get("key")
+            nombreAccion: str = accion.get("nombre")
 
-            logger.info(f"AccionOOP[{comandoAccion}] - {nombreAccion}")
+            if comandoAccion == accionPresionar.comando:
+                opcionesAccion["estado"] = estado
+                estado = True
 
-            if self.ModuloMonitorESP:
-                Mensaje = {"accion": comandoAccion}
-                if nombreAccion:
-                    Mensaje["nombre"] = nombreAccion
-                if teclaAccion:
-                    Mensaje["key"] = teclaAccion
+            if estado:
+                logger.info(f"AccionOOP[{comandoAccion}] - {nombreAccion}")
 
-                self.mensajeMonitorESP(Mensaje, "accion")
+                if self.ModuloMonitorESP:
+                    Mensaje = {"accion": comandoAccion}
+                    if nombreAccion:
+                        Mensaje["nombre"] = nombreAccion
+                    if teclaAccion:
+                        Mensaje["key"] = teclaAccion
 
-            objetoAccion = self.listaClasesAcciones[comandoAccion]()
-            objetoAccion.configurar(opcionesAccion)
-            return objetoAccion.ejecutar()
+                    self.mensajeMonitorESP(Mensaje, "accion")
+
+                objetoAccion: accionBase = self.listaClasesAcciones[comandoAccion]()
+                objetoAccion.configurar(opcionesAccion)
+                return objetoAccion.ejecutar()
 
         elif comandoAccion in self.ListaAcciones:
             opcionesAccion = dict()
@@ -444,19 +450,18 @@ class elGarrobo(object):
 
         # TODO: Hacer Macros en diferentes Hilos
 
-    def AccionesPresionar(self, opciones):
+    def accionesPresionar(self, opciones: list[valoresAcciones]):
 
-        estado = opciones.get("__estado")
-        if estado is None:
-            logger.info("Falta Estado en Accion Presionar")
-            return
+        precionado: dict = self.obtenerValor(opciones, "presionado")
+        soltar: dict = self.obtenerValor(opciones, "soltar")
+        estado: bool = self.obtenerValor(opciones, "estado")
 
-        accion = opciones.get(estado)
-
-        if accion is None:
-            return
-
-        return self.ejecutarAcción(accion)
+        if estado:
+            logger.info(f"AccionOOP[presionar] - Precionando")
+            return self.ejecutarAcción(precionado)
+        else:
+            logger.info(f"AccionOOP[presionar] - Soltando")
+            return self.ejecutarAcción(soltar)
 
     def AccionesAlias(self, opciones):
         """
@@ -645,9 +650,6 @@ class elGarrobo(object):
         logger.info("ElGarrobo[Saliendo] - Adios :) ")
         if self.ModuloOBS:
             self.OBS.Desconectar()
-        if self.ModuloDeck:
-            for deck in self.ListaDeck:
-                deck.Desconectar()
         if self.ModuloMQTT:
             for Servidor in self.ListaMQTT:
                 Servidor.Desconectar()

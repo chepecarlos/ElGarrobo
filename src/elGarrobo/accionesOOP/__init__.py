@@ -17,6 +17,7 @@
 - Controla la PC a distancia: [accionControl](./accionesOOP/accionControl)
 - Reproduce una pista de audio: [accionReproducir](./accionesOOP/accionSonidos)
 - Para todas las reproducciones: [accionPararReproducirones](./accionesOOP/accionSonidos)
+- Ejecuta accion preciosa y otra se suelta: [accionPresionar](./accionesOOP/accionPresionar)
 
 ### Acciones de ElGarrobo
 - Abri interface web: [accionAbirGUI](./accionesOOP/accionAbirGUI)
@@ -53,6 +54,7 @@ from .accionMQTT import accionMQTT
 from .accionNavegador import accionNavegador
 from .accionNotificacion import accionNotificacion
 from .accionOS import accionOS
+from .accionPresionar import accionPresionar
 from .accionRecargarFolder import accionRecargarFolder
 from .accionRegresarFolder import accionRegresarFolder
 from .accionSalir import accionSalir
@@ -94,4 +96,5 @@ def cargarClasesAcciones() -> dict[str, accionBase]:
         "copiar": accionCopiarPapelera,
         "reproducion": accionReproducir,
         "detener_reproducion": accionPararReproducirones,
+        "presionar": accionPresionar,
     }
