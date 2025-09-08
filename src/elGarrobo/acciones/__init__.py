@@ -1,16 +1,10 @@
 """Lista de Acciones."""
 
 from .archivos import escribirArchivo, escribirValor, escribirValores, leerValor
-
-# from .emular_teclado import CopiarTexto, comandoPegar, comandoPortapapeles
 from .emular_teclado import comandoPegar, comandoPortapapeles
 from .operaciones import OperacionConstrain, operacionAsignar, operacionConcatenar
-from .sonidos import PararReproducion, Reproducir
 from .textbox import VentanaTexto
 from .textovoz import TextoVoz
-
-# from .emular_raton import precionarRaton
-# from .ventanas import cerrarVentana  # mostarVentana
 
 
 def CargarAcciones():

@@ -17,8 +17,6 @@ from .accionesOOP import (
 from .accionesOOP.heramientas.valoresAccion import valoresAcciones
 from .dispositivos import cargarDispositivos
 from .dispositivos.dispositivoBase import dispositivoBase
-from .dispositivos.mideck.mi_deck_extra import DefinirFuente, DefinirImagenes
-from .dispositivos.mideck.mi_streamdeck import MiStreamDeck
 from .dispositivos.migui.migui import miGui
 from .dispositivos.mimqtt.mi_mqtt import MiMQTT
 from .miLibrerias import (
@@ -93,11 +91,7 @@ class elGarrobo(object):
             self.miGui.salvarAcciones = self.salvarAcciones
             self.miGui.listaDispositivos = self.listaDispositivos
 
-        self.CargarData()
-
         self.IniciarAcciones()
-
-        self.BuscarFolder(self.PathActual)
 
         if self.ModuloDeck:
             self.listaIndex = []
@@ -108,11 +102,9 @@ class elGarrobo(object):
         if self.ModuloPulse:
             self.CargarPulse()
 
+        self.iniciarDispositivos()
         if self.ModuloDeck:
             self.CargarStreamDeck()
-            self.IniciarStreamDeck()
-
-        self.iniciarDispositivos()
 
         if self.ModuloMQTT:
             self.IniciarMQTT()
@@ -121,9 +113,13 @@ class elGarrobo(object):
             self.ListaAcciones["salvar_pulse"]({})
 
             # TODO: recivir acciones desde Modulo de Pulse
-            self.miGui.agregarAcciones(("salvar_pulse", "volumen", "mute"))
+            if self.ModuloGui:
+                self.miGui.agregarAcciones(("salvar_pulse", "volumen", "mute"))
 
-        self.cargarFolder()
+        # self.cargarFolder()
+        self.IniciarStreamDeck()
+
+        self.ActualizarDeck()
 
         if self.ModuloGui:
             for dispositivo in self.listaDispositivos:
@@ -141,9 +137,10 @@ class elGarrobo(object):
             self.listaDispositivos.extend(claseDispositivo.cargarDispositivos(self.modulos, claseDispositivo))
 
         for dispositivo in self.listaDispositivos:
-            dispositivo.ejecutarAcción = self.EjecutandoEvento
+            dispositivo.configurarFuncionAccion(self.EjecutandoEvento)
             dispositivo.asignarPerfil(self.folderPerfil)
             if dispositivo.activado and not dispositivo.conectado:
+                dispositivo.cargarAccionesFolder("/")
                 dispositivo.conectar()
 
     def IniciarModulo(self) -> None:
@@ -163,6 +160,7 @@ class elGarrobo(object):
         self.ModuloOBS = False
         self.ModuloOBSNotificacion = False
         self.ModuloDeck = False
+        self.ModuloCombinado = False
         self.ModuloMQTT = False
         self.ModuloMQTTEstado = False
         self.ModuloPulse = False
@@ -178,6 +176,7 @@ class elGarrobo(object):
                 self.ModuloMonitorESP = leerData("modulos/monitor_esp/mqtt")
 
             self.ModuloOBS = Modulos.get("obs", False)
+            self.ModuloCombinado = Modulos.get("deck_combinado", False)
             self.ModuloDeck = Modulos.get("deck", False)
             self.ModuloMQTT = Modulos.get("mqtt", False)
             self.ModuloMQTTEstado = Modulos.get("mqtt_estado", False)
@@ -192,7 +191,7 @@ class elGarrobo(object):
         logger.info("ElGarrobo[Acciones] Cargando")
 
         accionSalir.funcionExterna = self.Salir
-        accionEntrarFolder.funcionExterna = self.Entrar_Folder
+        accionEntrarFolder.funcionExterna = self.entrar_Folder
         accionRegresarFolder.funcionExterna = self.Regresar_Folder
         accionRecargarFolder.funcionExterna = self.Reiniciar
 
@@ -206,8 +205,8 @@ class elGarrobo(object):
         ListaAcciones["random"] = self.AccionRandom
 
         # Acciones Deck
-        if self.ModuloDeck:
-            accionSiquientePagina.funcionExterna = self.Siquiente_Pagina
+        if self.ModuloDeck or self.ModuloCombinado:
+            accionSiquientePagina.funcionExterna = self.siquiente_Pagina
             accionAnteriorPagina.funcionExterna = self.Anterior_Pagina
             accionActualizarPagina.funcionExterna = self.Actualizar_Folder
             ListaAcciones["deck_brillo"] = self.DeckBrillo
@@ -229,47 +228,12 @@ class elGarrobo(object):
     def cargarFolder(self):
 
         logger.info("Cargando acciones desde inicio")
-        self.Entrar_Folder({valoresAcciones("folder", "/")})
+        self.entrar_Folder({valoresAcciones("folder", "/")})
 
     def CargarData(self):
         """
         Cargando Data para Dispisitivo.
         """
-
-        logger.info("Cargando[Perfil]")
-        self.folderPerfil = self.Data.get("folder_perfil", "default")
-
-        logger.info("Cargando[Eventos]")
-        if self.ModuloDeck:
-            self.BanderaActualizarDeck = False
-            deck_file = self.Data.get("deck_file")
-
-            if deck_file is not None:
-                DataDeck = leerData(deck_file)
-                if DataDeck is not None:
-                    self.Data["deck"] = DataDeck
-                    # TODO: informar en archivo de configuración que están unidos
-                    if self.ModuloGui:
-                        nombre = "streamdeck"
-                        archivo = "streamdeck.md"
-                        input = "??"
-                        pedal = {"nombre": nombre, "tipo": "steamdeck", "clase": "null", "input": input, "archivo": archivo}
-                        self.miGui.agregarDispositivos(pedal)
-                else:
-                    logger.error(f"Falta Deck File {deck_file}")
-            else:
-                logger.error("Falta atribulo deck_file en config")
-
-        pathActual = self.Data.get("folder_path")
-        if pathActual is not None:
-            self.PathActual = pathActual
-            self.Keys = {
-                "nombre": self.Data["folder_path"],
-                "folder_path": self.Data["folder_path"],
-            }
-            self.CargarFolder(self.Keys)
-            if self.ModuloGui:
-                self.miGui.actualizarFolder(self.PathActual)
 
         ## TODO: por que no inicia la data de mqtt
         if self.ModuloMQTT:
@@ -286,156 +250,19 @@ class elGarrobo(object):
                 if dataAlias is not None:
                     self.Data["alias"] = dataAlias
 
-    def CargarFolder(self, Data):
-        """
-        Carga recursivamente las configuración de los diferentes eventos por dispositivos.
-        """
-        # FIXME: ya no cargar data al inicio
-        ListaFolder = ObtenerListaFolder(Data["folder_path"])
-        ListaArchivos = ObtenerListaArhivos(Data["folder_path"])
-
-        if ListaArchivos is not None:
-            for Archivo in ListaArchivos:
-                tipoArchivo = Path(Archivo).suffix
-                if tipoArchivo in [".md", ".json"]:
-                    ArchivoSin = Path(Archivo).stem
-
-                    encontrado = False
-                    if self.ModuloDeck and not encontrado:
-                        encontrado = encontrado or self.CargarArchivos("global", Data, ArchivoSin)
-                        encontrado = encontrado or self.CargarArchivos("deck", Data, ArchivoSin)
-                    # if self.ModuloPedal and not encontrado:
-                    #     encontrado = encontrado or self.CargarArchivos("pedal", Data, ArchivoSin)
-                    if not encontrado:
-                        logger.warning(f"No sabe importar {tipoArchivo} - {Archivo} - {Data['folder_path']}")
-
-                elif tipoArchivo in [".gif", ".png", ".jpg", ".svg"]:  # no hacer nada con imágenes
-                    pass
-                elif tipoArchivo in [".wav", ".mp3"]:  # no hacen nada con audios
-                    pass
-                else:
-                    logger.warning(f" No sabe importar {tipoArchivo} - {Archivo} - {Data['folder_path']}")
-
-        if ListaFolder is not None:
-            Data["folder"] = []
-            for Folder in ListaFolder:
-                pathActual = UnirPath(Data["folder_path"], Folder)
-                data = {"nombre": Folder, "folder_path": pathActual}
-                Data["folder"].append(data)
-            if "folder" in Data:
-                for Folder in Data["folder"]:
-                    self.CargarFolder(Folder)
-
-    def CargarArchivos(self, Dispositivo, Data, Archivo):
-        """
-        Carga la información de un dispositivo
-        """
-
-        DataDispositivo = self.Data.get(Dispositivo)
-
-        if DataDispositivo is None:
-            logger.warning(f"Error cargando {Dispositivo}")
-            return
-
-        for ArchivoDispositivo in DataDispositivo:
-            fileDispositivo = ArchivoDispositivo.get("file")
-            fileDispositivo = Path(fileDispositivo).stem
-            if fileDispositivo == Archivo:
-                Ruta = UnirPath(Data["folder_path"], fileDispositivo)
-                Info = leerData(Ruta)
-
-                Atributo = ArchivoDispositivo.get("nombre")
-                if Info is not None:
-                    Data[Atributo] = Info
-                    return True
-                else:
-                    logger.warning(f"{color.RED}Error cargando: {Ruta}{color.END}")
-
-        return False
-
-    def CargarStreamDeck(self):
-        """Configurando streamdeck."""
-        if "fuente" in self.Data:
-            DefinirFuente(self.Data["fuente"])
-            DefinirImagenes()
-        if "deck" in self.Data:
-            logger.info("StreamDeck[Cargando]")
-            Cantidad_Base = 0
-            self.ListaDeck = []
-            for InfoDeck in self.Data.get("deck"):
-                DeckActual = MiStreamDeck(InfoDeck, self.Evento, Cantidad_Base)
-                DeckActual.CambiarFolder(self.PathActual)
-                indexActual = DeckActual.Conectar(self.listaIndex)
-                self.listaIndex.append(indexActual)
-                Cantidad_Base += DeckActual.Cantidad
-                self.ListaDeck.append(DeckActual)
-
-            self.ListaDeck.sort(key=lambda x: x.id, reverse=False)
-            if self.ModuloGui:
-                self.miGui.actualizarIconos = self.ActualizarDeck
-
-            for Deck in self.ListaDeck:
-                logger.info(Deck)
-            # CargarDeck = IniciarStreamDeck(self.Data['deck'], self.Evento)
-            # for Deck in CargarDeck:
-            #     DeckActual = MiStreamDeck(Deck)
-        else:
-            self.ListaDeck = None
-
     def ActualizarDeck(self):
-        for Deck in self.ListaDeck:
-            if "streamdeck" in self.acciones:
-                # Deck.CambiarFolder(self.PathActual)
-                Deck.ActualizarIconos(self.acciones["streamdeck"], self.desfaceDeck, Unido=True)
 
-            elif Deck.Nombre in self.acciones:
-                # Deck.CambiarFolder(self.PathActual)
-                Deck.ActualizarIconos(self.acciones[Deck.Nombre], self.desfaceDeck)
-
-    # def ActualizarDeckIcono(self):
-
-    #     # TODO: Problemar cuando funcion se llama muchas veces el gifs empieza a fallar
-    #     if self.ListaDeck is not None:
-    #         for Deck in self.ListaDeck:
-    #             if "streamdeck" in self.acciones:
-    #                 Deck.ActualizarIconos(self.acciones["streamdeck"], self.desfaceDeck, Unido=True)
-
-    #             elif Deck.Nombre in self.acciones:
-    #                 Deck.ActualizarIconos(self.acciones[Deck.Nombre], self.desfaceDeck)
-
-    # def
+        for dispositivo in self.listaDispositivos:
+            if hasattr(dispositivo, "actualizarIconos"):
+                logger.info(f"Se puede limpiar los iconos {dispositivo.nombre}")
+                dispositivo.actualizarIconos()
 
     def LimpiarDeck(self):
-        for Deck in self.ListaDeck:
-            if "streamdeck" in self.acciones:
-                Deck.Limpiar()
-            elif Deck.Nombre in self.acciones:
-                Deck.Limpiar()
 
-    def BuscarFolder(self, folder: str):
-        # ListaDispositivo = ["teclados", "global", "deck", "pedal"]
-        ListaDispositivo = ["teclados", "global", "deck"]
-        Data = self.Keys
-        folderes = folder.split("/")
-
-        Mensaje = {"folder": folder}
-        self.mensajeMonitorESP(Mensaje, "folder")
-
-        if folderes:
-            Data = self.BuscarDentroFolder(folderes, Data)
-            if Data is not None:
-                Encontrado = False
-                for Dispositivo in ListaDispositivo:
-                    Estado = self.CargarAcciones(Dispositivo, Data)
-                    Encontrado = Estado or Encontrado
-                    if Encontrado and Dispositivo == "deck":
-                        if "streamdeck" in self.acciones:
-                            self.desfaceDeck = 0
-                        if self.ListaDeck is not None:
-                            for deck in self.ListaDeck:
-                                deck.CambiarFolder(folder)
-
-                return Encontrado
+        for dispositivo in self.listaDispositivos:
+            if hasattr(dispositivo, "limpiarIconos"):
+                logger.info(f"Se puede limpiar los iconos {dispositivo.nombre}")
+                dispositivo.limpiarIconos()
 
     def CargarAcciones(self, Dispositivo, Data):
         # TODO: quitar Data y self.Data
@@ -526,7 +353,6 @@ class elGarrobo(object):
             logger.info(f"Accion[No Atributo] - {accion}")
 
         if comandoAccion in self.listaClasesAcciones:
-            logger.debug(f"intentando ejecutar OOP-{comandoAccion}")
             opcionesAccion = accion.get("opciones", {})
             teclaAccion = accion.get("key")
             nombreAccion = accion.get("nombre")
@@ -695,7 +521,7 @@ class elGarrobo(object):
         """
         Reinicia la data del programa.
         """
-        logger.info("Reiniciar data ElGatoALSW")
+        logger.info("Reiniciar data ElGarrobo")
 
         nombreDispositovo: str = self.obtenerValor(opciones, "dispositivo")
 
@@ -707,37 +533,19 @@ class elGarrobo(object):
                 if disposito.nombre.lower() == nombreDispositovo.lower():
                     disposito.recargarAccionesFolder(directo=True)
 
-        self.ReiniciarData()
-
     def Regresar_Folder(self, opciones: list):
 
         nombreDispositovo: str = self.obtenerValor(opciones, "dispositivo")
 
         if nombreDispositovo is None:
             for dispositivo in self.listaDispositivos:
-                dispositivo.cargarAccionesRegresarFolder()
+                dispositivo.regresarFolderActual()
         else:
             for disposito in self.listaDispositivos:
                 if disposito.nombre.lower() == nombreDispositovo.lower():
-                    disposito.cargarAccionesRegresarFolder(directo=True)
+                    disposito.regresarFolderActual(directo=True)
 
-        Direcion = self.PathActual.split("/")
-        self.PathActual = "/".join(Direcion[:-1])
-        if self.PathActual == "":
-            self.PathActual = "defaul"
-            return
-        logger.info(f"Regresar[{self.PathActual}]")
-        encontrado = self.BuscarFolder(self.PathActual)
-        if encontrado:
-            if self.ModuloDeck:
-                self.LimpiarDeck()
-                self.ActualizarDeck()
-            if self.ModuloGui:
-                self.miGui.actualizarFolder(self.PathActual)
-        else:
-            logger.warning(f"Regresar[En base]")
-
-    def Entrar_Folder(self, opciones: list[valoresAcciones]):
+    def entrar_Folder(self, opciones: list[valoresAcciones]):
         """
         Entra en folder
         """
@@ -757,33 +565,18 @@ class elGarrobo(object):
                     disposito.cargarAccionesFolder(folder, directo=True)
                     return
 
-        rutaActual = RelativoAbsoluto(folder, self.PathActual)
-        if rutaActual == self.PathActual:
-            logger.info(f"Folder[{rutaActual}] Actual")
-            return
-        copiaPath = self.PathActual
-        self.PathActual = rutaActual
-        encontrado = self.BuscarFolder(rutaActual)
-        if encontrado:
-            logger.info(f"Folder[{folder}]")
-            if self.ModuloDeck:
-                self.LimpiarDeck()
-                self.ActualizarDeck()
-            if self.ModuloGui:
-                self.miGui.actualizarFolder(self.PathActual)
-
-        else:
-            logger.warning(f"Folder[{folder}] No encontró")
-            self.PathActual = copiaPath
-
     def Actualizar_Folder(self, opciones: list[valoresAcciones]):
         self.ActualizarDeck()
 
-    def Siquiente_Pagina(self, opciones: list[valoresAcciones]):
-        self.MoverPagina("siquiente")
+    def siquiente_Pagina(self, opciones: list[valoresAcciones]):
+        for dispositivo in self.listaDispositivos:
+            if hasattr(dispositivo, "siguientePagina"):
+                dispositivo.siguientePagina()
 
     def Anterior_Pagina(self, opciones: list[valoresAcciones]):
-        self.MoverPagina("anterior")
+        for dispositivo in self.listaDispositivos:
+            if hasattr(dispositivo, "anteriorPagina"):
+                dispositivo.anteriorPagina()
 
     def DeckBrillo(self, opciones):
         Brillo = ObtenerValor("data/streamdeck.json", "brillo")
@@ -802,33 +595,9 @@ class elGarrobo(object):
         for deck in self.ListaDeck:
             deck.Brillo(Brillo)
 
-    def MoverPagina(self, Direcion):
-        if "streamdeck" in self.acciones:
-            UltimoDeck = self.ListaDeck[-1]
-            Cantidad = UltimoDeck.Base + UltimoDeck.Cantidad
-            UltimaAccion = max(self.acciones["streamdeck"], key=lambda x: int(x["key"]))
-            # TODO Limpiar codigo sucio
-            if Direcion == "siquiente":
-                self.desfaceDeck += Cantidad
-                if self.desfaceDeck - 1 >= UltimaAccion["key"]:
-                    self.desfaceDeck -= Cantidad
-                    return
-                logger.info("Deck[Siquiente Pagina]")
-            elif Direcion == "anterior":
-                self.desfaceDeck -= Cantidad
-                if self.desfaceDeck < 0:
-                    self.desfaceDeck = 0
-                    return
-                logger.info("Deck[Anterior Pagina]")
-            self.LimpiarDeck()
-            self.ActualizarDeck()
-        else:
-            pass
-
     def IniciarStreamDeck(self):
-        if self.ModuloDeck:
-            self.LimpiarDeck()
-            self.ActualizarDeck()
+        self.LimpiarDeck()
+        self.ActualizarDeck()
 
     def IniciarMQTT(self):
         """Iniciar coneccion con Broker MQTT."""
@@ -841,32 +610,6 @@ class elGarrobo(object):
                 self.ListaMQTT.append(ServidorMQTT)
             for ServidorMQTT in self.ListaMQTT:
                 ServidorMQTT.Conectar()
-
-    def ReiniciarData(self):
-        """
-        Reinicia data de los Botones Actuales.
-        """
-        # self.Data = obtenerArchivoPaquete("elGarrobo", "data/config.md")
-        # if self.Data is None:
-        #     logger.error("No existe archivo config.md")
-        #     os._exit(0)
-
-        folderAnterior = self.PathActual
-        self.DataUsuario = leerData("config")
-        if self.DataUsuario is not None:
-            logger.info("Cargando config usuario")
-            self.Data |= self.DataUsuario
-        # TODO: Cargar modulos?
-        self.acciones = dict()
-        self.CargarData()
-        self.PathActual = self.Data.get("folder_path")
-        if self.ModuloGui:
-            self.miGui.actualizarFolder(self.PathActual)
-        self.BuscarFolder(self.PathActual)
-        # TODO: no necesario reiniciar streamdeck
-        self.Entrar_Folder([valoresAcciones("folder", folderAnterior)])
-        self.PathActual = folderAnterior
-        self.IniciarStreamDeck()
 
     def CargarOBS(self):
         """
@@ -938,31 +681,6 @@ class elGarrobo(object):
                 accionMQTT = self.listaClasesAcciones["mqtt"]()
                 accionMQTT.configurar(opciones)
                 accionMQTT.ejecutar()
-
-    def salvarAcciones(self, acciones: list, dispositivo: list, folder: str):
-        nombreDispositivo = dispositivo.get("nombre")
-        ListaDispositivos = ["teclados", "global", "deck", "pedal"]
-        for tipo in ListaDispositivos:
-            dataDispositivos = self.Data.get(tipo)
-            if dataDispositivos is None:
-                continue
-            for dataActual in dataDispositivos:
-                if nombreDispositivo == dataActual.get("nombre"):
-                    archivoDipositivos = f"{folder}/{dataActual.get('file')}"
-                    accionesSalvar = list()
-                    for accionesActual in acciones:
-                        if isinstance(accionesActual, list):
-                            print("falta para lista")
-                        elif isinstance(accionesActual, dict):
-                            accionNueva = dict()
-                            for propiedad, valor in accionesActual.items():
-                                if "__" in propiedad:
-                                    continue
-                                accionNueva[propiedad] = valor
-                            accionesSalvar.append(accionNueva)
-                    SalvarArchivo(archivoDipositivos, accionesSalvar)
-                    self.ReiniciarData()
-                    return
 
     def obtenerValor(self, listaValores: list[valoresAcciones], atributo: str):
         """Devuelve el valores configurado"""

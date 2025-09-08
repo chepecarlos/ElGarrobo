@@ -150,7 +150,7 @@ class accionBase:
     def calcularRuta(self, ruta: str) -> str:
 
         folderconfig = Path(ObtenerFolderConfig())
-        folderPerfil = "defaul"  # TODO: agregar perfil del sistema
+        folderPerfil = "default"  # TODO: agregar perfil del sistema
         folderActual = "."  # TODO: usar folder actual de dispositivo
         rutaCalculada = None
 

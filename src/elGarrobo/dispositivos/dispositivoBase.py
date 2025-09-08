@@ -1,5 +1,5 @@
-import os
 from enum import Enum
+from pathlib import Path
 from typing import Type
 
 from elGarrobo.miLibrerias import (
@@ -13,7 +13,7 @@ logger = ConfigurarLogging(__name__)
 
 
 class dispositivoBase:
-    "Clase base de dispositovos fisicos que ejecutan las acciones"
+    "Clase base de dispositivos físicos que ejecutan las acciones"
 
     estadoTecla = Enum("estadoTecla", [("PRESIONADA", 1), ("LIBERADA", 2), ("MANTENIDA", 3)])
 
@@ -25,14 +25,15 @@ class dispositivoBase:
     "Archivos por folder donde se cargara la acciones"
     ejecutarAcción: callable
     "Función que se llama para ejecutar una acción"
-    conectado: bool
+    conectado: bool = False
     "El dispositivo esta listo para usarse"
-    folder: str
-    "Ruta de las acciones cargadas"
-    folderPerfil: str
+    folderActual: str = None
+    "Folder donde esta leyendo las acciones cargadas"
+    folderPerfil: str = "default"
     "Carpeta del perfil actual"
-    listaAcciones: list
+    listaAcciones: list = None
     "Lista de Acciones cargadas"
+    _listaAcciones: list = None
     tipo: str = ""
     "Tipo de dispositivo"
     clase: str
@@ -66,11 +67,7 @@ class dispositivoBase:
         if archivo is not None:
             self.archivo = archivo
         self._listaAcciones: list[dict] = list()
-        self.folder = "/"
-        if folderPerfil is not None:
-            self.folderPerfil = folderPerfil
         self.ejecutarAcción = None
-        # self.tipo = ""
         self.clase = ""
         self.actualizarPestaña = None
         self.pestaña = None
@@ -95,7 +92,7 @@ class dispositivoBase:
         if moduloCargado is None or moduloCargado is False:
             logger.error(f"No cargado {claseDispositivo.tipo}")
             return listaDispositivos
-        logger.info(f"{claseDispositivo.tipo}[Cargando]")
+        logger.info(f"Dispositivo-{claseDispositivo.tipo}[Cargando]")
 
         dataDispositivos = ObtenerArchivo(claseDispositivo.archivoConfiguracion)
 
@@ -115,65 +112,62 @@ class dispositivoBase:
         Returns:
             bool: False si fallo la conexión
         """
-        pass
+        logger.error(f"Falta implementar conectar en {self.tipo}")
 
     def desconectar(self):
         "Desconecta el dispositivo"
-        pass
+        logger.error(f"Falta implementar desconectar en {self.tipo}")
 
-    def actualizar(self):
-        pass
-
-    def cargarAccionesFolder(self, folder: str, directo: bool = False, recargar: bool = False):
+    def cargarAccionesFolder(self, folderCargar: str = "/", recargar: bool = False):
         """Busca y carga acciones en un folder, si existen
 
         Args:
-            folder (str):
-            directo (bool, optional): . Defaults to False.
-            recargar (boo, optional):
+            folder (str): folder a cargar las acciones
+            recargar (boo, optional): Es necesario recargar para leer nuevas acciones desde archivo
 
         """
 
-        if not self.activado:
-            return
+        folderPerfil = self._folderConfigPerfil()
 
-        folderBase = str(ObtenerFolderConfig())
-        rutaRelativa = self._calcularRutaRelativa(folder)
+        folderBuscar = Path(folderCargar)
 
-        if self.folder == rutaRelativa or self.folder is None and not recargar:
-            if directo:
-                logger.info(f"{self.nombre}[Acciones-Cargadas] - {self.folder} - Ya cargado")
-            return
-
-        archivo = os.path.abspath(os.path.join(folderBase, self.folderPerfil, rutaRelativa, self.archivo))
-        data = self.cargarData(archivo)
-
-        if data is not None:
-            self.listaAcciones = data
-            if rutaRelativa in (".", "..", ""):
-                self.folder = "/"
-            else:
-                self.folder = rutaRelativa
-            logger.info(f"{self.nombre}[Acciones-Cargadas] - {self.folder} - Acciones:[{len(self.listaAcciones)}]")
-        elif directo:
-            logger.warning(f"{self.nombre}[{self.tipo}] - No se puede cargar {archivo}")
-
-    def _calcularRutaRelativa(self, folder: str) -> str:
-        "Calcula la ruta relativa basada en el folder actual y el nuevo folder"
-        if folder.startswith("/"):
-            return folder.lstrip("/")
-        elif self.folder == "/" and folder in ("../", ".", ".."):
-            return ""
+        if folderBuscar.is_absolute():
+            folderBuscar = Path(folderCargar.lstrip("/"))
         else:
-            return os.path.normpath(os.path.join(self.folder.lstrip("/"), folder))
+            folderBuscar = self.folderActual / folderBuscar
 
-    def cargarAccionesRegresarFolder(self, directo: bool = False):
-        print(f"Intentando subir folder {self.nombre}- {self.folder}")
+        archivoData = (folderPerfil / folderBuscar / self.archivo).resolve()
+
+        dataAcciones = self.cargarData(str(archivoData))
+
+        if dataAcciones is None:
+            logger.warning(f"{self.nombre}[{self.tipo}] - No se puede cargar acciones {folderBuscar}")
+            return
+
+        self.listaAcciones = dataAcciones
+        self.folderActual = folderBuscar
+        logger.info(f"AccionesCargadas[{self.nombre}] {len(self.listaAcciones)} - /{folderBuscar}")
+        return
+
+    def _folderConfigPerfil(self) -> Path:
+        "Devuelve la ruta obsoleta del folder de perfil"
+
+        folderConfig = Path(ObtenerFolderConfig())
+        folderPerfil = Path(self.folderPerfil)
+        return (folderConfig / folderPerfil).resolve()
+
+    def regresarFolderActual(self, directo: bool = False):
+        """Sube un folder a dispositivo y carga las acciones
+
+        Ejemplo:
+            home/pollo -> home
+        """
+
         self.cargarAccionesFolder("../", directo)
 
-    def recargarAccionesFolder(self, directo: bool = False):
+    def recargarAccionesFolder(self):
         "Recarga las acciones del folder actual"
-        self.cargarAccionesFolder(".", directo, recargar=True)
+        self.cargarAccionesFolder(".", recargar=True)
 
     def cargarData(self, archivo: str) -> any:
         """Carga datos desde un archivo.
@@ -220,7 +214,7 @@ class dispositivoBase:
 
     def salvarAcciones(self):
         folderBase = str(ObtenerFolderConfig())
-        archivo = os.path.abspath(os.path.join(folderBase, self.folderPerfil, self.folder.lstrip("/"), self.archivo))
+        archivo = os.path.abspath(os.path.join(folderBase, self.folderPerfil, self.folderActual.lstrip("/"), self.archivo))
         accionesSalvar = self.listaAcciones.copy()
 
         for acción in accionesSalvar:
@@ -233,7 +227,7 @@ class dispositivoBase:
 
     def asignarPerfil(self, folderPerfil: str):
         self.folderPerfil = folderPerfil
-        self.folder = "/"
+        self.folderActual = "/"
         # TODO: Cargar las acciones si es necesario
         # self.listaAcciones = list()
         # self.cargarAccionesFolder(".", directo=True, recargar=True)
@@ -251,6 +245,9 @@ class dispositivoBase:
         if estado == self.estadoTecla.PRESIONADA:
             logger.info(f"Evento[No asignado] {self.nombre}[{tecla}]")
         return None
+
+    def configurarFuncionAccion(self, funcionAccion: callable):
+        self.ejecutarAcción = funcionAccion
 
     @staticmethod
     def agregarIndexUsado(indexUsado: int):
