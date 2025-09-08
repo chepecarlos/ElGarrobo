@@ -79,7 +79,7 @@ class MiDeckCombinado(dispositivoBase):
             deckActual.listaAcciones = self.listaAcciones
             deckActual.folderActual = self.folderActual
 
-        if self.folderActual != folderAnterior:
+        if self.folderActual != folderAnterior or recargar:
             self.limpiarIconos()
             self.actualizarIconos()
 
