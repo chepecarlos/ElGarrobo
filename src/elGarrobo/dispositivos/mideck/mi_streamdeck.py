@@ -182,10 +182,11 @@ class MiStreamDeck(dispositivoBase):
         self.ultimoDibujo = -self.tiempoDibujar
 
     def actualizarBoton(self, Deck, Key, Estado):
+        numeroTecla = Key + self.baseTeclas + self.desfaceTeclas
         if Estado:
-            self.buscarAccion(Key + self.baseTeclas, self.estadoTecla.PRESIONADA)
+            self.buscarAccion(numeroTecla, self.estadoTecla.PRESIONADA)
         else:
-            self.buscarAccion(Key + self.baseTeclas, self.estadoTecla.LIBERADA)
+            self.buscarAccion(numeroTecla, self.estadoTecla.LIBERADA)
 
     def desconectar(self):
         if self.conectado:

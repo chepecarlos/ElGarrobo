@@ -129,8 +129,6 @@ class elGarrobo(object):
             # TODO: cargar foldrer al inicio
             self.miGui.actualizarFolder(self.PathActual)
 
-        pass
-
     def iniciarDispositivos(self):
         self.dispositivosDisponibles: list[dispositivoBase] = cargarDispositivos()
 
@@ -138,7 +136,7 @@ class elGarrobo(object):
             self.listaDispositivos.extend(claseDispositivo.cargarDispositivos(self.modulos, claseDispositivo))
 
         for dispositivo in self.listaDispositivos:
-            dispositivo.configurarFuncionAccion(self.EjecutandoEvento)
+            dispositivo.configurarFuncionAccion(self.ejecutarAcción)
             dispositivo.asignarPerfil(self.folderPerfil)
             if dispositivo.activado and not dispositivo.conectado:
                 dispositivo.cargarAccionesFolder("/")
@@ -347,7 +345,12 @@ class elGarrobo(object):
         #         self.ejecutarAcción(evento)
 
     def ejecutarAcción(self, accion: dict, estado: bool = True):
-        """Ejecuta una acción según el comando y las opciones proporcionadas."""
+        """Ejecuta una acción según el comando y las opciones proporcionadas.
+
+        Args:
+            accion (dick):
+            estado (bool, opcional):
+        """
         comandoAccion: str = accion.get("accion")
 
         if comandoAccion is None:
@@ -379,6 +382,10 @@ class elGarrobo(object):
                 return objetoAccion.ejecutar()
 
         elif comandoAccion in self.ListaAcciones:
+
+            if not estado:
+                return
+
             opcionesAccion = dict()
             Nombre = None
             presionado = accion.get("__estado")
@@ -663,12 +670,7 @@ class elGarrobo(object):
 
     def SolisitarDibujar(self):
 
-        if self.ModuloDeck:
-            self.BanderaActualizarDeck = True
-
-            if self.BanderaActualizarDeck:
-                self.ActualizarDeck()
-                self.BanderaActualizarDeck = False
+        self.ActualizarDeck()
 
     def SolisitarNotifiacacion(self, texto, opciones: dict[valoresAcciones]):
         if self.ModuloOBSNotificacion:
