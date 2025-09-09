@@ -136,7 +136,12 @@ class dispositivoBase:
         else:
             folderBuscar = self.folderActual / folderBuscar
 
-        archivoData = (folderPerfil / folderBuscar / self.archivo).resolve()
+        folderData = (folderPerfil / folderBuscar).resolve()
+
+        archivoData = (folderData / self.archivo).resolve()
+
+        if folderPerfil not in archivoData.parents:
+            return
 
         dataAcciones = self.cargarData(str(archivoData))
 
@@ -145,7 +150,7 @@ class dispositivoBase:
             return
 
         self.listaAcciones = dataAcciones
-        self.folderActual = folderBuscar
+        self.folderActual = folderData.relative_to(folderPerfil)
         logger.info(f"AccionesCargadas[{self.nombre}] {len(self.listaAcciones)} - /{folderBuscar}")
         return
 
