@@ -1,3 +1,5 @@
+import threading
+
 from nicegui import app, ui
 from PIL import Image
 
@@ -18,14 +20,26 @@ class miGui(dispositivoBase):
     Interface Web del ElGarrobo
     """
 
-    listaDispositivos: list[dispositivoBase]
+    modulo = "gui"
+    tipo = "gui"
+    archivoConfiguracion = "gui.md"
+
+    listaDispositivos: list[dispositivoBase] = None
 
     accionEditar: dict
     "Acción medicando o agregando"
     dispositivoEditar: dispositivoBase
     "dispositivo a modificar la acción"
 
-    def __init__(self):
+    puerto: int = 8080
+
+    def __init__(self, dataConfiguracion: dict):
+
+        print(dataConfiguracion)
+
+        self.nombre = dataConfiguracion.get("nombre", "miGui")
+        self.archivo = dataConfiguracion.get("archivo", "")
+        self.puerto = dataConfiguracion.get("puerto", 8080)
 
         self.folder: str = "?"
         self.folderLabel = None
@@ -33,7 +47,7 @@ class miGui(dispositivoBase):
         self.listaClasesAcciones: list = list()
         self.listaClasesAccionesOPP: dict = dict()
         self.salvarAcciones: callable = None
-        self.actualizarIconos: callable = None
+        self.actualizarIconos2: callable = None
         self.ejecutaEvento: callable = None
         self.accionEditar: dict = None
         self.dispositivoEditar: dispositivoBase = None
@@ -43,8 +57,9 @@ class miGui(dispositivoBase):
         self.editorAcción = None
 
         self.listaDispositivos = list()
-        self.tipo = "GUI"
+        # self.tipo = "GUI"
 
+        # def conectar(self):
         @ui.page("/")
         def paginaAcciones():
             with ui.splitter(value=20, limits=(15, 50)).classes("w-full") as splitter:
@@ -363,8 +378,8 @@ class miGui(dispositivoBase):
                                     ui.button(icon="edit", color="teal-500", on_click=lambda a=acciónActual: self.seleccionarAcción(a))
                                     ui.button(icon="delete", color="teal-500", on_click=lambda a=acciónActual: self.eliminarAcción(a))
 
-        if self.actualizarIconos is not None:
-            self.actualizarIconos()
+        if self.actualizarIconos2 is not None:
+            self.actualizarIconos2()
 
         for dispositivo in self.listaDispositivosVieja:
             nombreDispositivo = dispositivo.get("nombre")
@@ -500,16 +515,29 @@ class miGui(dispositivoBase):
         logger.info("Desconectando NiceGUI")
         # app.shutdown()
 
-    def iniciar(self):
+    def conectar(self):
 
         app.on_connect(self.seConectorGUI)
         app.on_disconnect(self.seDesconectoGUI)
 
-        logger.info("Iniciando GUI")
-        ui.run(title="ElGarrobo", port=8181, reload=False, show=False, dark=True, language="es", uvicorn_logging_level="warning", favicon="🦎")
+        self.hilaGui = threading.Thread(name="Gui-" + self.nombre, target=self.funcionHilo)
+        self.hilaGui.start()
 
         # interesante native=True para app
         # ui.run(uvicorn_logging_level="debug", reload=False)
+
+    def funcionHilo(self):
+        logger.info("Iniciando GUI")
+        ui.run(
+            title="ElGarrobo",
+            port=self.puerto,
+            reload=False,
+            show=False,
+            dark=True,
+            language="es",
+            uvicorn_logging_level="warning",
+            favicon="🦎",
+        )
 
     def desconectar(self) -> None:
         logger.info("Saliendo de NiceGUI")

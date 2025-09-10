@@ -10,12 +10,13 @@
 """
 
 from .mideck.mi_deck_combinado import MiDeckCombinado
+from .migui.migui import miGui
 from .mipedal.mi_pedal import MiPedal
 from .miteclado.mi_teclado_macro import MiTecladoMacro
 
 
 def cargarDispositivos() -> list:
 
-    listaDispositivos: list = [MiTecladoMacro, MiPedal, MiDeckCombinado]
+    listaDispositivos: list = [MiTecladoMacro, MiPedal, MiDeckCombinado, miGui]
 
     return listaDispositivos

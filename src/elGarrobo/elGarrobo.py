@@ -60,6 +60,7 @@ class elGarrobo(object):
     listaDispositivos: list[dispositivoBase] = list()
     "Lista de dispositivos disponibles"
     listaClasesAcciones: dict[str,] = dict()
+    ListaAcciones = None
 
     # FIXME: mover a mover a objeto de streamdeck
     # ListaDeck = None
@@ -86,13 +87,14 @@ class elGarrobo(object):
 
         self.IniciarModulo()
 
-        if self.ModuloGui:
-            self.miGui = miGui()
-            self.miGui.ejecutaEvento = self.EjecutandoEvento
-            self.miGui.salvarAcciones = self.salvarAcciones
-            self.miGui.listaDispositivos = self.listaDispositivos
+        # if self.ModuloGui:
+        # self.miGui = miGui()
+        # self.miGui.ejecutaEvento = self.EjecutandoEvento
+        # # self.miGui.salvarAcciones = self.salvarAcciones
+        # self.miGui.listaDispositivos = self.listaDispositivos
 
         self.IniciarAcciones()
+        self.iniciarDispositivos()
 
         if self.ModuloDeck:
             self.listaIndex = []
@@ -103,7 +105,6 @@ class elGarrobo(object):
         if self.ModuloPulse:
             self.CargarPulse()
 
-        self.iniciarDispositivos()
         if self.ModuloDeck:
             self.CargarStreamDeck()
 
@@ -115,19 +116,21 @@ class elGarrobo(object):
 
             # TODO: recivir acciones desde Modulo de Pulse
             if self.ModuloGui:
-                self.miGui.agregarAcciones(("salvar_pulse", "volumen", "mute"))
+                for dispositivo in self.listaDispositivos:
+                    if dispositivo.nombre == "gui":
+                        dispositivo.agregarAcciones(("salvar_pulse", "volumen", "mute"))
 
         # self.cargarFolder()
         self.IniciarStreamDeck()
 
         self.ActualizarDeck()
 
-        if self.ModuloGui:
-            for dispositivo in self.listaDispositivos:
-                dispositivo.actualizarPestaña = self.miGui.actualizarPestaña
-            self.miGui.iniciar()
-            # TODO: cargar foldrer al inicio
-            self.miGui.actualizarFolder(self.PathActual)
+        # if self.ModuloGui:
+        #     for dispositivo in self.listaDispositivos:
+        #         dispositivo.actualizarPestaña = self.miGui.actualizarPestaña
+        #     self.miGui.iniciar()
+        # # TODO: cargar foldrer al inicio
+        # self.miGui.actualizarFolder(self.PathActual)
 
     def iniciarDispositivos(self):
         self.dispositivosDisponibles: list[dispositivoBase] = cargarDispositivos()
@@ -221,8 +224,13 @@ class elGarrobo(object):
                 objetoAccion = self.listaClasesAcciones[accion]()
                 nombreAccion = objetoAccion.nombre
                 listaAccion.append(nombreAccion)
-            self.miGui.listaClasesAccionesOPP = self.listaClasesAcciones
-            self.miGui.agregarAcciones(listaAccion)
+
+            for dispositivo in self.listaDispositivos:
+                if dispositivo.tipo == "gui":
+                    dispositivo.listaClasesAccionesOPP = self.listaClasesAcciones
+                    dispositivo.agregarAcciones(listaAccion)
+            # self.miGui.listaClasesAccionesOPP = self.listaClasesAcciones
+            # self.miGui.agregarAcciones(listaAccion)
 
     def cargarFolder(self):
 
@@ -379,7 +387,14 @@ class elGarrobo(object):
 
                 objetoAccion: accionBase = self.listaClasesAcciones[comandoAccion]()
                 objetoAccion.configurar(opcionesAccion)
-                return objetoAccion.ejecutar()
+                try:
+                    return objetoAccion.ejecutar()
+                except Exception as Error:
+                    logger.exception(f"Accion[Error-{comandoAccion}] {Error}")
+            return
+
+        if self.ListaAcciones is None:
+            return
 
         elif comandoAccion in self.ListaAcciones:
 
@@ -660,11 +675,8 @@ class elGarrobo(object):
         if self.ModuloMQTT:
             for Servidor in self.ListaMQTT:
                 Servidor.Desconectar()
-        if self.ModuloGui:
-            self.miGui.desconectar()
         for dispositivo in self.listaDispositivos:
             dispositivo.desconectar()
-        # self.LimpiarDeck()
         # raise SystemExit
         os._exit(0)
 
