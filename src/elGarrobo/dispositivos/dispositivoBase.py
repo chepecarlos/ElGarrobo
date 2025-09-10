@@ -19,7 +19,7 @@ class dispositivoBase:
 
     nombre: str
     "Nombre propio del dispositivo"
-    dispositivo: str
+    dispositivo: str = None
     "Ruta virtual de donde se encuentra dispositivo"
     archivo: str
     "Archivos por folder donde se cargara la acciones"

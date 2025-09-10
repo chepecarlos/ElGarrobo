@@ -47,6 +47,8 @@ class MiDeckCombinado(dispositivoBase):
             deckTemporal.imagenesBase = self.imagenesBase
             self.listaDeck.append(deckTemporal)
 
+        super().__init__()
+
     def conectar(self) -> None:
         """Conecta todos los dispositivos los dispositivos"""
 

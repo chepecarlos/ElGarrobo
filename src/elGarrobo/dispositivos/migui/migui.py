@@ -39,7 +39,7 @@ class miGui(dispositivoBase):
         self.dispositivoEditar: dispositivoBase = None
         self.opcionesEditar = None
         self.pestañas = None
-        self.paneles = None
+        self.paneles: ui.tab_panel = None
         self.editorAcción = None
 
         self.listaDispositivos = list()
@@ -486,7 +486,24 @@ class miGui(dispositivoBase):
                 ui.link("Youtube", "https://www.youtube.com/@chepecarlo")
                 ui.link("Tiktok", "https://www.tiktok.com/@chepecarlo")
 
+    def seConectorGUI(self):
+        """
+        Inicia la interface web.
+        """
+
+        logger.info("Conectando NiceGUI")
+
+    def seDesconectoGUI(self):
+        """
+        Desconecta la interface web.
+        """
+        logger.info("Desconectando NiceGUI")
+        # app.shutdown()
+
     def iniciar(self):
+
+        app.on_connect(self.seConectorGUI)
+        app.on_disconnect(self.seDesconectoGUI)
 
         logger.info("Iniciando GUI")
         ui.run(title="ElGarrobo", port=8181, reload=False, show=False, dark=True, language="es", uvicorn_logging_level="warning", favicon="🦎")
@@ -546,8 +563,8 @@ class miGui(dispositivoBase):
         nombre = dispositivo.nombre
         tipo = dispositivo.tipo
         input = dispositivo.dispositivo
-        folder = dispositivo.folder
-        clase = dispositivo.clase
+        folder = dispositivo.folderActual
+        # clase = dispositivo.clase
 
         if self.paneles is None:
             print("No hay paneles")
@@ -559,8 +576,8 @@ class miGui(dispositivoBase):
             dispositivo.panel.clear()
             with dispositivo.panel:
                 with ui.row():
+                    ui.markdown(f"**Nombre**: {nombre}")
                     ui.markdown(f"**Tipo**: {tipo}")
-                    ui.markdown(f"**clase**: {clase}")
                     ui.markdown(f"**Folder**: {folder}")
                 acciones = dispositivo.listaAcciones
 
