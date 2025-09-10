@@ -93,6 +93,7 @@ class MiStreamDeck(dispositivoBase):
                         # Todo: brillo no es un int
                         self.deck.set_brightness(Brillo)
                         self.DeckGif = DeckGif(self.deck, self.folderActual)
+                        self.DeckGif.archivoFuente = self.archivoFuente
                         self.DeckGif.start()
                         self.deck.set_key_callback(self.actualizarBoton)
                         self.idDeck = idActual
@@ -158,7 +159,7 @@ class MiStreamDeck(dispositivoBase):
 
                 DirecionImagen = self.buscarDirecionImagen(accionAcual)
                 if DirecionImagen is not None and DirecionImagen.endswith(".gif"):
-                    self.DeckGif.ActualizarGif(i, accionAcual, self.folderActual)
+                    self.DeckGif.ActualizarGif(i, accionAcual, self.folderPerfil / self.folderActual)
                 else:
                     self.actualizarIconoBoton(i, accionAcual)
 

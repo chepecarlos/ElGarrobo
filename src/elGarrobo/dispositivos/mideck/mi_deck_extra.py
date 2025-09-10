@@ -12,7 +12,13 @@ from elGarrobo.miLibrerias import (
 logger = ConfigurarLogging(__name__)
 
 
-def PonerTexto(Imagen, accion, DirecionImagen=None, cortePalabra: bool = False):
+def PonerTexto(
+    Imagen,
+    archivoFuente: str,
+    accion,
+    DirecionImagen=None,
+    cortePalabra: bool = False,
+):
     """Agrega Texto a Botones de StreamDeck."""
     Titulo: str = str(accion.get("titulo"))
     Lineas = Titulo.split("\\n")
@@ -49,7 +55,7 @@ def PonerTexto(Imagen, accion, DirecionImagen=None, cortePalabra: bool = False):
 
     # TODO: buscar como calcular tamaño de fuente de manera mas eficiente
     while Ajustar:
-        fuente = ImageFont.truetype(FuenteIcono, Tamanno)
+        fuente = ImageFont.truetype(archivoFuente, Tamanno)
         cajaTexto = dibujo.textbbox([0, 0], Titulo, font=fuente)
         Titulo_ancho = cajaTexto[2] - cajaTexto[0]
         Titulo_alto = cajaTexto[3] - cajaTexto[1]

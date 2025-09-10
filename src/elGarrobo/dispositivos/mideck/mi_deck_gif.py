@@ -73,7 +73,7 @@ class DeckGif(threading.Thread):
 
     def ActualizarGif(self, indice, accion, folder):
         """Carga los frame si no estas precargado y lo agrega a lista actual gifs."""
-        
+
         self.folder = folder
 
         Encontrado = list(filter(lambda Gif: Gif["nombre"] == accion["nombre"], self.ListaGif))
@@ -113,7 +113,7 @@ class DeckGif(threading.Thread):
                         accion["titulo"] = ObtenerValor(TextoCargar["archivo"], TextoCargar["atributo"])
 
                 if "titulo" in accion:
-                    PonerTexto(Gif_frame, accion, True)
+                    PonerTexto(Gif_frame, self.archivoFuente, accion, True)
                 ImagenNativa = PILHelper.to_native_format(self.Deck, Gif_frame)
 
                 Gif.append(ImagenNativa)
