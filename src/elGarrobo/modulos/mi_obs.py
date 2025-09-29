@@ -98,7 +98,7 @@ class MiOBS:
             self.Notificar("OBS-Ya-Conectado")
             return
 
-        modulos = leerData("modulos/modulos")
+        modulos = leerData("modulos")
         monitorAudio = modulos.get("obs_monitor_audio", False)
 
         if monitorAudio:

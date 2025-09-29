@@ -24,7 +24,7 @@ class accionDelay(accionBase):
             "tipo": str,
             "obligatorio": True,
             "atributo": "tiempo",
-            "descripcion": "duración de la espera",
+            "descripcion": "duración de la espera en segundos",
             "ejemplo": "1:32",
         }
 
@@ -34,19 +34,19 @@ class accionDelay(accionBase):
 
     def esperarTiempo(self):
         """espera un tiempo"""
-        tiempo = self.obtenerValor("tiempo")
-        if tiempo is None:
+        esperaSegundos = self.obtenerValor("tiempo")
+        if esperaSegundos is None:
             Logger.error("No se dio tiempo")
             return
 
-        if isinstance(tiempo, str):
-            pedadosTiempo: str = tiempo.split(":")
+        if isinstance(esperaSegundos, str):
+            pedadosTiempo: str = esperaSegundos.split(":")
             segundos: int = int(pedadosTiempo[-1])
             if len(pedadosTiempo) > 1:
                 segundos += int(pedadosTiempo[-2]) * 60
             if len(pedadosTiempo) > 2:
                 segundos += int(pedadosTiempo[-3]) * 3600
-            tiempo = segundos
+            esperaSegundos = segundos
 
-        Logger.info(f"Delay[{tiempo}s]")
-        time.sleep(tiempo)
+        Logger.info(f"Delay[{esperaSegundos}s]")
+        time.sleep(esperaSegundos)
