@@ -2,12 +2,12 @@
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accionBase import accionBase
+from .accion import accion
 
 Logger = ConfigurarLogging(__name__)
 
 
-class accionEntrarFolder(accionBase):
+class accionEntrarFolder(accion):
     """Entra a un Folder y Carga las acciones por Dispositivo"""
 
     nombre = "Entrar folder"

@@ -4,12 +4,12 @@ import requests
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accionBase import accionBase
+from .accion import accion
 
 Logger = ConfigurarLogging(__name__)
 
 
-class accionPost(accionBase):
+class accionPost(accion):
     """Realiza un consulta post para usar API"""
 
     nombre = "Post"

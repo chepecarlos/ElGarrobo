@@ -2,12 +2,12 @@
 
 from elGarrobo.miLibrerias import ConfigurarLogging, EnviarMensajeTelegram
 
-from .accionBase import accionBase
+from .accion import accion
 
 Logger = ConfigurarLogging(__name__)
 
 
-class accionTelegram(accionBase):
+class accionTelegram(accion):
     """Manda un mensaje por TelegramBot"""
 
     nombre = "TelegramBot"

@@ -2,14 +2,14 @@
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accionBase import accionBase
+from .accion import accion
 from .accionOS import accionOS
 
 logger = ConfigurarLogging(__name__)
 "@private"
 
 
-class accionFolder(accionBase):
+class accionFolder(accion):
     "Acción que abre una ventana"
 
     nombre = "Abri Folder"

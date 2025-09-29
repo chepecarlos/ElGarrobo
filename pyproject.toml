@@ -1,0 +1,39 @@
+[tool.black]
+line-length = 119
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "elgarrobo"
+description = "Herramienta Macros de chepecarlos"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [{ name = "ChepeCarlos", email = "chepecarlos@chepecarlos.com" }]
+# license = { file = "LICENSE" }
+dynamic = ["version", "dependencies"]
+# license = "MIT"
+# o, si no quieres cambiar, añade también:
+license-files = ["LICENSE*"]
+
+[project.urls]
+Homepage = "https://github.com/chepecarlos/ElGatoALSW/print-tool"
+Documentation = "https://github.com/chepecarlos/ElGatoALSW"
+Source = "https://github.com/chepecarlos/ElGatoALSW"
+Tracker = "https://github.com/chepecarlos/ElGatoALSW/issues"
+
+[project.scripts]
+elgarrobo = "elGarrobo.main:main"
+elgarrobo-tool = "elGarrobo.tool:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["tests*", "testing*"]
+
+[tool.setuptools.dynamic]
+version = { file = ["VERSION"] }
+dependencies = { file = ["requirements.txt"] }

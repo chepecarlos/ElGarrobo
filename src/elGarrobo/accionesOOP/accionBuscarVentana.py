@@ -2,13 +2,13 @@
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accionBase import accionBase
+from .accion import accion
 from .accionOS import accionOS
 
 Logger = ConfigurarLogging(__name__)
 
 
-class accionBuscarVentana(accionBase):
+class accionBuscarVentana(accion):
     """Esperar una cantidad de tiempo"""
 
     nombre = "Buscar Ventana"
@@ -40,7 +40,7 @@ class accionBuscarVentana(accionBase):
         if titulo is not None:
             comando = f'xdotool search --onlyvisible "{titulo}" windowactivate'
             Logger.info(f"Buscando ventana[{titulo}]")
-            accion: accionBase = accionOS()
+            accion: accion = accionOS()
             accion.configurar({"comando": comando})
             accion.ejecutar()
             # Agregar mensaje si no esta la venta

@@ -2,13 +2,13 @@
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accionBase import accionBase
+from .accion import accion
 from .accionOS import accionOS
 
 Logger = ConfigurarLogging(__name__)
 
 
-class accionCerrarVentana(accionBase):
+class accionCerrarVentana(accion):
     """Cierra la ventana"""
 
     nombre = "Cerrar Ventana"

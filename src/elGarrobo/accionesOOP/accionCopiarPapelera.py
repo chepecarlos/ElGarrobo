@@ -5,13 +5,13 @@ import pyperclip
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accionBase import accionBase
+from .accion import accion
 from .accionDelay import accionDelay
 
 Logger = ConfigurarLogging(__name__)
 
 
-class accionCopiarPapelera(accionBase):
+class accionCopiarPapelera(accion):
     """Copia a papeleras"""
 
     nombre = "Copia a papelera"

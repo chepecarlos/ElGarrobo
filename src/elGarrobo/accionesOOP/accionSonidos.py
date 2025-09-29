@@ -6,7 +6,7 @@ import soundfile as sf
 
 """Acción para esperar un tiempo"""
 
-from elGarrobo.accionesOOP.accionBase import accionBase
+from elGarrobo.accionesOOP.accion import accion
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 logger = ConfigurarLogging(__name__)
@@ -77,7 +77,7 @@ class miReproductor:
         return bool(self.stream.active)
 
 
-class accionReproducir(accionBase):
+class accionReproducir(accion):
     """Reproduce un sonido"""
 
     nombre = "Reproducir Sonido"
@@ -153,7 +153,7 @@ class accionReproducir(accionBase):
             logger.error(f"Error al reproducir {rutaArchivo}: {e}")
 
 
-class accionPararReproducirones(accionBase):
+class accionPararReproducirones(accion):
     """Para todas las reproducciones un sonido"""
 
     nombre = "Parar Sonidos"

@@ -5,12 +5,12 @@ import subprocess
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accionBase import accionBase
+from .accion import accion
 
 logger = ConfigurarLogging(__name__)
 
 
-class accionOS(accionBase):
+class accionOS(accion):
     """Ejecuta comando de terminal"""
 
     nombre = "Comando OS"
@@ -35,21 +35,20 @@ class accionOS(accionBase):
 
     def ejecutrarComando(self):
         """Ejecuta comando en terminal"""
-        comando = self.obtenerValor("comando")
+        comando: str = self.obtenerValor("comando")
+
         logger.info(f"OS[{comando}]")
-        respuesta = subprocess.Popen(comando, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = respuesta.communicate()
+        respuesta = subprocess.run(
+            comando,
+            shell=True,
+            executable="/bin/bash",
+            capture_output=True,
+            text=True,
+        )
 
-        # Imprimir la salida
-        print("Salida estándar:", stdout.decode(), ";")
-
-        # Imprimir errores
-        print("Error estándar:", stderr.decode(), ";")
-        # version =  return.read()
-        return_code = respuesta.wait()
-        print(f"Versión del comando: {respuesta}")
-
-        print("Código de retorno:", return_code)
-
-        # respuesta = os.system(comando)
-        # print(f"Respuesta del comando: {respuesta}")
+        if respuesta.stdout:
+            print("Salida estándar:", (respuesta.stdout or "").rstrip(), ";")
+        if respuesta.stderr:
+            print("Error estándar:", (respuesta.stderr or "").rstrip(), ";")
+        if respuesta.returncode != 0:
+            print("Código de retorno:", respuesta.returncode)

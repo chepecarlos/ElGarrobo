@@ -4,12 +4,12 @@ from notifypy import Notify
 
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, UnirPath
 
-from .accionBase import accionBase
+from .accion import accion
 
 Logger = ConfigurarLogging(__name__)
 
 
-class accionNotificacion(accionBase):
+class accionNotificacion(accion):
     """Muestra un mensaje de escritorio"""
 
     nombre = "Notificacion"

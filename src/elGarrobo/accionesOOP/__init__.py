@@ -1,6 +1,6 @@
 """
 ## Acción Base
-- Clase que se herencia todas las acciones: [AccionBase](./accionesOOP/accionBase)
+- Clase que se herencia todas las acciones: [accion](./accionesOOP/accion)
 
 # Lista de Acciones
 - Preciosa una combinación de teclas: [accionTeclas](./accionesOOP/accionTeclas)
@@ -34,8 +34,8 @@
 
 """
 
+from .accion import accion
 from .accionAbirGUI import accionAbirGUI
-from .accionBase import accionBase
 from .accionBuscarVentana import accionBuscarVentana
 from .accionCambiarPagina import (
     accionActualizarPagina,
@@ -63,7 +63,7 @@ from .accionTeclas import accionTeclas
 from .accionTelegram import accionTelegram
 
 
-def cargarClasesAcciones() -> dict[str, accionBase]:
+def cargarClasesAcciones() -> dict[str, accion]:
     """
     Carga las acciones en una dic con nombre de accion y función asociada.
 

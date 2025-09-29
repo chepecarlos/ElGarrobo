@@ -5,13 +5,13 @@ import socket
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accionBase import accionBase
+from .accion import accion
 from .accionNavegador import accionNavegador
 
 Logger = ConfigurarLogging(__name__)
 
 
-class accionAbirGUI(accionBase):
+class accionAbirGUI(accion):
     """Abre la interface web del ElGarrobo"""
 
     nombre = "Abri GUI"

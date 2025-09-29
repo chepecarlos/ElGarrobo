@@ -6,12 +6,12 @@ from typing import Any
 
 from elGarrobo.miLibrerias import ConfigurarLogging, EnviarMensajeMQTT
 
-from .accionBase import accionBase
+from .accion import accion
 
 Logger = ConfigurarLogging(__name__)
 
 
-class accionMQTT(accionBase):
+class accionMQTT(accion):
     """Envía un mensaje por mqtt"""
 
     nombre = "MQTT"

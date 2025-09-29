@@ -2,12 +2,12 @@
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accionBase import accionBase
+from .accion import accion
 
 Logger = ConfigurarLogging(__name__)
 
 
-class accionSalir(accionBase):
+class accionSalir(accion):
     """Cierra el programa ElGarrobo"""
 
     nombre = "Salir"

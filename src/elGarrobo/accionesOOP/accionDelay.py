@@ -4,12 +4,12 @@ import time
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accionBase import accionBase
+from .accion import accion
 
 Logger = ConfigurarLogging(__name__)
 
 
-class accionDelay(accionBase):
+class accionDelay(accion):
     """Esperar una cantidad de tiempo"""
 
     nombre = "Delay"

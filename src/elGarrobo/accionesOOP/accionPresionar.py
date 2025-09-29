@@ -2,12 +2,12 @@
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accionBase import accionBase
+from .accion import accion
 
 Logger = ConfigurarLogging(__name__)
 
 
-class accionPresionar(accionBase):
+class accionPresionar(accion):
     "Ejecuta una accion si se preciona y otra cuando se suelta"
 
     nombre = "Presiona"

@@ -4,12 +4,12 @@ import time
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accionBase import accionBase
+from .accion import accion
 
 Logger = ConfigurarLogging(__name__)
 
 
-class accionSiquientePagina(accionBase):
+class accionSiquientePagina(accion):
     """Siguiente pagina en Dispositivo StreamDeck"""
 
     nombre = "Siguiente Pagina"
@@ -20,7 +20,7 @@ class accionSiquientePagina(accionBase):
         super().__init__(self.nombre, self.comando, self.descripcion)
 
 
-class accionAnteriorPagina(accionBase):
+class accionAnteriorPagina(accion):
     """Anterior pagina en Dispositivo StreamDeck"""
 
     nombre = "Anterior Pagina"
@@ -31,7 +31,7 @@ class accionAnteriorPagina(accionBase):
         super().__init__(self.nombre, self.comando, self.descripcion)
 
 
-class accionActualizarPagina(accionBase):
+class accionActualizarPagina(accion):
     """Actualiza pagina de  StreamDeck"""
 
     nombre = "Actualiza Pagina"

@@ -10,7 +10,7 @@ from .heramientas.valoresAccion import valoresAcciones
 logger = ConfigurarLogging(__name__)
 
 
-class accionBase:
+class accion:
     """
     clase base de las acciones del sistema
     """

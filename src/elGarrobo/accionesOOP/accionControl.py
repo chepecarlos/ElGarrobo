@@ -5,12 +5,12 @@ import time
 
 from elGarrobo.miLibrerias import ConfigurarLogging, EnviarMensajeMQTT, ObtenerArchivo
 
-from .accionBase import accionBase
+from .accion import accion
 
 Logger = ConfigurarLogging(__name__)
 
 
-class accionControl(accionBase):
+class accionControl(accion):
     """Controla la PC a distancia"""
 
     nombre = "Control MQTT"

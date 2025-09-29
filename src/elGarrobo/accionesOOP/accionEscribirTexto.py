@@ -2,13 +2,13 @@
 
 import pyautogui
 
-from elGarrobo.accionesOOP.accionBase import accionBase
+from elGarrobo.accionesOOP.accion import accion
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 logger = ConfigurarLogging(__name__)
 
 
-class accionEscribirTexto(accionBase):
+class accionEscribirTexto(accion):
     """Escribe un texto como un teclado"""
 
     nombre = "Escribir texto"

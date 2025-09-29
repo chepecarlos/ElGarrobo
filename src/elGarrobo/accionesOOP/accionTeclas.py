@@ -4,12 +4,12 @@ import pyautogui
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accionBase import accionBase
+from .accion import accion
 
 Logger = ConfigurarLogging(__name__)
 
 
-class accionTeclas(accionBase):
+class accionTeclas(accion):
     """Preciona una combinación de teclas"""
 
     nombre = "Teclas"
