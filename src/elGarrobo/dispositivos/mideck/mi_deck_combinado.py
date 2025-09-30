@@ -1,4 +1,4 @@
-from elGarrobo.dispositivos.dispositivoBase import dispositivoBase
+from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 from .mi_streamdeck import MiStreamDeck
@@ -6,7 +6,7 @@ from .mi_streamdeck import MiStreamDeck
 logger = ConfigurarLogging(__name__)
 
 
-class MiDeckCombinado(dispositivoBase):
+class MiDeckCombinado(dispositivo):
 
     modulo = "deck_combinado"
     tipo = "deck_combinado"
@@ -73,18 +73,21 @@ class MiDeckCombinado(dispositivoBase):
         if not self.activado:
             return
 
-        folderAnterior = self.folderActual
+        # folderAnterior = self.folderActual
 
         super().cargarAccionesFolder(folder, recargar)
+
+        if not self.recargar:
+            return
 
         for deckActual in self.listaDeck:
             deckActual.listaAcciones = self.listaAcciones
             deckActual.folderActual = self.folderActual
             deckActual.desfaceTeclas = 0
 
-        if self.folderActual != folderAnterior or recargar:
-            self.limpiarIconos()
-            self.actualizarIconos()
+        # if self.folderActual != folderAnterior or recargar:
+        #     self.limpiarIconos()
+        #     self.actualizarIconos()
 
     def configurarFuncionAccion(self, funcionAccion: callable):
         """Prepara la la funciona para ejecutar acciones"""
@@ -118,9 +121,10 @@ class MiDeckCombinado(dispositivoBase):
 
         for deck in self.listaDeck:
             deck.desfaceTeclas += self.cantidadBotones
+        self.recargar = True
 
-        self.limpiarIconos()
-        self.actualizarIconos()
+        # self.limpiarIconos()
+        # self.actualizarIconos()
 
     def anteriorPagina(self):
         """Regresa una pagina los StreamDeck Combinados"""
@@ -133,10 +137,22 @@ class MiDeckCombinado(dispositivoBase):
         for deck in self.listaDeck:
             deck.desfaceTeclas -= self.cantidadBotones
 
-        self.limpiarIconos()
-        self.actualizarIconos()
+        self.recargar = True
+
+        # self.limpiarIconos()
+        # self.actualizarIconos()
 
     def desconectar(self):
 
         for deck in self.listaDeck:
             deck.desconectar()
+
+    def actualizar(self):
+        print(f"Actualizar StreanDecks Combinados: {self.recargar}")
+
+        if self.recargar:
+
+            self.limpiarIconos()
+            self.actualizarIconos()
+
+        return super().actualizar()

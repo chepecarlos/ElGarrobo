@@ -3,13 +3,13 @@
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Transport.Transport import TransportError
 
-from elGarrobo.dispositivos.dispositivoBase import dispositivoBase
+from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 logger = ConfigurarLogging(__name__)
 
 
-class MiPedal(dispositivoBase):
+class MiPedal(dispositivo):
 
     modulo = "pedal"
     tipo = "pedal"
@@ -33,7 +33,7 @@ class MiPedal(dispositivoBase):
     def conectar(self) -> None:
         streamdecks = DeviceManager().enumerate()
 
-        listaIdUsados = dispositivoBase.listaIndexUsados
+        listaIdUsados = dispositivo.listaIndexUsados
 
         for idActual, deck in enumerate(streamdecks):
             idProbar = True
@@ -51,7 +51,7 @@ class MiPedal(dispositivoBase):
                         self.cantidad = self.deck.key_count()
                         self.deck.set_key_callback(self.actualizarBoton)
                         self.idDeck = idActual
-                        dispositivoBase.agregarIndexUsado(self.idDeck)
+                        dispositivo.agregarIndexUsado(self.idDeck)
                         return
                     else:
                         self.deck.close()

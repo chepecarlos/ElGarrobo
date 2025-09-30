@@ -3,8 +3,8 @@ import threading
 from nicegui import app, ui
 from PIL import Image
 
-from elGarrobo.accionesOOP import accionBase
-from elGarrobo.dispositivos.dispositivoBase import dispositivoBase
+from elGarrobo.accionesOOP import accion
+from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.mideck.mi_deck_imagen import ObtenerImagen
 from elGarrobo.miLibrerias import ConfigurarLogging
 
@@ -15,7 +15,7 @@ from elGarrobo.miLibrerias import ConfigurarLogging
 logger = ConfigurarLogging(__name__)
 
 
-class miGui(dispositivoBase):
+class miGui(dispositivo):
     """
     Interface Web del ElGarrobo
     """
@@ -24,11 +24,11 @@ class miGui(dispositivoBase):
     tipo = "gui"
     archivoConfiguracion = "gui.md"
 
-    listaDispositivos: list[dispositivoBase] = None
+    listaDispositivos: list[dispositivo] = None
 
     accionEditar: dict
     "Acción medicando o agregando"
-    dispositivoEditar: dispositivoBase
+    dispositivoEditar: dispositivo
     "dispositivo a modificar la acción"
 
     puerto: int = 8080
@@ -44,13 +44,13 @@ class miGui(dispositivoBase):
         self.folder: str = "?"
         self.folderLabel = None
         self.listaDispositivosVieja: list = list()
-        self.listaClasesAcciones: list = list()
-        self.listaClasesAccionesOPP: dict = dict()
+        self.listaClasesAcciones: dict = dict()
+        # self.listaClasesAccionesOPP: dict = dict()
         self.salvarAcciones: callable = None
         self.actualizarIconos2: callable = None
         self.ejecutaEvento: callable = None
         self.accionEditar: dict = None
-        self.dispositivoEditar: dispositivoBase = None
+        self.dispositivoEditar: dispositivo = None
         self.opcionesEditar = None
         self.pestañas = None
         self.paneles: ui.tab_panel = None
@@ -60,6 +60,7 @@ class miGui(dispositivoBase):
         # self.tipo = "GUI"
 
         # def conectar(self):
+
         @ui.page("/")
         def paginaAcciones():
             with ui.splitter(value=20, limits=(15, 50)).classes("w-full") as splitter:
@@ -83,12 +84,13 @@ class miGui(dispositivoBase):
             self.estructura()
 
     def mostraFormulario(self):
+
         def agregarAcción():
             nombre = self.editorNombre.value
             tecla = self.editorTecla.value
             acción = self.editorAcción.value
-            for AtributoAccion in self.listaClasesAccionesOPP.keys():
-                objetoClase = self.listaClasesAccionesOPP[AtributoAccion]()
+            for AtributoAccion in self.listaClasesAcciones.keys():
+                objetoClase = self.listaClasesAcciones[AtributoAccion]()
                 if objetoClase.nombre == acción:
                     acción = objetoClase.comando
                     break
@@ -194,7 +196,7 @@ class miGui(dispositivoBase):
                 for opcionesEditor in self.opcionesEditar.keys():
                     objetoEditor = self.opcionesEditar.get(opcionesEditor)
                     valor = objetoEditor.value
-                    accionActual = self.listaClasesAccionesOPP[acciónSeleccionada]()
+                    accionActual = self.listaClasesAcciones[acciónSeleccionada]()
                     for propiedad in accionActual.listaPropiedades:
                         nombrePropiedad = propiedad.nombre
                         if opcionesEditor == nombrePropiedad:
@@ -215,7 +217,9 @@ class miGui(dispositivoBase):
             self.editorNombre = ui.input("Nombre").style(f"width: {ancho}").props("clearable")
             self.editorTitulo = ui.input("Titulo").style(f"width: {ancho}").props("clearable")
             self.editorTecla = ui.input("Tecla").style(f"width: {ancho}").props("clearable")
-            self.editorAcción = ui.select(options=self.listaClasesAcciones, with_input=True, label="acción", on_change=self.mostrarOpciones).style(f"width: {ancho}")
+            print(f"Lista acciones {self.listaClasesAcciones} {type(self.listaClasesAcciones)}")
+            print(self.listaClasesAcciones.keys())
+            self.editorAcción = ui.select(options=list(self.listaClasesAcciones.keys()), with_input=True, label="acción", on_change=self.mostrarOpciones).style(f"width: {ancho}")
             self.editorDescripcion = ui.label("").style(f"width: {ancho}").classes("bg-teal-700 p-2 text-white rounded-lg")
             self.editorDescripcion.visible = False
             self.editorPropiedades = ui.column()
@@ -235,9 +239,9 @@ class miGui(dispositivoBase):
         else:
             accionOpciones = self.editorAcción.value
 
-        for acción in self.listaClasesAccionesOPP.keys():
-            claseAccion = self.listaClasesAccionesOPP.get(acción)
-            acciónTmp: accionBase = claseAccion()
+        for acción in self.listaClasesAcciones.keys():
+            claseAccion = self.listaClasesAcciones.get(acción)
+            acciónTmp: accion = claseAccion()
             if acción == accionOpciones or acciónTmp.nombre == accionOpciones:
                 self.editorDescripcion.visible = True
                 self.editorDescripcion.text = acciónTmp.descripcion
@@ -281,14 +285,25 @@ class miGui(dispositivoBase):
 
         with self.pestañas:
 
+            # print(self.listaDispositivos)
+            print("Cargando ventana")
+
             for dispositivo in self.listaDispositivos:
+                print(dispositivo.nombre, dispositivo.pestaña, dispositivo.pestaña)
                 nombre = dispositivo.nombre
-                if dispositivo.pestaña is None:
-                    print(f"Creae pestaña {dispositivo.nombre}")
-                    dispositivo.pestaña = ui.tab(dispositivo.nombre)
-                    dispositivo.pestaña.on("click", self.limpiarFormulario)
-                    with self.paneles:
-                        dispositivo.panel = ui.tab_panel(dispositivo.pestaña).classes("h-svh")
+                # if dispositivo.pestaña is None:
+                print(f"Creae pestaña {dispositivo.nombre}")
+                dispositivo.pestaña = ui.tab(dispositivo.nombre)
+                dispositivo.pestaña.on("click", self.limpiarFormulario)
+                with self.paneles:
+                    dispositivo.panel = ui.tab_panel(dispositivo.pestaña).classes("h-svh")
+                # else:
+                #     with self.paneles:
+                #         with dispositivo.panel:
+                #             ui.label(f"Hola {nombre}")
+                #             pass
+                #         # ui.tab_panel(dispositivo.pestaña).classes("h-svh")
+                #         pass
 
             for dispositivo in self.listaDispositivosVieja:
                 if dispositivo.get("pestaña") is None:
@@ -393,14 +408,14 @@ class miGui(dispositivoBase):
         for dispositivo in self.listaDispositivos:
             nombreDispositivo = dispositivo.nombre
             # tipo = dispositivo.tipo
-            print("poniendo primer panel")
+            print(f"poniendo primer panel {nombreDispositivo}")
             self.paneles.value = nombreDispositivo
             self.paneles.update()
             # if tipo == "steamdeck":
             #     self.editorTitulo.visible = True
             # return
 
-    def seleccionarAcción(self, accion: dict, dispositivo: dispositivoBase = None):
+    def seleccionarAcción(self, accion: dict, dispositivo: dispositivo = None):
         if dispositivo is not None:
             print(f"Modificar Accion de: {dispositivo.nombre}")
             self.dispositivoEditar = dispositivo
@@ -436,7 +451,7 @@ class miGui(dispositivoBase):
 
         if opcionesActuales:
 
-            claseAcción = self.listaClasesAccionesOPP.get(self.accionEditar.get("accion"))
+            claseAcción = self.listaClasesAcciones.get(self.accionEditar.get("accion"))
             if claseAcción is not None:
 
                 objetoClase = claseAcción()
@@ -574,8 +589,8 @@ class miGui(dispositivoBase):
         self.mostrarPestañas()
 
     def obtenerAcciónOop(self, comandoAcción: str):
-        if comandoAcción in self.listaClasesAccionesOPP:
-            return self.listaClasesAccionesOPP[comandoAcción]
+        if comandoAcción in self.listaClasesAcciones:
+            return self.listaClasesAcciones[comandoAcción]
         return None
 
     def obtenerRutaImagen(self, Imagen: str, folder: str):
@@ -583,11 +598,11 @@ class miGui(dispositivoBase):
             return
         pass
 
-    def actualizarPestaña(self, dispositivo: dispositivoBase):
+    def actualizarPestaña(self, dispositivo: dispositivo):
         print(f"Intentando Actualizar pestañas de {dispositivo.nombre}")
         self.actualizarPestañas(dispositivo)
 
-    def actualizarPestañas(self, dispositivo: dispositivoBase):
+    def actualizarPestañas(self, dispositivo: dispositivo):
         nombre = dispositivo.nombre
         tipo = dispositivo.tipo
         input = dispositivo.dispositivo
@@ -667,7 +682,25 @@ class miGui(dispositivoBase):
                                 ui.button(icon="delete", color="teal-500", on_click=lambda a=acciónActual, d=dispositivo: self.borrarAcción(a, d))
             # dispositivo.pestaña.update()
 
-    def borrarAcción(self, accion, dispositivo: dispositivoBase):
+    def borrarAcción(self, accion, dispositivo: dispositivo):
         dispositivo.listaAcciones.remove(accion)
         dispositivo.salvarAcciones()
         self.actualizarPestañas(dispositivo)
+
+    def actualizarIconos(self):
+        print("Dibujando GUI")
+
+        # self.editorAcción.update()
+
+        # su
+        pass
+
+    def actualizar(self):
+
+        print("Actualizando GUI")
+
+        # if self.editorAcción is not None:
+        #     print("Lista Acciones ", self.listaClasesAcciones)
+        #     self.editorAcción.options = self.listaClasesAcciones
+        #     self.editorAcción.update()
+        super().actualizar()

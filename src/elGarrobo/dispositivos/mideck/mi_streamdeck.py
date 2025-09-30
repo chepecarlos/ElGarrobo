@@ -9,7 +9,7 @@ from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.ImageHelpers import PILHelper
 from StreamDeck.Transport.Transport import TransportError
 
-from elGarrobo.dispositivos.dispositivoBase import dispositivoBase
+from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.miLibrerias import (
     ConfigurarLogging,
     ObtenerArchivo,
@@ -26,7 +26,7 @@ from .mi_deck_imagen import ActualizarIcono, LimpiarIcono
 logger = ConfigurarLogging(__name__)
 
 
-class MiStreamDeck(dispositivoBase):
+class MiStreamDeck(dispositivo):
 
     modulo = "streamdeck"
     tipo = "streamdeck"
@@ -69,7 +69,7 @@ class MiStreamDeck(dispositivoBase):
 
     def conectar(self):
         listaStreamdecks = DeviceManager().enumerate()
-        listaIdUsados = dispositivoBase.listaIndexUsados
+        listaIdUsados = dispositivo.listaIndexUsados
 
         logger.info(f"StreamDeck[Conectándose] - {self.nombre}[{self.dispositivo}]")
 
@@ -97,7 +97,7 @@ class MiStreamDeck(dispositivoBase):
                         self.DeckGif.start()
                         self.deck.set_key_callback(self.actualizarBoton)
                         self.idDeck = idActual
-                        dispositivoBase.agregarIndexUsado(self.idDeck)
+                        dispositivo.agregarIndexUsado(self.idDeck)
                         logger.info(f"StreamDeck[Conectado] - {self.nombre}")
 
                         # self.actualizarIconos()
@@ -110,10 +110,14 @@ class MiStreamDeck(dispositivoBase):
                     self.conectado = False
                     self.deck = None
                     logger.exception(f"StreamDeck[Error] {self.nombre}[{self.dispositivo}]{error}")
+                    return
                 except Exception as error:
                     self.conectado = False
                     self.deck = None
                     logger.exception(f"StreamDeck[Error] {error}")
+                    return
+        logger.warning(f"StreamDeck[No encontró] - {self.nombre}")
+        self.conectado = False
 
     def actualizarIconos(self, acciones: dict = False, desface: int = False, Unido: bool = False):
         """Refresca iconos, tomando en cuenta pagina actual."""

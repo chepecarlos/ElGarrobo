@@ -1,6 +1,6 @@
 """
 ## Dispositivo base
-- Clase que se herencia todas las funciones: [dispositivoBase](./dispositivos/dispositivoBase)
+- Clase que se herencia todas las funciones: [dispositivo](./dispositivos/dispositivo)
 
 # Lista de Acciones
 - Teclado USB: [MiTecladoMacro](./dispositivos/miteclado/mi_teclado_macro)

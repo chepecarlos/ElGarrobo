@@ -12,7 +12,7 @@ from elGarrobo.miLibrerias import (
 logger = ConfigurarLogging(__name__)
 
 
-class dispositivoBase:
+class dispositivo:
     "Clase base de dispositivos físicos que ejecutan las acciones"
 
     estadoTecla = Enum("estadoTecla", [("PRESIONADA", 1), ("LIBERADA", 2), ("MANTENIDA", 3)])
@@ -48,6 +48,7 @@ class dispositivoBase:
     "Si el dispositivo esta activo o no"
     ejecutarAcción: callable = None
     "Función que se llama para ejecutar una acción"
+    recargar: bool = True
 
     listaIndexUsados: list = list()
 
@@ -74,23 +75,23 @@ class dispositivoBase:
         self.panel = None
 
     @staticmethod
-    def cargarDispositivos(modulosCargados: dict, claseDispositivo: type["dispositivoBase"]) -> list[Type["dispositivoBase"]]:
+    def cargarDispositivos(modulosCargados: dict, claseDispositivo: type["dispositivo"]) -> list[Type["dispositivo"]]:
         """
         Preparara la informacion de los dispositivos en base a una clase
 
         Args:
             modulosCargados (dict): Dispositivos cargados y desactivados
-            claseDispositivo (dispositivoBase): Clase del dispositivo a cargar es basada es dispositivoBase
+            claseDispositivo (dispositivo): Clase del dispositivo a cargar es basada es dispositivo
 
         Returns:
-            list (dispositivoBase): Lista de dispositivos configurados
+            list (dispositivo): Lista de dispositivos configurados
         """
 
-        listaDispositivos: list[Type[dispositivoBase]] = list()
+        listaDispositivos: list[Type[dispositivo]] = list()
 
         moduloCargado = modulosCargados.get(claseDispositivo.modulo)
         if moduloCargado is None or moduloCargado is False:
-            logger.error(f"No cargado {claseDispositivo.tipo}")
+            logger.debug(f"No cargado Dispositivo-{claseDispositivo.tipo}")
             return listaDispositivos
         logger.info(f"Dispositivo-{claseDispositivo.tipo}[Cargando]")
 
@@ -141,17 +142,26 @@ class dispositivoBase:
         archivoData = (folderData / self.archivo).resolve()
 
         if folderPerfil not in archivoData.parents:
+            logger.warning("No se puede cargar acciones fuera de folder perfil")
+            return
+
+        if self.folderActual == folderData.relative_to(folderPerfil) and not recargar:
             return
 
         dataAcciones = self.cargarData(str(archivoData))
 
         if dataAcciones is None:
-            logger.warning(f"{self.nombre}[{self.tipo}] - No se puede cargar acciones {folderBuscar}")
+            logger.debug(f"{self.nombre}[{self.tipo}] - No se puede cargar acciones {folderBuscar}")
             return
 
+        if self.listaAcciones == dataAcciones:
+            logger.info(f"Data ya cargada {self.nombre} - {folderBuscar}")
+            return
+
+        self.recargar = True
         self.listaAcciones = dataAcciones
         self.folderActual = folderData.relative_to(folderPerfil)
-        logger.info(f"AccionesCargadas[{self.nombre}] {len(self.listaAcciones)} - /{folderBuscar}")
+        logger.info(f"AccionesCargadas[{self.nombre}] {len(self.listaAcciones)} - /{self.folderActual}")
         return
 
     def _folderConfigPerfil(self) -> Path:
@@ -256,8 +266,12 @@ class dispositivoBase:
 
     @staticmethod
     def agregarIndexUsado(indexUsado: int):
-        dispositivoBase.listaIndexUsados.append(indexUsado)
+        dispositivo.listaIndexUsados.append(indexUsado)
         pass
+
+    def actualizar(self):
+        # print(f"Actualizar {self.nombre} - {self.recargar}")
+        self.recargar = False
 
     def __str__(self):
         return f"{self.nombre}[{self.tipo}]"
