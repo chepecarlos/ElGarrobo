@@ -4,6 +4,8 @@ import subprocess as sp
 from elGarrobo.accionesOOP.accionOS import accionOS
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor, SalvarValor
 
+from .dispositivoSonido import dispositivoSonido
+
 Logger = ConfigurarLogging(__name__)
 
 
@@ -102,15 +104,15 @@ class MiPulse:
     def SalvarPulse(self, opciones=None):
         Logger.info("Pulse[Salvar]")
 
-        listaDispisitovos: list = self.DataPulse()
+        listaDispositivos: list[dispositivoSonido] = self.DataPulse()
 
-        for Dispositivo in listaDispisitovos:
+        for Dispositivo in listaDispositivos:
             Texto = "Error"
             TextoBalance = "Error"
-            if Dispositivo.Mute:
+            if Dispositivo.mute:
                 Texto = "Mute"
-            elif Dispositivo.Volumen is not None:
-                Volumen = Dispositivo.Volumen
+            elif Dispositivo.volumen is not None:
+                Volumen = Dispositivo.volumen
                 if Volumen[0] == Volumen[1]:
                     Texto = f"{Volumen[0]}%"
                     TextoBalance = "50%"
@@ -124,40 +126,34 @@ class MiPulse:
                         TextoBalance = "100%"
 
             # TODO: montar el avanza correctamente
-            SalvarValor(self.archivoPulse, f"{Dispositivo.Nombre}_balance", TextoBalance)
+            SalvarValor(self.archivoPulse, f"{Dispositivo.nombre}_balance", TextoBalance)
 
-            SalvarValor(self.archivoPulse, Dispositivo.Nombre, Texto)
+            SalvarValor(self.archivoPulse, Dispositivo.nombre, Texto)
 
         self.SolisitarDibujar()
 
-    def DataPulse(self):
+    def DataPulse(self) -> list[dispositivoSonido]:
         Salida = sp.getoutput("pactl list sinks")
         Salida = Salida.split("Destino")
-        listaDispisitovos = []
+        listaDispisitovos: list[dispositivoSonido] = []
         for Data in Salida:
             Lineas = Data.split("\n")
-            actual = Dispositivo()
+            actual: dispositivoSonido = dispositivoSonido()
             for Linea in Lineas:
                 if "Nombre:" in Linea:
-                    actual.Nombre = Linea.replace("Nombre:", "").strip()
+                    actual.nombre = Linea.replace("Nombre:", "").strip()
                 if "Volumen:" in Linea:
                     Numero = self.obtenerPorcentajes(Linea)
-                    actual.Volumen = Numero
-                if "Silencio:" in Linea:
+                    actual.volumen = Numero
+                if "Silenciado:" in Linea:
                     if "sí" in Linea:
-                        actual.Mute = True
+                        actual.mute = True
                     else:
-                        actual.Mute = False
-            if actual.Volumen is not None:
+                        actual.mute = False
+            if actual.volumen is not None and actual.nombre is not None:
                 listaDispisitovos.append(actual)
 
         return listaDispisitovos
 
     def obtenerPorcentajes(self, texto: str) -> list:
         return re.findall("([0-9][0-9][0-9]|[0-9][0-9]|[0-9])%", texto)
-
-
-class Dispositivo(object):
-    Nombre = None
-    Volumen = [0, 0]
-    Mute = None
