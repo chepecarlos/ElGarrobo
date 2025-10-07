@@ -4,9 +4,9 @@ from pathlib import Path
 
 from .acciones import CargarAcciones
 from .accionesOOP import (
+    accion,
     accionActualizarPagina,
     accionAnteriorPagina,
-    accionBase,
     accionEntrarFolder,
     accionPresionar,
     accionRecargarFolder,
@@ -17,7 +17,7 @@ from .accionesOOP import (
 )
 from .accionesOOP.heramientas.valoresAccion import valoresAcciones
 from .dispositivos import cargarDispositivos
-from .dispositivos.dispositivoBase import dispositivoBase
+from .dispositivos.dispositivo import dispositivo
 from .dispositivos.migui.migui import miGui
 from .dispositivos.mimqtt.mi_mqtt import MiMQTT
 from .miLibrerias import (
@@ -57,13 +57,11 @@ class elGarrobo(object):
     folderPerfil: str = "default"
     "Folder donde se buscan las acciones"
 
-    listaDispositivos: list[dispositivoBase] = list()
+    listaDispositivos: list[dispositivo] = list()
     "Lista de dispositivos disponibles"
     listaClasesAcciones: dict[str,] = dict()
     ListaAcciones = None
 
-    # FIXME: mover a mover a objeto de streamdeck
-    # ListaDeck = None
     PathActual = None
 
     def __init__(self) -> None:
@@ -87,12 +85,6 @@ class elGarrobo(object):
 
         self.IniciarModulo()
 
-        # if self.ModuloGui:
-        # self.miGui = miGui()
-        # self.miGui.ejecutaEvento = self.EjecutandoEvento
-        # # self.miGui.salvarAcciones = self.salvarAcciones
-        # self.miGui.listaDispositivos = self.listaDispositivos
-
         self.IniciarAcciones()
         self.iniciarDispositivos()
 
@@ -104,9 +96,6 @@ class elGarrobo(object):
 
         if self.ModuloPulse:
             self.CargarPulse()
-
-        if self.ModuloDeck:
-            self.CargarStreamDeck()
 
         if self.ModuloMQTT:
             self.IniciarMQTT()
@@ -120,20 +109,16 @@ class elGarrobo(object):
                     if dispositivo.nombre == "gui":
                         dispositivo.agregarAcciones(("salvar_pulse", "volumen", "mute"))
 
-        # self.cargarFolder()
-        self.IniciarStreamDeck()
-
-        self.ActualizarDeck()
-
-        # if self.ModuloGui:
-        #     for dispositivo in self.listaDispositivos:
-        #         dispositivo.actualizarPestaña = self.miGui.actualizarPestaña
-        #     self.miGui.iniciar()
-        # # TODO: cargar foldrer al inicio
-        # self.miGui.actualizarFolder(self.PathActual)
+        if self.ModuloGui:
+            for dispositivo in self.listaDispositivos:
+                if dispositivo.tipo == "gui":
+                    dispositivo.listaDispositivos = self.listaDispositivos
+                    dispositivo.listaClasesAcciones = self.listaClasesAcciones
+                    dispositivo.actualizar()
 
     def iniciarDispositivos(self):
-        self.dispositivosDisponibles: list[dispositivoBase] = cargarDispositivos()
+        """Crea y inicializa los dispositivos que enviar las acciones"""
+        self.dispositivosDisponibles: list[dispositivo] = cargarDispositivos()
 
         for claseDispositivo in self.dispositivosDisponibles:
             self.listaDispositivos.extend(claseDispositivo.cargarDispositivos(self.modulos, claseDispositivo))
@@ -144,13 +129,14 @@ class elGarrobo(object):
             if dispositivo.activado and not dispositivo.conectado:
                 dispositivo.cargarAccionesFolder("/")
                 dispositivo.conectar()
+                dispositivo.actualizar()
 
     def IniciarModulo(self) -> None:
         """
         Carga los modulos activos.
         """
         logger.info(f"Configurando[Modulos]")
-        Modulos = leerData("modulos/modulos")
+        Modulos = leerData("modulos")
         self.modulos = Modulos
 
         if Modulos is None:
@@ -194,7 +180,7 @@ class elGarrobo(object):
 
         accionSalir.funcionExterna = self.Salir
         accionEntrarFolder.funcionExterna = self.entrar_Folder
-        accionRegresarFolder.funcionExterna = self.Regresar_Folder
+        accionRegresarFolder.funcionExterna = self.regresar_Folder
         accionRecargarFolder.funcionExterna = self.Reiniciar
         accionPresionar.funcionExterna = self.accionesPresionar
 
@@ -209,33 +195,33 @@ class elGarrobo(object):
         # Acciones Deck
         if self.ModuloDeck or self.ModuloCombinado:
             accionSiquientePagina.funcionExterna = self.siquiente_Pagina
-            accionAnteriorPagina.funcionExterna = self.Anterior_Pagina
+            accionAnteriorPagina.funcionExterna = self.anterior_Pagina
             accionActualizarPagina.funcionExterna = self.Actualizar_Folder
             ListaAcciones["deck_brillo"] = self.DeckBrillo
 
         self.ListaAcciones = ListaAcciones
         self.listaClasesAcciones = listaClasesAcciones
 
-        if self.ModuloGui:
-            listaAccion = []
-            for accion in self.ListaAcciones.keys():
-                listaAccion.append(accion)
-            for accion in self.listaClasesAcciones.keys():
-                objetoAccion = self.listaClasesAcciones[accion]()
-                nombreAccion = objetoAccion.nombre
-                listaAccion.append(nombreAccion)
+        # if self.ModuloGui:
+        #     listaAccion = []
+        #     for accion in self.ListaAcciones.keys():
+        #         listaAccion.append(accion)
+        #     for accion in self.listaClasesAcciones.keys():
+        #         objetoAccion = self.listaClasesAcciones[accion]()
+        #         nombreAccion = objetoAccion.nombre
+        #         listaAccion.append(nombreAccion)
 
-            for dispositivo in self.listaDispositivos:
-                if dispositivo.tipo == "gui":
-                    dispositivo.listaClasesAccionesOPP = self.listaClasesAcciones
-                    dispositivo.agregarAcciones(listaAccion)
-            # self.miGui.listaClasesAccionesOPP = self.listaClasesAcciones
-            # self.miGui.agregarAcciones(listaAccion)
+        #     for dispositivo in self.listaDispositivos:
+        #         if dispositivo.tipo == "gui":
+        #             dispositivo.listaClasesAccionesOPP = self.listaClasesAcciones
+        #             dispositivo.agregarAcciones(listaAccion)
+        # self.miGui.listaClasesAccionesOPP = self.listaClasesAcciones
+        # self.miGui.agregarAcciones(listaAccion)
 
-    def cargarFolder(self):
+    # def cargarFolder(self):
 
-        logger.info("Cargando acciones desde inicio")
-        self.entrar_Folder({valoresAcciones("folder", "/")})
+    #     logger.info("Cargando acciones desde inicio")
+    #     self.entrar_Folder({valoresAcciones("folder", "/")})
 
     def CargarData(self):
         """
@@ -363,6 +349,7 @@ class elGarrobo(object):
 
         if comandoAccion is None:
             logger.info(f"Accion[No Atributo] - {accion}")
+            return
 
         if comandoAccion in self.listaClasesAcciones:
             opcionesAccion: dict = accion.get("opciones", {})
@@ -385,7 +372,7 @@ class elGarrobo(object):
 
                     self.mensajeMonitorESP(Mensaje, "accion")
 
-                objetoAccion: accionBase = self.listaClasesAcciones[comandoAccion]()
+                objetoAccion: accion = self.listaClasesAcciones[comandoAccion]()
                 objetoAccion.configurar(opcionesAccion)
                 try:
                     return objetoAccion.ejecutar()
@@ -411,7 +398,10 @@ class elGarrobo(object):
                 if isinstance(presionado, str):
                     logger.info(f"Accion[{comandoAccion}-{presionado}] - {Nombre}")
                 else:
-                    logger.info(f"Accion[{comandoAccion}] - {Nombre}")
+                    if Nombre == None:
+                        logger.info(f"Accion[{comandoAccion}]")
+                    else:
+                        logger.info(f"Accion[{comandoAccion}] - {Nombre}")
             else:
                 logger.info(f"Accion[{comandoAccion}]")
 
@@ -428,11 +418,6 @@ class elGarrobo(object):
                 for opciones in opcionesAccion:
                     opciones["__estado"] = presionado
 
-            # print(comandoAccion)
-            # print("opciones:", opcionesAccion)
-
-            # opcionesAccion.append({"__estado": presionado})
-
             if self.ModuloMonitorESP:
                 Mensaje = {"accion": comandoAccion}
                 if nombreAccion:
@@ -442,10 +427,10 @@ class elGarrobo(object):
 
                 self.mensajeMonitorESP(Mensaje, "accion")
 
-            # try:
-            return self.ListaAcciones[comandoAccion](opcionesAccion)
-            # except Exception as Error:
-            #     logger.info(f"Accion[Error] {Error}")
+            try:
+                return self.ListaAcciones[comandoAccion](opcionesAccion)
+            except Exception as Error:
+                logger.exception(f"Accion[Error-{comandoAccion}] {Error}")
         else:
             logger.info(f"Accion[No Encontrada] {comandoAccion}")
 
@@ -550,27 +535,39 @@ class elGarrobo(object):
         """
         logger.info("Reiniciar data ElGarrobo")
 
-        nombreDispositovo: str = self.obtenerValor(opciones, "dispositivo")
+        nombreDispositivo: str = self.obtenerValor(opciones, "dispositivo")
 
-        if nombreDispositovo is None:
+        if nombreDispositivo is None:
             for dispositivo in self.listaDispositivos:
                 dispositivo.recargarAccionesFolder()
+                dispositivo.actualizar()
         else:
-            for disposito in self.listaDispositivos:
-                if disposito.nombre.lower() == nombreDispositovo.lower():
-                    disposito.recargarAccionesFolder(directo=True)
+            for dispositivo in self.listaDispositivos:
+                if dispositivo.nombre.lower() == nombreDispositivo.lower():
+                    dispositivo.recargarAccionesFolder(directo=True)
+                    dispositivo.actualizar()
 
-    def Regresar_Folder(self, opciones: list):
+    def regresar_Folder(self, opciones: list[valoresAcciones]):
 
-        nombreDispositovo: str = self.obtenerValor(opciones, "dispositivo")
+        nombreDispositivo: str = self.obtenerValor(opciones, "dispositivo")
+        seRegreso: bool = False
 
-        if nombreDispositovo is None:
+        if nombreDispositivo is None:
             for dispositivo in self.listaDispositivos:
                 dispositivo.regresarFolderActual()
+                if dispositivo.recargar:
+                    seRegreso = True
+                dispositivo.actualizar()
         else:
             for disposito in self.listaDispositivos:
-                if disposito.nombre.lower() == nombreDispositovo.lower():
+                if disposito.nombre.lower() == nombreDispositivo.lower():
                     disposito.regresarFolderActual(directo=True)
+                    dispositivo.actualizar()
+                    if dispositivo.recargar:
+                        seRegreso = True
+
+        if not seRegreso:
+            logger.info("No se puedo regresar")
 
     def entrar_Folder(self, opciones: list[valoresAcciones]):
         """
@@ -579,18 +576,28 @@ class elGarrobo(object):
         folder: str = self.obtenerValor(opciones, "folder")
         nombreDispositovo: str = self.obtenerValor(opciones, "dispositivo")
 
+        seCargo: bool = False
+
         if folder is None:
             logger.warning(f"Folder[no encontrado]")
             return
 
         if nombreDispositovo is None:
-            for disposito in self.listaDispositivos:
-                disposito.cargarAccionesFolder(folder)
+            for dispositivo in self.listaDispositivos:
+                dispositivo.cargarAccionesFolder(folder)
+                if dispositivo.recargar:
+                    seCargo = True
+                dispositivo.actualizar()
         else:
-            for disposito in self.listaDispositivos:
-                if disposito.nombre.lower() == nombreDispositovo.lower():
-                    disposito.cargarAccionesFolder(folder, directo=True)
-                    return
+            for dispositivo in self.listaDispositivos:
+                if dispositivo.nombre.lower() == nombreDispositovo.lower():
+                    dispositivo.cargarAccionesFolder(folder, directo=True)
+                    dispositivo.actualizar()
+                    if dispositivo.recargar:
+                        seCargo = True
+
+        if not seCargo:
+            logger.info("No se puede cargar informacion nueva")
 
     def Actualizar_Folder(self, opciones: list[valoresAcciones]):
         self.ActualizarDeck()
@@ -599,11 +606,13 @@ class elGarrobo(object):
         for dispositivo in self.listaDispositivos:
             if hasattr(dispositivo, "siguientePagina"):
                 dispositivo.siguientePagina()
+                dispositivo.actualizar()
 
-    def Anterior_Pagina(self, opciones: list[valoresAcciones]):
+    def anterior_Pagina(self, opciones: list[valoresAcciones]):
         for dispositivo in self.listaDispositivos:
             if hasattr(dispositivo, "anteriorPagina"):
                 dispositivo.anteriorPagina()
+                dispositivo.actualizar()
 
     def DeckBrillo(self, opciones):
         Brillo = ObtenerValor("data/streamdeck.json", "brillo")
@@ -621,10 +630,6 @@ class elGarrobo(object):
         SalvarValor("data/streamdeck.json", "brillo", Brillo)
         for deck in self.ListaDeck:
             deck.Brillo(Brillo)
-
-    def IniciarStreamDeck(self):
-        self.LimpiarDeck()
-        self.ActualizarDeck()
 
     def IniciarMQTT(self):
         """Iniciar coneccion con Broker MQTT."""
@@ -671,7 +676,7 @@ class elGarrobo(object):
         """
         logger.info("ElGarrobo[Saliendo] - Adios :) ")
         if self.ModuloOBS:
-            self.OBS.Desconectar()
+            self.OBS.desconectar()
         if self.ModuloMQTT:
             for Servidor in self.ListaMQTT:
                 Servidor.Desconectar()
@@ -686,7 +691,7 @@ class elGarrobo(object):
 
     def SolisitarNotifiacacion(self, texto, opciones: dict[valoresAcciones]):
         if self.ModuloOBSNotificacion:
-            objetoAccion = self.listaClasesAcciones["notificacion"]()
+            objetoAccion: accion = self.listaClasesAcciones["notificacion"]()
             objetoAccion.configurar({"texto": texto})
             objetoAccion.ejecutar()
 

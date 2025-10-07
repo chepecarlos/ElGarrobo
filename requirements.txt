@@ -1,16 +1,21 @@
 PyYAML
-paho-mqtt
 PyAutoGUI
-notify-py
 pydub
 pyttsx3
-StreamDeck
 evdev
-obs-websocket-py
-python-telegram-bot
-simpleaudio
 requests
-# sphinx
-nicegui>=2.5.0
 pillow
 importlib-resources
+numpy
+
+notify-py # para notificaciones de escritorio
+paho-mqtt # para MQTT
+nicegui>=2.5.0 # para interfaz web
+StreamDeck # para Elgato Stream Deck y Pedal
+obsws-python # Conector de WebSocket para OBS Studio
+sounddevice # para acción reproducir audio
+soundfile
+
+# dependencias de MiLibrerias
+python-telegram-bot # para integración con Telegram
+colorlog
