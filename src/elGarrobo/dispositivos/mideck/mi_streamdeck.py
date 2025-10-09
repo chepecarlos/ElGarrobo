@@ -9,7 +9,7 @@ from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.ImageHelpers import PILHelper
 from StreamDeck.Transport.Transport import TransportError
 
-from elGarrobo.dispositivos.dispositivo import dispositivo
+from elGarrobo.dispositivos import dispositivo
 from elGarrobo.miLibrerias import (
     ConfigurarLogging,
     ObtenerArchivo,

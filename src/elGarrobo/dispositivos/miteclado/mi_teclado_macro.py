@@ -5,7 +5,7 @@ import time
 from evdev import InputDevice, categorize, ecodes
 from evdev.eventio import EvdevError
 
-from elGarrobo.dispositivos.dispositivo import dispositivo
+from elGarrobo.dispositivos import dispositivo
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 logger = ConfigurarLogging(__name__)

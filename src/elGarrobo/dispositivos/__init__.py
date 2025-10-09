@@ -9,8 +9,10 @@
 
 """
 
+from .dispositivo import dispositivo
 from .mideck.mi_deck_combinado import MiDeckCombinado
 from .migui.migui import miGui
+from .mimqtt.mi_mqtt import MiMQTT
 from .mipedal.mi_pedal import MiPedal
 from .miteclado.mi_teclado_macro import MiTecladoMacro
 
