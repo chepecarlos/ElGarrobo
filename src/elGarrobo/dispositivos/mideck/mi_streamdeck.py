@@ -236,7 +236,7 @@ class MiStreamDeck(dispositivo):
             modificado = True
             self.ponerImagen(imagen, imagenFondo, accion, True)
 
-        DirecionImagen = self.buscarDirecionImagen(accion)
+        DirecionImagen: str = self.buscarDirecionImagen(accion)
 
         if DirecionImagen is not None:
             modificado = True
@@ -255,7 +255,7 @@ class MiStreamDeck(dispositivo):
 
         if "titulo" in accion:
             modificado = True
-            self.PonerTexto(imagen, accion, DirecionImagen)
+            self.ponerTexto(imagen, accion, isinstance(DirecionImagen, str))
 
         # if not modificado:
         #     copiaAccion = accion.copy()
@@ -298,64 +298,80 @@ class MiStreamDeck(dispositivo):
         IconoPosicion = ((Imagen.width - Icono.width) // 2, 0)
         Imagen.paste(Icono, IconoPosicion, Icono)
 
-    def PonerTexto(self, Imagen, accion: dict, DirecionImagen=None, cortePalabra: bool = False):
-        """Agrega Texto a Botones de StreamDeck."""
-        Titulo: str = str(accion.get("titulo"))
-        Lineas = Titulo.split("\\n")
+    def ponerTexto(self, Imagen, accion: dict, hayImagen: bool = False, cortePalabra: bool = False):
+        """Agrega Texto a Botones de StreamDeck.
+
+        Args:
+            Imagen (Image): Imagen del botón
+            accion (dict): Datos de la acción del botón
+            hayImagen (bool, optional): Si ya tiene imagen el botón. Defaults to False.
+        """
+        TituloInicial: str = str(accion.get("titulo"))
+        opciones: dict = accion.get("titulo_opciones", {})
+        tamañoFuente: int = opciones.get("tamanno", 40)
+        alinear: str = opciones.get("alinear", "centro")
+        Borde_Color: str = opciones.get("borde_color", "black")
+        Borde_Grosor: int = opciones.get("borde_grosor", 6)
+        Ajustar: bool = opciones.get("ajustar", True)
+        Titulo_Color: str = opciones.get("color", "white")
+
+        Lineas = TituloInicial.split("\\n")
         Titulo = "\n".join(Lineas)
         if cortePalabra:
             Lineas = Titulo.split(" ")
             Titulo = "\n".join(Lineas)
-        Titulo_Color = "white"
-        Tamanno: int = 40
-        Ajustar: bool = True
-        Alinear: str = "centro"
-        Borde_Color: str = "black"
-        Borde_Grosor: int = 5
-        if DirecionImagen is not None:
-            Alinear = "abajo"
-            Tamanno = 20
+        espacioLinea: int = 1
 
         dibujo: ImageDraw = ImageDraw.Draw(Imagen)
 
-        if "titulo_opciones" in accion:
-            opciones = accion["titulo_opciones"]
-            if "tamanno" in opciones:
-                Tamanno = opciones["tamanno"]
-            if "alinear" in opciones:
-                Alinear = opciones["alinear"]
-            if "color" in opciones:
-                Titulo_Color = opciones["color"]
-            if "borde_color" in opciones:
-                Borde_Color = opciones["borde_color"]
-            if "borde_grosor" in opciones:
-                Borde_Grosor = opciones["borde_grosor"]
-            if "ajustar" in opciones:
-                Ajustar = opciones["ajustar"]
+        if hayImagen:
+            alinear = "abajo"
+            tamañoFuente = 20
 
         # TODO: buscar como calcular tamaño de fuente de manera mas eficiente
         while Ajustar:
-            fuente = ImageFont.truetype(self.archivoFuente, Tamanno)
-            cajaTexto = dibujo.textbbox([0, 0], Titulo, font=fuente)
+            fuente = ImageFont.truetype(self.archivoFuente, size=tamañoFuente)
+            cajaTexto = dibujo.multiline_textbbox(
+                xy=[0, 0],
+                text=Titulo,
+                font=fuente,
+                align="center",
+                spacing=espacioLinea,
+                stroke_width=Borde_Grosor,
+            )
+
             Titulo_ancho = cajaTexto[2] - cajaTexto[0]
             Titulo_alto = cajaTexto[3] - cajaTexto[1]
 
-            if Titulo_ancho < Imagen.width:
+            if Titulo_ancho < Imagen.width and Titulo_alto < Imagen.height:
+                break
+
+            if tamañoFuente <= 3:
                 break
             # TODO: reducir tamaño si el alto es demasiado
-            Tamanno -= 1
+            tamañoFuente -= 0.5
 
-        Horizontal = (Imagen.width - Titulo_ancho) / 2
+        Horizontal = (Imagen.width - Titulo_ancho) / 2 + Borde_Grosor
 
-        if Alinear == "centro":
-            Vertical = (Imagen.height - Titulo_alto - Tamanno / 2) / 2
-        elif Alinear == "ariba":
-            Vertical = 0
+        if alinear == "centro":
+            vertical = (Imagen.height - Titulo_alto) / 2
+        elif alinear == "ariba":
+            vertical = 0
         else:
-            Vertical = Imagen.height - Titulo_alto - Titulo_alto / 3
-        PosicionTexto = (Horizontal, Vertical)
+            vertical = Imagen.height - Titulo_alto
 
-        dibujo.text(PosicionTexto, text=Titulo, font=fuente, fill=Titulo_Color, stroke_width=Borde_Grosor, stroke_fill=Borde_Color, align="center")
+        PosicionTexto = (Horizontal, vertical)
+
+        dibujo.multiline_text(
+            PosicionTexto,
+            text=Titulo,
+            font=fuente,
+            fill=Titulo_Color,
+            stroke_width=Borde_Grosor,
+            stroke_fill=Borde_Color,
+            align="center",
+            spacing=espacioLinea,
+        )
 
     def buscarDirecionImagen(self, accion):
 
