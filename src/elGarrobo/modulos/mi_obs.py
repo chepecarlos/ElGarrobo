@@ -1,6 +1,7 @@
 # Librería:https://github.com/aatikturk/obsws-python
 # Protocolo https://github.com/obsproject/obs-websocket/blob/master/docs/generated/protocol.md
 
+import logging
 import threading
 import time
 from math import log
@@ -17,19 +18,18 @@ from elGarrobo.miLibrerias import (
     leerData,
 )
 
-logger = ConfigurarLogging(__name__)
+logger = ConfigurarLogging(__name__, logging.DEBUG)
 
 
 class MiOBS:
-    """Concepción con OBS."""
+    """Concepción con OBS WebSocket."""
 
     clienteConsultas: obs.ReqClient = None
-    "Cliente para mandar información a OBS websocket"
+    "Cliente para mandar información a OBS WebSocket"
     clienteEvento: obs.EventClient = None
-    "Cliente para recibir información de OBS websocket"
-
+    "Cliente para recibir información de OBS WebSocket"
     conectado: bool = False
-    "Esta conectado con OBS websocket"
+    "Esta conectado con OBS WebSocket"
 
     servidor: str
     "Servidor a conectarse con obs"
@@ -46,6 +46,9 @@ class MiOBS:
     "Esta trasmitiendo en OBS"
     audioMonitoriar: list[str]
     "audio a monitoria y enviar por mqtt"
+    audioTopico: str
+    "Topic base para enviar audio por mqtt"
+    tiempoEspera: int = 3
 
     archivoEstado: str = "data/obs/obs"
 
@@ -58,6 +61,8 @@ class MiOBS:
         self.notificaciones: callable = None
         self.conectado = False
         self.procesoTiempo = None
+        self.salvandoFuente = False
+
         self.Reiniciar()
 
     def conectar(self, opciones: dict) -> bool:
@@ -70,34 +75,50 @@ class MiOBS:
             bool: True si se conecto, False si no
         """
 
-        self.servidor: str = opciones.get("servidor", "localhost")
-        self.puerto: int = int(opciones.get("puerto", 4455))
-        self.password: str | None = opciones.get("password", None)
-
         if self.conectado:
             logger.info("OBS[Ya Conectado]")
             self.Notificar("OBS-Ya-Conectado")
             return False
+
+        self.servidor: str = opciones.get("servidor", "localhost")
+        self.puerto: int = int(opciones.get("puerto", 4455))
+        self.password: str | None = opciones.get("password", None)
 
         modulos = leerData("modulos")
         monitorAudio = modulos.get("obs_monitor_audio", False)
 
         if monitorAudio:
             self.audioMonitoriar = leerData("modulos/audio_obs/audio")
-            self.audioTopico = leerData("modulos/audio_obs/mqtt")["topic"]
+            self.audioTopico = leerData("modulos/audio_obs/mqtt").get("topic")
 
         logger.info("OBS[Conectando]")
+
         try:
             self.OBS = None
-            if self.password is None:
-                self.clienteConsultas = obs.ReqClient(host=self.host, port=self.port, timeout=3, subs=(obs.Subs.LOW_VOLUME | obs.Subs.INPUTVOLUMEMETERS))
-                self.clienteEvento = obs.EventClient(host=self.host, port=self.port, timeout=3, subs=(obs.Subs.LOW_VOLUME | obs.Subs.INPUTVOLUMEMETERS))
-            else:
-                self.clienteConsultas = obs.ReqClient(host=self.host, port=self.port, password=self.password, timeout=3, subs=(obs.Subs.LOW_VOLUME | obs.Subs.INPUTVOLUMEMETERS))
-                self.clienteEvento = obs.EventClient(host=self.host, port=self.port, password=self.password, timeout=3, subs=(obs.Subs.LOW_VOLUME | obs.Subs.INPUTVOLUMEMETERS))
+
+            parametros: dict = {
+                "host": self.servidor,
+                "port": self.puerto,
+                # "timeout": self.tiempoEspera,
+                # "subs": (obs.Subs.LOW_VOLUME | obs.Subs.INPUTVOLUMEMETERS),
+            }
+
+            if self.password:
+                parametros["password"] = self.password
+
+            self.clienteConsultas = obs.ReqClient(**parametros)
+            self.clienteEvento = obs.EventClient(**parametros)
 
             # print("Esta conectado Consulta: ", self.clienteConsultas.base_client.ws.connected)
             # print("Esta conectado Evento: ", self.clienteEvento.base_client.ws.connected)
+
+            inicio = time.time()
+            while self.clienteConsultas is None:
+                if time.time() - inicio > 5:
+                    logger.warning("OBS: Timeout esperando ReqClient.")
+                time.sleep(0.1)
+
+            logger.info("OBS[Cliente] listo")
 
             logger.info("OBS[Conectado]")
             self.conectado = True
@@ -110,25 +131,12 @@ class MiOBS:
             self.Notificar("OBS-No-Encontrado")
             return False
 
-        self.SalvarEstadoActual()
-
         # self.AgregarEvento()
         # self.OBS.call(requests.SetHeartbeat(True))
 
-        self.clienteEvento.callback.register(
-            [
-                self.on_current_program_scene_changed,
-                self.on_scene_item_enable_state_changed,
-                self.on_record_state_changed,
-                self.on_stream_state_changed,
-                self.on_vendor_event,
-                self.on_input_volume_meters,
-                # self.on_scene_created,
-                # self.on_input_mute_state_changed,
-                # self.on_exit_started,
-            ]
-        )
-        logger.info(f"Evento registrados en OBS: {self.clienteEvento.callback.get()}")
+        self.configurarEventos()
+
+        self.salvarEstadoActual()
 
         # Evento actual
         # self.AgregarEvento(self.EventoWebCamara, events.VirtualcamStateChanged)
@@ -137,7 +145,6 @@ class MiOBS:
         # self.AgregarEvento(self.EventoCambioFiltro, events.SourceFilterSettingsChanged)
         # self.AgregarEvento(self.on_vendor_event, events.VendorEvent)
         # self.AgregarEvento(self.eventoExtra, events.CustomEvent)
-        # self.AgregarEvento(self.EventoSalir, events.ExitStarted)
         # self.AgregarEvento(self.on_input_volume_changed, events.InputVolumeMeters)
 
         # self.OBS.register(self.on_event, events.StreamStatus)
@@ -146,19 +153,38 @@ class MiOBS:
         # self.actualizsarDeck()
         return True
 
+    def configurarEventos(self):
+
+        self.clienteEvento.callback.register(
+            [
+                self.on_current_program_scene_changed,
+                #         self.on_scene_item_enable_state_changed,
+                #         self.on_record_state_changed,
+                #         self.on_stream_state_changed,
+                #         self.on_vendor_event,
+                #         # self.on_input_volume_meters,
+                #         # self.on_scene_created,
+                #         # self.on_input_mute_state_changed,
+                #         self.on_exit_started,
+            ]
+        )
+        logger.info(f"Eventos registrados en OBS:")
+        for evento in self.clienteEvento.callback.get():
+            logger.info(f" - {evento}")
+
     def IniciarAcciones(self, listaAcciones):
         """Acciones para controlar OBS"""
         listaAcciones["obs_conectar"] = self.conectar
         listaAcciones["obs_desconectar"] = self.desconectar
         listaAcciones["obs_escena"] = self.cambiarEscena
-        listaAcciones["obs_fuente"] = self.cambiarFuente
-        listaAcciones["obs_grabar"] = self.cambiarGrabacion
-        listaAcciones["obs_pausar"] = self.cambiarPausa
-        listaAcciones["obs_envivo"] = self.cambiarEnVivo
-        listaAcciones["obs_camara_virtual"] = self.cambiarCamaraVirtual
-        listaAcciones["obs_grabar_vertical"] = self.cambiarGrabacionVertical
-        listaAcciones["obs_envivo_vertical"] = self.cambiarEnVivoVertical
-        listaAcciones["obs_escena_vertical"] = self.cambiarEscenaVertical
+        # listaAcciones["obs_fuente"] = self.cambiarFuente
+        # listaAcciones["obs_grabar"] = self.cambiarGrabacion
+        # listaAcciones["obs_pausar"] = self.cambiarPausa
+        # listaAcciones["obs_envivo"] = self.cambiarEnVivo
+        # listaAcciones["obs_camara_virtual"] = self.cambiarCamaraVirtual
+        # listaAcciones["obs_grabar_vertical"] = self.cambiarGrabacionVertical
+        # listaAcciones["obs_envivo_vertical"] = self.cambiarEnVivoVertical
+        # listaAcciones["obs_escena_vertical"] = self.cambiarEscenaVertical
 
         # listaAcciones["obs_filtro"] = self.CambiarFiltro
         # listaAcciones["obs_filtro_propiedad"] = self.CambiarFiltroPropiedad
@@ -209,33 +235,38 @@ class MiOBS:
         self.LimpiarTemporales()
         self.actualizarDeck()
 
-    def SalvarEstadoActual(self):
+    def salvarEstadoActual(self):
         """Salta estado inicial de OBS para StreamDeck."""
-        # Todo obtener tiempo de grabacion con self.OBS.call(requests.GetRecordStatus())
+
+        if not self.conectado:
+            logger.warning("No conectado SalvarEstadoActual")
+            return
 
         escenaActual = self.clienteConsultas.get_scene_list()
-        self.escenaActual = escenaActual.current_program_scene_name
+
+        if escenaActual is None:
+            self.escenaActual = "Desconocido"
+        else:
+            self.escenaActual = escenaActual.current_program_scene_name
 
         grabando = self.clienteConsultas.get_record_status()
         self.grabando = grabando.output_active
         self.pausado = grabando.output_paused
 
-        # escenaActual = self.OBS.call(requests.GetSceneList()).datain["currentProgramSceneName"]
-        # estadoGrabando = self.OBS.call(requests.GetRecordStatus()).datain["outputActive"]
-        # estadoEnVivo = self.OBS.call(requests.GetStreamStatus()).datain["outputActive"]
-        # estadoPausado = self.OBS.call(requests.GetRecordStatus()).datain["outputPaused"]
+        enVivo = self.clienteConsultas.get_stream_status()
+        self.enVivo = enVivo.output_active
 
         SalvarValor(self.archivoEstado, "obs_conectar", self.conectado)
         SalvarValor(self.archivoEstado, "obs_escena", self.escenaActual)
         SalvarValor(self.archivoEstado, "obs_grabar", self.grabando)
         SalvarValor(self.archivoEstado, "obs_pausar", self.pausado)
-        # SalvarValor(self.archivoEstado, "obs_envivo", estadoEnVivo)
+        SalvarValor(self.archivoEstado, "obs_envivo", self.enVivo)
 
-        self.procesoTiempo = threading.Thread(target=self.consultaTiempo)
-        self.procesoTiempo.start()
+        self.salvarFuente()
+
+        # self.procesoTiempo = threading.Thread(target=self.consultaTiempo)
+        # self.procesoTiempo.start()
         # # TODO; parar hilo si obe se desconecta
-
-        self.SalvarFuente()
 
     def consultaTiempo(self):
         while True:
@@ -267,31 +298,49 @@ class MiOBS:
             time.sleep(1.3)
         logger.info("OBS[Consulta Tiempo] - Terminado")
 
-    def SalvarFuente(self):
-        HiloFuentes = threading.Thread(target=self.HiloFuenteArchivo)
-        HiloFuentes.start()
+    def salvarFuente(self):
+        # print("Hilo cargado Fuente " + str(threading.active_count()))
+        if self.salvandoFuente:
+            print("Ya se esta salvando fuente")
+            return
 
-    def HiloFuenteArchivo(self):
+        self.salvandoFuente = True
+        try:
+            HiloFuentes = threading.Thread(target=self.hiloSalvarFuentes, name="ElGarroboOBS-salvarFuentes")
+            HiloFuentes.start()
+        except Exception as error:
+            logger.exception(f"OBS[Error] Hilo Fuente {error}")
+        print("Ya se salvon la fuentes")
+        self.salvandoFuente = False
+
+    def hiloSalvarFuentes(self):
+        """Salva la información de las fuentes"""
+
         refrescar = False
 
-        if self.conectado:
+        if not self.conectado:
             return
 
         escenaActual: str = self.clienteConsultas.get_scene_list()
-        self.escenaActual = escenaActual.current_program_scene_name
+        # self.escenaActual = self.ejecutar_seguro(self.clienteConsultas.get_scene_list, esperar_resultado=True)
 
+        self.escenaActual = escenaActual.current_program_scene_name
         print("hilo fuente archivo: ", self.escenaActual)
 
         data = self.clienteConsultas.get_scene_item_list(self.escenaActual)
+        # data = self.ejecutar_seguro(self.clienteConsultas.get_scene_item_list, self.escenaActual, esperar_resultado=True)
 
         if data is None:
             return
+
+        # print("Fuentes: ", len(data.scene_items))
+        # print(data.scene_items)
 
         for fuente in data.scene_items:
             idFuente = fuente.get("sceneItemId")
             nombreFuente = fuente.get("sourceName")
             estadoFuente = fuente.get("sceneItemEnabled")
-            tiempoFuente = fuente.get("sourceType")
+            tipoFuente = fuente.get("sourceType")
             estadoFuenteViejo = ObtenerValor(unirPath(self.archivoEstado, "fuente"), nombreFuente)
 
             if estadoFuente != estadoFuenteViejo:
@@ -314,10 +363,9 @@ class MiOBS:
     def on_current_program_scene_changed(self, mensaje):
         """Recibe nueva escena actual."""
         self.escenaActual = mensaje.scene_name
-        # print(f"Switched to scene {data.scene_name}")
         SalvarValor(self.archivoEstado, "obs_escena", self.escenaActual)
         logger.info(f"OBS[Escena] {self.escenaActual}")
-        self.SalvarFuente()
+        # self.salvarFuente()
         self.actualizarDeck()
 
     def on_record_state_changed(self, mensaje):
@@ -366,15 +414,17 @@ class MiOBS:
             self.Notificar("OBS-No-WebCamara")
         self.actualizarDeck()
 
-    def EventoSalir(self, mensaje):
+    def on_exit_started(self, mensaje):
         """Recibe desconeccion de OBS websocket."""
         logger.info("OBS[Desconectado]")
         self.Notificar("OBS-No-Conectado")
-        try:
-            self.desconectar()
-        except Exception as error:
-            logger.warning(f"OBS[Error] Salida {error}")
-            self.conectado = False
+        self.conectado = False
+        # try:
+        #     self.clienteConsultas.des
+        #     self.desconectar()
+        # except Exception as error:
+        #     logger.warning(f"OBS[Error] Salida {error}")
+        # self.conectado = False
         self.LimpiarTemporales()
         self.actualizarDeck()
 
@@ -409,14 +459,23 @@ class MiOBS:
         print(mensaje)
 
     def SalvarFiltroFuente(self, fuente: str):
-        """Salva el estado de los filtros de una fuente."""
+        """Salva el estado de los filtros de una fuente.
 
-        print("Esta conectado Consulta: ", self.clienteConsultas.base_client.ws.connected)
-        print("Esta conectado Evento: ", self.clienteEvento.base_client.ws.connected)
+        Args:
+            fuente (str): Nombre de la fuente
+        """
+
+        # print("Esta conectado Consulta: ", self.clienteConsultas.base_client.ws.connected)
+        # print("Esta conectado Evento: ", self.clienteEvento.base_client.ws.connected)
 
         print("Salvando filtro fuente: ", fuente)
-
+        # try:
         consultaFiltros = self.clienteConsultas.get_source_filter_list(fuente)
+        # consultaFiltros = self.ejecutar_seguro(self.clienteConsultas.get_source_filter_list, fuente, esperar_resultado=True)
+        # except KeyError as e:
+        #     if str(e) == "'requestStatus'":
+        #         return
+        #     logger.error(f"OBS[Error] {e}")
 
         if consultaFiltros is None:
             print("No hay filtros")
@@ -489,6 +548,7 @@ class MiOBS:
                 if len(canal.get("inputLevelsMul")) > 0:
                     nivel = canal.get("inputLevelsMul")[0][1]
                     opciones = {"mensaje": convertir(nivel), "topic": f"{self.audioTopico}/{nombre}"}
+                    print("Nivel: ", opciones)
                     objetoMQTT = accionMQTT()
                     objetoMQTT.configurar(opciones)
                     objetoMQTT.ejecutar()
@@ -508,15 +568,20 @@ class MiOBS:
 
         print("Cambiando a escena:", escena)
         # TODO: reparar mensaje de depuración
+
+        # self.ejecutar_seguro(self.clienteConsultas.set_current_program_scene, escena)
+
         try:
             self.clienteConsultas.set_current_program_scene(escena)
         except OBSerror.OBSSDKRequestError as e:
             print(f"El error es {e}")
             print(e.req_name, e.code)
             self.Notificar(f"OBS[No existe] {escena}")
-        except KeyError as e:
-            # Captura el error específico de 'requestStatus'
-            logger.error(f"OBS[Error] La solicitud falló o hay una incompatibilidad de protocolo. Error: {e}")
+        # except KeyError as e:
+        #     if str(e) == "'requestStatus'":
+        #         return
+        #     # Captura el error específico de 'requestStatus'
+        #     logger.error(f"OBS[Error] La solicitud falló o hay una incompatibilidad de protocolo. Error: {e}")
 
         logger.info(f"OBS[Cambiando] {escena}")
 
@@ -587,9 +652,6 @@ class MiOBS:
         propiedad = opciones.get("propiedad")
         valor = opciones.get("valor")
 
-        self.SalvarFiltroFuente(fuente)
-        # TODO: reintentar consulta si falla
-
         PropiedadesAnteriores = ObtenerValor(unirPath(self.archivoEstado, "filtro_propiedades"), [fuente, filtro])
 
         if fuente is None or filtro is None or propiedad is None or valor is None:
@@ -605,7 +667,7 @@ class MiOBS:
         if self.conectado:
             logger.info(f"OBS[Filtro Asignar] {fuente}[{filtro}-{propiedad}]={valor}")
             # self.OBS.call(requests.SetSourceFilterSettings(sourceName=fuente, filterName=filtro, filterSettings={propiedad: valor}))
-            # self.SalvarFiltroFuente(fuente)
+            self.SalvarFiltroFuente(fuente)
         else:
             logger.info("OBS[no Conectado]")
             self.Notificar("OBS-No-Conectado")
@@ -735,14 +797,17 @@ class MiOBS:
 
     def desconectar(self, opciones=False):
         """Deconectar de OBS websocket."""
-        logger.info(f"OBS[Desconectar] - {self.host}")
-        if self.conectado:
-            self.clienteConsultas.disconnect()
-            self.LimpiarTemporales()
+        logger.info(f"OBS[Desconectando] - {self.host}")
+        # self._cola_consultas.put(None)
+        if not self.conectado:
+            return
+        self.clienteConsultas.disconnect()
+        self.clienteEvento.disconnect()
+        self.LimpiarTemporales()
         self.conectado = False
         SalvarValor(self.archivoEstado, "obs_conectar", False)
         self.actualizarDeck()
-        logger.info("Desconeccion correcta")
+        logger.info("OBS[Desconectado]")
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         if self.conectado:
