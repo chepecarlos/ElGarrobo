@@ -163,7 +163,7 @@ class MiOBS:
         self.clienteEvento.callback.register(
             [
                 self.on_current_program_scene_changed,
-                #         self.on_scene_item_enable_state_changed,
+                self.on_scene_item_enable_state_changed,
                 self.on_record_state_changed,
                 #         self.on_stream_state_changed,
                 #         self.on_vendor_event,
@@ -181,11 +181,11 @@ class MiOBS:
         """Acciones para controlar OBS"""
         listaAcciones["obs_conectar"] = self.conectar
         listaAcciones["obs_desconectar"] = self.desconectar
-        listaAcciones["obs_escena"] = self.cambiarEscena
-        # listaAcciones["obs_fuente"] = self.cambiarFuente
         listaAcciones["obs_grabar"] = self.cambiarGrabacion
         # listaAcciones["obs_pausar"] = self.cambiarPausa
         # listaAcciones["obs_envivo"] = self.cambiarEnVivo
+        listaAcciones["obs_escena"] = self.cambiarEscena
+        listaAcciones["obs_fuente"] = self.cambiarFuente
         # listaAcciones["obs_camara_virtual"] = self.cambiarCamaraVirtual
         # listaAcciones["obs_grabar_vertical"] = self.cambiarGrabacionVertical
         # listaAcciones["obs_envivo_vertical"] = self.cambiarEnVivoVertical
@@ -439,12 +439,12 @@ class MiOBS:
         self.LimpiarTemporales()
         self.actualizarDeck()
 
-    def EventoPulsoCorazon(self, mensaje):
-        if mensaje.name == "Heartbeat":
-            logger.info("Pulso de OBS")
+    # def EventoPulsoCorazon(self, mensaje):
+    #     if mensaje.name == "Heartbeat":
+    #         logger.info("Pulso de OBS")
 
     def on_scene_item_enable_state_changed(self, mensaje):
-        """Recive estado de fuente."""
+        """Recibe estado de fuente."""
 
         escenaActual = mensaje.scene_name
         idFuente = mensaje.scene_item_id
@@ -590,8 +590,6 @@ class MiOBS:
             return
 
         # TODO: confirmar que exista fuente
-
-        print(self.escenaActual, fuente)
 
         respuestaConsulta = self.clienteConsultas.get_scene_item_id(self.escenaActual, fuente)
 
