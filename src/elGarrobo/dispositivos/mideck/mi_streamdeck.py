@@ -306,6 +306,7 @@ class MiStreamDeck(dispositivo):
             accion (dict): Datos de la acción del botón
             hayImagen (bool, optional): Si ya tiene imagen el botón. Defaults to False.
         """
+
         TituloInicial: str = str(accion.get("titulo"))
         opciones: dict = accion.get("titulo_opciones", {})
         tamañoFuente: int = opciones.get("tamanno", 40)
@@ -328,42 +329,23 @@ class MiStreamDeck(dispositivo):
             alinear = "abajo"
             tamañoFuente = 20
 
-        # TODO: buscar como calcular tamaño de fuente de manera mas eficiente
-        while Ajustar:
-            fuente = ImageFont.truetype(self.archivoFuente, size=tamañoFuente)
-            cajaTexto = dibujo.multiline_textbbox(
-                xy=[0, 0],
-                text=Titulo,
-                font=fuente,
-                align="center",
-                spacing=espacioLinea,
-                stroke_width=Borde_Grosor,
-            )
+        tamañoFuente, altoTitulo, anchoTitulo = self.calcularTamañoFuente(Imagen, Titulo, Borde_Grosor, espacioLinea)
 
-            Titulo_ancho = cajaTexto[2] - cajaTexto[0]
-            Titulo_alto = cajaTexto[3] - cajaTexto[1]
+        fuente = ImageFont.truetype(self.archivoFuente, size=tamañoFuente)
 
-            if Titulo_ancho < Imagen.width and Titulo_alto < Imagen.height:
-                break
-
-            if tamañoFuente <= 3:
-                break
-            # TODO: reducir tamaño si el alto es demasiado
-            tamañoFuente -= 0.5
-
-        Horizontal = (Imagen.width - Titulo_ancho) / 2 + Borde_Grosor
+        textoX = (Imagen.width - anchoTitulo) / 2 + Borde_Grosor
 
         if alinear == "centro":
-            vertical = (Imagen.height - Titulo_alto) / 2
+            textoY = (Imagen.height - altoTitulo) / 2
         elif alinear == "ariba":
-            vertical = 0
+            textoY = 0
         else:
-            vertical = Imagen.height - Titulo_alto
+            textoY = Imagen.height - altoTitulo
 
-        PosicionTexto = (Horizontal, vertical)
+        posicionTexto = (textoX, textoY)
 
         dibujo.multiline_text(
-            PosicionTexto,
+            posicionTexto,
             text=Titulo,
             font=fuente,
             fill=Titulo_Color,
@@ -372,6 +354,61 @@ class MiStreamDeck(dispositivo):
             align="center",
             spacing=espacioLinea,
         )
+
+    def calcularTamañoFuente(self, imagen: ImageDraw, texto: str, grosorBorde: int, espacioLinea: int) -> tuple[int, int, int]:
+        """Calcula tamaño de fuente para texto en botón de StreamDeck.
+
+        Args:
+            imagen (ImageDraw): Imagen del botón
+            texto (str): Texto a colocar en el botón
+            grosorBorde (int): Grosor del borde del texto
+            espacioLinea (int): Espacio entre líneas del texto
+
+        Returns:
+            tuple[int, int, int]: Tamaño de fuente, alto del texto y ancho del texto
+        """
+
+        anchoImagen, altoImagen = imagen.width, imagen.height
+
+        tamañoFuente = 100
+        dibujo: ImageDraw = ImageDraw.Draw(imagen)
+
+        fuentePrueba = ImageFont.truetype(self.archivoFuente, size=tamañoFuente)
+        cajaTexto = dibujo.multiline_textbbox(
+            xy=[0, 0],
+            text=texto,
+            font=fuentePrueba,
+            align="center",
+            spacing=espacioLinea,
+            stroke_width=grosorBorde,
+        )
+
+        anchoTitulo = cajaTexto[2] - cajaTexto[0]
+        altoTitulo = cajaTexto[3] - cajaTexto[1]
+
+        calculoAncho = anchoImagen / anchoTitulo
+        calculoAlto = altoImagen / altoTitulo
+
+        escala = min(calculoAncho, calculoAlto)
+
+        tamañoCalculo = int(tamañoFuente * escala)
+
+        tamañoFuente = max(3, tamañoCalculo)
+
+        fuentePrueba = ImageFont.truetype(self.archivoFuente, size=tamañoFuente)
+        cajaTexto = dibujo.multiline_textbbox(
+            xy=[0, 0],
+            text=texto,
+            font=fuentePrueba,
+            align="center",
+            spacing=espacioLinea,
+            stroke_width=grosorBorde,
+        )
+
+        anchoTitulo = cajaTexto[2] - cajaTexto[0]
+        altoTitulo = cajaTexto[3] - cajaTexto[1]
+
+        return tamañoFuente, altoTitulo, anchoTitulo
 
     def buscarDirecionImagen(self, accion):
 
