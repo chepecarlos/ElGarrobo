@@ -417,7 +417,7 @@ class elGarrobo(object):
             except Exception as Error:
                 logger.exception(f"Accion[Error-{comandoAccion}] {Error}")
         else:
-            logger.info(f"Accion[No Encontrada] {comandoAccion}")
+            logger.warning(f"Accion[No Encontrada] {comandoAccion}")
 
         return None
 
