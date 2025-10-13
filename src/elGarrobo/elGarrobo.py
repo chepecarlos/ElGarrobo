@@ -1,3 +1,4 @@
+import logging
 import os
 import random
 from pathlib import Path
@@ -32,20 +33,7 @@ from .miLibrerias import (
 from .modulos.mi_obs import MiOBS
 from .modulos.mi_pulse import MiPulse
 
-logger = ConfigurarLogging(__name__)
-
-
-class color:
-    PURPLE = "\033[95m"
-    CYAN = "\033[96m"
-    DARKCYAN = "\033[36m"
-    BLUE = "\033[94m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    RED = "\033[91m"
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
-    END = "\033[0m"
+logger = ConfigurarLogging(__name__, logging.DEBUG)
 
 
 class elGarrobo(object):
@@ -335,7 +323,7 @@ class elGarrobo(object):
         #     if accion == "presionar" or estado == "presionado":
         #         self.ejecutarAcción(evento)
 
-    def ejecutarAcción(self, accion: dict, estado: bool = True):
+    def ejecutarAcción(self, accion: dict, estado: bool = True) -> any:
         """Ejecuta una acción según el comando y las opciones proporcionadas.
 
         Args:
@@ -358,7 +346,7 @@ class elGarrobo(object):
                 estado = True
 
             if estado:
-                logger.info(f"AccionOOP[{comandoAccion}] - {nombreAccion}")
+                logger.info(f"AccionOOP[{comandoAccion}]{ ' - ' + nombreAccion if nombreAccion else ''}")
 
                 if self.ModuloMonitorESP:
                     Mensaje = {"accion": comandoAccion}
