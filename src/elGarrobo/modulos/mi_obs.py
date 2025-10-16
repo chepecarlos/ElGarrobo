@@ -48,7 +48,6 @@ class MiOBS:
     "audio a monitoria y enviar por mqtt"
     audioTopico: str
     "Topic base para enviar audio por mqtt"
-    tiempoEspera: int = 3
 
     archivoEstado: str = "data/obs/obs"
 
@@ -105,7 +104,6 @@ class MiOBS:
             parametros: dict = {
                 "host": self.servidor,
                 "port": self.puerto,
-                # "timeout": self.tiempoEspera,
             }
 
             if self.password:
@@ -114,7 +112,6 @@ class MiOBS:
             self.clienteConsultas = obs.ReqClient(**parametros)
 
             parametros["subs"] = obs.Subs.LOW_VOLUME | obs.Subs.INPUTVOLUMEMETERS
-
             self.clienteEvento = obs.EventClient(**parametros)
 
         except ConnectionRefusedError:
@@ -155,7 +152,7 @@ class MiOBS:
 
         # Evento actual
         # self.AgregarEvento(self.scene_item_enable_state_changed, events.SceneItemEnableStateChanged)
-        # self.AgregarEvento(self.EventoVisibilidadFiltro, events.SourceFilterEnableStateChanged)
+        # self.AgregarEvento(self.on_source_filter_enable_state_changed, events.SourceFilterEnableStateChanged)
         # self.AgregarEvento(self.EventoCambioFiltro, events.SourceFilterSettingsChanged)
         # self.AgregarEvento(self.on_vendor_event, events.VendorEvent)
         # self.AgregarEvento(self.eventoExtra, events.CustomEvent)
@@ -175,10 +172,10 @@ class MiOBS:
                 self.on_scene_item_enable_state_changed,
                 self.on_record_state_changed,
                 self.on_input_volume_meters,
-                # VirtualcamStateChanged
                 self.on_virtualcam_state_changed,
-                #         self.on_stream_state_changed,
+                self.on_stream_state_changed,
                 self.on_vendor_event,
+                self.on_source_filter_enable_state_changed,
                 #         # self.on_scene_created,
                 # self.on_input_mute_state_changed,
                 self.on_exit_started,
@@ -193,8 +190,8 @@ class MiOBS:
         listaAcciones["obs_conectar"] = self.conectar
         listaAcciones["obs_desconectar"] = self.desconectar
         listaAcciones["obs_grabar"] = self.cambiarGrabacion
-        # listaAcciones["obs_pausar"] = self.cambiarPausa
-        # listaAcciones["obs_envivo"] = self.cambiarEnVivo
+        listaAcciones["obs_pausar"] = self.cambiarPausa
+        listaAcciones["obs_envivo"] = self.cambiarEnVivo
         listaAcciones["obs_escena"] = self.cambiarEscena
         listaAcciones["obs_fuente"] = self.cambiarFuente
         listaAcciones["obs_camara_virtual"] = self.cambiarCamaraVirtual
@@ -202,7 +199,7 @@ class MiOBS:
         # listaAcciones["obs_envivo_vertical"] = self.cambiarEnVivoVertical
         listaAcciones["obs_escena_vertical"] = self.cambiarEscenaVertical
 
-        # listaAcciones["obs_filtro"] = self.CambiarFiltro
+        listaAcciones["obs_filtro"] = self.cambiarFiltro
         # listaAcciones["obs_filtro_propiedad"] = self.CambiarFiltroPropiedad
         # listaAcciones["obs_estado"] = self.EstadoOBS
         # listaAcciones["obs_tiempo_grabando"] = self.TiempoGrabando
@@ -443,18 +440,18 @@ class MiOBS:
         idFuente = mensaje.scene_item_id
         visibilidad = mensaje.scene_item_enabled
         archivoFuentesID = unirPath(self.archivoEstado, "fuente_id")
-        nombreFuente = ObtenerValor(unirPath(self.archivoEstado, "fuente_id"), [escenaActual, idFuente], depuracion=True)
+        nombreFuente = ObtenerValor(archivoFuentesID, [escenaActual, idFuente], depuracion=True)
         SalvarValor(unirPath(self.archivoEstado, "fuente"), nombreFuente, visibilidad)
         self.actualizarDeck()
 
-    def EventoVisibilidadFiltro(self, mensaje):
+    def on_source_filter_enable_state_changed(self, mensaje):
         """Recive estado del filtro."""
-        # Reparar problema con Filtro
-        nombreFiltro = mensaje.datain["filterName"]
-        nombreFuente = mensaje.datain["sourceName"]
-        visibilidad = mensaje.datain["filterEnabled"]
-        logger.info(f"OBS[{nombreFiltro}] {visibilidad}")
-        SalvarValor(unirPath(self.archivoEstado, "filtro"), [nombreFuente, nombreFiltro], visibilidad, depuracion=True)
+        nombreFiltro = mensaje.filter_name
+        nombreFuente = mensaje.source_name
+        visibilidad = mensaje.filter_enabled
+        logger.info(f"OBS[{nombreFiltro}-{nombreFuente}] {visibilidad}")
+        archivoFiltro: str = unirPath(self.archivoEstado, "filtro")
+        SalvarValor(archivoFiltro, [nombreFuente, nombreFiltro], visibilidad, depuracion=True)
         self.actualizarDeck()
 
     def EventoCambioFiltro(self, mensaje):
@@ -598,11 +595,11 @@ class MiOBS:
 
         self.clienteConsultas.set_scene_item_enabled(self.escenaActual, idFuente, not estadoEscena)
 
-    def CambiarFiltro(self, opciones):
+    def cambiarFiltro(self, opciones):
         """Envía solicitud de cambiar estado de filtro."""
-        filtro = opciones.get("filtro")
-        fuente = opciones.get("fuente")
-        estado = opciones.get("estado")
+        fuente: str = opciones.get("fuente")
+        filtro: str = opciones.get("filtro")
+        estado: bool | None = opciones.get("estado")
 
         if fuente is None or filtro is None:
             logger.info("OBS[Falta Atributo]")
@@ -616,7 +613,7 @@ class MiOBS:
 
             if estado is not None:
                 logger.info(f"OBS[Filtro] {fuente}[{filtro}]={estado}")
-                self.OBS.call(requests.SetSourceFilterEnabled(sourceName=fuente, filterName=filtro, filterEnabled=estado))
+                self.clienteConsultas.set_source_filter_enabled(fuente, filtro, estado)
         else:
             logger.info("OBS[no Conectado]")
             self.Notificar("OBS-No-Conectado")
@@ -665,7 +662,7 @@ class MiOBS:
             self.Notificar("OBS-No-Conectado")
 
     def cambiarPausa(self, opciones=None):
-        """Envía solisitud de cambiar estado de Pausa Grabacion."""
+        """Envía solicitud de cambiar estado de Pausa Grabación."""
         if self.conectado:
             logger.info("Cambiando[Pausa]")
             self.clienteConsultas.toggle_record_pause()
@@ -674,7 +671,7 @@ class MiOBS:
             self.Notificar("OBS-No-Conectado")
 
     def cambiarEnVivo(self, opciones=None):
-        """Envia solisitud de cambiar estado del Streaming ."""
+        """Envía solicitud de cambiar estado del Streaming ."""
         if self.conectado:
             logger.info("Cambiando[EnVivo]")
             self.clienteConsultas.toggle_stream()
