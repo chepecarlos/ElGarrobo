@@ -35,7 +35,7 @@ class accionNotificacion(accion):
             "atributo": "titulo",
             "descripcion": "titulo del mensaje",
             "ejemplo": "Nombre de la app",
-            "defecto": "LaIguanaApp",
+            "defecto": "ElGarrobo",
         }
 
         propiedadIcono = {
