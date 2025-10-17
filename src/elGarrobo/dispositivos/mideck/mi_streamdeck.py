@@ -325,11 +325,12 @@ class MiStreamDeck(dispositivo):
 
         dibujo: ImageDraw = ImageDraw.Draw(Imagen)
 
+        tamañoMinimo: int = None
         if hayImagen:
             alinear = "abajo"
-            tamañoFuente = 20
+            tamañoMinimo = 20
 
-        tamañoFuente, altoTitulo, anchoTitulo = self.calcularTamañoFuente(Imagen, Titulo, Borde_Grosor, espacioLinea)
+        tamañoFuente, altoTitulo, anchoTitulo = self.calcularTamañoFuente(Imagen, Titulo, Borde_Grosor, espacioLinea, tamañoMinimo)
 
         fuente = ImageFont.truetype(self.archivoFuente, size=tamañoFuente)
 
@@ -355,7 +356,7 @@ class MiStreamDeck(dispositivo):
             spacing=espacioLinea,
         )
 
-    def calcularTamañoFuente(self, imagen: ImageDraw, texto: str, grosorBorde: int, espacioLinea: int) -> tuple[int, int, int]:
+    def calcularTamañoFuente(self, imagen: ImageDraw, texto: str, grosorBorde: int, espacioLinea: int, minimo: int | None) -> tuple[int, int, int]:
         """Calcula tamaño de fuente para texto en botón de StreamDeck.
 
         Args:
@@ -363,6 +364,7 @@ class MiStreamDeck(dispositivo):
             texto (str): Texto a colocar en el botón
             grosorBorde (int): Grosor del borde del texto
             espacioLinea (int): Espacio entre líneas del texto
+            minimo (int | None): Tamaño mínimo de fuente
 
         Returns:
             tuple[int, int, int]: Tamaño de fuente, alto del texto y ancho del texto
@@ -395,6 +397,9 @@ class MiStreamDeck(dispositivo):
 
         tamañoFuente = max(3, tamañoCalculo)
 
+        if minimo is not None:
+            tamañoFuente = min(minimo, tamañoFuente)
+
         fuentePrueba = ImageFont.truetype(self.archivoFuente, size=tamañoFuente)
         cajaTexto = dibujo.multiline_textbbox(
             xy=[0, 0],
@@ -410,11 +415,12 @@ class MiStreamDeck(dispositivo):
 
         return tamañoFuente, altoTitulo, anchoTitulo
 
-    def buscarDirecionImagen(self, accion):
+    def buscarDirecionImagen(self, accion: dict) -> str | None:
 
         if "imagen_estado" in accion:
-            ImagenEstado = accion["imagen_estado"]
-            NombreAccion = accion["accion"]
+
+            ImagenEstado = accion.get("imagen_estado")
+            NombreAccion = accion.get("accion")
             opcionesAccion = None
             if "opciones" in accion:
                 opcionesAccion = accion["opciones"]
@@ -422,23 +428,23 @@ class MiStreamDeck(dispositivo):
             if NombreAccion.startswith("obs"):
                 EstadoImagen = self.BuscarImagenOBS(NombreAccion, opcionesAccion)
                 if EstadoImagen:
-                    DirecionImagen = ImagenEstado["imagen_true"]
+                    DirecionImagen = ImagenEstado.get("imagen_true")
                 else:
-                    DirecionImagen = ImagenEstado["imagen_false"]
+                    DirecionImagen = ImagenEstado.get("imagen_false")
 
                 return DirecionImagen
 
         if "imagen" in accion:
-            DirecionImagen = accion["imagen"]
+            DirecionImagen = accion.get("imagen")
             return DirecionImagen
         elif "accion" in accion:
-            NombreAccion = accion["accion"]
+            NombreAccion = accion.get("accion")
             if NombreAccion in self.imagenesBase:
                 return self.imagenesBase[NombreAccion]
 
         return None
 
-    def BuscarImagenOBS(self, NombreAccion, opcionesAccion):
+    def BuscarImagenOBS(self, NombreAccion: str, opcionesAccion: dict) -> bool | None:
         Estado = None
 
         ListaBasicas = ["obs_conectar", "obs_grabar", "obs_pausar", "obs_envivo", "obs_camara_virtual", "obs_grabar_vertical"]
