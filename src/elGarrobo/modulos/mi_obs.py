@@ -151,17 +151,10 @@ class MiOBS:
         self.empezarConsultaTiempo()
 
         # Evento actual
-        # self.AgregarEvento(self.scene_item_enable_state_changed, events.SceneItemEnableStateChanged)
-        # self.AgregarEvento(self.on_source_filter_enable_state_changed, events.SourceFilterEnableStateChanged)
         # self.AgregarEvento(self.EventoCambioFiltro, events.SourceFilterSettingsChanged)
-        # self.AgregarEvento(self.on_vendor_event, events.VendorEvent)
-        # self.AgregarEvento(self.eventoExtra, events.CustomEvent)
-        # self.AgregarEvento(self.on_input_volume_changed, events.InputVolumeMeters)
 
         # self.OBS.register(self.on_event, events.StreamStatus)
 
-        # self.AgregarEvento(self.EventoPulsoCorazon, events.Heartbeat)
-        # self.actualizsarDeck()
         return True
 
     def configurarEventos(self):
@@ -185,8 +178,12 @@ class MiOBS:
         for evento in self.clienteEvento.callback.get():
             logger.info(f" - {evento}")
 
-    def IniciarAcciones(self, listaAcciones):
-        """Acciones para controlar OBS"""
+    def IniciarAcciones(self, listaAcciones: dict) -> None:
+        """Acciones para controlar OBS
+
+        Args:
+            listaAcciones (dict): Diccionario de acciones para agregar
+        """
         listaAcciones["obs_conectar"] = self.conectar
         listaAcciones["obs_desconectar"] = self.desconectar
         listaAcciones["obs_grabar"] = self.cambiarGrabacion
@@ -195,12 +192,12 @@ class MiOBS:
         listaAcciones["obs_escena"] = self.cambiarEscena
         listaAcciones["obs_fuente"] = self.cambiarFuente
         listaAcciones["obs_camara_virtual"] = self.cambiarCamaraVirtual
-        listaAcciones["obs_grabar_vertical"] = self.cambiarGrabacionVertical
-        # listaAcciones["obs_envivo_vertical"] = self.cambiarEnVivoVertical
-        listaAcciones["obs_escena_vertical"] = self.cambiarEscenaVertical
-
         listaAcciones["obs_filtro"] = self.cambiarFiltro
-        # listaAcciones["obs_filtro_propiedad"] = self.CambiarFiltroPropiedad
+        listaAcciones["obs_filtro_propiedad"] = self.CambiarFiltroPropiedad
+        # Lista de acciones verticales
+        listaAcciones["obs_grabar_vertical"] = self.cambiarGrabacionVertical
+        listaAcciones["obs_envivo_vertical"] = self.cambiarEnVivoVertical
+        listaAcciones["obs_escena_vertical"] = self.cambiarEscenaVertical
         # listaAcciones["obs_estado"] = self.EstadoOBS
         # listaAcciones["obs_tiempo_grabando"] = self.TiempoGrabando
         # listaAcciones["obs_tiempo_envivo"] = self.TiempoEnVivo
@@ -621,13 +618,16 @@ class MiOBS:
     def CambiarFiltroPropiedad(self, opciones):
         """Envía solicitud de cambiar propiedades de un filtro."""
         if not self.conectado:
+            logger.info("OBS[no Conectado]")
+            self.Notificar("OBS-No-Conectado")
             return
 
-        filtro = opciones.get("filtro")
-        fuente = opciones.get("fuente")
-        agregar = opciones.get("agregar", False)
-        propiedad = opciones.get("propiedad")
-        valor = opciones.get("valor")
+        filtro: str = opciones.get("filtro")
+        fuente: str = opciones.get("fuente")
+        agregar: bool = opciones.get("agregar", False)
+
+        propiedad: str = opciones.get("propiedad")
+        valor: str = opciones.get("valor")
 
         PropiedadesAnteriores = ObtenerValor(unirPath(self.archivoEstado, "filtro_propiedades"), [fuente, filtro])
 
@@ -641,13 +641,15 @@ class MiOBS:
                     valor = valor + valorAnterior
                     logger.info(f"OBS[Filtro] agregando {valorAnterior} + {valor - valorAnterior} = {valor}")
 
-        if self.conectado:
-            logger.info(f"OBS[Filtro Asignar] {fuente}[{filtro}-{propiedad}]={valor}")
-            # self.OBS.call(requests.SetSourceFilterSettings(sourceName=fuente, filterName=filtro, filterSettings={propiedad: valor}))
-            self.SalvarFiltroFuente(fuente)
-        else:
-            logger.info("OBS[no Conectado]")
-            self.Notificar("OBS-No-Conectado")
+        agregarTexto = " Agregar" if agregar else ""
+        logger.info(f"OBS[Filtro Asignar] {fuente}[{filtro}-{propiedad}]={valor}{agregarTexto}")
+        self.clienteConsultas.set_source_filter_settings(
+            source_name=fuente,
+            filter_name=filtro,
+            settings={propiedad: valor},
+            overlay=agregar,
+        )
+        self.SalvarFiltroFuente(fuente)
 
     def cambiarGrabacion(self, opciones: dict = None):
         """Envía solicitud de cambiar estado de Grabación."""
@@ -691,9 +693,9 @@ class MiOBS:
             self.Notificar("OBS-No-Conectado")
 
     def cambiarGrabacionVertical(self, opciones=None):
-        """Envía solicitud de cambiar estado de Grabacion en plugin Vertical."""
+        """Envía solicitud de cambiar estado de Grabación en plugin Vertical."""
         if self.conectado:
-            logger.info("Cambiando[Grabacion-Vertical]")
+            logger.info("Cambiando[Grabación-Vertical]")
             try:
                 self.clienteConsultas.call_vendor_request("aitum-vertical-canvas", "toggle_recording")
             except KeyError as e:
@@ -705,11 +707,10 @@ class MiOBS:
             self.Notificar("OBS-No-Conectado")
 
     def cambiarEnVivoVertical(self, opciones=None):
-        """Envia solisitud de cambiar estado del Streaming ."""
+        """Envía solicitud de cambiar estado del Streaming ."""
         if self.conectado:
             logger.info("Cambiando[EnVivo-Vertical]")
-            self.clienteConsultas.call_vendor_request
-            self.OBS.call(requests.CallVendorRequest(vendorName="aitum-vertical-canvas", requestType="toggle_streaming"))
+            self.clienteConsultas.call_vendor_request("aitum-vertical-canvas", "toggle_streaming")
         else:
             logger.info("OBS no Conectado")
             self.Notificar("OBS-No-Conectado")
