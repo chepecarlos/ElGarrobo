@@ -115,7 +115,7 @@ class MiDeckCombinado(dispositivo):
         ultimaAccion = max(self.listaAcciones, key=lambda x: int(x["key"])).get("key")
 
         for deck in self.listaDeck:
-            if deck.desfaceTeclas + self.cantidadBotones > ultimaAccion:
+            if deck.desfaceTeclas + self.cantidadBotones + 1 > ultimaAccion:
                 logger.info(f"No se puede adelantar pagina {self.nombre}")
                 return
 
