@@ -28,7 +28,7 @@ class MiDeckCombinado(dispositivo):
     archivoFuente: str = None
     "fuente para texto de botones"
 
-    def __init__(self, dataConfiguracion: dict):
+    def __init__(self, dataConfiguracion: dict) -> None:
         """Inicializando Dispositivo de MiDeckCombinado
 
         Args:
@@ -123,9 +123,6 @@ class MiDeckCombinado(dispositivo):
             deck.desfaceTeclas += self.cantidadBotones
         self.recargar = True
 
-        # self.limpiarIconos()
-        # self.actualizarIconos()
-
     def anteriorPagina(self):
         """Regresa una pagina los StreamDeck Combinados"""
 
@@ -139,20 +136,16 @@ class MiDeckCombinado(dispositivo):
 
         self.recargar = True
 
-        # self.limpiarIconos()
-        # self.actualizarIconos()
-
     def desconectar(self):
 
         for deck in self.listaDeck:
             deck.desconectar()
 
     def actualizar(self):
-        print(f"Actualizar StreanDecks Combinados: {self.recargar}")
 
         if self.recargar:
 
-            self.limpiarIconos()
+            # self.limpiarIconos()
             self.actualizarIconos()
 
-        return super().actualizar()
+        super().actualizar()

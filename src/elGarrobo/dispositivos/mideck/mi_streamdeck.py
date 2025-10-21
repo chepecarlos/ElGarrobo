@@ -19,9 +19,7 @@ from elGarrobo.miLibrerias import (
     UnirPath,
 )
 
-# from .mi_deck_extra import BuscarDirecionImagen
 from .mi_deck_gif import DeckGif
-from .mi_deck_imagen import ActualizarIcono, LimpiarIcono
 
 logger = ConfigurarLogging(__name__)
 
@@ -43,6 +41,8 @@ class MiStreamDeck(dispositivo):
     "Cantidad de botones en StreamDeck"
     deck: DeviceManager = None
     idDeck: int = -1
+    listaBotones: list[dict] = None
+    "lista de informacion de botones"
 
     archivoFuente: str = None
     "fuente para texto de botones"
@@ -65,7 +65,7 @@ class MiStreamDeck(dispositivo):
         self.layout = None
         self.ultimoDibujo = None
         self.tiempoDibujar: float = 0.4
-        self.archivoImagen = None
+        # self.archivoImagen = None
 
     def conectar(self):
         listaStreamdecks = DeviceManager().enumerate()
@@ -100,8 +100,6 @@ class MiStreamDeck(dispositivo):
                         dispositivo.agregarIndexUsado(self.idDeck)
                         logger.info(f"StreamDeck[Conectado] - {self.nombre}")
 
-                        # self.actualizarIconos()
-
                         return
                     else:
                         self.deck.close()
@@ -119,22 +117,25 @@ class MiStreamDeck(dispositivo):
         logger.warning(f"StreamDeck[No encontró] - {self.nombre}")
         self.conectado = False
 
-    def actualizarIconos(self, acciones: dict = False, desface: int = False, Unido: bool = False):
+    def actualizarIconos(self):
         """Refresca iconos, tomando en cuenta pagina actual."""
         if not self.conectado:
             return
 
-        if self.listaAcciones is None:
-            return
-
-        if self.archivoImagen is None:
-            self.archivoImagen = list()
-            for _ in range(self.cantidadBotones):
-                self.archivoImagen.append("")
-
         if self.deck is None or not self.deck.is_open():
             self.conectado = False
             return
+
+        if self.listaAcciones is None:
+            self.limpiarIconos()
+            # Borrar todo los botones
+            return
+
+        if self.listaBotones is None:
+            self.listaBotones = list()
+            for _ in range(self.cantidadBotones):
+                data = {"imagen": None, "titulo": None}
+                self.listaBotones.append(data)
 
         tiempoActual = time.time()
 
@@ -147,25 +148,36 @@ class MiStreamDeck(dispositivo):
 
         logger.info(f"Deck[Dibujar] {self.nombre}")
         for i in range(self.cantidadBotones):
-            key_desface = i + self.baseTeclas + self.desfaceTeclas
+            botonDesface: int = i + self.baseTeclas + self.desfaceTeclas
 
-            dibujar = list(filter(lambda accion: accion["key"] == key_desface, self.listaAcciones))
-            # TODO: Cargar primer los Gifs # if AccionAcual is not None:
+            dibujar = list(filter(lambda accion: accion.get("key") == botonDesface, self.listaAcciones))
 
             if dibujar:
-                accionAcual = dibujar[0]
+                accionActual: dict = dibujar[0]
+                accionVieja = self.listaBotones[i]
 
-                if accionAcual.get("imagen"):
-                    rutaImagenAcutal = accionAcual.get("imagen")
-                    if rutaImagenAcutal == self.archivoImagen[i]:
-                        continue
-                    self.archivoImagen[i] = rutaImagenAcutal
+                imagenActual = self.buscarDirecionImagen(accionActual)
+                tituloActual: str = accionActual.get("titulo")
 
-                DirecionImagen = self.buscarDirecionImagen(accionAcual)
-                if DirecionImagen is not None and DirecionImagen.endswith(".gif"):
-                    self.DeckGif.ActualizarGif(i, accionAcual, self.folderPerfil / self.folderActual)
+                imagenVieja: str = accionVieja.get("imagen")
+                tituloViejo: str = accionVieja.get("titulo")
+
+                if imagenActual == imagenVieja and tituloActual == tituloViejo:
+                    continue
+
+                accionVieja["imagen"] = imagenActual
+                accionVieja["titulo"] = tituloActual
+
+                if imagenActual is not None and imagenActual.endswith(".gif"):
+                    self.limpiarIcono(i)
+                    # TODO: ReActivar gif
+                    # self.DeckGif.ActualizarGif(i, accionAcual, self.folderPerfil / self.folderActual)
+                    pass
                 else:
-                    self.actualizarIconoBoton(i, accionAcual)
+                    self.actualizarIconoBoton(i, accionActual)
+            else:
+                self.listaBotones[i] = {"imagen": None, "titulo": None}
+                self.limpiarIcono(i)
 
     def limpiarIconos(self):
         """Borra iconos de todo los botones de StreamDeck."""
@@ -173,8 +185,17 @@ class MiStreamDeck(dispositivo):
             logger.info(f"Limpiando {self.nombre}")
             self.DeckGif.Limpiar()
             for i in range(self.cantidadBotones):
-                LimpiarIcono(self.deck, i)
+                self.limpiarIcono(i)
             self.archivoImagen = None
+
+    def limpiarIcono(self, indice: int) -> None:
+        """Limpia un botón con una imagen negro
+
+        Args:
+            indice: int
+        """
+        imagenNegro = PILHelper.create_image(self.deck)
+        self.deck.set_key_image(indice, PILHelper.to_native_format(self.deck, imagenNegro))
 
     def Brillo(self, Brillo):
         """Cambia brillo de StreamDeck."""
@@ -416,21 +437,24 @@ class MiStreamDeck(dispositivo):
         return tamañoFuente, altoTitulo, anchoTitulo
 
     def buscarDirecionImagen(self, accion: dict) -> str | None:
+        """Busca la direccion de imagen
+
+        Args:
+            accion: dict
+        """
 
         if "imagen_estado" in accion:
 
-            ImagenEstado = accion.get("imagen_estado")
-            NombreAccion = accion.get("accion")
-            opcionesAccion = None
-            if "opciones" in accion:
-                opcionesAccion = accion["opciones"]
+            imagenEstado = accion.get("imagen_estado")
+            nombreAccion = accion.get("accion")
+            opcionesAccion = accion.get("opciones")
 
-            if NombreAccion.startswith("obs"):
-                EstadoImagen = self.BuscarImagenOBS(NombreAccion, opcionesAccion)
-                if EstadoImagen:
-                    DirecionImagen = ImagenEstado.get("imagen_true")
+            if nombreAccion.startswith("obs"):
+                estadoImagen = self.BuscarImagenOBS(nombreAccion, opcionesAccion)
+                if estadoImagen:
+                    DirecionImagen = imagenEstado.get("imagen_true")
                 else:
-                    DirecionImagen = ImagenEstado.get("imagen_false")
+                    DirecionImagen = imagenEstado.get("imagen_false")
 
                 return DirecionImagen
 
@@ -438,9 +462,9 @@ class MiStreamDeck(dispositivo):
             DirecionImagen = accion.get("imagen")
             return DirecionImagen
         elif "accion" in accion:
-            NombreAccion = accion.get("accion")
-            if NombreAccion in self.imagenesBase:
-                return self.imagenesBase[NombreAccion]
+            nombreAccion = accion.get("accion")
+            if nombreAccion in self.imagenesBase:
+                return self.imagenesBase[nombreAccion]
 
         return None
 
