@@ -61,7 +61,7 @@ class MiStreamDeck(dispositivo):
         self.nombre: str = dataConfiguracion.get("nombre")
         self.dispositivo: str = dataConfiguracion.get("dispositivo")
         self.archivo = dataConfiguracion.get("archivo", "")
-        self.DeckGif = None
+        self.deckGif = None
         self.layout = None
         self.ultimoDibujo = None
         self.tiempoDibujar: float = 0.4
@@ -92,9 +92,9 @@ class MiStreamDeck(dispositivo):
                         brillo: int = ObtenerValor("data/streamdeck.json", "brillo")
                         # Todo: brillo no es un int
                         self.deck.set_brightness(brillo)
-                        self.DeckGif = DeckGif(self.deck, self.folderActual)
-                        self.DeckGif.archivoFuente = self.archivoFuente
-                        self.DeckGif.start()
+                        self.deckGif = DeckGif(self.deck, self.folderActual)
+                        self.deckGif.archivoFuente = self.archivoFuente
+                        self.deckGif.start()
                         self.deck.set_key_callback(self.actualizarBoton)
                         self.idDeck = idActual
                         dispositivo.agregarIndexUsado(self.idDeck)
@@ -169,13 +169,13 @@ class MiStreamDeck(dispositivo):
                 accionVieja["titulo"] = tituloActual
 
                 if imagenActual is not None and imagenActual.endswith(".gif"):
-                    self.limpiarIcono(i)
-                    # TODO: ReActivar gif
-                    # self.DeckGif.ActualizarGif(i, accionAcual, self.folderPerfil / self.folderActual)
+                    self.deckGif.ActualizarGif(i, accionActual, self.folderPerfil / self.folderActual)
                     pass
                 else:
+                    self.deckGif.Limpiar(i)
                     self.actualizarIconoBoton(i, accionActual)
             else:
+                self.deckGif.Limpiar(i)
                 self.listaBotones[i] = {"imagen": None, "titulo": None}
                 self.limpiarIcono(i)
 
@@ -183,7 +183,7 @@ class MiStreamDeck(dispositivo):
         """Borra iconos de todo los botones de StreamDeck."""
         if self.conectado:
             logger.info(f"Limpiando {self.nombre}")
-            self.DeckGif.Limpiar()
+            self.deckGif.Limpiar()
             for i in range(self.cantidadBotones):
                 self.limpiarIcono(i)
             self.archivoImagen = None
@@ -217,7 +217,7 @@ class MiStreamDeck(dispositivo):
     def desconectar(self):
         if self.conectado:
             logger.info(f"Deck[Desconectando] - {self.nombre}")
-            self.DeckGif.Desconectar()
+            self.deckGif.Desconectar()
             self.conectado = False
             self.deck.reset()
             self.deck.close()

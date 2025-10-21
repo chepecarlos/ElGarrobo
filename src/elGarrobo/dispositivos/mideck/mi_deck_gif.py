@@ -38,7 +38,7 @@ class DeckGif(threading.Thread):
         super(DeckGif, self).__init__()
 
     def run(self):
-        """Dibuja un frame de cada gif y espera a siquiente frame."""
+        """Dibuja un frame de cada gif y espera a siguiente frame."""
         while self.Activo:
             # if self.Deck.connected():
             # with self.lock:
@@ -66,10 +66,20 @@ class DeckGif(threading.Thread):
         if self.Activo:
             self.Deck.set_key_image(accion["indice"], next(accion["__gif_cargado"]))
 
-    def Limpiar(self):
+    def Limpiar(self, indice: int | None = None):
         """Borra lista de gif actuales."""
-        self.ListaGif = []
-        self.ListaGifCargar = []
+
+        if indice is None:
+            self.ListaGif = []
+            self.ListaGifCargar = []
+            return
+
+        encontrado = list(filter(lambda Gif: Gif["indice"] == indice, self.ListaGif))
+
+        if not encontrado:
+            return
+
+        self.ListaGif.remove(encontrado[0])
 
     def ActualizarGif(self, indice, accion, folder):
         """Carga los frame si no estas precargado y lo agrega a lista actual gifs."""
@@ -81,7 +91,7 @@ class DeckGif(threading.Thread):
             accion["indice"] = indice
             self.ListaGifCargar.append(accion)
 
-    def CargarGif(self, accion):
+    def CargarGif(self, accion: dict):
         """Extra frame de un gif y los guarda en una lista."""
         # TODO: Errro con git con estado no se desactiva
         if "__gif_cargado" in accion:
