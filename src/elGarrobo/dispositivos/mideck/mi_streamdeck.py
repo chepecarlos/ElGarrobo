@@ -89,9 +89,9 @@ class MiStreamDeck(dispositivo):
                         self.conectado = True
                         self.cantidadBotones = self.deck.key_count()
                         self.layout = self.deck.key_layout()
-                        Brillo = ObtenerValor("data/streamdeck.json", "brillo")
+                        brillo: int = ObtenerValor("data/streamdeck.json", "brillo")
                         # Todo: brillo no es un int
-                        self.deck.set_brightness(Brillo)
+                        self.deck.set_brightness(brillo)
                         self.DeckGif = DeckGif(self.deck, self.folderActual)
                         self.DeckGif.archivoFuente = self.archivoFuente
                         self.DeckGif.start()
@@ -137,14 +137,14 @@ class MiStreamDeck(dispositivo):
                 data = {"imagen": None, "titulo": None}
                 self.listaBotones.append(data)
 
-        tiempoActual = time.time()
+        # tiempoActual = time.time()
 
-        if self.ultimoDibujo is None:
-            self.ultimoDibujo = -self.tiempoDibujar
+        # if self.ultimoDibujo is None:
+        #     self.ultimoDibujo = -self.tiempoDibujar
 
-        if tiempoActual - self.ultimoDibujo < self.tiempoDibujar:
-            print(tiempoActual - self.ultimoDibujo, self.tiempoDibujar)
-            return
+        # if tiempoActual - self.ultimoDibujo < self.tiempoDibujar:
+        #     print(tiempoActual - self.ultimoDibujo, self.tiempoDibujar)
+        #     return
 
         logger.info(f"Deck[Dibujar] {self.nombre}")
         for i in range(self.cantidadBotones):
@@ -157,7 +157,7 @@ class MiStreamDeck(dispositivo):
                 accionVieja = self.listaBotones[i]
 
                 imagenActual = self.buscarDirecionImagen(accionActual)
-                tituloActual: str = accionActual.get("titulo")
+                tituloActual: str = self.buscarTitulo(accionActual)
 
                 imagenVieja: str = accionVieja.get("imagen")
                 tituloViejo: str = accionVieja.get("titulo")
@@ -267,23 +267,37 @@ class MiStreamDeck(dispositivo):
 
         self.ponerImagen(imagen, DirecionImagen, accion)
 
+        tituloBoton: str = self.buscarTitulo(accion)
+
+        if tituloBoton is not None:
+            modificado = True
+            self.ponerTexto(imagen, tituloBoton, accion, isinstance(DirecionImagen, str))
+
+        return imagen
+
+    def buscarTitulo(self, accion: dict) -> str | None:
+        """Busca el título para el botón
+
+        Args:
+            accion (dict): Datos de la acción del botón
+
+        Returns:
+            str | None: Título encontrado o None
+        """
+
         TextoCargar = accion.get("cargar_titulo")
         if TextoCargar is not None:
             archivoTexto = TextoCargar.get("archivo")
             atributoTexto = TextoCargar.get("atributo")
             if archivoTexto is not None and atributoTexto is not None:
-                accion["titulo"] = ObtenerValor(archivoTexto, atributoTexto)
+                titulo = ObtenerValor(archivoTexto, atributoTexto)
+                return titulo
 
         if "titulo" in accion:
-            modificado = True
-            self.ponerTexto(imagen, accion, isinstance(DirecionImagen, str))
+            titulo: str = str(accion.get("titulo"))
+            return titulo
 
-        # if not modificado:
-        #     copiaAccion = accion.copy()
-        #     copiaAccion["titulo"] = copiaAccion.get("nombre")
-        #     self.PonerTexto(imagen, copiaAccion, cortePalabra=True)
-
-        return imagen
+        return None
 
     def calcularRutaImagen(self, rutaImagen: str) -> str:
 
@@ -319,7 +333,7 @@ class MiStreamDeck(dispositivo):
         IconoPosicion = ((Imagen.width - Icono.width) // 2, 0)
         Imagen.paste(Icono, IconoPosicion, Icono)
 
-    def ponerTexto(self, Imagen, accion: dict, hayImagen: bool = False, cortePalabra: bool = False):
+    def ponerTexto(self, Imagen, titulo: str, accion: dict, hayImagen: bool = False, cortePalabra: bool = False):
         """Agrega Texto a Botones de StreamDeck.
 
         Args:
@@ -328,7 +342,7 @@ class MiStreamDeck(dispositivo):
             hayImagen (bool, optional): Si ya tiene imagen el botón. Defaults to False.
         """
 
-        TituloInicial: str = str(accion.get("titulo"))
+        TituloInicial: str = titulo
         opciones: dict = accion.get("titulo_opciones", {})
         tamañoFuente: int = opciones.get("tamanno", 40)
         alinear: str = opciones.get("alinear", "centro")
