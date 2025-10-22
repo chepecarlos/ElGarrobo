@@ -156,7 +156,7 @@ class MiStreamDeck(dispositivo):
                 accionActual: dict = dibujar[0]
                 accionVieja = self.listaBotones[i]
 
-                imagenActual = self.buscarDirecionImagen(accionActual)
+                imagenActual: str = self.buscarDirecionImagen(accionActual)
                 tituloActual: str = self.buscarTitulo(accionActual)
 
                 imagenVieja: str = accionVieja.get("imagen")
@@ -169,8 +169,8 @@ class MiStreamDeck(dispositivo):
                 accionVieja["titulo"] = tituloActual
 
                 if imagenActual is not None and imagenActual.endswith(".gif"):
+                    self.limpiarIcono(i)
                     self.deckGif.ActualizarGif(i, accionActual, self.folderPerfil / self.folderActual)
-                    pass
                 else:
                     self.deckGif.Limpiar(i)
                     self.actualizarIconoBoton(i, accionActual)
