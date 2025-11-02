@@ -22,3 +22,10 @@ serve-docs:
 clean-docs:
 	@echo "Eliminando carpeta de documentación..."
 	rm -rf $(DOCS_DIR)
+
+extras:
+	@echo "Instalando paquetes extras"
+	sudo apt install -y python3-pip python3-setuptools python3-tk python3-dev pipx ffmpeg git 
+	sudo apt install -y libasound2-dev
+	@echo "Instalado Manejador de ventana"
+	sudo apt install -y xdotool
