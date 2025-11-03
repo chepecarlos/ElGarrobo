@@ -1,3 +1,4 @@
+import logging
 import threading
 
 from nicegui import app, ui
@@ -12,7 +13,8 @@ from elGarrobo.miLibrerias import ConfigurarLogging
 # estilo https://tailwindcss.com/
 # iconos https://fonts.google.com/icons
 
-logger = ConfigurarLogging(__name__)
+
+logger = ConfigurarLogging(__name__, logging.INFO)
 
 
 class miGui(dispositivo):
@@ -31,18 +33,23 @@ class miGui(dispositivo):
     dispositivoEditar: dispositivo
     "dispositivo a modificar la acción"
 
+    colorOscuro: str = "teal-900"
+    "Color oscuro de la interfaz"
+    colorClaro: str = "teal-300"
+    "Color claro de la interfaz"
+
     puerto: int = 8080
 
-    def __init__(self, dataConfiguracion: dict):
+    folderLabel: ui.markdown = None
+    "Etiqueta del folder actual"
 
-        print(dataConfiguracion)
+    def __init__(self, dataConfiguracion: dict):
 
         self.nombre = dataConfiguracion.get("nombre", "miGui")
         self.archivo = dataConfiguracion.get("archivo", "")
         self.puerto = dataConfiguracion.get("puerto", 8080)
 
         self.folder: str = "?"
-        self.folderLabel = None
         self.listaDispositivosVieja: list = list()
         self.listaClasesAcciones: dict = dict()
         # self.listaClasesAccionesOPP: dict = dict()
@@ -61,14 +68,17 @@ class miGui(dispositivo):
 
         # def conectar(self):
 
+        #     super().__init__()
+
+        # def conectar(self) -> None:
+
         @ui.page("/")
         def paginaAcciones():
             with ui.splitter(value=20, limits=(15, 50)).classes("w-full") as splitter:
                 with splitter.before:
-                    self.mostraFormulario()
+                    self.mostrarFormulario()
                 with splitter.after:
-                    # Contenedor para la tabla
-                    self.pestañas = ui.tabs().classes("w-full bg-teal-700 text-white")
+                    self.pestañas = ui.tabs().classes(f"w-full bg-{self.colorOscuro} text-white")
                     self.paneles = ui.tab_panels(self.pestañas).classes("w-full")
                     self.mostrarPestañas()
             self.estructura()
@@ -83,14 +93,15 @@ class miGui(dispositivo):
             ui.label("Pagina Dispositivos")
             self.estructura()
 
-    def mostraFormulario(self):
+    def mostrarFormulario(self):
+        """Muestra el formulario para agregar o editar acciones"""
 
         def agregarAcción():
             nombre = self.editorNombre.value
             tecla = self.editorTecla.value
             acción = self.editorAcción.value
             for AtributoAccion in self.listaClasesAcciones.keys():
-                objetoClase = self.listaClasesAcciones[AtributoAccion]()
+                objetoClase: accion = self.listaClasesAcciones[AtributoAccion]()
                 if objetoClase.nombre == acción:
                     acción = objetoClase.comando
                     break
@@ -217,9 +228,14 @@ class miGui(dispositivo):
             self.editorNombre = ui.input("Nombre").style(f"width: {ancho}").props("clearable")
             self.editorTitulo = ui.input("Titulo").style(f"width: {ancho}").props("clearable")
             self.editorTecla = ui.input("Tecla").style(f"width: {ancho}").props("clearable")
-            print(f"Lista acciones {self.listaClasesAcciones} {type(self.listaClasesAcciones)}")
-            print(self.listaClasesAcciones.keys())
-            self.editorAcción = ui.select(options=list(self.listaClasesAcciones.keys()), with_input=True, label="acción", on_change=self.mostrarOpciones).style(f"width: {ancho}")
+
+            self.listaNombreAcciones: list[str] = list()
+            for clave in self.listaClasesAcciones.keys():
+                claseAccion = self.listaClasesAcciones.get(clave)
+                nombreAccion = claseAccion().nombre
+                self.listaNombreAcciones.append(nombreAccion)
+
+            self.editorAcción = ui.select(options=self.listaNombreAcciones, with_input=True, label="acción", on_change=self.mostrarOpciones).style(f"width: {ancho}")
             self.editorDescripcion = ui.label("").style(f"width: {ancho}").classes("bg-teal-700 p-2 text-white rounded-lg")
             self.editorDescripcion.visible = False
             self.editorPropiedades = ui.column()
@@ -227,40 +243,54 @@ class miGui(dispositivo):
             self.editorOpción.visible = False
 
         with ui.button_group().props("rounded"):
-            self.botonAgregar = ui.button(icon="add", color="teal-300", on_click=agregarAcción)
-            ui.button(icon="delete", color="teal-300", on_click=self.limpiarFormulario)
+            self.botonAgregar = ui.button(icon="add", color=self.colorOscuro, on_click=agregarAcción)
+            ui.button(icon="delete", color=self.colorOscuro, on_click=self.limpiarFormulario)
 
     def mostrarOpciones(self):
+        """Muestra las opciones de la acción seleccionada"""
         self.editorDescripcion.text = ""
         self.editorDescripcion.visible = False
         self.editorPropiedades.clear()
         if self.accionEditar:
-            accionOpciones = self.accionEditar.get("accion")
+            accionSelecionada = self.accionEditar.get("accion")
         else:
-            accionOpciones = self.editorAcción.value
+            accionSelecionada = self.editorAcción.value
+
+        if accionSelecionada is None or accionSelecionada == "":
+            return
+
+        logger.info(f"Mostrando opciones para: {accionSelecionada}")
 
         for acción in self.listaClasesAcciones.keys():
             claseAccion = self.listaClasesAcciones.get(acción)
             acciónTmp: accion = claseAccion()
-            if acción == accionOpciones or acciónTmp.nombre == accionOpciones:
-                self.editorDescripcion.visible = True
-                self.editorDescripcion.text = acciónTmp.descripcion
-                with self.editorPropiedades:
-                    self.opcionesEditar = dict()
-                    for propiedad in acciónTmp.listaPropiedades:
-                        nombre = propiedad.nombre
-                        etiqueta = nombre
-                        ejemplo = propiedad.ejemplo
-                        descripción = propiedad.descripcion
-                        obligatorio = propiedad.obligatorio
-                        if obligatorio:
-                            etiqueta = "* " + etiqueta
-                        self.opcionesEditar[nombre] = ui.input(label=etiqueta, placeholder=ejemplo)
-                        with self.opcionesEditar[nombre]:
-                            with ui.button(on_click=lambda d=descripción: ui.notify(d)).props("flat dense"):
-                                ui.icon("help", color="teal-300")
+            # if acción == accionOpciones or acciónTmp.nombre == accionOpciones:
+            if acciónTmp.nombre != accionSelecionada:
+                continue
+
+            self.editorDescripcion.visible = True
+            self.editorDescripcion.text = acciónTmp.descripcion
+            with self.editorPropiedades:
+                self.opcionesEditar = dict()
+                for propiedad in acciónTmp.listaPropiedades:
+                    nombre: str = propiedad.nombre
+                    etiqueta: str = nombre
+                    ejemplo: str = propiedad.ejemplo
+                    descripción: str = propiedad.descripcion
+                    obligatorio: bool = propiedad.obligatorio
+                    if obligatorio:
+                        etiqueta = "* " + etiqueta
+                    self.opcionesEditar[nombre] = ui.input(label=etiqueta, placeholder=ejemplo)
+                    with self.opcionesEditar[nombre]:
+                        with ui.button(on_click=lambda d=descripción: ui.notify(d)).props("flat dense"):
+                            ui.icon("help", color="teal-300")
+            return
+
+        logger.warning(f"No hay opciones para: {accionSelecionada}")
 
     def limpiarFormulario(self):
+        """Limpia el formulario de acciones"""
+        logger.info("Limpiando formulario de acciones")
         self.botonAgregar.icon = "add"
         self.editorNombre.value = ""
         self.editorTecla.value = ""
@@ -278,6 +308,7 @@ class miGui(dispositivo):
     def mostrarPestañas(self):
 
         if self.pestañas is None or self.paneles is None:
+            logger.warning("No hay pestañas o paneles para mostrar")
             return
 
         # self.pestañas.clear()
@@ -289,10 +320,8 @@ class miGui(dispositivo):
             print("Cargando ventana")
 
             for dispositivo in self.listaDispositivos:
-                print(dispositivo.nombre, dispositivo.pestaña, dispositivo.pestaña)
-                nombre = dispositivo.nombre
+                nombre: str = dispositivo.nombre
                 # if dispositivo.pestaña is None:
-                print(f"Creae pestaña {dispositivo.nombre}")
                 dispositivo.pestaña = ui.tab(dispositivo.nombre)
                 dispositivo.pestaña.on("click", self.limpiarFormulario)
                 with self.paneles:
@@ -498,19 +527,22 @@ class miGui(dispositivo):
                 self.mostrarPestañas()
 
     def estructura(self):
-        with ui.header(elevated=True).classes("bg-teal-900 items-center justify-between").style("height: 5vh; padding: 1px"):
+        """Estructura de la interfaz,
+        Cabecera y pie de página
+        """
+        with ui.header(elevated=True).classes(f"bg-{self.colorOscuro} items-center justify-between").style("height: 5vh; padding: 1px"):
             ui.label("ElGarrobo").classes("text-h5 px-8")
             with ui.row():
                 ui.markdown("**FolderRuta**:")
-                self.folderLabel = ui.markdown(self.folder)
+                self.folderLabel: ui.markdown = ui.markdown("Cargando...")
             with ui.button(icon="menu").props("flat color=white").classes("px-8"):
                 with ui.menu() as menu:
                     ui.menu_item("Acciones", on_click=lambda: ui.navigate.to("/"))
                     ui.menu_item("Módulos", on_click=lambda: ui.navigate.to("/modulos"))
                     ui.menu_item("Dispositivos", on_click=lambda: ui.navigate.to("/dispositivos"))
 
-        with ui.footer().classes("bg-teal-900").style("height: 5vh; padding: 1px"):
-            with ui.row().classes("w-full"):
+        with ui.footer().classes(f"bg-{self.colorOscuro}").style("height: 5vh; padding: 1px"):
+            with ui.row().classes("w-full").style("padding: 0 10px"):
                 ui.label("Creado por ChepeCarlos")
                 ui.space()
                 ui.link("Youtube", "https://www.youtube.com/@chepecarlo")
