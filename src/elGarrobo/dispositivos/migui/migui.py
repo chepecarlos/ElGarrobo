@@ -2,11 +2,9 @@ import logging
 import threading
 
 from nicegui import app, ui
-from PIL import Image
 
 from elGarrobo.accionesOOP import accion
 from elGarrobo.dispositivos.dispositivo import dispositivo
-from elGarrobo.dispositivos.mideck.mi_deck_imagen import ObtenerImagen
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 # librería https://nicegui.io/
@@ -27,6 +25,7 @@ class miGui(dispositivo):
     archivoConfiguracion = "gui.md"
 
     listaDispositivos: list[dispositivo] = None
+    "Lista de dispositivos conectados"
 
     accionEditar: dict
     "Acción medicando o agregando"
@@ -40,10 +39,10 @@ class miGui(dispositivo):
 
     puerto: int = 8080
 
-    folderLabel: ui.markdown = None
+    folderLabel: ui.label = None
     "Etiqueta del folder actual"
 
-    def __init__(self, dataConfiguracion: dict):
+    def __init__(self, dataConfiguracion: dict) -> None:
 
         self.nombre = dataConfiguracion.get("nombre", "miGui")
         self.archivo = dataConfiguracion.get("archivo", "")
@@ -78,7 +77,8 @@ class miGui(dispositivo):
                 with splitter.before:
                     self.mostrarFormulario()
                 with splitter.after:
-                    self.pestañas = ui.tabs().classes(f"w-full bg-{self.colorOscuro} text-white")
+                    self.pestañas = ui.tabs(on_change=self.mostrarRutas)
+                    self.pestañas.classes(f"w-full bg-{self.colorOscuro} text-white")
                     self.paneles = ui.tab_panels(self.pestañas).classes("w-full")
                     self.mostrarPestañas()
             self.estructura()
@@ -245,6 +245,17 @@ class miGui(dispositivo):
         with ui.button_group().props("rounded"):
             self.botonAgregar = ui.button(icon="add", color=self.colorOscuro, on_click=agregarAcción)
             ui.button(icon="delete", color=self.colorOscuro, on_click=self.limpiarFormulario)
+
+    def mostrarRutas(self) -> None:
+        """Muestra las rutas de la interfaz web"""
+        if self.pestañas is None or self.folderLabel is None:
+            return
+        pestañaSeleccionada: str = self.pestañas.value
+        for dispositivoActual in self.listaDispositivos:
+            if dispositivoActual.nombre == pestañaSeleccionada:
+                self.folderLabel.text = str(dispositivoActual.folderActual)
+                self.folderLabel.update()
+                return
 
     def mostrarOpciones(self):
         """Muestra las opciones de la acción seleccionada"""
@@ -533,10 +544,10 @@ class miGui(dispositivo):
         with ui.header(elevated=True).classes(f"bg-{self.colorOscuro} items-center justify-between").style("height: 5vh; padding: 1px"):
             ui.label("ElGarrobo").classes("text-h5 px-8")
             with ui.row():
-                ui.markdown("**FolderRuta**:")
-                self.folderLabel: ui.markdown = ui.markdown("Cargando...")
+                ui.label("Folder:")
+                self.folderLabel: ui.label = ui.label("Cargando...")
             with ui.button(icon="menu").props("flat color=white").classes("px-8"):
-                with ui.menu() as menu:
+                with ui.menu():
                     ui.menu_item("Acciones", on_click=lambda: ui.navigate.to("/"))
                     ui.menu_item("Módulos", on_click=lambda: ui.navigate.to("/modulos"))
                     ui.menu_item("Dispositivos", on_click=lambda: ui.navigate.to("/dispositivos"))
@@ -589,12 +600,6 @@ class miGui(dispositivo):
     def desconectar(self) -> None:
         logger.info("Saliendo de NiceGUI")
         app.shutdown()
-
-    def actualizarFolder(self, folder: str):
-        # TODO: quitar función
-        self.folder = folder
-        if self.folderLabel is not None:
-            self.folderLabel.content = self.folder
 
     def agregarDispositivos(self, dispositivo):
         dispositivo["acciones"] = None
