@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 from pathlib import Path
 from typing import Type
@@ -39,8 +40,13 @@ class dispositivo:
     clase: str
     "Sub Categoria del dispositivo"
     actualizarPestaña: callable = None
-    "función que actualiza la pestaña del dispositivo con nuevas acciones"
+    "Función que llama actualizar la information de GUI"
+
     pestaña = None
+    "Pestaña del dispositivo en la interfaz"
+    panel = None
+    "Panel del dispositivo en la interfaz"
+
     modulo: str = ""
     "Modulo para cargar dispositivo"
     archivoConfiguracion: str = ""

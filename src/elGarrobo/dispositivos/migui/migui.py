@@ -36,11 +36,15 @@ class miGui(dispositivo):
     "Color oscuro de la interfaz"
     colorClaro: str = "teal-300"
     "Color claro de la interfaz"
+    colorBotones: str = "teal-500"
+    "Color para botones"
 
     puerto: int = 8080
 
     folderLabel: ui.label = None
-    "Etiqueta del folder actual"
+    "Etiqueta del folder del dispositivo actual"
+    tipoLabel: ui.label = None
+    "Etiqueta del tipo del dispositivo actual"
 
     def __init__(self, dataConfiguracion: dict) -> None:
 
@@ -51,9 +55,7 @@ class miGui(dispositivo):
         self.folder: str = "?"
         self.listaDispositivosVieja: list = list()
         self.listaClasesAcciones: dict = dict()
-        # self.listaClasesAccionesOPP: dict = dict()
         self.salvarAcciones: callable = None
-        self.actualizarIconos2: callable = None
         self.ejecutaEvento: callable = None
         self.accionEditar: dict = None
         self.dispositivoEditar: dispositivo = None
@@ -72,14 +74,17 @@ class miGui(dispositivo):
         # def conectar(self) -> None:
 
         @ui.page("/")
-        def paginaAcciones():
-            with ui.splitter(value=20, limits=(15, 50)).classes("w-full") as splitter:
+        def paginaAcciones() -> None:
+            """Estructura de pagina de acciones"""
+            with ui.splitter(value=20, limits=(15, 50)) as splitter:
+                splitter.classes("w-full")
                 with splitter.before:
                     self.mostrarFormulario()
                 with splitter.after:
-                    self.pestañas = ui.tabs(on_change=self.mostrarRutas)
+                    self.pestañas = ui.tabs(on_change=self.actualizarCabecera)
                     self.pestañas.classes(f"w-full bg-{self.colorOscuro} text-white")
-                    self.paneles = ui.tab_panels(self.pestañas).classes("w-full")
+                    self.paneles = ui.tab_panels(self.pestañas)
+                    self.paneles.classes("w-full")
                     self.mostrarPestañas()
             self.estructura()
 
@@ -246,8 +251,8 @@ class miGui(dispositivo):
             self.botonAgregar = ui.button(icon="add", color=self.colorOscuro, on_click=agregarAcción)
             ui.button(icon="delete", color=self.colorOscuro, on_click=self.limpiarFormulario)
 
-    def mostrarRutas(self) -> None:
-        """Muestra las rutas de la interfaz web"""
+    def actualizarCabecera(self) -> None:
+        """Muestra información del dispositivo rutas de la interfaz web"""
         if self.pestañas is None or self.folderLabel is None:
             return
         pestañaSeleccionada: str = self.pestañas.value
@@ -255,6 +260,8 @@ class miGui(dispositivo):
             if dispositivoActual.nombre == pestañaSeleccionada:
                 self.folderLabel.text = str(dispositivoActual.folderActual)
                 self.folderLabel.update()
+                self.tipoLabel.text = str(dispositivoActual.tipo)
+                self.tipoLabel.update()
                 return
 
     def mostrarOpciones(self):
@@ -316,7 +323,7 @@ class miGui(dispositivo):
         self.dispositivoEditar = None
         self.opcionesEditar = None
 
-    def mostrarPestañas(self):
+    def mostrarPestañas(self) -> None:
 
         if self.pestañas is None or self.paneles is None:
             logger.warning("No hay pestañas o paneles para mostrar")
@@ -327,133 +334,26 @@ class miGui(dispositivo):
 
         with self.pestañas:
 
-            # print(self.listaDispositivos)
-            print("Cargando ventana")
+            for dispositivoActual in self.listaDispositivos:
+                nombreDispositivo: str = dispositivoActual.nombre
+                dispositivoActual.pestaña = ui.tab(nombreDispositivo)
+                dispositivoActual.pestaña.on("click", self.limpiarFormulario)
 
-            for dispositivo in self.listaDispositivos:
-                nombre: str = dispositivo.nombre
-                # if dispositivo.pestaña is None:
-                dispositivo.pestaña = ui.tab(dispositivo.nombre)
-                dispositivo.pestaña.on("click", self.limpiarFormulario)
                 with self.paneles:
-                    dispositivo.panel = ui.tab_panel(dispositivo.pestaña).classes("h-svh")
-                # else:
-                #     with self.paneles:
-                #         with dispositivo.panel:
-                #             ui.label(f"Hola {nombre}")
-                #             pass
-                #         # ui.tab_panel(dispositivo.pestaña).classes("h-svh")
-                #         pass
+                    dispositivoActual.panel = ui.tab_panel(dispositivoActual.pestaña)
+                    dispositivoActual.panel.classes("h-svh")
 
-            for dispositivo in self.listaDispositivosVieja:
-                if dispositivo.get("pestaña") is None:
-                    nombre = dispositivo.get("nombre") + " Viejo"
-                    dispositivo["pestaña"] = ui.tab(nombre)
-                    dispositivo["pestaña"].on("click", self.limpiarFormulario)
-                    with self.paneles:
-                        dispositivo["panel"] = ui.tab_panel(dispositivo.get("pestaña")).classes("h-svh")
+                dispositivoActual.actualizarPestaña = self.actualizarPestaña
 
-        for dispositivo in self.listaDispositivos:
+        for dispositivoActual in self.listaDispositivos:
+            self.actualizarPestaña(dispositivoActual)
 
-            self.actualizarPestañas(dispositivo)
-
-        for dispositivo in self.listaDispositivosVieja:
-            nombre = dispositivo.get("nombre")
-            tipo = dispositivo.get("tipo")
-            input = dispositivo.get("input")
-            clase = dispositivo.get("clase")
-            folder = dispositivo.get("folder")
-            with self.paneles:
-                dispositivo["panel"].clear()
-                with dispositivo["panel"]:
-                    with ui.row():
-                        ui.markdown(f"**Tipo**: {tipo}")
-                        ui.markdown(f"**clase**: {clase}")
-                        ui.markdown(f"**Folder**: {folder}")
-                    acciones = dispositivo.get("acciones")
-
-                    with ui.scroll_area().classes("h-96 border border-2 border-teal-600h").style("height: 65vh"):
-
-                        if acciones is None:
-                            ui.label("No acciones")
-                            continue
-
-                        with ui.row().classes("content p-2"):
-                            ui.label("Nombre").style("font-weight: bold; width: 100px")
-                            # if tipo == "steamdeck":
-                            ui.label("Titulo").style("font-weight: bold; width: 100px")
-                            ui.label("Imagen").style("font-weight: bold; width: 150px")
-                            ui.label("Tecla").style("font-weight: bold; width: 100px")
-                            ui.label("Acción").style("font-weight: bold; width: 125px")
-                            ui.label("Opciones").style("font-weight: bold; width: 180px")
-
-                        for acciónActual in acciones:
-                            nombreAcción = acciónActual.get("nombre")
-                            teclaAcción = acciónActual.get("key")
-                            acciónAcción = acciónActual.get("accion")
-                            tituloAcción = acciónActual.get("titulo")
-                            imagenAcción = acciónActual.get("imagen")
-
-                            if tipo in ["steamdeck", "pedal"]:
-                                teclaAcción = int(teclaAcción) + 1
-
-                            with ui.row().classes("content p-2 border-2 border-teal-600"):
-                                ui.label(nombreAcción).style("width: 100px")
-                                # if tipo == "steamdeck":
-                                ui.label(tituloAcción).style("width: 100px")
-                                # ui.image(imagenAcción)
-
-                                imagenAcción = self.obtenerRutaImagen(imagenAcción, folder)
-                                if imagenAcción is not None:
-                                    # ui.label(imagenAcción).style("width: 150px")
-                                    pass
-                                else:
-                                    pass
-                                    # ColorFondo = "black"
-                                    # image: Image = Image.new("RGB", [100, 100], color=ColorFondo)
-                                    # ObtenerImagen(image, acciónActual, folder)
-
-                                    # imagen = ui.image(image).classes("w-12").style("width: 150px")
-                                    # imagen.on("click", lambda a=acciónActual: self.seleccionarAcción(a))
-                                    # ui.label("").style("width: 150px")
-
-                                ui.label(teclaAcción).style("width: 100px")
-
-                                claseAcción = self.obtenerAcciónOop(acciónAcción)
-                                if claseAcción is None:
-                                    ui.label(f"{acciónAcción}-vieja").style("width: 125px")
-                                    # TODO: montar función viejas
-                                else:
-                                    objetoAcción = claseAcción()
-                                    nombreClase = objetoAcción.nombre
-                                    ui.label(f"{nombreClase}").style("width: 125px")
-
-                                with ui.button_group().props("rounded"):
-                                    ui.button(icon="play_arrow", color="teal-500", on_click=lambda a=acciónActual: self.ejecutaEvento(a, True))
-                                    ui.button(icon="edit", color="teal-500", on_click=lambda a=acciónActual: self.seleccionarAcción(a))
-                                    ui.button(icon="delete", color="teal-500", on_click=lambda a=acciónActual: self.eliminarAcción(a))
-
-        if self.actualizarIconos2 is not None:
-            self.actualizarIconos2()
-
-        for dispositivo in self.listaDispositivosVieja:
-            nombreDispositivo = dispositivo.get("nombre")
-            tipo = dispositivo.get("tipo")
+        for dispositivoActual in self.listaDispositivos:
+            nombreDispositivo = dispositivoActual.nombre
             self.paneles.value = nombreDispositivo
             self.paneles.update()
-            # if tipo == "steamdeck":
-            #     self.editorTitulo.visible = True
-            # return
-
-        for dispositivo in self.listaDispositivos:
-            nombreDispositivo = dispositivo.nombre
-            # tipo = dispositivo.tipo
-            print(f"poniendo primer panel {nombreDispositivo}")
-            self.paneles.value = nombreDispositivo
-            self.paneles.update()
-            # if tipo == "steamdeck":
-            #     self.editorTitulo.visible = True
-            # return
+            self.actualizarCabecera()
+            return
 
     def seleccionarAcción(self, accion: dict, dispositivo: dispositivo = None):
         if dispositivo is not None:
@@ -538,14 +438,16 @@ class miGui(dispositivo):
                 self.mostrarPestañas()
 
     def estructura(self):
-        """Estructura de la interfaz,
-        Cabecera y pie de página
-        """
-        with ui.header(elevated=True).classes(f"bg-{self.colorOscuro} items-center justify-between").style("height: 5vh; padding: 1px"):
+        """Estructura de la interfaz, cabecera y pie de página"""
+        with ui.header(elevated=True) as cabecera:
+            cabecera.classes(f"bg-{self.colorOscuro} items-center justify-between")
+            cabecera.style("height: 5vh; padding: 1px")
             ui.label("ElGarrobo").classes("text-h5 px-8")
             with ui.row():
-                ui.label("Folder:")
-                self.folderLabel: ui.label = ui.label("Cargando...")
+                ui.label("Tipo: ")
+                self.tipoLabel = ui.label("Cargando...")
+                ui.label("Folder: ")
+                self.folderLabel = ui.label("Cargando...")
             with ui.button(icon="menu").props("flat color=white").classes("px-8"):
                 with ui.menu():
                     ui.menu_item("Acciones", on_click=lambda: ui.navigate.to("/"))
@@ -578,14 +480,11 @@ class miGui(dispositivo):
         app.on_connect(self.seConectorGUI)
         app.on_disconnect(self.seDesconectoGUI)
 
-        self.hilaGui = threading.Thread(name="Gui-" + self.nombre, target=self.funcionHilo)
-        self.hilaGui.start()
+        self.HiloGui = threading.Thread(name="Gui-" + self.nombre, target=self.funciónHilo)
+        self.HiloGui.start()
 
-        # interesante native=True para app
-        # ui.run(uvicorn_logging_level="debug", reload=False)
-
-    def funcionHilo(self):
-        logger.info("Iniciando GUI")
+    def funciónHilo(self):
+        logger.info("Iniciando GUI - Hilo")
         ui.run(
             title="ElGarrobo",
             port=self.puerto,
@@ -625,7 +524,14 @@ class miGui(dispositivo):
                 dispositivo["folder"] = folder
         self.mostrarPestañas()
 
-    def obtenerAcciónOop(self, comandoAcción: str):
+    def obtenerAcciónOop(self, comandoAcción: str) -> accion:
+        """Obtiene la clase de accion
+
+        Args:
+            comandoAcción (str) : Comando que representa la accion
+        Returns:
+            accion: La clase de la accion
+        """
         if comandoAcción in self.listaClasesAcciones:
             return self.listaClasesAcciones[comandoAcción]
         return None
@@ -635,11 +541,12 @@ class miGui(dispositivo):
             return
         pass
 
-    def actualizarPestaña(self, dispositivo: dispositivo):
-        print(f"Intentando Actualizar pestañas de {dispositivo.nombre}")
-        self.actualizarPestañas(dispositivo)
+    def actualizarPestaña(self, dispositivo: dispositivo) -> None:
+        """Actualiza las acciones de la pestaña del dispositivo
 
-    def actualizarPestañas(self, dispositivo: dispositivo):
+        Args:
+            dispositivo (dispositivo): dispositivo a actualizar la pestaña
+        """
         nombre = dispositivo.nombre
         tipo = dispositivo.tipo
         input = dispositivo.dispositivo
@@ -647,21 +554,21 @@ class miGui(dispositivo):
         # clase = dispositivo.clase
 
         if self.paneles is None:
-            print("No hay paneles")
+            logger.warning("No hay paneles")
             return
+
+        if dispositivo.panel is None:
+            logger.warning(f"dispositivo {nombre} sin panel")
+            return
+
         with self.paneles:
-            if dispositivo.panel is None:
-                print("dispositivo sin panel")
-                return
             dispositivo.panel.clear()
             with dispositivo.panel:
-                with ui.row():
-                    ui.markdown(f"**Nombre**: {nombre}")
-                    ui.markdown(f"**Tipo**: {tipo}")
-                    ui.markdown(f"**Folder**: {folder}")
                 acciones = dispositivo.listaAcciones
 
-                with ui.scroll_area().classes("h-96 border border-2 border-teal-600h").style("height: 65vh"):
+                with ui.scroll_area() as areaScroll:
+                    areaScroll.classes("h-96 border border-2 border-teal-600h")
+                    areaScroll.style("height: 75vh")
 
                     if acciones is None:
                         ui.label("No acciones")
@@ -684,23 +591,23 @@ class miGui(dispositivo):
 
                         with ui.row().classes("content p-2 border-2 border-teal-600"):
                             ui.label(nombreAcción).style("width: 100px")
-                            # if tipo == "steamdeck":
                             ui.label(tituloAcción).style("width: 100px")
+                            # if tipo == "steamdeck":
                             # ui.image(imagenAcción)
 
-                            imagenAcción = self.obtenerRutaImagen(imagenAcción, folder)
-                            if imagenAcción is not None:
-                                # ui.label(imagenAcción).style("width: 150px")
-                                pass
-                            else:
-                                pass
-                                # ColorFondo = "black"
-                                # image: Image = Image.new("RGB", [100, 100], color=ColorFondo)
-                                # ObtenerImagen(image, acciónActual, folder)
+                            # imagenAcción = self.obtenerRutaImagen(imagenAcción, folder)
+                            # if imagenAcción is not None:
+                            #     # ui.label(imagenAcción).style("width: 150px")
+                            #     pass
+                            # else:
+                            #     pass
+                            # ColorFondo = "black"
+                            # image: Image = Image.new("RGB", [100, 100], color=ColorFondo)
+                            # ObtenerImagen(image, acciónActual, folder)
 
-                                # imagen = ui.image(image).classes("w-12").style("width: 150px")
-                                # imagen.on("click", lambda a=acciónActual: self.seleccionarAcción(a))
-                                # ui.label("").style("width: 150px")
+                            # imagen = ui.image(image).classes("w-12").style("width: 150px")
+                            # imagen.on("click", lambda a=acciónActual: self.seleccionarAcción(a))
+                            # ui.label("").style("width: 150px")
 
                             ui.label(teclaAcción).style("width: 100px")
 
@@ -717,7 +624,7 @@ class miGui(dispositivo):
                                 ui.button(icon="play_arrow", color="teal-500", on_click=lambda a=acciónActual: self.ejecutaEvento(a, True))
                                 ui.button(icon="edit", color="teal-500", on_click=lambda a=acciónActual: self.seleccionarAcción(a, dispositivo))
                                 ui.button(icon="delete", color="teal-500", on_click=lambda a=acciónActual, d=dispositivo: self.borrarAcción(a, d))
-            # dispositivo.pestaña.update()
+            self.actualizarCabecera()
 
     def borrarAcción(self, accion, dispositivo: dispositivo):
         dispositivo.listaAcciones.remove(accion)
@@ -734,10 +641,6 @@ class miGui(dispositivo):
 
     def actualizar(self):
 
-        print("Actualizando GUI")
+        logger.info("Actualizando GUI")
 
-        # if self.editorAcción is not None:
-        #     print("Lista Acciones ", self.listaClasesAcciones)
-        #     self.editorAcción.options = self.listaClasesAcciones
-        #     self.editorAcción.update()
         super().actualizar()
