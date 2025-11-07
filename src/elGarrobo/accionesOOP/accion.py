@@ -1,6 +1,7 @@
 "Clase Base que manera las propiedad y si se puede ejecución"
 
 from pathlib import Path
+from typing import Any, Callable, Optional
 
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig
 
@@ -25,9 +26,9 @@ class accion:
     "Lista Propiedad para ejecutar la acciones"
     listaValores: list[valoresAcciones] = list()
     "Valores para ejecutar la acción"
-    funcion: callable
+    funcion: Optional[Callable]
     "Función a ejecutarse"
-    funcionExterna: callable = None
+    funcionExterna: Optional[Callable] = None
     "Función a ejecutarse implementada externamente"
     gui: bool = True
     "Montar acción en InterfaceWeb"
@@ -43,9 +44,9 @@ class accion:
             descripcion (str): Descripción de la acción
         """
         self.funcion = None
-        self.nombre: str = nombre
-        self.comando: str = comando
-        self.descripcion: str = descripcion
+        self.nombre = nombre
+        self.comando = comando
+        self.descripcion = descripcion
         self.listaPropiedades: list[propiedadAccion] = []
 
     def agregarPropiedad(self, data: dict) -> None:
@@ -96,11 +97,15 @@ class accion:
         return False
 
     def sePuedeEjecutar(self) -> bool:
-        """Confirmar que se tiene todos los atributos necesarios"""
+        """Confirmar que se tiene todos los atributos necesarios
+
+        Returns:
+            bool: True si se puede ejecutar, False si no
+        """
         if self.error:
             return False
 
-        valoresFaltan: list = list()
+        valoresFaltan: list[str] = list()
         for propiedad in self.listaPropiedades:
             if propiedad.obligatorio:
                 encontrado: bool = False
@@ -131,14 +136,24 @@ class accion:
         return False
 
     def confirmarPropiedad(self, atributo: str, valor) -> bool:
-        """Ver si es una propiedad correcta"""
+        """Ver si es una propiedad correcta
+
+        Returns:
+            bool: True si es correcta, False si no
+        """
         for propiedad in self.listaPropiedades:
             if propiedad.mismoAtributo(atributo) and propiedad.mismoTipo(valor):
                 return True
         return False
 
-    def obtenerValor(self, atributo: str):
-        """Devuelve el valores configurado"""
+    def obtenerValor(self, atributo: str, default: Any = None) -> Any:
+        """Devuelve el valores configurado
+
+        Args:
+            atributo (str): Atributo a buscar
+        Returns:
+            Any: Valor del atributo o defecto si no existe
+        """
         for valor in self.listaValores:
             if atributo == valor.atributo:
                 return valor.valor
@@ -147,14 +162,23 @@ class accion:
                 if propiedad.defecto is not None:
                     return propiedad.defecto
 
-    def calcularRuta(self, ruta: str) -> str:
+        return default
 
-        folderconfig = Path(ObtenerFolderConfig())
-        folderPerfil = "default"  # TODO: agregar perfil del sistema
-        folderActual = "."  # TODO: usar folder actual de dispositivo
-        rutaCalculada = None
+    def calcularRuta(self, ruta: str, perfil: str = "default") -> str:
+        """Calcula la ruta completa a un archivo o carpeta
 
-        folderPerfil = Path(folderconfig / folderPerfil)
+        Args:
+            ruta (str): Ruta relativa al perfil de usuario
+
+        Returns:
+            str: Ruta completa al archivo o carpeta
+        """
+        folderConfig: Path = Path(ObtenerFolderConfig())
+        folderPerfil: Path = folderConfig / perfil
+        folderActual: Path = Path(".")
+        rutaCalculada: Path = None
+
+        folderPerfil = Path(folderConfig / folderPerfil)
 
         if ruta.startswith("/"):
             rutaCalculada = folderPerfil / ruta.lstrip("/")
