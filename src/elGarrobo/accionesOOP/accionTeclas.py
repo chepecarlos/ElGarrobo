@@ -4,7 +4,7 @@ import pyautogui
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accion import accion
+from .accion import accion, propiedadAccion
 
 Logger = ConfigurarLogging(__name__)
 
@@ -19,14 +19,14 @@ class accionTeclas(accion):
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
 
-        propiedadTeclas = {
-            "nombre": "Teclas",
-            "tipo": [str, list],
-            "obligatorio": True,
-            "atributo": "teclas",
-            "descripcion": "teclas a presionarte",
-            "ejemplo": "ctrl + c",
-        }
+        propiedadTeclas = propiedadAccion(
+            nombre="Teclas",
+            tipo=[str, list],
+            obligatorio=True,
+            atributo="teclas",
+            descripcion="teclas a presionarte",
+            ejemplo="ctrl + c",
+        )
 
         self.agregarPropiedad(propiedadTeclas)
 

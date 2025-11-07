@@ -2,9 +2,9 @@
 
 from notifypy import Notify
 
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, UnirPath
+from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accion import accion
+from .accion import accion, propiedadAccion
 
 Logger = ConfigurarLogging(__name__)
 
@@ -19,33 +19,33 @@ class accionNotificacion(accion):
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
 
-        propiedadTexto = {
-            "nombre": "Texto",
-            "tipo": str,
-            "obligatorio": True,
-            "atributo": "texto",
-            "descripcion": "texto a mostrar",
-            "ejemplo": "mensaje importante",
-        }
+        propiedadTexto = propiedadAccion(
+            nombre="Texto",
+            tipo=str,
+            obligatorio=True,
+            atributo="texto",
+            descripcion="texto a mostrar",
+            ejemplo="mensaje importante",
+        )
 
-        propiedadTitulo = {
-            "nombre": "titulo",
-            "tipo": str,
-            "obligatorio": False,
-            "atributo": "titulo",
-            "descripcion": "titulo del mensaje",
-            "ejemplo": "Nombre de la app",
-            "defecto": "ElGarrobo",
-        }
+        propiedadTitulo = propiedadAccion(
+            nombre="titulo",
+            tipo=str,
+            obligatorio=False,
+            atributo="titulo",
+            descripcion="titulo del mensaje",
+            ejemplo="Nombre de la app",
+            defecto="ElGarrobo",
+        )
 
-        propiedadIcono = {
-            "nombre": "icono",
-            "tipo": str,
-            "obligatorio": False,
-            "atributo": "icono",
-            "descripcion": "icono a mostrar en el mensaje",
-            "ejemplo": "/home/logo.png",
-        }
+        propiedadIcono = propiedadAccion(
+            nombre="icono",
+            tipo=str,
+            obligatorio=False,
+            atributo="icono",
+            descripcion="icono a mostrar en el mensaje",
+            ejemplo="/home/logo.png",
+        )
 
         self.agregarPropiedad(propiedadTexto)
         self.agregarPropiedad(propiedadTitulo)
@@ -58,8 +58,6 @@ class accionNotificacion(accion):
         texto = self.obtenerValor("texto")
         titulo = self.obtenerValor("titulo")
         icono = self.obtenerValor("icono")
-
-        comando = self.obtenerValor("comando")
 
         noti = Notify()
         noti.message = texto

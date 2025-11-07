@@ -49,10 +49,9 @@ class accion:
         self.descripcion = descripcion
         self.listaPropiedades: list[propiedadAccion] = []
 
-    def agregarPropiedad(self, data: dict) -> None:
+    def agregarPropiedad(self, propiedad: propiedadAccion) -> None:
         """Agrega propiedad a la acción"""
-        nuevaPropiedad = propiedadAccion(data)
-        self.listaPropiedades.append(nuevaPropiedad)
+        self.listaPropiedades.append(propiedad)
 
     def configurar(self, lista: dict = None) -> None:
         """Recibe la lista propiedades para ejecutar"""

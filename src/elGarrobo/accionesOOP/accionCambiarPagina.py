@@ -1,7 +1,5 @@
 """Cambiar pagina en Dispositivo StreamDeck"""
 
-import time
-
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 from .accion import accion

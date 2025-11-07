@@ -2,7 +2,7 @@
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accion import accion
+from .accion import accion, propiedadAccion
 from .accionOS import accionOS
 
 logger = ConfigurarLogging(__name__)
@@ -16,23 +16,14 @@ class accionFolder(accion):
     comando = "folder"
     descripcion = "Abre un Ventana folder"
 
-    propiedadRuta: dict = {
-        "nombre": "Folder",
-        "tipo": str,
-        "obligatorio": True,
-        "atributo": "ruta",
-        "descripcion": "ruta a abri en Nemo",
-        "ejemplo": "/home/usuario",
-    }
-    """
-        Propiedad para Ejecutar la acción:
-        * nombre: Folder
-        * tipo: str
-        * obligatorio: True
-        * atributo: ruta
-        * descripción: abre una ventana
-        * ejemplo: /home/usuario
-    """
+    propiedadRuta: propiedadAccion = propiedadAccion(
+        nombre="Folder",
+        tipo=str,
+        obligatorio=True,
+        atributo="ruta",
+        descripcion="ruta a abri en Nemo",
+        ejemplo="/home/usuario",
+    )
 
     def __init__(self) -> None:
 

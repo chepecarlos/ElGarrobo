@@ -4,7 +4,7 @@ import pyautogui
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accion import accion
+from .accion import accion, propiedadAccion
 
 Logger = ConfigurarLogging(__name__)
 
@@ -19,9 +19,24 @@ class accionEmularRaton(accion):
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
 
-        propiedadEstado = {"nombre": "Estado", "tipo": bool, "obligatorio": False, "atributo": "estado", "descripcion": "estado del boton", "ejemplo": "True", "defecto": True}
-
-        propiedadBoton = {"nombre": "Botón", "tipo": str, "obligatorio": True, "atributo": "boton", "descripcion": "botón a presionar", "ejemplo": "izquierdo", "defecto": "izquierdo"}
+        propiedadEstado = propiedadAccion(
+            nombre="Estado",
+            tipo=bool,
+            obligatorio=False,
+            atributo="estado",
+            descripcion="estado del boton",
+            ejemplo="True",
+            defecto=True,
+        )
+        propiedadBoton = propiedadAccion(
+            nombre="Botón",
+            tipo=str,
+            obligatorio=True,
+            atributo="boton",
+            descripcion="botón a presionar",
+            ejemplo="izquierdo",
+            defecto="izquierdo",
+        )
 
         self.agregarPropiedad(propiedadEstado)
         self.agregarPropiedad(propiedadBoton)

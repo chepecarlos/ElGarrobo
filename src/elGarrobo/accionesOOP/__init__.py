@@ -16,7 +16,7 @@
 - Ejecuta la comando en terminal: [accionOS](./accionesOOP/accionOS)
 - Controla la PC a distancia: [accionControl](./accionesOOP/accionControl)
 - Reproduce una pista de audio: [accionReproducir](./accionesOOP/accionSonidos)
-- Para todas las reproducciones: [accionPararReproducirones](./accionesOOP/accionSonidos)
+- Para todas las reproducciones: [accionPararReproducciones](./accionesOOP/accionSonidos)
 - Ejecuta accion preciosa y otra se suelta: [accionPresionar](./accionesOOP/accionPresionar)
 
 ### Acciones de ElGarrobo
@@ -58,7 +58,7 @@ from .accionPresionar import accionPresionar
 from .accionRecargarFolder import accionRecargarFolder
 from .accionRegresarFolder import accionRegresarFolder
 from .accionSalir import accionSalir
-from .accionSonidos import accionPararReproducirones, accionReproducir
+from .accionSonidos import accionPararReproducciones, accionReproducir
 from .accionTeclas import accionTeclas
 from .accionTelegram import accionTelegram
 
@@ -95,6 +95,6 @@ def cargarClasesAcciones() -> dict[str, accion]:
         "cerrar_ventana": accionCerrarVentana,
         "copiar": accionCopiarPapelera,
         "reproducion": accionReproducir,
-        "detener_reproducion": accionPararReproducirones,
+        "detener_reproducion": accionPararReproducciones,
         "presionar": accionPresionar,
     }

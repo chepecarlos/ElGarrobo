@@ -2,7 +2,7 @@
 
 import pyautogui
 
-from elGarrobo.accionesOOP.accion import accion
+from elGarrobo.accionesOOP.accion import accion, propiedadAccion
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 logger = ConfigurarLogging(__name__)
@@ -18,24 +18,24 @@ class accionEscribirTexto(accion):
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
 
-        propiedadTexto = {
-            "nombre": "Texto",
-            "tipo": str,
-            "obligatorio": True,
-            "atributo": "texto",
-            "descripcion": "texto a escribir",
-            "ejemplo": "Hola mundo",
-        }
+        propiedadTexto = propiedadAccion(
+            nombre="Texto",
+            atributo="texto",
+            tipo=str,
+            obligatorio=True,
+            descripcion="texto a escribir",
+            ejemplo="Hola mundo",
+        )
 
-        propiedadVelocidad = {
-            "nombre": "Velocidad",
-            "tipo": float,
-            "obligatorio": False,
-            "atributo": "intervalo",
-            "descripcion": "Intervalo entre letra a letra cuando se escriba en segundos",
-            "ejemplo": "0.01",
-            "defecto": 0.01,
-        }
+        propiedadVelocidad = propiedadAccion(
+            nombre="Velocidad",
+            atributo="intervalo",
+            tipo=float,
+            obligatorio=False,
+            descripcion="Intervalo entre letra a letra cuando se escriba en segundos",
+            ejemplo="0.01",
+            defecto=0.01,
+        )
 
         self.agregarPropiedad(propiedadTexto)
         self.agregarPropiedad(propiedadVelocidad)

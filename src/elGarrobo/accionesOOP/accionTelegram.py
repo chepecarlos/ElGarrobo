@@ -2,7 +2,7 @@
 
 from elGarrobo.miLibrerias import ConfigurarLogging, EnviarMensajeTelegram
 
-from .accion import accion
+from .accion import accion, propiedadAccion
 
 Logger = ConfigurarLogging(__name__)
 
@@ -17,34 +17,34 @@ class accionTelegram(accion):
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
 
-        propiedadMensaje = {
-            "nombre": "Mensaje",
-            "tipo": str,
-            "obligatorio": True,
-            "atributo": "mensaje",
-            "descripcion": "Mensaje a enviar",
-            "ejemplo": "Hola amigo",
-        }
+        propiedadMensaje = propiedadAccion(
+            nombre="Mensaje",
+            tipo=str,
+            obligatorio=True,
+            atributo="mensaje",
+            descripcion="Mensaje a enviar",
+            ejemplo="Hola amigo",
+        )
 
-        propiedadTokenBot = {
-            "nombre": "TokenBot",
-            "tipo": str,
-            "obligatorio": False,
-            "atributo": "token",
-            "descripcion": "Token para controlar Bot",
-            "ejemplo": "1234:ABCD",
-            "defecto": "Usando data/TelegramBot.json - Token_Telegram",
-        }
+        propiedadTokenBot = propiedadAccion(
+            nombre="TokenBot",
+            tipo=str,
+            obligatorio=False,
+            atributo="token",
+            descripcion="Token para controlar Bot",
+            ejemplo="1234:ABCD",
+            defecto="Usando data/TelegramBot.json - Token_Telegram",
+        )
 
-        propiedadIdChat = {
-            "nombre": "IdChat",
-            "tipo": str,
-            "obligatorio": False,
-            "atributo": "id",
-            "descripcion": "Token para controlar Bot",
-            "ejemplo": "1234:ABCD",
-            "defecto": "Usando data/TelegramBot.json - ID_Chat",
-        }
+        propiedadIdChat = propiedadAccion(
+            nombre="IdChat",
+            tipo=str,
+            obligatorio=False,
+            atributo="id",
+            descripcion="Token para controlar Bot",
+            ejemplo="1234:ABCD",
+            defecto="Usando data/TelegramBot.json - ID_Chat",
+        )
 
         self.agregarPropiedad(propiedadMensaje)
         self.agregarPropiedad(propiedadTokenBot)

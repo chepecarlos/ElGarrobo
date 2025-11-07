@@ -4,7 +4,7 @@ import webbrowser
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accion import accion
+from .accion import accion, propiedadAccion
 
 Logger = ConfigurarLogging(__name__)
 
@@ -19,14 +19,14 @@ class accionNavegador(accion):
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripción)
 
-        propiedadURL = {
-            "nombre": "URL",
-            "tipo": str,
-            "obligatorio": True,
-            "atributo": "url",
-            "descripcion": "direction web a abrir",
-            "ejemplo": "http://google.com",
-        }
+        propiedadURL = propiedadAccion(
+            nombre="URL",
+            tipo=str,
+            obligatorio=True,
+            atributo="url",
+            descripcion="direction web a abrir",
+            ejemplo="http://google.com",
+        )
 
         self.agregarPropiedad(propiedadURL)
 

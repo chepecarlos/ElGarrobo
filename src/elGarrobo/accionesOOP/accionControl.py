@@ -1,11 +1,10 @@
 """Controla la PC a distancia"""
 
 import json
-import time
 
 from elGarrobo.miLibrerias import ConfigurarLogging, EnviarMensajeMQTT, ObtenerArchivo
 
-from .accion import accion
+from .accion import accion, propiedadAccion
 
 Logger = ConfigurarLogging(__name__)
 
@@ -20,35 +19,35 @@ class accionControl(accion):
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
 
-        propiedadHost = {
-            "nombre": "Host",
-            "tipo": str,
-            "obligatorio": True,
-            "atributo": "host",
-            "descripcion": "Computadora a controlar por MQTT",
-            "ejemplo": "umaru",
-        }
+        propiedadHost = propiedadAccion(
+            nombre="Host",
+            tipo=str,
+            obligatorio=True,
+            atributo="host",
+            descripcion="Computadora a controlar por MQTT",
+            ejemplo="umaru",
+        )
 
-        propiedadAccion = {
-            "nombre": "Accion",
-            "tipo": str,
-            "obligatorio": True,
-            "atributo": "accion",
-            "descripcion": "accion a realizar en la pc",
-            "ejemplo": "delay",
-        }
+        propiedadAccionEjecutar = propiedadAccion(
+            nombre="Accion",
+            tipo=str,
+            obligatorio=True,
+            atributo="accion",
+            descripcion="accion a realizar en la pc",
+            ejemplo="delay",
+        )
 
-        propiedadOpciones = {
-            "nombre": "Opciones",
-            "tipo": dict,
-            "obligatorio": False,
-            "atributo": "opciones",
-            "descripcion": "opciones para accion a realizar en la pc",
-            "ejemplo": "time: 1",
-        }
+        propiedadOpciones = propiedadAccion(
+            nombre="Opciones",
+            tipo=dict,
+            obligatorio=False,
+            atributo="opciones",
+            descripcion="opciones para accion a realizar en la pc",
+            ejemplo="time: 1",
+        )
 
         self.agregarPropiedad(propiedadHost)
-        self.agregarPropiedad(propiedadAccion)
+        self.agregarPropiedad(propiedadAccionEjecutar)
         self.agregarPropiedad(propiedadOpciones)
 
         self.funcion = self.controlDistancia

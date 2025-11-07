@@ -9,7 +9,7 @@ import numpy as np
 import sounddevice as sd
 import soundfile as sf
 
-from elGarrobo.accionesOOP.accion import accion
+from elGarrobo.accionesOOP.accion import accion, propiedadAccion
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 logger = ConfigurarLogging(__name__, logging.INFO)
@@ -92,33 +92,33 @@ class accionReproducir(accion):
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
 
-        propiedadArchivo = {
-            "nombre": "Archivo",
-            "tipo": str,
-            "obligatorio": True,
-            "atributo": "archivo",
-            "descripcion": "pista a reproducira",
-            "ejemplo": "sonido.mp4",
-        }
+        propiedadArchivo = propiedadAccion(
+            nombre="Archivo",
+            tipo=str,
+            obligatorio=True,
+            atributo="archivo",
+            descripcion="pista a reproducira",
+            ejemplo="sonido.mp4",
+        )
 
-        propiedadGanancia = {
-            "nombre": "Ganancia",
-            "tipo": int,
-            "obligatorio": False,
-            "atributo": "ganancia",
-            "descripcion": "Cuanto se tiene que incrementar o bajar el volumen",
-            "ejemplo": "5",
-            "defecto": 0,
-        }
+        propiedadGanancia = propiedadAccion(
+            nombre="Ganancia",
+            tipo=int,
+            obligatorio=False,
+            atributo="ganancia",
+            descripcion="Cuanto se tiene que incrementar o bajar el volumen",
+            ejemplo="5",
+            defecto=0,
+        )
 
-        propiedadFolder = {
-            "nombre": "Folder",
-            "tipo": str,
-            "obligatorio": False,
-            "atributo": "folder",
-            "descripcion": "Si en ruta absoluta, decir donde esta el pista de audio",
-            "ejemplo": "/home/chepecarlos/sonidos",
-        }
+        propiedadFolder = propiedadAccion(
+            nombre="Folder",
+            tipo=str,
+            obligatorio=False,
+            atributo="folder",
+            descripcion="Si en ruta absoluta, decir donde esta el pista de audio",
+            ejemplo="/home/chepecarlos/sonidos",
+        )
 
         self.agregarPropiedad(propiedadArchivo)
         self.agregarPropiedad(propiedadGanancia)
