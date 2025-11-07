@@ -1,20 +1,25 @@
+from __future__ import annotations
+
+import logging
+import threading
+import time
 from pathlib import Path
 
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
 
-"""Acción para esperar un tiempo"""
-
 from elGarrobo.accionesOOP.accion import accion
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-logger = ConfigurarLogging(__name__)
+logger = ConfigurarLogging(__name__, logging.INFO)
 
-listaSonidos = []
+listaSonidos: list[miReproductor] = []
+_listaSonidosBloqueo: threading.Lock = threading.Lock()
 
 
 class miReproductor:
+    """Reproductor de audio no bloqueante usando sounddevice"""
 
     def __init__(self, data: np.ndarray, samplerate: int, logger=None):
         self.log = logger
@@ -126,10 +131,11 @@ class accionReproducir(accion):
         Crear un susproceso para Reproduccion.
         """
         global listaSonidos
+        global _listaSonidosBloqueo
 
-        archivo = self.obtenerValor("archivo")
-        ganancia = self.obtenerValor("ganancia")
-        folder = self.obtenerValor("folder")
+        archivo: str = self.obtenerValor("archivo")
+        ganancia: int = self.obtenerValor("ganancia")
+        folder: str = self.obtenerValor("folder")
 
         rutaArchivo = self.calcularRuta(archivo)
 
@@ -147,13 +153,32 @@ class accionReproducir(accion):
                 data = np.clip(data * factor, -1.0, 1.0).astype("float32", copy=False)
 
             player = miReproductor(data, sr, logger=logger).start()
-            listaSonidos.append(player)
+
+            with _listaSonidosBloqueo:
+                listaSonidos.append(player)
+
+            def _monitor(playerInterno):
+                try:
+                    while playerInterno.is_playing():
+                        time.sleep(0.1)
+                finally:
+                    with _listaSonidosBloqueo:
+                        try:
+                            playerInterno.stop()
+                            listaSonidos.remove(playerInterno)
+                            logger.info(f"Reproducción finalizada [{rutaArchivo}]")
+                        except ValueError:
+                            pass
+
+            t = threading.Thread(target=_monitor, args=(player,), daemon=True)
+            t.start()
+
             logger.info(f"Reproduciendo [{rutaArchivo}] (no bloqueante)")
         except Exception as e:
             logger.error(f"Error al reproducir {rutaArchivo}: {e}")
 
 
-class accionPararReproducirones(accion):
+class accionPararReproducciones(accion):
     """Para todas las reproducciones un sonido"""
 
     nombre = "Parar Sonidos"
