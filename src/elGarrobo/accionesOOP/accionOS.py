@@ -5,7 +5,7 @@ import subprocess
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
-from .accion import accion
+from .accion import accion, propiedadAccion
 
 logger = ConfigurarLogging(__name__)
 
@@ -20,14 +20,14 @@ class accionOS(accion):
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
 
-        propiedadComando = {
-            "nombre": "Comando",
-            "tipo": str,
-            "obligatorio": True,
-            "atributo": "comando",
-            "descripcion": "comando de bash",
-            "ejemplo": "ls",
-        }
+        propiedadComando = propiedadAccion(
+            nombre="Comando",
+            tipo=str,
+            obligatorio=True,
+            atributo="comando",
+            descripcion="comando de bash",
+            ejemplo="ls",
+        )
 
         self.agregarPropiedad(propiedadComando)
 
