@@ -1,45 +1,69 @@
 import json
+import logging
 import threading
 
 import paho.mqtt.client as mqtt
 
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor
+from elGarrobo.dispositivos.dispositivo import dispositivo
+from elGarrobo.miLibrerias import ConfigurarLogging
 
-logger = ConfigurarLogging(__name__)
+logger = ConfigurarLogging(__name__, logging.INFO)
 
 
-class MiMQTT:
-    def __init__(self, data: dict, Evento: callable):
-        self.Conectado: bool = False
-        self.Evento: callable = Evento
+class MiMQTT(dispositivo):
 
-        self.nombre: str = data.get("nombre")
-        self.broker: str = data.get("broker", "test.mosquitto.org")
-        self.puerto: int = data.get("puerto", 1883)
-        self.topicControl: str = data.get("topic")
-        self.usuario: str = data.get("usuario")
-        self.contrasenna: str = data.get("contrasenna")
-        self.hostControl: str = data.get("host", "fulanito")
+    modulo = "mqtt"
+    tipo = "mqtt"
+    archivoConfiguracion = "mqtt.md"
 
-        logger.info(f"MQTT[Iniciando] - {self.nombre}")
-        self.cliente = mqtt.Client(client_id=self.hostControl)
+    broker: str = ""
+    "Direccion del broker MQTT"
+    puerto: int = 1883
+    "Puerto del broker MQTT"
+    cliente: mqtt.Client = None
+    usuario: str = ""
+    contrasenna: str = ""
+    nombreControl: str = ""
+
+    topicControl: str = ""
+    nombreControl: str = ""
+
+    def __init__(self, dataConfiguración: dict) -> None:
+        """Inicializando Dispositivo de teclado
+
+        Args:
+            dataConfiguracion (dict): Datos de configuración del dispositivo
+        """
+
+        super().__init__(dataConfiguración)
+        self.nombre = dataConfiguración.get("nombre", "ServerMQTT")
+
+        self.usuario: str = dataConfiguración.get("usuario", "")
+        self.contrasenna: str = dataConfiguración.get("contrasenna", "")
+
+        control = dataConfiguración.get("control", {})
+        self.topicControl: str = control.get("topic", "")
+        self.nombreControl: str = control.get("nombre", "")
+
+    def conectar(self):
+        """Conectar a Broker MQTT."""
+        logger.info(f"MQTT[Conectando] - {self.nombre} - {self.nombreControl}")
+
+        self.cliente = mqtt.Client(client_id=self.nombreControl)
         self.cliente.on_connect = self.EventoConectar
         self.cliente.on_disconnect = self.EventoDesconectando
         self.cliente.on_message = self.MensajeMQTT
         # TODO: re intear reconeccion
 
-    def Conectar(self):
-        """Conectar a Broker MQTT."""
-        logger.info(f"MQTT[Conectando] - {self.nombre} - {self.hostControl}")
         try:
             if self.usuario is not None:
                 self.cliente.username_pw_set(self.usuario, password=self.contrasenna)
-            self.cliente.connect(self.broker, port=self.puerto, keepalive=60)
+            self.cliente.connect(self.dispositivo, port=self.puerto, keepalive=60)
             self.Hilo = threading.Thread(target=self.HiloServidor)
             self.Hilo.start()
             self.Conectado = True
         except Exception as error:
-            logger.error(f"MQTT[Error] Dispositivo {self.nombre} no responde")
+            logger.error(f"MQTT[Error] Dispositivo {self.nombre} no responde - {error}")
             self.Conectado = False
             # TODO intentar re-conectar después de un tiempo
 
@@ -47,14 +71,14 @@ class MiMQTT:
         logger.info(f"MQTT[Hijo] - {self.nombre}")
         self.cliente.loop_forever()
 
-    def EventoConectar(self, client, userdata, flags, rc):
+    def EventoConectar(self, client: mqtt.Client, userdata, flags, rc):
         """Respuesta de conecion y suscripción a topicos."""
         self.Conectado = True
         logger.info(f"MQTT[Conectado] - {self.nombre}")
-        if self.hostControl and self.topicControl:
-            logger.info(f"MQTT[Accion-Control] - [{self.hostControl}]:{self.topicControl}")
+        if self.nombreControl and self.topicControl:
+            logger.info(f"MQTT[Accion-Control] - [{self.nombreControl}]:{self.topicControl}")
             client.subscribe(self.topicControl)
-            client.publish(f"{self.topicControl}/{self.hostControl}", "conectado")
+            client.publish(f"{self.topicControl}/{self.nombreControl}", "conectado")
 
     def EventoDesconectando(self, client, userdata, rc):
         logger.info(f"MQTT[Desconectando] - {self.nombre}")
@@ -71,16 +95,16 @@ class MiMQTT:
             try:
                 mensaje = json.loads(mensaje)
             except Exception as Error:
-                logger.error("MQTT[Problema] Conversion a Json ")
+                logger.error(f"MQTT[Problema] Conversion a Json {Error}")
                 return
 
             hostAccion = mensaje.get("host")
 
-            if hostAccion == self.hostControl or hostAccion == "todos":
+            if hostAccion == self.nombreControl or hostAccion == "todos":
                 logger.info(f"MQTT[Control] - Acción({mensaje.get('accion')})")
                 self.Evento(mensaje)
             else:
-                logger.info(f"MQTT[Control] - NoConMigo")
+                logger.info("MQTT[Control] - NoConMigo")
 
     def EnviarMQTT(self, Topic, Mensaje):
         """Envia dato por MQTT."""
@@ -92,5 +116,5 @@ class MiMQTT:
     def Desconectar(self):
         if self.Conectado:
             logger.info("MQTT[Desconectado]")
-            self.cliente.publish(f"{self.topicControl}/{self.hostControl}", "desconectado")
+            self.cliente.publish(f"{self.topicControl}/{self.nombreControl}", "desconectado")
             self.cliente.disconnect()
