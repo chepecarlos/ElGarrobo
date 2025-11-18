@@ -1,7 +1,6 @@
 # https://python-elgato-streamdeck.readthedocs.io/en/stable/index.html
 
 import os
-import time
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -10,14 +9,7 @@ from StreamDeck.ImageHelpers import PILHelper
 from StreamDeck.Transport.Transport import TransportError
 
 from elGarrobo.dispositivos import dispositivo
-from elGarrobo.miLibrerias import (
-    ConfigurarLogging,
-    ObtenerArchivo,
-    ObtenerFolderConfig,
-    ObtenerValor,
-    RelativoAbsoluto,
-    UnirPath,
-)
+from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor
 
 from .mi_deck_gif import DeckGif
 
@@ -284,6 +276,8 @@ class MiStreamDeck(dispositivo):
             str | None: Título encontrado o None
         """
 
+        titulo: str = None
+
         TextoCargar = accion.get("cargar_titulo")
         if TextoCargar is not None:
             archivoTexto = TextoCargar.get("archivo")
@@ -294,9 +288,17 @@ class MiStreamDeck(dispositivo):
 
         if "titulo" in accion:
             titulo: str = str(accion.get("titulo"))
-            return titulo
 
-        return None
+        opciones: dict = accion.get("titulo_opciones", dict())
+        if opciones is None:
+            opciones = dict()
+
+        topicTituloMQTT: str = opciones.get("mqtt", False)
+
+        if topicTituloMQTT:
+            titulo = self.obtenerTituloMQTT(topicTituloMQTT, titulo)
+
+        return titulo
 
     def calcularRutaImagen(self, rutaImagen: str) -> str:
 
@@ -351,11 +353,6 @@ class MiStreamDeck(dispositivo):
         Borde_Grosor: int = opciones.get("borde_grosor", 6)
         Ajustar: bool = opciones.get("ajustar", True)
         Titulo_Color: str = opciones.get("color", "white")
-        mqtt: str = opciones.get("mqtt", False)
-
-        if mqtt:
-            TituloInicial = mqtt
-            # TODO: Leer Data de MQTT
 
         Lineas = TituloInicial.split("\\n")
         Titulo = "\n".join(Lineas)
@@ -520,3 +517,20 @@ class MiStreamDeck(dispositivo):
             Estado = False
 
         return Estado
+
+    def obtenerTituloMQTT(self, topicTitulo: str, tituloInicial: str = "") -> str:
+        """Obtiene el titulo enviado por MQTT
+
+        Args:
+            topicTitulo (str): Cual topic hay que leer
+
+        Returns:
+            str: devuelve el titulo encontrado
+        """
+
+        archivoTituloMQTT: str = "data/tituloMQTT"
+
+        titulo = ObtenerValor(archivoTituloMQTT, topicTitulo)
+        if titulo is None:
+            return tituloInicial
+        return titulo

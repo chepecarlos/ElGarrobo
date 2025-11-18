@@ -3,27 +3,15 @@ Este es el Inicio del Código que llama a las funciones
 """
 
 import argparse
-import os
-import sys
 
 from configurar.modulo import ConfigurarModulos
 from elGarrobo.elGarrobo import elGarrobo
-from elGarrobo.miLibrerias import (
-    ConfigurarLogging,
-    ObtenerArchivo,
-    ObtenerFolderConfig,
-    UnirPath,
-    obtenerArchivoPaquete,
-)
+from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig
 
 logger = ConfigurarLogging(__name__)
 
-if sys.version_info[0] < 3:
-    logger.error("Tienes que usar Python 3 para este programa")
-    os._exit(0)
 
-
-def Parametros():
+def parametros() -> argparse.Namespace:
 
     parser = argparse.ArgumentParser(description="Herramientas de Macros de ALSW")
     parser.add_argument("--gui", "-g", help="Sistema interface gráfica", action="store_true")
@@ -39,18 +27,19 @@ def configurar() -> None:
 
 
 def main() -> None:
-    configurar()
 
-    logger.info("elGarrobo[Iniciando]")
-    args = Parametros()
+    logger.info("ElGarrobo[Iniciando]")
+    args = parametros()
+    if args.depuracion:
+        logger.info("ElGarrobo[Depuración Activa]")
+        logger.setLevel("DEBUG")
 
     if args.configurar:
         ConfigurarModulos()
     elif args.gui:
         logger.info("Iniciando la APP Gráfica")
-        # gui()
     else:
-        logger.info("elGarrobo[sin parametros]")
+        logger.info("ElGarrobo[sin parametros]")
         try:
             elGarrobo()
         except Exception as error:

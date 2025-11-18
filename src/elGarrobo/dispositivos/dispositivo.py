@@ -55,6 +55,7 @@ class dispositivo:
     ejecutarAcción: callable = None
     "Función que se llama para ejecutar una acción"
     recargar: bool = True
+    "Es necesario actualizar la imagen o titulo"
 
     listaIndexUsados: list = list()
 
@@ -146,7 +147,7 @@ class dispositivo:
         archivoData = (folderData / self.archivo).resolve()
 
         if folderPerfil not in archivoData.parents:
-            logger.warning("No se puede cargar acciones fuera de folder perfil")
+            logger.warning(f"{self.nombre}[{self.tipo}] - No se puede cargar acciones fuera de folder perfil")
             return
 
         if self.folderActual == folderData.relative_to(folderPerfil) and not recargar:
@@ -274,7 +275,7 @@ class dispositivo:
         pass
 
     def actualizar(self):
-        # print(f"Actualizar {self.nombre} - {self.recargar}")
+        "Actualiza la imagen del dispositivo"
         self.recargar = False
 
     def __str__(self):

@@ -1,7 +1,5 @@
-import logging
 import os
 import random
-from pathlib import Path
 
 from .acciones import CargarAcciones
 from .accionesOOP import (
@@ -17,23 +15,18 @@ from .accionesOOP import (
     cargarClasesAcciones,
 )
 from .accionesOOP.heramientas.valoresAccion import valoresAcciones
-from .dispositivos import MiMQTT, cargarDispositivos, dispositivo, miGui
+from .dispositivos import cargarDispositivos, dispositivo
 from .miLibrerias import (
     ConfigurarLogging,
-    ObtenerListaArhivos,
-    ObtenerListaFolder,
     ObtenerValor,
-    RelativoAbsoluto,
-    SalvarArchivo,
     SalvarValor,
-    UnirPath,
     leerData,
     obtenerArchivoPaquete,
 )
 from .modulos.mi_obs import MiOBS
 from .modulos.mi_pulse import MiPulse
 
-logger = ConfigurarLogging(__name__, logging.DEBUG)
+logger = ConfigurarLogging(__name__)
 
 
 class elGarrobo(object):
@@ -51,7 +44,7 @@ class elGarrobo(object):
 
     def __init__(self) -> None:
 
-        logger.info(f"Abrí[config]")
+        logger.info("Abrí[config]")
 
         self.Data = obtenerArchivoPaquete("elGarrobo", "data/config.md")
         if self.Data is None:
@@ -82,24 +75,27 @@ class elGarrobo(object):
         if self.ModuloPulse:
             self.CargarPulse()
 
-        if self.ModuloMQTT:
-            self.IniciarMQTT()
-
         if self.ModuloPulse:
             self.ListaAcciones["salvar_pulse"]({})
 
             # TODO: recivir acciones desde Modulo de Pulse
             if self.ModuloGui:
-                for dispositivo in self.listaDispositivos:
-                    if dispositivo.nombre == "gui":
-                        dispositivo.agregarAcciones(("salvar_pulse", "volumen", "mute"))
+                for dispositivoActual in self.listaDispositivos:
+                    if dispositivoActual.nombre == "gui":
+                        dispositivoActual.agregarAcciones(("salvar_pulse", "volumen", "mute"))
+
+        if self.ModuloMQTT:
+            for dispositivoActual in self.listaDispositivos:
+                if dispositivoActual.tipo == "mqtt":
+                    dispositivoActual.listaDispositivos = self.listaDispositivos
+                    dispositivoActual.actualizar()
 
         if self.ModuloGui:
-            for dispositivo in self.listaDispositivos:
-                if dispositivo.tipo == "gui":
-                    dispositivo.listaDispositivos = self.listaDispositivos
-                    dispositivo.listaClasesAcciones = self.listaClasesAcciones
-                    dispositivo.actualizar()
+            for dispositivoActual in self.listaDispositivos:
+                if dispositivoActual.tipo == "gui":
+                    dispositivoActual.listaDispositivos = self.listaDispositivos
+                    dispositivoActual.listaClasesAcciones = self.listaClasesAcciones
+                    dispositivoActual.actualizar()
 
     def iniciarDispositivos(self):
         """Crea y inicializa los dispositivos que enviar las acciones"""
@@ -108,13 +104,13 @@ class elGarrobo(object):
         for claseDispositivo in self.dispositivosDisponibles:
             self.listaDispositivos.extend(claseDispositivo.cargarDispositivos(self.modulos, claseDispositivo))
 
-        for dispositivo in self.listaDispositivos:
-            dispositivo.configurarFuncionAccion(self.ejecutarAcción)
-            dispositivo.asignarPerfil(self.folderPerfil)
-            if dispositivo.activado and not dispositivo.conectado:
-                dispositivo.cargarAccionesFolder("/")
-                dispositivo.conectar()
-                dispositivo.actualizar()
+        for dispositivoActual in self.listaDispositivos:
+            dispositivoActual.configurarFuncionAccion(self.ejecutarAcción)
+            dispositivoActual.asignarPerfil(self.folderPerfil)
+            if dispositivoActual.activado and not dispositivoActual.conectado:
+                dispositivoActual.cargarAccionesFolder("/")
+                dispositivoActual.conectar()
+                dispositivoActual.actualizar()
 
     def IniciarModulo(self) -> None:
         """
@@ -616,18 +612,6 @@ class elGarrobo(object):
         for deck in self.ListaDeck:
             deck.Brillo(Brillo)
 
-    def IniciarMQTT(self):
-        """Iniciar coneccion con Broker MQTT."""
-        self.ListaMQTT = []
-        self.Data["mqtt"] = leerData("mqtt")
-        # todo: no existe mqtt.json
-        if "mqtt" in self.Data and self.Data["mqtt"] is not None:
-            for DataMQTT in self.Data["mqtt"]:
-                ServidorMQTT = MiMQTT(DataMQTT, self.ejecutarAcción)
-                self.ListaMQTT.append(ServidorMQTT)
-            for ServidorMQTT in self.ListaMQTT:
-                ServidorMQTT.Conectar()
-
     def CargarOBS(self):
         """
         Inicialioza el Objeto de OBS
@@ -662,11 +646,11 @@ class elGarrobo(object):
         logger.info("ElGarrobo[Saliendo] - Adios :) ")
         if self.ModuloOBS:
             self.OBS.desconectar()
-        if self.ModuloMQTT:
-            for Servidor in self.ListaMQTT:
-                Servidor.Desconectar()
-        for dispositivo in self.listaDispositivos:
-            dispositivo.desconectar()
+        # if self.ModuloMQTT:
+        #     for Servidor in self.ListaMQTT:
+        #         Servidor.Desconectar()
+        for dispositivoActual in self.listaDispositivos:
+            dispositivoActual.desconectar()
         # raise SystemExit
         os._exit(0)
 
