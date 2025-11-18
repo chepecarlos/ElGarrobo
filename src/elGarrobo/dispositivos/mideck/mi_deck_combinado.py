@@ -35,8 +35,8 @@ class MiDeckCombinado(dispositivo):
             dataConfiguracion (dict): Datos de configuración del dispositivo
         """
 
+        super().__init__(dataConfiguracion)
         self.nombre = dataConfiguracion.get("nombre", "DeckCombinado")
-        self.archivo = dataConfiguracion.get("archivo", "")
         self.archivoFuente = dataConfiguracion.get("fuente", "")
         self.imagenesBase = dataConfiguracion.get("imagen_base", "")
         dataStreamDecks: dict = dataConfiguracion.get("streamDecks")
@@ -46,8 +46,6 @@ class MiDeckCombinado(dispositivo):
             deckTemporal.archivoFuente = self.archivoFuente
             deckTemporal.imagenesBase = self.imagenesBase
             self.listaDeck.append(deckTemporal)
-
-        super().__init__()
 
     def conectar(self) -> None:
         """Conecta todos los dispositivos los dispositivos"""

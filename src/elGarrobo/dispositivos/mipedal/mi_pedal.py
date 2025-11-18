@@ -23,10 +23,9 @@ class MiPedal(dispositivo):
         Args:
             dataConfiguracion (dict): Datos de configuración del dispositivo
         """
-
+        super().__init__(dataConfiguracion)
         self.nombre = dataConfiguracion.get("nombre", "pedal")
-        self.dispositivo = dataConfiguracion.get("dispositivo", "")
-        self.archivo = dataConfiguracion.get("archivo", "")
+
         self.id = dataConfiguracion.get("id", "")
         self.conectado: bool = False
 

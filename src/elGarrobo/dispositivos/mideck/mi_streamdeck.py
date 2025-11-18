@@ -33,9 +33,9 @@ class MiStreamDeck(dispositivo):
     "base inicio del conteo de teclas"
     desfaceTeclas: int = 0
     """Cuantas botones esta adelante del inicio
-    
+
     ejemplo:
-        desface es 10, el segundo botón haría la acción 12 
+        desface es 10, el segundo botón haría la acción 12
     """
     cantidadBotones: int = 0
     "Cantidad de botones en StreamDeck"
@@ -56,11 +56,10 @@ class MiStreamDeck(dispositivo):
             dataConfiguracion (dict): Datos de configuración del dispositivo
         """
 
-        super().__init__()
+        super().__init__(dataConfiguracion)
+        self.nombre: str = dataConfiguracion.get("nombre", "miStreamDeck")
         self.id = dataConfiguracion.get("id")
-        self.nombre: str = dataConfiguracion.get("nombre")
-        self.dispositivo: str = dataConfiguracion.get("dispositivo")
-        self.archivo = dataConfiguracion.get("archivo", "")
+
         self.deckGif = None
         self.layout = None
         self.ultimoDibujo = None
@@ -343,13 +342,20 @@ class MiStreamDeck(dispositivo):
         """
 
         TituloInicial: str = titulo
-        opciones: dict = accion.get("titulo_opciones", {})
+        opciones: dict = accion.get("titulo_opciones", dict())
+        if opciones is None:
+            opciones = dict()
         tamañoFuente: int = opciones.get("tamanno", 40)
         alinear: str = opciones.get("alinear", "centro")
         Borde_Color: str = opciones.get("borde_color", "black")
         Borde_Grosor: int = opciones.get("borde_grosor", 6)
         Ajustar: bool = opciones.get("ajustar", True)
         Titulo_Color: str = opciones.get("color", "white")
+        mqtt: str = opciones.get("mqtt", False)
+
+        if mqtt:
+            TituloInicial = mqtt
+            # TODO: Leer Data de MQTT
 
         Lineas = TituloInicial.split("\\n")
         Titulo = "\n".join(Lineas)

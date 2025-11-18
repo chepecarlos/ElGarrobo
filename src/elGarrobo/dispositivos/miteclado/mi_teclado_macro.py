@@ -29,15 +29,12 @@ class MiTecladoMacro(dispositivo):
         Args:
             dataConfiguracion (dict): Datos de configuración del dispositivo
         """
+        super().__init__(dataConfiguracion)
         self.nombre = dataConfiguracion.get("nombre", "Teclado")
-        self.dispositivo = dataConfiguracion.get("dispositivo", "")
-        self.archivo = dataConfiguracion.get("archivo", "")
-        self.activado = dataConfiguracion.get("activado", True)
+
         self.conectado = False
         self.Activo = True
         self.esperaReconectar = 5
-
-        super().__init__()
 
     def conectar(self):
         """Conecta con un teclado para escuchas botones presionados."""

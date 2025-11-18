@@ -58,21 +58,18 @@ class dispositivo:
 
     listaIndexUsados: list = list()
 
-    def __init__(self, nombre: str = None, dispositivo: str = None, archivo: str = None, folderPerfil: str = None):
+    def __init__(self, dataConfiguración: dict = None) -> None:
         """Inicializa un dispositivo base.
 
         Args:
-            nombre (str): Nombre del dispositivo
-            dispositivo (str): Ruta del dispositivo
-            archivo (str): Ruta del archivo de configuración
-            folderPerfil (str): Carpeta del perfil
+            dataConfiguración (dict): Datos de configuración del dispositivo
         """
-        if nombre is not None:
-            self.nombre = nombre
-        if dispositivo is not None:
-            self.dispositivo = dispositivo
-        if archivo is not None:
-            self.archivo = archivo
+
+        self.nombre = dataConfiguración.get("nombre")
+        self.dispositivo = dataConfiguración.get("dispositivo", "")
+        self.archivo = dataConfiguración.get("archivo", "")
+        self.activado = dataConfiguración.get("activado", True)
+
         self._listaAcciones: list[dict] = list()
         self.ejecutarAcción = None
         self.clase = ""
@@ -104,12 +101,13 @@ class dispositivo:
         dataDispositivos = ObtenerArchivo(claseDispositivo.archivoConfiguracion)
 
         if dataDispositivos is None:
-            logger.warning(f"Falta Informacion para cargar {claseDispositivo.tipo} {claseDispositivo.archivoConfiguracion}")
+            logger.warning(f"Falta información para cargar {claseDispositivo.tipo} {claseDispositivo.archivoConfiguracion}")
             return
 
         for dataActual in dataDispositivos:
             dispositivoActual = claseDispositivo(dataActual)
-            listaDispositivos.append(dispositivoActual)
+            if dispositivoActual.activado:
+                listaDispositivos.append(dispositivoActual)
 
         return listaDispositivos
 

@@ -48,8 +48,9 @@ class miGui(dispositivo):
 
     def __init__(self, dataConfiguracion: dict) -> None:
 
+        super().__init__(dataConfiguracion)
         self.nombre = dataConfiguracion.get("nombre", "miGui")
-        self.archivo = dataConfiguracion.get("archivo", "")
+
         self.puerto = dataConfiguracion.get("puerto", 8080)
 
         self.folder: str = "?"
@@ -477,6 +478,8 @@ class miGui(dispositivo):
 
     def conectar(self):
 
+        logger.info("Iniciando NiceGUI")
+
         app.on_connect(self.seConectorGUI)
         app.on_disconnect(self.seDesconectoGUI)
 
@@ -485,16 +488,19 @@ class miGui(dispositivo):
 
     def funciónHilo(self):
         logger.info("Iniciando GUI - Hilo")
-        ui.run(
-            title="ElGarrobo",
-            port=self.puerto,
-            reload=False,
-            show=False,
-            dark=True,
-            language="es",
-            uvicorn_logging_level="warning",
-            favicon="🦎",
-        )
+        try:
+            ui.run(
+                title="ElGarrobo",
+                port=self.puerto,
+                reload=False,
+                show=False,
+                dark=True,
+                language="es",
+                uvicorn_logging_level="warning",
+                favicon="🦎",
+            )
+        except Exception as error:
+            logger.error(f"GUI[Error] No se puedo iniciar GUI - {error}")
 
     def desconectar(self) -> None:
         logger.info("Saliendo de NiceGUI")
@@ -632,7 +638,7 @@ class miGui(dispositivo):
         self.actualizarPestañas(dispositivo)
 
     def actualizarIconos(self):
-        print("Dibujando GUI")
+        logger.info("Dibujando GUI")
 
         # self.editorAcción.update()
 
