@@ -18,6 +18,7 @@
 - Reproduce una pista de audio: [accionReproducir](./accionesOOP/accionSonidos)
 - Para todas las reproducciones: [accionPararReproducciones](./accionesOOP/accionSonidos)
 - Ejecuta accion preciosa y otra se suelta: [accionPresionar](./accionesOOP/accionPresionar)
+- Escribir archivo[accionEscribirArchivo](./accionesOOP/accionArchivo)
 
 ### Acciones de ElGarrobo
 - Abri interface web: [accionAbirGUI](./accionesOOP/accionAbirGUI)
@@ -36,6 +37,7 @@
 
 from .accion import accion
 from .accionAbirGUI import accionAbirGUI
+from .accionArchivo import accionEscribirArchivo
 from .accionBuscarVentana import accionBuscarVentana
 from .accionCambiarPagina import (
     accionActualizarPagina,
@@ -97,4 +99,5 @@ def cargarClasesAcciones() -> dict[str, accion]:
         "reproducion": accionReproducir,
         "detener_reproducion": accionPararReproducciones,
         "presionar": accionPresionar,
+        "escribir_archivo": accionEscribirArchivo,
     }
