@@ -296,7 +296,12 @@ class MiStreamDeck(dispositivo):
         topicTituloMQTT: str = opciones.get("mqtt", False)
 
         if topicTituloMQTT:
-            titulo = self.obtenerTituloMQTT(topicTituloMQTT, titulo)
+            tituloMQTT = self.obtenerTituloMQTT(topicTituloMQTT, titulo)
+
+            if "{}" in titulo and titulo != tituloMQTT:
+                titulo = titulo.format(tituloMQTT)
+            else:
+                titulo = tituloMQTT
 
         return titulo
 
