@@ -40,6 +40,7 @@ class miGui(dispositivo):
     "Color para botones"
 
     puerto: int = 8080
+    "puerto de la interface web"
 
     folderLabel: ui.label = None
     "Etiqueta del folder del dispositivo actual"
@@ -86,7 +87,7 @@ class miGui(dispositivo):
                     self.pestañas.classes(f"w-full bg-{self.colorOscuro} text-white")
                     self.paneles = ui.tab_panels(self.pestañas)
                     self.paneles.classes("w-full")
-                    self.mostrarPestañas()
+                    self.crearPestañas()
             self.estructura()
 
         @ui.page("/modulos")
@@ -132,13 +133,11 @@ class miGui(dispositivo):
                 tipo = self.tipoDispositivoSeleccionado()
                 incrementar = 1
             if tipo in ["steamdeck", "padal"]:
-                print("Transformando tecla")
                 try:
                     tecla = int(tecla) - incrementar
                 except:
                     ui.notify("Error con tecla no numero")
                     return
-            print("tipo", tipo, tecla, type(tecla))
 
             if self.dispositivoEditar is None:
 
@@ -201,7 +200,6 @@ class miGui(dispositivo):
                     acciónNueva: dict[str:any] = {"nombre": nombre, "key": tecla, "accion": acción}
                     acciónNueva["titulo"] = titulo
                     self.dispositivoEditar.listaAcciones.append(acciónNueva)
-                    print(self.dispositivoEditar.listaAcciones)
                 self.dispositivoEditar.salvarAcciones()
                 self.actualizarPestaña(self.dispositivoEditar)
             self.mostrarPestañas()
@@ -324,17 +322,13 @@ class miGui(dispositivo):
         self.dispositivoEditar = None
         self.opcionesEditar = None
 
-    def mostrarPestañas(self) -> None:
-
+    def crearPestañas(self) -> None:
+        """Crea las pestañas de los dispositivos"""
         if self.pestañas is None or self.paneles is None:
             logger.warning("No hay pestañas o paneles para mostrar")
             return
 
-        # self.pestañas.clear()
-        # self.paneles.clear()
-
         with self.pestañas:
-
             for dispositivoActual in self.listaDispositivos:
                 nombreDispositivo: str = dispositivoActual.nombre
                 dispositivoActual.pestaña = ui.tab(nombreDispositivo)
@@ -343,8 +337,17 @@ class miGui(dispositivo):
                 with self.paneles:
                     dispositivoActual.panel = ui.tab_panel(dispositivoActual.pestaña)
                     dispositivoActual.panel.classes("h-svh")
+                    with dispositivoActual.panel:
+                        ui.label(f"Cargando acciones de {nombreDispositivo}...")
+                dispositivoActual.funcionActualizarPestaña = self.actualizarPestaña
 
-                dispositivoActual.actualizarPestaña = self.actualizarPestaña
+        self.mostrarPestañas()
+
+    def mostrarPestañas(self) -> None:
+
+        if self.pestañas is None or self.paneles is None:
+            logger.warning("No hay pestañas o paneles para mostrar")
+            return
 
         for dispositivoActual in self.listaDispositivos:
             self.actualizarPestaña(dispositivoActual)
@@ -358,7 +361,6 @@ class miGui(dispositivo):
 
     def seleccionarAcción(self, accion: dict, dispositivo: dispositivo = None):
         if dispositivo is not None:
-            print(f"Modificar Accion de: {dispositivo.nombre}")
             self.dispositivoEditar = dispositivo
         else:
             self.dispositivoEditar = None

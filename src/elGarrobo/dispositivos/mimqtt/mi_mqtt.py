@@ -7,7 +7,7 @@ import paho.mqtt.client as mqtt
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.miLibrerias import ConfigurarLogging, SalvarValor
 
-logger = ConfigurarLogging(__name__, logging.INFO)
+logger = ConfigurarLogging(__name__)
 
 
 class MiMQTT(dispositivo):

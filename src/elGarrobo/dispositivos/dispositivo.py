@@ -39,7 +39,7 @@ class dispositivo:
     "Tipo de dispositivo"
     clase: str
     "Sub Categoria del dispositivo"
-    actualizarPestaña: callable = None
+    funcionActualizarPestaña: callable = None
     "Función que llama actualizar la information de GUI"
 
     pestaña = None
@@ -74,7 +74,7 @@ class dispositivo:
         self._listaAcciones: list[dict] = list()
         self.ejecutarAcción = None
         self.clase = ""
-        self.actualizarPestaña = None
+        self.funcionActualizarPestaña = None
         self.pestaña = None
         self.panel = None
 
@@ -229,8 +229,8 @@ class dispositivo:
     @listaAcciones.setter
     def listaAcciones(self, data: list[dict]):
         self._listaAcciones = data
-        if self.actualizarPestaña is not None:
-            self.actualizarPestaña(self)
+        if self.funcionActualizarPestaña is not None:
+            self.funcionActualizarPestaña(self)
 
     def salvarAcciones(self):
         folderBase = str(ObtenerFolderConfig())
