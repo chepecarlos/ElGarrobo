@@ -46,6 +46,8 @@ class dispositivo:
     "Pestaña del dispositivo en la interfaz"
     panel = None
     "Panel del dispositivo en la interfaz"
+    nivelOrdenar: int = 0
+    "Nivel para ordenar los dispositivos en la interfaz"
 
     modulo: str = ""
     "Modulo para cargar dispositivo"
@@ -70,6 +72,7 @@ class dispositivo:
         self.dispositivo = dataConfiguración.get("dispositivo", "")
         self.archivo = dataConfiguración.get("archivo", "")
         self.activado = dataConfiguración.get("activado", True)
+        self.nivelOrdenar = dataConfiguración.get("ordenar", 0)
 
         self._listaAcciones: list[dict] = list()
         self.ejecutarAcción = None
@@ -272,11 +275,13 @@ class dispositivo:
     @staticmethod
     def agregarIndexUsado(indexUsado: int):
         dispositivo.listaIndexUsados.append(indexUsado)
-        pass
 
     def actualizar(self):
         "Actualiza la imagen del dispositivo"
         self.recargar = False
 
     def __str__(self):
+        return f"{self.nombre}[{self.tipo}]"
+
+    def __repr__(self):
         return f"{self.nombre}[{self.tipo}]"

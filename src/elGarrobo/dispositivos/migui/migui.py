@@ -307,7 +307,6 @@ class miGui(dispositivo):
 
     def limpiarFormulario(self):
         """Limpia el formulario de acciones"""
-        logger.info("Limpiando formulario de acciones")
         self.botonAgregar.icon = "add"
         self.editorNombre.value = ""
         self.editorTecla.value = ""
@@ -327,6 +326,8 @@ class miGui(dispositivo):
         if self.pestañas is None or self.paneles is None:
             logger.warning("No hay pestañas o paneles para mostrar")
             return
+
+        self.listaDispositivos.sort(key=lambda x: x.nivelOrdenar, reverse=True)
 
         with self.pestañas:
             for dispositivoActual in self.listaDispositivos:
