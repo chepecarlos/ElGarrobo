@@ -583,57 +583,71 @@ class miGui(dispositivo):
                         ui.label("No acciones")
                         return
 
-                    with ui.row().classes("content p-2"):
-                        ui.label("Nombre").style("font-weight: bold; width: 100px")
-                        ui.label("Titulo").style("font-weight: bold; width: 100px")
-                        # ui.label("Imagen").style("font-weight: bold; width: 150px")
-                        ui.label("Tecla").style("font-weight: bold; width: 100px")
-                        ui.label("Acción").style("font-weight: bold; width: 125px")
-                        ui.label("Opciones").style("font-weight: bold; width: 180px")
+                    self.dibujarAcciones(acciones)
 
-                    for acciónActual in acciones:
-                        nombreAcción = acciónActual.get("nombre")
-                        teclaAcción = acciónActual.get("key")
-                        acciónAcción = acciónActual.get("accion")
-                        tituloAcción = acciónActual.get("titulo")
-                        imagenAcción = acciónActual.get("imagen")
-
-                        with ui.row().classes("content p-2 border-2 border-teal-600"):
-                            ui.label(nombreAcción).style("width: 100px")
-                            ui.label(tituloAcción).style("width: 100px")
-                            # if tipo == "steamdeck":
-                            # ui.image(imagenAcción)
-
-                            # imagenAcción = self.obtenerRutaImagen(imagenAcción, folder)
-                            # if imagenAcción is not None:
-                            #     # ui.label(imagenAcción).style("width: 150px")
-                            #     pass
-                            # else:
-                            #     pass
-                            # ColorFondo = "black"
-                            # image: Image = Image.new("RGB", [100, 100], color=ColorFondo)
-                            # ObtenerImagen(image, acciónActual, folder)
-
-                            # imagen = ui.image(image).classes("w-12").style("width: 150px")
-                            # imagen.on("click", lambda a=acciónActual: self.seleccionarAcción(a))
-                            # ui.label("").style("width: 150px")
-
-                            ui.label(teclaAcción).style("width: 100px")
-
-                            claseAcción = self.obtenerAcciónOop(acciónAcción)
-                            if claseAcción is None:
-                                ui.label(f"{acciónAcción}-vieja").style("width: 125px")
-                                # TODO: montar función viejas
-                            else:
-                                objetoAcción = claseAcción()
-                                nombreClase = objetoAcción.nombre
-                                ui.label(f"{nombreClase}").style("width: 125px")
-
-                            with ui.button_group().props("rounded"):
-                                ui.button(icon="play_arrow", color="teal-500", on_click=lambda a=acciónActual: self.ejecutaEvento(a, True))
-                                ui.button(icon="edit", color="teal-500", on_click=lambda a=acciónActual: self.seleccionarAcción(a, dispositivo))
-                                ui.button(icon="delete", color="teal-500", on_click=lambda a=acciónActual, d=dispositivo: self.borrarAcción(a, d))
             self.actualizarCabecera()
+
+    def dibujarAcciones(self, listaAcciones: list[dict]) -> None:
+        """Dibuja las acciones de los dispositivos en la interfaz web
+
+        Args:
+            listaAcciones (list[dict]): Lista de acciones a dibujar
+        """
+
+        with ui.row().classes("content p-2"):
+            ui.label("Nombre").style("font-weight: bold; width: 100px")
+            ui.label("Titulo").style("font-weight: bold; width: 100px")
+            # ui.label("Imagen").style("font-weight: bold; width: 150px")
+            ui.label("Tecla").style("font-weight: bold; width: 100px")
+            ui.label("Acción").style("font-weight: bold; width: 125px")
+            ui.label("Opciones").style("font-weight: bold; width: 180px")
+
+        for acciónActual in listaAcciones:
+            nombreAcción = acciónActual.get("nombre")
+            teclaAcción = acciónActual.get("key")
+            acciónAcción = acciónActual.get("accion")
+            tituloAcción = acciónActual.get("titulo")
+            imagenAcción = acciónActual.get("imagen")
+
+            with ui.row().classes("content p-2 border-2 border-teal-600"):
+                ui.label(nombreAcción).style("width: 100px")
+                ui.label(tituloAcción).style("width: 100px")
+                # if tipo == "steamdeck":
+                # ui.image(imagenAcción)
+
+                # imagenAcción = self.obtenerRutaImagen(imagenAcción, folder)
+                # if imagenAcción is not None:
+                #     # ui.label(imagenAcción).style("width: 150px")
+                #     pass
+                # else:
+                #     pass
+                # ColorFondo = "black"
+                # image: Image = Image.new("RGB", [100, 100], color=ColorFondo)
+                # ObtenerImagen(image, acciónActual, folder)
+
+                # imagen = ui.image(image).classes("w-12").style("width: 150px")
+                # imagen.on("click", lambda a=acciónActual: self.seleccionarAcción(a))
+                # ui.label("").style("width: 150px")
+
+                ui.label(teclaAcción).style("width: 100px")
+
+                claseAcción = self.obtenerAcciónOop(acciónAcción)
+                if claseAcción is not None:
+                    objetoAcción = claseAcción()
+                    nombreClase = objetoAcción.nombre
+                    ui.label(f"{nombreClase}").style("width: 125px")
+                else:
+                    ui.label(f"{acciónAcción}-vieja").style("width: 125px")
+                    # TODO: montar función viejas
+
+                with ui.button_group().props("rounded"):
+                    ui.button(icon="play_arrow", color="teal-500", on_click=lambda a=acciónActual: self.buscarAccion(a, self.estadoTecla.PRESIONADA))
+                    ui.button(icon="edit", color="teal-500", on_click=lambda a=acciónActual: self.seleccionarAcción(a, dispositivo))
+                    ui.button(icon="delete", color="teal-500", on_click=lambda a=acciónActual, d=dispositivo: self.borrarAcción(a, d))
+
+    def buscarAccion(self, acción: dict, estado):
+        logger.info(f"Evento[{acción.get('nombre')}] {self.nombre}[{acción.get('key')}-{estado.name}]")
+        self.ejecutarAcción(acción)
 
     def borrarAcción(self, accion, dispositivo: dispositivo):
         dispositivo.listaAcciones.remove(accion)
