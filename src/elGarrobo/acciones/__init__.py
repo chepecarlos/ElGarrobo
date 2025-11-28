@@ -1,6 +1,6 @@
 """Lista de Acciones."""
 
-from .archivos import escribirValor, escribirValores, leerValor
+from .archivos import escribirValor, escribirValores
 from .emular_teclado import comandoPegar, comandoPortapapeles
 from .operaciones import OperacionConstrain, operacionAsignar, operacionConcatenar
 from .textbox import VentanaTexto
@@ -31,7 +31,7 @@ def CargarAcciones():
         # "detener_reproducion": PararReproducion,
         "textovoz": TextoVoz,
         # Archivos
-        "leer_valor": leerValor,
+        # "leer_valor": leerValor,
         "escribir_valor": escribirValor,
         "escribir_valores": escribirValores,
         # "escribir_archivo": escribirArchivo,

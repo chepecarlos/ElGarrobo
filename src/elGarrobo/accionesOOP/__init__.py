@@ -19,6 +19,7 @@
 - Para todas las reproducciones: [accionPararReproducciones](./accionesOOP/accionSonidos)
 - Ejecuta accion preciosa y otra se suelta: [accionPresionar](./accionesOOP/accionPresionar)
 - Escribir archivo[accionEscribirArchivo](./accionesOOP/accionArchivo)
+- Lee un valor de un archivo[accionLeerValor](./accionesOOP/accionArchivo)
 
 ### Acciones de ElGarrobo
 - Abri interface web: [accionAbirGUI](./accionesOOP/accionAbirGUI)
@@ -37,7 +38,7 @@
 
 from .accion import accion
 from .accionAbirGUI import accionAbirGUI
-from .accionArchivo import accionEscribirArchivo
+from .accionArchivo import accionEscribirArchivo, accionLeerValor
 from .accionBuscarVentana import accionBuscarVentana
 from .accionCambiarPagina import (
     accionActualizarPagina,
@@ -100,4 +101,5 @@ def cargarClasesAcciones() -> dict[str, accion]:
         "detener_reproducion": accionPararReproducciones,
         "presionar": accionPresionar,
         "escribir_archivo": accionEscribirArchivo,
+        "leer_valor": accionLeerValor,
     }

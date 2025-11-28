@@ -5,30 +5,30 @@ from elGarrobo.miLibrerias import ConfigurarLogging, FuncionesArchivos
 logger = ConfigurarLogging(__name__)
 
 
-def leerValor(opciones):
-    """
-    Lee un atributo de un archivo y lo devuelve
+# def leerValor(opciones):
+#     """
+#     Lee un atributo de un archivo y lo devuelve
 
-    archivo -> stl
-        Nombre del archivo
-    atributo -> stl
-        Nombre del atributo
-    """
-    archivo = opciones.get("archivo")
-    atributo = opciones.get("atributo")
-    if archivo is None:
-        logger.info("Requerido[archivo,]")
-        return
+#     archivo -> stl
+#         Nombre del archivo
+#     atributo -> stl
+#         Nombre del atributo
+#     """
+#     archivo = opciones.get("archivo")
+#     atributo = opciones.get("atributo")
+#     if archivo is None:
+#         logger.info("Requerido[archivo,]")
+#         return
 
-    data = None
-    if atributo is None:
-        logger.info(f"Leer[{archivo}]")
-        data = FuncionesArchivos.ObtenerArchivo(archivo)
-    else:
-        logger.info(f"Leer[{archivo}]: {atributo}")
-        data = FuncionesArchivos.ObtenerValor(archivo, atributo)
-    logger.info(f"Leído[{data}]")
-    return data
+#     data = None
+#     if atributo is None:
+#         logger.info(f"Leer[{archivo}]")
+#         data = FuncionesArchivos.ObtenerArchivo(archivo)
+#     else:
+#         logger.info(f"Leer[{archivo}]: {atributo}")
+#         data = FuncionesArchivos.ObtenerValor(archivo, atributo)
+#     logger.info(f"Leído[{data}]")
+#     return data
 
 
 def escribirValores(opciones):
@@ -83,16 +83,16 @@ def escribirValor(opciones):
         FuncionesArchivos.SalvarValor(archivo, atributo, valor, local=local)
 
 
-def escribirArchivo(opciones):
+# def escribirArchivo(opciones):
 
-    archivo = opciones.get("archivo")
-    data = opciones.get("data")
+#     archivo = opciones.get("archivo")
+#     data = opciones.get("data")
 
-    if archivo is None or data is None:
-        logger.info("Falta información para")
-        return
+#     if archivo is None or data is None:
+#         logger.info("Falta información para")
+#         return
 
-    print(archivo)
-    print(data)
+#     print(archivo)
+#     print(data)
 
-    FuncionesArchivos.SalvarArchivo(archivo, data)
+#     FuncionesArchivos.SalvarArchivo(archivo, data)
