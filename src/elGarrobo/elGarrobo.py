@@ -1,6 +1,8 @@
 import os
 import random
 
+from elGarrobo import miLibrerias
+
 from .acciones import CargarAcciones
 from .accionesOOP import (
     accion,
@@ -116,12 +118,13 @@ class elGarrobo(object):
         """
         Carga los modulos activos.
         """
-        logger.info(f"Configurando[Modulos]")
+        logger.info("Configurando[Modulos]")
         Modulos = leerData("modulos")
         self.modulos = Modulos
 
         if Modulos is None:
-            logger.error("No existe archivo modulos.md")
+            rutaConfig = miLibrerias.ObtenerFolderConfig()
+            logger.error(f"No existe archivo modulos.md en {rutaConfig}")
             os._exit(0)
 
         # TODO: Modulos en un dict
