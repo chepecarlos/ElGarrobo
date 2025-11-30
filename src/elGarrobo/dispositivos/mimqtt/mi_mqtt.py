@@ -86,6 +86,9 @@ class MiMQTT(dispositivo):
             logger.info(f"MQTT[Accion-Control] - [{self.nombreControl}]:{self.topicControl}")
             client.subscribe(self.topicControl)
             client.publish(f"{self.topicControl}/{self.nombreControl}", "conectado")
+        for topic in self.listaTopicTitulo:
+            logger.info(f"MQTT[Suscrito-Titulo] - {topic}")
+            client.subscribe(topic)
 
     def eventoDesconectando(self, client, userdata, rc):
         logger.info(f"MQTT[Desconectando] - {self.nombre}")
