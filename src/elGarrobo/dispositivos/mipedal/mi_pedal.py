@@ -13,6 +13,8 @@ class MiPedal(dispositivo):
 
     modulo = "pedal"
     tipo = "pedal"
+    compatibles = ["Stream Deck Pedal"]
+
     archivoConfiguracion = "pedal.md"
     deck: DeviceManager = None
     idDeck: int = -1
@@ -35,6 +37,10 @@ class MiPedal(dispositivo):
         listaIdUsados = dispositivo.listaIndexUsados
 
         for idActual, deck in enumerate(streamdecks):
+
+            if deck.DECK_TYPE not in self.compatibles:
+                continue
+
             idProbar = True
             for idUsado in listaIdUsados:
                 if idActual == idUsado:

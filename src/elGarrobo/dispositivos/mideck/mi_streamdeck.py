@@ -20,6 +20,8 @@ class MiStreamDeck(dispositivo):
 
     modulo = "streamdeck"
     tipo = "streamdeck"
+    compatibles = ["Stream Deck Original"]
+    # TODO: Agregar mas tipos compatibles
 
     baseTeclas: int = None
     "base inicio del conteo de teclas"
@@ -66,6 +68,10 @@ class MiStreamDeck(dispositivo):
 
         # TODO: Cambiar metodo para cargar StreanDeks
         for idActual, deck in enumerate(listaStreamdecks):
+
+            if deck.DECK_TYPE not in self.compatibles:
+                continue
+
             idProbar = True
             for idUsado in listaIdUsados:
                 if idActual == idUsado:
