@@ -46,6 +46,9 @@ class MiStreamDeck(dispositivo):
 
     imagenesBase: dict = None
 
+    pausarDibujando: bool = False
+    "Pausar el dibujado mientra se actualiza la información"
+
     fps: int = 60
     "fotogramas por segundo para gif"
 
@@ -96,12 +99,10 @@ class MiStreamDeck(dispositivo):
                         brillo: int = ObtenerValor("data/streamdeck.json", "brillo")
                         # Todo: brillo no es un int
                         self.deck.set_brightness(brillo)
-                        # self.deckGif = DeckGif(self.deck, self.folderActual)
-                        # self.deckGif.archivoFuente = self.archivoFuente
-                        # self.deckGif.start()
                         self.deck.set_key_callback(self.actualizarBoton)
                         self.idDeck = idActual
                         dispositivo.agregarIndexUsado(self.idDeck)
+
                         self.hiloGif = threading.Thread(target=self.animaciónGif)
                         self.hiloGif.start()
 
@@ -158,6 +159,7 @@ class MiStreamDeck(dispositivo):
         #     return
 
         logger.info(f"Deck[Dibujar] {self.nombre}")
+        self.pausarDibujando = True
         for i in range(self.cantidadBotones):
             botonDesface: int = i + self.baseTeclas + self.desfaceTeclas
 
@@ -191,6 +193,7 @@ class MiStreamDeck(dispositivo):
                     "gif": None,
                 }
                 self.limpiarIcono(i)
+        self.pausarDibujando = False
 
     def limpiarIconos(self):
         """Borra iconos de todo los botones de StreamDeck."""
@@ -215,27 +218,21 @@ class MiStreamDeck(dispositivo):
         if self.conectado:
             self.deck.set_brightness(Brillo)
 
-    # def CambiarFolder(self, Folder):
-    #     logger.debug(f"Entrando a {Folder}")
-    #     self.folderActual = Folder
-    #     self.ultimoDibujo = -self.tiempoDibujar
-    #     self.listaBotones = None
-
-    def actualizarBoton(self, Deck, key, estado):
+    def actualizarBoton(self, Deck, key, estado) -> None:
         numeroTecla = key + self.baseTeclas + self.desfaceTeclas
         if estado:
             self.buscarAccion(numeroTecla, self.estadoTecla.PRESIONADA)
         else:
             self.buscarAccion(numeroTecla, self.estadoTecla.LIBERADA)
 
-    def desconectar(self):
+    def desconectar(self) -> None:
         if self.conectado:
             logger.info(f"Deck[Desconectando] - {self.nombre}")
             self.conectado = False
             self.deck.reset()
             self.deck.close()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"MiStreamDeck(id={self.id}, nombre={self.nombre}, serial={self.dispositivo}, layout={self.layout})"
 
     def actualizarIconoBoton(self, indice: int, accionActual: dict):
@@ -619,17 +616,17 @@ class MiStreamDeck(dispositivo):
         siguienteFrame = Fraction(time.monotonic())
 
         while self.deck.is_open():
-            try:
-                with self.deck:
-                    if self.listaBotones is not None:
+            if not self.pausarDibujando and self.listaBotones is not None:
+                try:
+                    with self.deck:
                         for i, accionActual in enumerate(self.listaBotones):
                             frames = accionActual.get("gif")
                             if not frames:
                                 continue
                             self.deck.set_key_image(i, next(frames))
-            except TransportError as err:
-                print("TransportError: {0}".format(err))
-                break
+                except TransportError as err:
+                    print("TransportError: {0}".format(err))
+                    break
 
             siguienteFrame += tiempoFrame
 
