@@ -1,9 +1,13 @@
 # https://python-elgato-streamdeck.readthedocs.io/en/stable/index.html
 
+import itertools
 import os
+import threading
+import time
+from fractions import Fraction
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageSequence
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Devices.StreamDeck import StreamDeck
 from StreamDeck.ImageHelpers import PILHelper
@@ -11,8 +15,6 @@ from StreamDeck.Transport.Transport import TransportError
 
 from elGarrobo.dispositivos import dispositivo
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor
-
-from .mi_deck_gif import DeckGif
 
 logger = ConfigurarLogging(__name__)
 
@@ -44,7 +46,10 @@ class MiStreamDeck(dispositivo):
 
     imagenesBase: dict = None
 
-    def __init__(self, dataConfiguracion: dict):
+    fps: int = 60
+    "fotogramas por segundo para gif"
+
+    def __init__(self, dataConfiguracion: dict) -> None:
         """Inicializando Dispositivo de MiDeckCombinado
 
         Args:
@@ -54,6 +59,7 @@ class MiStreamDeck(dispositivo):
         super().__init__(dataConfiguracion)
         self.nombre: str = dataConfiguracion.get("nombre", "miStreamDeck")
         self.id = dataConfiguracion.get("id")
+        self.fps = dataConfiguracion.get("fps", 60)
 
         self.deckGif = None
         self.layout = None
@@ -90,12 +96,15 @@ class MiStreamDeck(dispositivo):
                         brillo: int = ObtenerValor("data/streamdeck.json", "brillo")
                         # Todo: brillo no es un int
                         self.deck.set_brightness(brillo)
-                        self.deckGif = DeckGif(self.deck, self.folderActual)
-                        self.deckGif.archivoFuente = self.archivoFuente
-                        self.deckGif.start()
+                        # self.deckGif = DeckGif(self.deck, self.folderActual)
+                        # self.deckGif.archivoFuente = self.archivoFuente
+                        # self.deckGif.start()
                         self.deck.set_key_callback(self.actualizarBoton)
                         self.idDeck = idActual
                         dispositivo.agregarIndexUsado(self.idDeck)
+                        self.hiloGif = threading.Thread(target=self.animaciónGif)
+                        self.hiloGif.start()
+
                         logger.info(f"StreamDeck[Conectado] - {self.nombre}[{self.deck.get_serial_number()}]")
 
                         return
@@ -115,7 +124,7 @@ class MiStreamDeck(dispositivo):
         logger.warning(f"StreamDeck[No encontró] - {self.nombre}")
         self.conectado = False
 
-    def actualizarIconos(self):
+    def actualizarIconos(self) -> None:
         """Refresca iconos, tomando en cuenta pagina actual."""
         if not self.conectado:
             return
@@ -132,7 +141,11 @@ class MiStreamDeck(dispositivo):
         if self.listaBotones is None:
             self.listaBotones = list()
             for _ in range(self.cantidadBotones):
-                data = {"imagen": None, "titulo": None}
+                data = {
+                    "imagen": None,
+                    "titulo": None,
+                    "gif": None,
+                }
                 self.listaBotones.append(data)
 
         # tiempoActual = time.time()
@@ -167,21 +180,23 @@ class MiStreamDeck(dispositivo):
                 accionVieja["titulo"] = tituloActual
 
                 if imagenActual is not None and imagenActual.endswith(".gif"):
-                    self.limpiarIcono(i)
-                    self.deckGif.ActualizarGif(i, accionActual, self.folderPerfil / self.folderActual)
+                    accionVieja["gif"] = self.crearGif(i, accionActual)
                 else:
-                    self.deckGif.Limpiar(i)
                     self.actualizarIconoBoton(i, accionActual)
+                    accionVieja["gif"] = None
             else:
-                self.deckGif.Limpiar(i)
-                self.listaBotones[i] = {"imagen": None, "titulo": None}
+                self.listaBotones[i] = {
+                    "imagen": None,
+                    "titulo": None,
+                    "gif": None,
+                }
                 self.limpiarIcono(i)
 
     def limpiarIconos(self):
         """Borra iconos de todo los botones de StreamDeck."""
         if self.conectado:
             logger.info(f"Limpiando {self.nombre}")
-            self.deckGif.Limpiar()
+            # self.deckGif.Limpiar()
             for i in range(self.cantidadBotones):
                 self.limpiarIcono(i)
             self.archivoImagen = None
@@ -200,10 +215,11 @@ class MiStreamDeck(dispositivo):
         if self.conectado:
             self.deck.set_brightness(Brillo)
 
-    def CambiarFolder(self, Folder):
-        logger.debug(f"Entrando a {Folder}")
-        self.folderActual = Folder
-        self.ultimoDibujo = -self.tiempoDibujar
+    # def CambiarFolder(self, Folder):
+    #     logger.debug(f"Entrando a {Folder}")
+    #     self.folderActual = Folder
+    #     self.ultimoDibujo = -self.tiempoDibujar
+    #     self.listaBotones = None
 
     def actualizarBoton(self, Deck, key, estado):
         numeroTecla = key + self.baseTeclas + self.desfaceTeclas
@@ -215,7 +231,6 @@ class MiStreamDeck(dispositivo):
     def desconectar(self):
         if self.conectado:
             logger.info(f"Deck[Desconectando] - {self.nombre}")
-            self.deckGif.Desconectar()
             self.conectado = False
             self.deck.reset()
             self.deck.close()
@@ -313,9 +328,17 @@ class MiStreamDeck(dispositivo):
         return titulo
 
     def calcularRutaImagen(self, rutaImagen: str) -> str:
+        """Calcula la Ruta absoluta de imagen
+
+        Args:
+            rutaImagen (str): ruta relativa de la imagen
+
+        Returns:
+            str: ruta absoluta de la imagen
+        """
 
         folderPerfil = self._folderConfigPerfil()
-        folderActual = Path(self.folderActual)
+        # folderActual = Path(self.folderActual)
 
         pathImagen = Path(rutaImagen)
 
@@ -546,4 +569,71 @@ class MiStreamDeck(dispositivo):
         if titulo is None:
             return tituloInicial
         return titulo
-        return titulo
+
+    def crearGif(self, indice: int, accionActual: dict) -> itertools.cycle:
+        """Preparar el git para usar con StreamDeck
+
+        Args:
+            indice (int): id del botón
+            accionActual (dict): Información del botón
+
+        Returns:
+            itertools.cycle: lista de imagen listos para mostrarse en StreamDeck
+        """
+
+        listaFrame: list = list()
+        colorFondo: str = "black"
+        rutaGif: str = self.buscarDirecionImagen(accionActual)
+
+        rutaGif = self.calcularRutaImagen(rutaGif)
+
+        if rutaGif is None:
+            logger.warning(f"{self.nombre}[No Gifs] {indice + self.baseTeclas + self.desfaceTeclas} {rutaGif}")
+            return
+
+        opciones = accionActual.get("imagen_opciones")
+
+        if opciones:
+            colorFondo = opciones.get("fondo") or colorFondo
+
+        cargarGif = Image.open(rutaGif)
+        for frame in ImageSequence.Iterator(cargarGif):
+            frameActual = PILHelper.create_scaled_image(self.deck, frame, background=colorFondo)
+
+            titulo = self.buscarTitulo(accionActual)
+
+            if titulo:
+                self.ponerTexto(frameActual, titulo, accionActual, (rutaGif, str))
+
+            imagenNativa = PILHelper.to_native_format(self.deck, frameActual)
+
+            listaFrame.append(imagenNativa)
+
+        listaFrame: itertools.cycle = itertools.cycle(listaFrame)
+
+        return listaFrame
+
+    def animaciónGif(self) -> None:
+
+        tiempoFrame = Fraction(1, self.fps)
+        siguienteFrame = Fraction(time.monotonic())
+
+        while self.deck.is_open():
+            try:
+                with self.deck:
+                    if self.listaBotones is not None:
+                        for i, accionActual in enumerate(self.listaBotones):
+                            frames = accionActual.get("gif")
+                            if not frames:
+                                continue
+                            self.deck.set_key_image(i, next(frames))
+            except TransportError as err:
+                print("TransportError: {0}".format(err))
+                break
+
+            siguienteFrame += tiempoFrame
+
+            tiempoEspera = float(siguienteFrame) - time.monotonic()
+
+            if tiempoEspera >= 0:
+                time.sleep(tiempoEspera)

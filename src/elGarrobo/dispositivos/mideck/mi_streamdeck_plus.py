@@ -1,6 +1,12 @@
+import io
+
+from PIL import Image
 from StreamDeck.Devices.StreamDeck import DialEventType, TouchscreenEventType
 
 from elGarrobo.dispositivos.mideck.mi_streamdeck import MiStreamDeck
+from elGarrobo.miLibrerias import ConfigurarLogging
+
+logger = ConfigurarLogging(__name__)
 
 
 class MiStreamDeckPlus(MiStreamDeck):
@@ -55,3 +61,15 @@ class MiStreamDeckPlus(MiStreamDeck):
         elif evt_type == TouchscreenEventType.DRAG:
 
             print("Drag started @ " + str(value["x"]) + "," + str(value["y"]) + " ended @ " + str(value["x_out"]) + "," + str(value["y_out"]))
+
+    def actualizarIconos(self) -> None:
+
+        super().actualizarIconos()
+
+        img = Image.new("RGB", (800, 100), "red")
+
+        img_bytes = io.BytesIO()
+        img.save(img_bytes, format="JPEG")
+        touchscreen_image_bytes = img_bytes.getvalue()
+
+        self.deck.set_touchscreen_image(touchscreen_image_bytes, 0, 0, 800, 100)

@@ -30,6 +30,8 @@ class MiDeckCombinado(dispositivo):
 
     archivoFuente: str = None
     "fuente para texto de botones"
+    fps: int = 60
+    "fotogramas por segundo para gif"
 
     def __init__(self, dataConfiguracion: dict) -> None:
         """Inicializando Dispositivo de MiDeckCombinado
@@ -43,6 +45,7 @@ class MiDeckCombinado(dispositivo):
         self.nombre = dataConfiguracion.get("nombre", "DeckCombinado")
         self.archivoFuente = dataConfiguracion.get("fuente", "")
         self.imagenesBase = dataConfiguracion.get("imagen_base", "")
+        self.fps = dataConfiguracion.get("fps", 20)
         dataStreamDecks: dict = dataConfiguracion.get("streamDecks")
         dataStreamDecksPlus: dict = dataConfiguracion.get("streamDecksPlus")
 
@@ -51,6 +54,7 @@ class MiDeckCombinado(dispositivo):
                 deckTemporal: MiStreamDeck = MiStreamDeck(deckActual)
                 deckTemporal.archivoFuente = self.archivoFuente
                 deckTemporal.imagenesBase = self.imagenesBase
+                deckTemporal.fps = self.fps
                 self.listaDeck.append(deckTemporal)
 
         if dataStreamDecksPlus is not None:
@@ -58,6 +62,7 @@ class MiDeckCombinado(dispositivo):
                 deckTemporal: MiStreamDeckPlus = MiStreamDeckPlus(deckActualPlus)
                 deckTemporal.archivoFuente = self.archivoFuente
                 deckTemporal.imagenesBase = self.imagenesBase
+                deckTemporal.fps = self.fps
                 self.listaDeck.append(deckTemporal)
 
     def conectar(self) -> None:
@@ -172,5 +177,4 @@ class MiDeckCombinado(dispositivo):
             # self.limpiarIconos()
             self.actualizarIconos()
 
-        super().actualizar()
         super().actualizar()

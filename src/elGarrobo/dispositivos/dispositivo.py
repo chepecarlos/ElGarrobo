@@ -255,7 +255,13 @@ class dispositivo:
         # self.listaAcciones = list()
         # self.cargarAccionesFolder(".", directo=True, recargar=True)
 
-    def buscarAccion(self, tecla: str, estado: estadoTecla):
+    def buscarAccion(self, tecla: str, estado: estadoTecla) -> None:
+        """Busca la accion a ejecutarse
+
+        Args:
+            tecla (str): cual tecla se precioso
+            estado (estadoTecla): La tecla se precioso o se soltó
+        """
         for acción in self.listaAcciones:
             if str(acción.get("key")) == str(tecla):
                 if estado == self.estadoTecla.PRESIONADA:
@@ -267,7 +273,6 @@ class dispositivo:
                     return
         if estado == self.estadoTecla.PRESIONADA:
             logger.info(f"Evento[No asignado] {self.nombre}[{tecla}]")
-        return None
 
     def configurarFuncionAccion(self, funcionAccion: callable):
         self.ejecutarAcción = funcionAccion
