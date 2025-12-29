@@ -52,6 +52,9 @@ class MiStreamDeck(dispositivo):
     fps: int = 60
     "fotogramas por segundo para gif"
 
+    _gitCache: dict[tuple[str, str, str], itertools.cycle] = {}
+    "Caché para Gifs: clave(rutaGif, colorFondo, titulo)"
+
     def __init__(self, dataConfiguracion: dict) -> None:
         """Inicializando Dispositivo de MiDeckCombinado
 
@@ -68,6 +71,7 @@ class MiStreamDeck(dispositivo):
         self.layout = None
         self.ultimoDibujo = None
         self.tiempoDibujar: float = 0.4
+        self._gitCache = {}
         # self.archivoImagen = None
 
     def conectar(self):
@@ -593,11 +597,16 @@ class MiStreamDeck(dispositivo):
         if opciones:
             colorFondo = opciones.get("fondo") or colorFondo
 
+        titulo = self.buscarTitulo(accionActual)
+
+        claveCache = (str(rutaGif), str(colorFondo), str(titulo))
+
+        if claveCache in self._gitCache:
+            return self._gitCache[claveCache]
+
         cargarGif = Image.open(rutaGif)
         for frame in ImageSequence.Iterator(cargarGif):
             frameActual = PILHelper.create_scaled_image(self.deck, frame, background=colorFondo)
-
-            titulo = self.buscarTitulo(accionActual)
 
             if titulo:
                 self.ponerTexto(frameActual, titulo, accionActual, (rutaGif, str))
@@ -607,6 +616,8 @@ class MiStreamDeck(dispositivo):
             listaFrame.append(imagenNativa)
 
         listaFrame: itertools.cycle = itertools.cycle(listaFrame)
+
+        self._gitCache[claveCache] = listaFrame
 
         return listaFrame
 
