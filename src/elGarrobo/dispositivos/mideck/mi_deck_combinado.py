@@ -2,6 +2,7 @@ from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 from .mi_streamdeck import MiStreamDeck
+from .mi_streamdeck_plus import MiStreamDeckPlus
 
 logger = ConfigurarLogging(__name__)
 
@@ -36,16 +37,26 @@ class MiDeckCombinado(dispositivo):
         """
 
         super().__init__(dataConfiguracion)
+        self.listaDeck = list()
         self.nombre = dataConfiguracion.get("nombre", "DeckCombinado")
         self.archivoFuente = dataConfiguracion.get("fuente", "")
         self.imagenesBase = dataConfiguracion.get("imagen_base", "")
         dataStreamDecks: dict = dataConfiguracion.get("streamDecks")
+        dataStreamDecksPlus: dict = dataConfiguracion.get("streamDecksPlus")
 
-        for deckActual in dataStreamDecks:
-            deckTemporal: MiStreamDeck = MiStreamDeck(deckActual)
-            deckTemporal.archivoFuente = self.archivoFuente
-            deckTemporal.imagenesBase = self.imagenesBase
-            self.listaDeck.append(deckTemporal)
+        if dataStreamDecks is not None:
+            for deckActual in dataStreamDecks:
+                deckTemporal: MiStreamDeck = MiStreamDeck(deckActual)
+                deckTemporal.archivoFuente = self.archivoFuente
+                deckTemporal.imagenesBase = self.imagenesBase
+                self.listaDeck.append(deckTemporal)
+
+        if dataStreamDecksPlus is not None:
+            for deckActualPlus in dataStreamDecksPlus:
+                deckTemporal: MiStreamDeckPlus = MiStreamDeckPlus(deckActualPlus)
+                deckTemporal.archivoFuente = self.archivoFuente
+                deckTemporal.imagenesBase = self.imagenesBase
+                self.listaDeck.append(deckTemporal)
 
     def conectar(self) -> None:
         """Conecta todos los dispositivos los dispositivos"""
@@ -110,6 +121,10 @@ class MiDeckCombinado(dispositivo):
     def siguientePagina(self):
         """Cambia la pagina los StreamDeck Combinados"""
 
+        if not self.listaAcciones:
+            logger.warning(f"No hay acciones para cambiar pagina en {self.nombre}")
+            return
+
         ultimaAccion = max(self.listaAcciones, key=lambda x: int(x["key"])).get("key")
 
         for deck in self.listaDeck:
@@ -123,6 +138,10 @@ class MiDeckCombinado(dispositivo):
 
     def anteriorPagina(self):
         """Regresa una pagina los StreamDeck Combinados"""
+
+        if not self.listaAcciones:
+            logger.warning(f"No hay acciones para cambiar pagina en {self.nombre}")
+            return
 
         for deck in self.listaDeck:
             if deck.desfaceTeclas - self.cantidadBotones < 0:

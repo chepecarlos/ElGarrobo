@@ -95,7 +95,7 @@ class MiStreamDeck(dispositivo):
                         self.deck.set_key_callback(self.actualizarBoton)
                         self.idDeck = idActual
                         dispositivo.agregarIndexUsado(self.idDeck)
-                        logger.info(f"StreamDeck[Conectado] - {self.nombre}")
+                        logger.info(f"StreamDeck[Conectado] - {self.nombre}[{self.deck.get_serial_number()}]")
 
                         return
                     else:
@@ -544,4 +544,5 @@ class MiStreamDeck(dispositivo):
         titulo = ObtenerValor(archivoTituloMQTT, topicTitulo)
         if titulo is None:
             return tituloInicial
+        return titulo
         return titulo
