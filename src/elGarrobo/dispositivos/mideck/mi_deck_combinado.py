@@ -25,6 +25,8 @@ class MiDeckCombinado(dispositivo):
     """
     cantidadBotones: int = 0
     "Cantidad de botones en StreamDeck Combinado"
+    cantidadDial: int = 0
+    "Cantidad de Dial en StreamDeck Combinado"
 
     archivoFuente: str = None
     "fuente para texto de botones"
@@ -62,13 +64,18 @@ class MiDeckCombinado(dispositivo):
         """Conecta todos los dispositivos los dispositivos"""
 
         baseActual: int = 1
+        baseDial: int = 1
 
         for deckActual in self.listaDeck:
             deckActual.baseTeclas = baseActual
             deckActual.conectar()
             baseActual += deckActual.cantidadBotones
+            if hasattr(baseActual, "cantidadDial"):
+                baseActual.baseDial = baseDial
+                baseDial += baseActual.cantidadDial
 
         self.cantidadBotones = baseActual - 1
+        self.cantidadDial = baseDial - 1
 
     def cargarAccionesFolder(self, folder: str = "/", recargar: bool = False):
         """Busca y carga acciones en un folder, si existen
@@ -165,4 +172,5 @@ class MiDeckCombinado(dispositivo):
             # self.limpiarIconos()
             self.actualizarIconos()
 
+        super().actualizar()
         super().actualizar()

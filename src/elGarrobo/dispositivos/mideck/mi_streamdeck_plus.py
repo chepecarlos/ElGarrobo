@@ -9,6 +9,10 @@ class MiStreamDeckPlus(MiStreamDeck):
     tipo = "streamdeckplus"
     compatibles = ["Stream Deck +"]
 
+    baseDial: int = 0
+    desfaceDial: int = 0
+    cantidadDial: int = 0
+
     def __init__(self, dataConfiguracion: dict) -> None:
         """Inicializando Dispositivo de teclado
 
@@ -25,14 +29,20 @@ class MiStreamDeckPlus(MiStreamDeck):
         if self.conectado:
             self.deck.set_dial_callback(self.actualizarEncoderRotatorio)
             self.deck.set_touchscreen_callback(self.actualizarTouchScreen)
+            self.cantidadDial = self.deck.DIAL_COUNT
 
-    def actualizarEncoderRotatorio(self, deck, dial, event, value):
-        if event == DialEventType.PUSH:
-            print(f"dial pushed: {dial+1} state: {value}")
-        elif event == DialEventType.TURN:
-            print(f"dial {dial+1} turned: {value}")
-        elif event == DialEventType.TURN:
-            print(f"dial {dial+1} turned: {value}")
+    def actualizarEncoderRotatorio(self, deck, numeroDial, evento, estado):
+        numeroDial += 1
+        if evento == DialEventType.PUSH:
+            if estado:
+                self.buscarAccion(f"dial_{numeroDial}", self.estadoTecla.PRESIONADA)
+            else:
+                self.buscarAccion(f"dial_{numeroDial}", self.estadoTecla.LIBERADA)
+        elif evento == DialEventType.TURN:
+            if estado > 0:
+                self.buscarAccion(f"dial_{numeroDial}_derecho", self.estadoTecla.PRESIONADA)
+            else:
+                self.buscarAccion(f"dial_{numeroDial}_izquierdo", self.estadoTecla.PRESIONADA)
 
     def actualizarTouchScreen(self, deck, evt_type, value):
         if evt_type == TouchscreenEventType.SHORT:

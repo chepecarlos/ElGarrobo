@@ -5,6 +5,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.DeviceManager import DeviceManager
+from StreamDeck.Devices.StreamDeck import StreamDeck
 from StreamDeck.ImageHelpers import PILHelper
 from StreamDeck.Transport.Transport import TransportError
 
@@ -33,7 +34,7 @@ class MiStreamDeck(dispositivo):
     """
     cantidadBotones: int = 0
     "Cantidad de botones en StreamDeck"
-    deck: DeviceManager = None
+    deck: StreamDeck = None
     idDeck: int = -1
     listaBotones: list[dict] = None
     "lista de informacion de botones"
@@ -204,9 +205,9 @@ class MiStreamDeck(dispositivo):
         self.folderActual = Folder
         self.ultimoDibujo = -self.tiempoDibujar
 
-    def actualizarBoton(self, Deck, Key, Estado):
-        numeroTecla = Key + self.baseTeclas + self.desfaceTeclas
-        if Estado:
+    def actualizarBoton(self, Deck, key, estado):
+        numeroTecla = key + self.baseTeclas + self.desfaceTeclas
+        if estado:
             self.buscarAccion(numeroTecla, self.estadoTecla.PRESIONADA)
         else:
             self.buscarAccion(numeroTecla, self.estadoTecla.LIBERADA)
