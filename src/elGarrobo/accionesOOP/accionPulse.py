@@ -73,6 +73,8 @@ class accionVolumen(accion):
             comando = f"pactl set-sink-volume {dispositivo} {valor}%"
         elif opcion == "incremento":
             simbolo = "+" if valor > 0 else ""
+            if self.fuerza > 1:
+                valor *= self.fuerza
             comando = f"pactl set-sink-volume {dispositivo} {simbolo}{valor}%"
         elif opcion == "balance":
             texto: str = ObtenerValor(self.archivoPulse, dispositivo)
