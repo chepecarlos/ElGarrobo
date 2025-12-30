@@ -46,9 +46,9 @@ class MiStreamDeckPlus(MiStreamDeck):
                 self.buscarAccion(f"dial_{numeroDial}", self.estadoTecla.LIBERADA)
         elif evento == DialEventType.TURN:
             if estado > 0:
-                self.buscarAccion(f"dial_{numeroDial}_derecho", self.estadoTecla.PRESIONADA)
+                self.buscarAccion(f"dial_derecho_{numeroDial}", self.estadoTecla.PRESIONADA, fuerza=estado)
             else:
-                self.buscarAccion(f"dial_{numeroDial}_izquierdo", self.estadoTecla.PRESIONADA)
+                self.buscarAccion(f"dial_izquierdo_{numeroDial}", self.estadoTecla.PRESIONADA, fuerza=abs(estado))
 
     def actualizarTouchScreen(self, deck, evt_type, value):
         if evt_type == TouchscreenEventType.SHORT:

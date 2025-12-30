@@ -99,7 +99,7 @@ class elGarrobo(object):
                     dispositivoActual.listaClasesAcciones = self.listaClasesAcciones
                     dispositivoActual.actualizar()
 
-    def iniciarDispositivos(self):
+    def iniciarDispositivos(self) -> None:
         """Crea y inicializa los dispositivos que enviar las acciones"""
         self.dispositivosDisponibles: list[dispositivo] = cargarDispositivos()
 
@@ -322,30 +322,30 @@ class elGarrobo(object):
         #     if accion == "presionar" or estado == "presionado":
         #         self.ejecutarAcción(evento)
 
-    def ejecutarAcción(self, accion: dict, estado: bool = True) -> any:
+    def ejecutarAcción(self, accionActual: dict, estado: bool = True, fuerza: int = 1) -> any:
         """Ejecuta una acción según el comando y las opciones proporcionadas.
 
         Args:
             accion (dick):
             estado (bool, opcional):
         """
-        comandoAccion: str = accion.get("accion")
+        comandoAccion: str = accionActual.get("accion")
 
         if comandoAccion is None:
-            logger.info(f"Accion[No Atributo] - {accion}")
+            logger.info(f"Accion[No Atributo] - {accionActual}")
             return
 
         if comandoAccion in self.listaClasesAcciones:
-            opcionesAccion: dict = accion.get("opciones", {})
-            teclaAccion: str = accion.get("key")
-            nombreAccion: str = accion.get("nombre")
+            opcionesAccion: dict = accionActual.get("opciones", {})
+            teclaAccion: str = accionActual.get("key")
+            nombreAccion: str = accionActual.get("nombre")
 
             if comandoAccion == accionPresionar.comando:
                 opcionesAccion["estado"] = estado
                 estado = True
 
             if estado:
-                logger.info(f"AccionOOP[{comandoAccion}]{ ' - ' + nombreAccion if nombreAccion else ''}")
+                logger.info(f"AccionOOP[{comandoAccion}]{' - ' + nombreAccion if nombreAccion else ''}")
 
                 if self.ModuloMonitorESP:
                     Mensaje = {"accion": comandoAccion}
@@ -357,6 +357,7 @@ class elGarrobo(object):
                     self.mensajeMonitorESP(Mensaje, "accion")
 
                 objetoAccion: accion = self.listaClasesAcciones[comandoAccion]()
+                objetoAccion.fuerza = fuerza
                 objetoAccion.configurar(opcionesAccion)
                 try:
                     return objetoAccion.ejecutar()
@@ -374,9 +375,9 @@ class elGarrobo(object):
 
             opcionesAccion = dict()
             Nombre = None
-            presionado = accion.get("__estado")
-            nombreAccion = accion.get("nombre")
-            teclaAccion = accion.get("key")
+            presionado = accionActual.get("__estado")
+            nombreAccion = accionActual.get("nombre")
+            teclaAccion = accionActual.get("key")
 
             if nombreAccion:
                 if isinstance(presionado, str):
@@ -389,8 +390,8 @@ class elGarrobo(object):
             else:
                 logger.info(f"Accion[{comandoAccion}]")
 
-            if "opciones" in accion:
-                opcionesAccion = accion["opciones"]
+            if "opciones" in accionActual:
+                opcionesAccion = accionActual["opciones"]
 
             # TODO solo recibir opciones como lista o dicionario
             # if NombreAccion == "macro":
@@ -587,16 +588,16 @@ class elGarrobo(object):
         self.ActualizarDeck()
 
     def siquiente_Pagina(self, opciones: list[valoresAcciones]):
-        for dispositivo in self.listaDispositivos:
-            if hasattr(dispositivo, "siguientePagina"):
-                dispositivo.siguientePagina()
-                dispositivo.actualizar()
+        for dispositivoActual in self.listaDispositivos:
+            if hasattr(dispositivoActual, "siguientePagina"):
+                dispositivoActual.siguientePagina()
+                dispositivoActual.actualizar()
 
     def anterior_Pagina(self, opciones: list[valoresAcciones]):
-        for dispositivo in self.listaDispositivos:
-            if hasattr(dispositivo, "anteriorPagina"):
-                dispositivo.anteriorPagina()
-                dispositivo.actualizar()
+        for dispositivoActual in self.listaDispositivos:
+            if hasattr(dispositivoActual, "anteriorPagina"):
+                dispositivoActual.anteriorPagina()
+                dispositivoActual.actualizar()
 
     def DeckBrillo(self, opciones):
         Brillo = ObtenerValor("data/streamdeck.json", "brillo")

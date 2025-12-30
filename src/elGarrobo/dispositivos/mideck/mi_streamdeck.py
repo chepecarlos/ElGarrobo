@@ -74,7 +74,7 @@ class MiStreamDeck(dispositivo):
         self._gitCache = {}
         # self.archivoImagen = None
 
-    def conectar(self):
+    def conectar(self) -> None:
         listaStreamdecks = DeviceManager().enumerate()
         listaIdUsados = dispositivo.listaIndexUsados
 
@@ -260,9 +260,6 @@ class MiStreamDeck(dispositivo):
 
         if "imagen_opciones" in accion:
             opciones = accion["imagen_opciones"]
-            if "fondo" in opciones:
-                ColorFondo = opciones["fondo"]
-                # TODO: Agregar color de fondo
             if "imagen" in opciones:
                 imagenFondo = opciones["imagen"]
                 modificado = True

@@ -19,7 +19,7 @@ class MiDeckCombinado(dispositivo):
     "Imagen que se una por defecto"
     desface: int = 0
     """Cuantas botones esta adelante del inicio
-    
+
     ejemplo:
         desface es 10, el segundo botón haría la acción 12 
     """
@@ -141,7 +141,7 @@ class MiDeckCombinado(dispositivo):
             try:
                 key = int(accionActual["key"])
             except ValueError:
-                return None
+                return 0
             return key
 
         ultimaAccion: int = max(self.listaAcciones, key=buscarKeyNumero).get("key")
