@@ -13,8 +13,8 @@ from .accionesOOP import (
     accionRecargarFolder,
     accionRegresarFolder,
     accionSalir,
+    accionSalvarPulse,
     accionSiquientePagina,
-    accionVolumen,
     cargarClasesAcciones,
 )
 from .accionesOOP.heramientas.valoresAccion import valoresAcciones
@@ -27,7 +27,6 @@ from .miLibrerias import (
     obtenerArchivoPaquete,
 )
 from .modulos.mi_obs import MiOBS
-from .modulos.mi_pulse import MiPulse
 
 logger = ConfigurarLogging(__name__)
 
@@ -74,12 +73,6 @@ class elGarrobo(object):
 
         if self.ModuloOBS:
             self.CargarOBS()
-
-        if self.ModuloPulse:
-            self.CargarPulse()
-
-        if self.ModuloPulse:
-            self.ListaAcciones["salvar_pulse"]({})
 
             # TODO: recivir acciones desde Modulo de Pulse
             if self.ModuloGui:
@@ -136,7 +129,6 @@ class elGarrobo(object):
         self.ModuloCombinado = False
         self.ModuloMQTT = False
         self.ModuloMQTTEstado = False
-        self.ModuloPulse = False
         self.ModuloMonitorESP = False
         self.ModuloAlias = False
         self.ModuloGui = False
@@ -153,7 +145,6 @@ class elGarrobo(object):
             self.ModuloDeck = Modulos.get("deck", False)
             self.ModuloMQTT = Modulos.get("mqtt", False)
             self.ModuloMQTTEstado = Modulos.get("mqtt_estado", False)
-            self.ModuloPulse = Modulos.get("pulse", False)
             self.ModuloAlias = Modulos.get("alias", False)
             self.ModuloGui = Modulos.get("gui", False)
 
@@ -168,6 +159,7 @@ class elGarrobo(object):
         accionRegresarFolder.funcionExterna = self.regresar_Folder
         accionRecargarFolder.funcionExterna = self.Reiniciar
         accionPresionar.funcionExterna = self.accionesPresionar
+        accionSalvarPulse.funcionExterna = self.SolisitarDibujar
 
         ListaAcciones = CargarAcciones()
         listaClasesAcciones = cargarClasesAcciones()
@@ -627,15 +619,6 @@ class elGarrobo(object):
 
         # Acciones OBS
         self.OBS.IniciarAcciones(self.ListaAcciones)
-
-    def CargarPulse(self):
-        """
-        Inicialioza el Objeto de Pulse
-        """
-        self.Pulse = MiPulse()
-        self.Pulse.DibujarDeck(self.SolisitarDibujar)
-        self.Pulse.IniciarAcciones(self.ListaAcciones, self.listaClasesAcciones)
-        accionVolumen.funcionExterna = self.Pulse.cambiarVolumen
 
     def __exit__(self, exc_type, exc_value, traceback):
         print("Hora de matar todo XD")
