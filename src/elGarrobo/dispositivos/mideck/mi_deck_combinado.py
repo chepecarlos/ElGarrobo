@@ -137,7 +137,14 @@ class MiDeckCombinado(dispositivo):
             logger.warning(f"No hay acciones para cambiar pagina en {self.nombre}")
             return
 
-        ultimaAccion = max(self.listaAcciones, key=lambda x: int(x["key"])).get("key")
+        def buscarKeyNumero(accionActual: dict):
+            try:
+                key = int(accionActual["key"])
+            except ValueError:
+                return None
+            return key
+
+        ultimaAccion: int = max(self.listaAcciones, key=buscarKeyNumero).get("key")
 
         for deck in self.listaDeck:
             if deck.desfaceTeclas + self.cantidadBotones + 1 > ultimaAccion:
