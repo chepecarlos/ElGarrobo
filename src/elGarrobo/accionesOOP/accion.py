@@ -34,6 +34,8 @@ class accion:
     "Montar acción en InterfaceWeb"
     error: bool = False
     "Error de ejecución de la acción"
+    fuerza: int = 1
+    "Multiplicador de la fuerza de la acción"
 
     def __init__(self, nombre: str, comando: str, descripcion: str) -> None:
         """Inicializa la información de la acción hijo
@@ -185,6 +187,15 @@ class accion:
             rutaCalculada = folderPerfil / folderActual / ruta
 
         return str(rutaCalculada.resolve())
+
+    def configurarFuerza(self, fuerza: int) -> None:
+        """Configura la fuerza de la acción
+
+        Args:
+            fuerza (int): Fuerza de la acción
+        """
+
+        self.fuerza = fuerza
 
     def __str__(self) -> str:
         return f"Acción: {self.nombre}[{self.atributo}]"

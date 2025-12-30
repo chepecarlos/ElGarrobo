@@ -58,6 +58,7 @@ from .accionNavegador import accionNavegador
 from .accionNotificacion import accionNotificacion
 from .accionOS import accionOS
 from .accionPresionar import accionPresionar
+from .accionPulse import accionVolumen
 from .accionRecargarFolder import accionRecargarFolder
 from .accionRegresarFolder import accionRegresarFolder
 from .accionSalir import accionSalir
@@ -102,4 +103,5 @@ def cargarClasesAcciones() -> dict[str, accion]:
         "presionar": accionPresionar,
         "escribir_archivo": accionEscribirArchivo,
         "leer_valor": accionLeerValor,
+        "volumen": accionVolumen,
     }

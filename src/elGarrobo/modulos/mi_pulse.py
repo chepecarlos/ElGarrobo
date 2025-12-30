@@ -5,11 +5,12 @@ from elGarrobo.accionesOOP.accionOS import accionOS
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor, SalvarValor
 
 from .dispositivoSonido import dispositivoSonido
+from .modulo import modulo
 
 Logger = ConfigurarLogging(__name__)
 
 
-class MiPulse:
+class MiPulse(modulo):
     archivoPulse = "data/pulse.md"
 
     def __init__(self):
@@ -20,35 +21,35 @@ class MiPulse:
         self.SolisitarDibujar = Funcion
 
     def IniciarAcciones(self, ListaAcciones, ListaClasesAcciones):
-        ListaAcciones["volumen"] = self.CambiarVolumen
         ListaAcciones["mute"] = self.CambiarMute
         ListaAcciones["salvar_pulse"] = self.SalvarPulse
 
-    def CambiarVolumen(self, opciones):
+    def cambiarVolumen(self, opcion) -> None:
 
-        Dispositivo = opciones.get("dispositivo")
-        Valor = opciones.get("valor")
-        Opcion = opciones.get("opcion", "asigniar")
+        dispositivo = self.obtenerValor(opcion, "dispositivo")
+        valor = self.obtenerValor(opcion, "valor")
+        opcion = self.obtenerValor(opcion, "opcion")
+
         comando = None
 
-        if Dispositivo is None or Valor is None:
+        if dispositivo is None or valor is None:
             Logger.info("Faltan opciones")
             return
 
-        if Opcion == "asignar":
-            comando = f"pactl set-sink-volume {Dispositivo} {Valor}%"
-        elif Opcion == "incremento":
-            simbolo = "+" if Valor > 0 else ""
-            comando = f"pactl set-sink-volume {Dispositivo} {simbolo}{Valor}%"
-        elif Opcion == "balance":
-            texto: str = ObtenerValor(self.archivoPulse, Dispositivo)
+        if opcion == "asignar":
+            comando = f"pactl set-sink-volume {dispositivo} {valor}%"
+        elif opcion == "incremento":
+            simbolo = "+" if valor > 0 else ""
+            comando = f"pactl set-sink-volume {dispositivo} {simbolo}{valor}%"
+        elif opcion == "balance":
+            texto: str = ObtenerValor(self.archivoPulse, dispositivo)
             if texto is None:
-                Logger.warning(f"Error con Disposition {Dispositivo}")
+                Logger.warning(f"Error con Disposition {dispositivo}")
                 return
 
             nivel: str = self.obtenerPorcentajes(texto)
             if nivel is None:
-                Logger.warning(f"Error con Nivel de Disposition {Dispositivo}")
+                Logger.warning(f"Error con Nivel de Disposition {dispositivo}")
                 return
             nivelIzquierda: int = 0
             nivelDerecha: int = 0
@@ -57,18 +58,18 @@ class MiPulse:
             else:
                 nivelMax = nivel[0] if nivel[0] > nivel[1] else nivel[1]
             nivelMax: int = int(nivelMax)
-            if Valor == 50:
+            if valor == 50:
                 nivelIzquierda = nivelMax
                 nivelDerecha = nivelMax
-            if Valor < 50:
+            if valor < 50:
                 nivelIzquierda = nivelMax
-                fuerza: float = 1 - (50 - Valor) / 50
+                fuerza: float = 1 - (50 - valor) / 50
                 nivelDerecha = int(nivelMax * fuerza)
-            if Valor > 50:
+            if valor > 50:
                 nivelDerecha = nivelMax
-                fuerza: float = 1 - (Valor - 50) / 50
+                fuerza: float = 1 - (valor - 50) / 50
                 nivelIzquierda = int(nivelMax * fuerza)
-            comando = f"pactl set-sink-volume {Dispositivo} {nivelIzquierda}% {nivelDerecha}%"
+            comando = f"pactl set-sink-volume {dispositivo} {nivelIzquierda}% {nivelDerecha}%"
         else:
             Logger.info("Opción de audio no encontrada")
             return

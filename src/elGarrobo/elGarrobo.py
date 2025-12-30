@@ -14,6 +14,7 @@ from .accionesOOP import (
     accionRegresarFolder,
     accionSalir,
     accionSiquientePagina,
+    accionVolumen,
     cargarClasesAcciones,
 )
 from .accionesOOP.heramientas.valoresAccion import valoresAcciones
@@ -634,6 +635,7 @@ class elGarrobo(object):
         self.Pulse = MiPulse()
         self.Pulse.DibujarDeck(self.SolisitarDibujar)
         self.Pulse.IniciarAcciones(self.ListaAcciones, self.listaClasesAcciones)
+        accionVolumen.funcionExterna = self.Pulse.cambiarVolumen
 
     def __exit__(self, exc_type, exc_value, traceback):
         print("Hora de matar todo XD")
