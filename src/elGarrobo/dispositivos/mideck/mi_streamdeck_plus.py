@@ -19,6 +19,11 @@ class MiStreamDeckPlus(MiStreamDeck):
     desfaceDial: int = 0
     cantidadDial: int = 0
 
+    altoBarra = 100
+    "Alto de la barra táctil"
+    anchoBarra = 800
+    "Ancho de la barra táctil"
+
     listaBotonesTouchscreen: list = list()
     "Lista de botones en touchscreen"
 
@@ -57,9 +62,11 @@ class MiStreamDeckPlus(MiStreamDeck):
                 self.buscarAccion(f"dial_izquierdo_{numeroDial}", self.estadoTecla.PRESIONADA, fuerza=abs(estado))
 
     def actualizarTouchScreen(self, deck, evt_type, value):
+        posicionX = value["x"]
+        posicionY = value["y"]
+        botonPresionado = int(posicionX / (self.anchoBarra / self.cantidadBotonesTouchscreen)) + 1
+
         if evt_type == TouchscreenEventType.SHORT:
-            posicionX = value["x"]
-            botonPresionado = int(posicionX / (800 / self.cantidadBotonesTouchscreen)) + 1
             self.buscarAccion(f"touchscreen_{botonPresionado}", self.estadoTecla.PRESIONADA)
         elif evt_type == TouchscreenEventType.LONG:
 
@@ -67,21 +74,24 @@ class MiStreamDeckPlus(MiStreamDeck):
 
         elif evt_type == TouchscreenEventType.DRAG:
 
-            print("Drag started @ " + str(value["x"]) + "," + str(value["y"]) + " ended @ " + str(value["x_out"]) + "," + str(value["y_out"]))
+            posicionXFinal = value["x_out"]
+
+            if abs(posicionX - posicionXFinal) > self.anchoBarra / 20:
+                if posicionX > posicionXFinal:
+                    self.buscarAccion(f"deslizar_izquierda_{botonPresionado}")
+                else:
+                    self.buscarAccion(f"deslizar_derecha_{botonPresionado}")
 
     def actualizarIconos(self) -> None:
 
         super().actualizarIconos()
 
-        altoBarra = 100
-        anchoBarra = 800
-
-        imagenBase = Image.new("RGB", (anchoBarra, altoBarra))
-        anchoBoton = int(anchoBarra / self.cantidadBotonesTouchscreen)
+        imagenBase = Image.new("RGB", (self.anchoBarra, self.altoBarra))
+        anchoBoton = int(self.anchoBarra / self.cantidadBotonesTouchscreen)
 
         for boton in range(0, len(self.listaBotonesTouchscreen)):
 
-            imagenLimpia: Image.Image = Image.new("RGB", (anchoBoton, altoBarra))
+            imagenLimpia: Image.Image = Image.new("RGB", (anchoBoton, self.altoBarra))
             accionActual: dict = self.listaBotonesTouchscreen[boton]
 
             imagenLista: Image.Image = self.obtenerImagen(imagenLimpia, accionActual)
