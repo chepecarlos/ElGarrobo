@@ -19,6 +19,7 @@ from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor
 logger = ConfigurarLogging(__name__)
 
 
+# TODO: si re recarga folder borrar _gitCache
 class MiStreamDeck(dispositivo):
 
     modulo = "streamdeck"
@@ -222,7 +223,8 @@ class MiStreamDeck(dispositivo):
         if self.conectado:
             self.deck.set_brightness(Brillo)
 
-    def actualizarBoton(self, Deck, key, estado) -> None:
+    def actualizarBoton(self, deck, key, estado) -> None:
+
         numeroTecla = key + self.baseTeclas + self.desfaceTeclas
         if estado:
             self.buscarAccion(numeroTecla, self.estadoTecla.PRESIONADA)
@@ -381,6 +383,7 @@ class MiStreamDeck(dispositivo):
         if opciones is None:
             opciones = dict()
         tamañoFuente: int = opciones.get("tamanno", 40)
+        tamañoFuenteMinimo: int = opciones.get("tamanno_minimo")
         alinear: str = opciones.get("alinear", "centro")
         Borde_Color: str = opciones.get("borde_color", "black")
         Borde_Grosor: int = opciones.get("borde_grosor", 6)
@@ -396,12 +399,18 @@ class MiStreamDeck(dispositivo):
 
         dibujo: ImageDraw = ImageDraw.Draw(Imagen)
 
-        tamañoMinimo: int = None
         if hayImagen:
             alinear = "abajo"
-            tamañoMinimo = 20
+            if tamañoFuenteMinimo is None or tamañoFuenteMinimo < 20:
+                tamañoFuenteMinimo = 20
 
-        tamañoFuente, altoTitulo, anchoTitulo = self.calcularTamañoFuente(Imagen, Titulo, Borde_Grosor, espacioLinea, tamañoMinimo)
+        tamañoFuente, altoTitulo, anchoTitulo = self.calcularTamañoFuente(
+            Imagen,
+            Titulo,
+            Borde_Grosor,
+            espacioLinea,
+            tamañoFuenteMinimo,
+        )
 
         fuente = ImageFont.truetype(self.archivoFuente, size=tamañoFuente)
 
