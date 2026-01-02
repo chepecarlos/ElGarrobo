@@ -27,6 +27,9 @@ class MiStreamDeck(dispositivo):
     compatibles = ["Stream Deck Original"]
     # TODO: Agregar mas tipos compatibles
 
+    rotar: int = 0
+    "Rota los iconos del botones del teclado"
+
     baseTeclas: int = None
     "base inicio del conteo de teclas"
     desfaceTeclas: int = 0
@@ -67,6 +70,7 @@ class MiStreamDeck(dispositivo):
         self.nombre: str = dataConfiguracion.get("nombre", "miStreamDeck")
         self.id = dataConfiguracion.get("id")
         self.fps = dataConfiguracion.get("fps", 60)
+        self.rotar = dataConfiguracion.get("rotar", 0)
 
         self.deckGif = None
         self.layout = None
@@ -253,6 +257,8 @@ class MiStreamDeck(dispositivo):
         ImagenDeck: Image = PILHelper.create_image(self.deck, background=colorFondo)
 
         ImagenBoton: Image = self.obtenerImagen(ImagenDeck, accionActual)
+
+        ImagenBoton = ImagenBoton.rotate(self.rotar, resample=Image.BICUBIC, expand=False)
 
         self.deck.set_key_image(indice, PILHelper.to_native_format(self.deck, ImagenBoton))
 
@@ -617,6 +623,7 @@ class MiStreamDeck(dispositivo):
             if titulo:
                 self.ponerTexto(frameActual, titulo, accionActual, (rutaGif, str))
 
+            frameActual = frameActual.rotate(self.rotar, resample=Image.BICUBIC, expand=False)
             imagenNativa = PILHelper.to_native_format(self.deck, frameActual)
 
             listaFrame.append(imagenNativa)
