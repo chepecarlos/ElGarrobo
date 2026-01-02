@@ -181,6 +181,9 @@ class MiDeckCombinado(dispositivo):
 
         if self.recargar:
 
+            for deck in self.listaDeck:
+                deck.actualizar()
+
             # self.limpiarIconos()
             self.actualizarIconos()
 

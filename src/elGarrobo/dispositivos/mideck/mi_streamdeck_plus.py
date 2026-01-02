@@ -19,6 +19,12 @@ class MiStreamDeckPlus(MiStreamDeck):
     desfaceDial: int = 0
     cantidadDial: int = 0
 
+    listaBotonesTouchscreen: list = list()
+    "Lista de botones en touchscreen"
+
+    cantidadBotonesTouchscreen: int = 0
+    "Cantidad de botones en touchscreen"
+
     def __init__(self, dataConfiguracion: dict) -> None:
         """Inicializando Dispositivo de teclado
 
@@ -52,8 +58,9 @@ class MiStreamDeckPlus(MiStreamDeck):
 
     def actualizarTouchScreen(self, deck, evt_type, value):
         if evt_type == TouchscreenEventType.SHORT:
-            print("Short touch @ " + str(value["x"]) + "," + str(value["y"]))
-
+            posicionX = value["x"]
+            botonPresionado = int(posicionX / (800 / self.cantidadBotonesTouchscreen)) + 1
+            self.buscarAccion(f"touchscreen_{botonPresionado}", self.estadoTecla.PRESIONADA)
         elif evt_type == TouchscreenEventType.LONG:
 
             print("Long touch @ " + str(value["x"]) + "," + str(value["y"]))
@@ -66,10 +73,35 @@ class MiStreamDeckPlus(MiStreamDeck):
 
         super().actualizarIconos()
 
-        img = Image.new("RGB", (800, 100), "red")
+        altoBarra = 100
+        anchoBarra = 800
+
+        imagenBase = Image.new("RGB", (anchoBarra, altoBarra))
+        anchoBoton = int(anchoBarra / self.cantidadBotonesTouchscreen)
+
+        for boton in range(0, len(self.listaBotonesTouchscreen)):
+
+            imagenLimpia: Image.Image = Image.new("RGB", (anchoBoton, altoBarra))
+            accionActual: dict = self.listaBotonesTouchscreen[boton]
+
+            imagenLista: Image.Image = self.obtenerImagen(imagenLimpia, accionActual)
+
+            posicionX: int = int((boton + 0.5) * 800 / self.cantidadBotonesTouchscreen - anchoBoton / 2)
+            posicionY: int = 0
+            imagenBase.paste(imagenLista, (posicionX, posicionY))
 
         img_bytes = io.BytesIO()
-        img.save(img_bytes, format="JPEG")
+        imagenBase.save(img_bytes, format="JPEG")
         touchscreen_image_bytes = img_bytes.getvalue()
 
         self.deck.set_touchscreen_image(touchscreen_image_bytes, 0, 0, 800, 100)
+
+    def actualizar(self) -> None:
+        super().actualizar()
+
+        self.listaBotonesTouchscreen.clear()
+        self.listaBotonesTouchscreen.extend([d for d in self.listaAcciones if str(d.get("key", "")).startswith("touchscreen_")])
+        self.listaBotonesTouchscreen.sort(key=lambda x: int(x["key"].split("_")[1]))
+        self.cantidadBotonesTouchscreen = len(self.listaBotonesTouchscreen)
+
+        self.actualizarIconos()
