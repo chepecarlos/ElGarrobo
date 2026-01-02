@@ -255,7 +255,7 @@ class dispositivo:
         # self.listaAcciones = list()
         # self.cargarAccionesFolder(".", directo=True, recargar=True)
 
-    def buscarAccion(self, tecla: str, estado: estadoTecla, fuerza: int = 1) -> None:
+    def buscarAccion(self, tecla: str, estado: estadoTecla = estadoTecla.PRESIONADA, fuerza: int = 1) -> None:
         """Busca la accion a ejecutarse
 
         Args:
