@@ -231,7 +231,14 @@ class MiStreamDeck(dispositivo):
         Args:
             indice: int
         """
-        imagenNegro = PILHelper.create_image(self.deck)
+
+        fondo: str = "black"
+
+        if self.propiedadFolder:
+            opcionesFolder = (self.propiedadFolder or {}).get("imagen_opciones") or {}
+            fondo = opcionesFolder.get("fondo") or fondo
+
+        imagenNegro = PILHelper.create_image(self.deck, fondo)
         self.deck.set_key_image(indice, PILHelper.to_native_format(self.deck, imagenNegro))
 
     def Brillo(self, Brillo):
@@ -257,21 +264,35 @@ class MiStreamDeck(dispositivo):
     def __str__(self) -> str:
         return f"MiStreamDeck(id={self.id}, nombre={self.nombre}, serial={self.dispositivo}, layout={self.layout})"
 
-    def actualizarIconoBoton(self, indice: int, accionActual: dict):
+    def actualizarIconoBoton(self, indice: int, accionActual: dict) -> None:
+        """Dibuja la información de un botón en base la accion.
+        Usando imagen, titulo y otra información para mostrar en steamdeck
+
+        Args:
+            indice [int]: id del botón a actualizar
+            accionActual [dict]: información de la accion
+        """
 
         colorFondo: str = "black"
 
         opcionesFolder = (self.propiedadFolder or {}).get("imagen_opciones") or {}
-        if "fondo" in opcionesFolder:
-            colorFondo = opcionesFolder.get("fondo")
-
         opciones = accionActual.get("imagen_opciones") or {}
+
         if "fondo" in opciones:
             colorFondo = opciones["fondo"]
+        elif "fondo" in opcionesFolder:
+            colorFondo = opcionesFolder.get("fondo")
+
+        if "rota" in opciones:
+            rotar = opciones.get("rotar")
+        elif "rotar" in opcionesFolder:
+            rotar = opcionesFolder.get("rotar")
+        else:
+            rotar = self.rotar
 
         imagenDeck: Image = PILHelper.create_image(self.deck, background=colorFondo)
         imagenBoton: Image = self.obtenerImagen(imagenDeck, accionActual)
-        imagenBoton = imagenBoton.rotate(self.rotar, resample=Image.BICUBIC, expand=False)
+        imagenBoton = imagenBoton.rotate(rotar, resample=Image.BICUBIC, expand=False)
 
         self.deck.set_key_image(indice, PILHelper.to_native_format(self.deck, imagenBoton))
 
