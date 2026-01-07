@@ -52,6 +52,8 @@ class MiStreamDeck(dispositivo):
 
     pausarDibujando: bool = False
     "Pausar el dibujado mientra se actualiza la información"
+    propiedadFolder: dict = None
+    "propiedades para aplicar a todos los botos"
 
     fps: int = 60
     "fotogramas por segundo para gif"
@@ -168,6 +170,16 @@ class MiStreamDeck(dispositivo):
         #     return
 
         logger.info(f"Deck[Dibujar] {self.nombre}")
+
+        self.propiedadFolder = dict()
+
+        for accion in self.listaAcciones:
+            if not isinstance(accion, dict):
+                continue
+            if accion.get("key") == "propiedad_folder":
+                self.propiedadFolder = accion
+                break
+
         self.pausarDibujando = True
         for i in range(self.cantidadBotones):
             botonDesface: int = i + self.baseTeclas + self.desfaceTeclas
@@ -249,18 +261,19 @@ class MiStreamDeck(dispositivo):
 
         colorFondo: str = "black"
 
-        opciones = accionActual.get("imagen_opciones")
-        if opciones:
-            if "fondo" in opciones:
-                colorFondo = opciones["fondo"]
+        opcionesFolder = (self.propiedadFolder or {}).get("imagen_opciones") or {}
+        if "fondo" in opcionesFolder:
+            colorFondo = opcionesFolder.get("fondo")
 
-        ImagenDeck: Image = PILHelper.create_image(self.deck, background=colorFondo)
+        opciones = accionActual.get("imagen_opciones") or {}
+        if "fondo" in opciones:
+            colorFondo = opciones["fondo"]
 
-        ImagenBoton: Image = self.obtenerImagen(ImagenDeck, accionActual)
+        imagenDeck: Image = PILHelper.create_image(self.deck, background=colorFondo)
+        imagenBoton: Image = self.obtenerImagen(imagenDeck, accionActual)
+        imagenBoton = imagenBoton.rotate(self.rotar, resample=Image.BICUBIC, expand=False)
 
-        ImagenBoton = ImagenBoton.rotate(self.rotar, resample=Image.BICUBIC, expand=False)
-
-        self.deck.set_key_image(indice, PILHelper.to_native_format(self.deck, ImagenBoton))
+        self.deck.set_key_image(indice, PILHelper.to_native_format(self.deck, imagenBoton))
 
     def obtenerImagen(self, imagen: Image, accion: dict) -> Image:
         modificado: bool = False
@@ -397,10 +410,13 @@ class MiStreamDeck(dispositivo):
         Titulo_Color: str = opciones.get("color", "white")
 
         Lineas = TituloInicial.split("\\n")
-        Titulo = "\n".join(Lineas)
+        titulo = "\n".join(Lineas)
         if cortePalabra:
-            Lineas = Titulo.split(" ")
-            Titulo = "\n".join(Lineas)
+            Lineas = titulo.split(" ")
+            titulo = "\n".join(Lineas)
+
+        titulo = titulo.replace("⁰", "\u00b0")
+
         espacioLinea: int = 1
 
         dibujo: ImageDraw = ImageDraw.Draw(Imagen)
@@ -412,7 +428,7 @@ class MiStreamDeck(dispositivo):
 
         tamañoFuente, altoTitulo, anchoTitulo = self.calcularTamañoFuente(
             Imagen,
-            Titulo,
+            titulo,
             Borde_Grosor,
             espacioLinea,
             tamañoFuenteMinimo,
@@ -433,7 +449,7 @@ class MiStreamDeck(dispositivo):
 
         dibujo.multiline_text(
             posicionTexto,
-            text=Titulo,
+            text=titulo,
             font=fuente,
             fill=Titulo_Color,
             stroke_width=Borde_Grosor,
@@ -635,6 +651,7 @@ class MiStreamDeck(dispositivo):
         return listaFrame
 
     def animaciónGif(self) -> None:
+        """ """
 
         tiempoFrame = Fraction(1, self.fps)
         siguienteFrame = Fraction(time.monotonic())
