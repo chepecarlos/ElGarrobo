@@ -46,8 +46,25 @@ def convertirArchivo(archivo: str) -> None:
         logger.error("No es archivo .json")
         return
 
-    data = ObtenerArchivo(archivo, EnConfig=False)
-    EscribirArchivo(f"{nombre}.md", data)
+    if not Path(archivo).exists():
+        logger.error(f"El archivo {archivo} no existe")
+        return
+
+    try:
+        data = ObtenerArchivo(archivo, EnConfig=False)
+    except Exception as e:
+        logger.error(f"Error al leer archivo {archivo}: {e}")
+        return
+
+    if not data:
+        logger.warning("El archivo está vacío")
+        return
+
+    try:
+        EscribirArchivo(f"{nombre}.md", data)
+        logger.info(f"Archivo convertido: {archivo} → {nombre}.md")
+    except Exception as e:
+        logger.error(f"Error al escribir archivo {nombre}.md: {e}")
 
 
 def ordenarArchivo(archivo: str) -> None:
