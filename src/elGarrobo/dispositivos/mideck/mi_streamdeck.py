@@ -216,7 +216,7 @@ class MiStreamDeck(dispositivo):
                 self.limpiarIcono(i)
         self.pausarDibujando = False
 
-    def limpiarIconos(self):
+    def limpiarIconos(self) -> None:
         """Borra iconos de todo los botones de StreamDeck."""
         if self.conectado:
             logger.info(f"Limpiando {self.nombre}")
@@ -229,7 +229,7 @@ class MiStreamDeck(dispositivo):
         """Limpia un botón con una imagen negro
 
         Args:
-            indice: int
+            indice (int): Botón a borrar la imagen
         """
 
         fondo: str = "black"
@@ -429,6 +429,10 @@ class MiStreamDeck(dispositivo):
         Borde_Grosor: int = opciones.get("borde_grosor", 6)
         Ajustar: bool = opciones.get("ajustar", True)
         Titulo_Color: str = opciones.get("color", "white")
+
+        if self.propiedadFolder:
+            opcionesFolder = (self.propiedadFolder or {}).get("titulo_opciones") or {}
+            tamañoFuenteMinimo = opcionesFolder.get("tamanno_minimo") or tamañoFuenteMinimo
 
         Lineas = TituloInicial.split("\\n")
         titulo = "\n".join(Lineas)
