@@ -27,6 +27,9 @@ Tracker = "https://github.com/chepecarlos/ElGatoALSW/issues"
 elgarrobo = "elGarrobo.main:main"
 elgarrobo-tool = "elGarrobo.tool:main"
 
+[project.optional-dependencies]
+dev = ["pytest>=9.0", "pytest-cov>=4.0"]
+
 [tool.setuptools]
 package-dir = { "" = "src" }
 

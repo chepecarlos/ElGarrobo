@@ -23,6 +23,22 @@ clean-docs:
 	@echo "Eliminando carpeta de documentación..."
 	rm -rf $(DOCS_DIR)
 
+# Ejecutar tests
+test:
+	@echo "Ejecutando tests..."
+	pytest tests/ -v
+
+# Ejecutar tests con cobertura
+test-cov:
+	@echo "Ejecutando tests con cobertura..."
+	pytest tests/ -v --cov=src/elGarrobo --cov-report=term-missing
+
+# Ejecutar tests con reporte HTML
+test-cov-html:
+	@echo "Ejecutando tests con reporte HTML..."
+	pytest tests/ --cov=src/elGarrobo --cov-report=html
+	@echo "Reporte generado en htmlcov/index.html"
+
 extras:
 	@echo "Instalando paquetes extras"
 	sudo apt install -y python3-pip python3-setuptools python3-tk python3-dev pipx ffmpeg git 
