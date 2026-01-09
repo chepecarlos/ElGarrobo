@@ -24,7 +24,7 @@ def ordenarNatural(texto: str) -> list:
 
 def parametros() -> argparse.Namespace:
 
-    parser = argparse.ArgumentParser(description="Heramientas extras de elGarrobo")
+    parser = argparse.ArgumentParser(description="Herramientas extras de elGarrobo")
     parser.add_argument("--ordenar", "-o", help="Ordena el archivo .md")
     parser.add_argument("--convertir", "-c", help="Convertir de .json a .md")
     parser.add_argument("--depuracion", "-d", help="Activa la depuración", action="store_true")
@@ -108,8 +108,11 @@ def ordenarArchivo(archivo: str) -> None:
         keysVistos.add(keyActual)
 
     data.sort(key=lambda x: ordenarNatural(x.get("key")), reverse=False)
-    EscribirArchivo(archivo, data)
-    logger.info(f"Archivo {archivo} ordenado correctamente ({len(data)} elementos)")
+    try:
+        EscribirArchivo(archivo, data)
+        logger.info(f"Archivo {archivo} ordenado correctamente ({len(data)} elementos)")
+    except Exception as e:
+        logger.error(f"Error al escribir archivo {archivo}: {e}")
 
 
 def main() -> None:
