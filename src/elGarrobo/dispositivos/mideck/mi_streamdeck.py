@@ -43,7 +43,7 @@ class MiStreamDeck(dispositivo):
     deck: StreamDeck = None
     idDeck: int = -1
     listaBotones: list[dict] = None
-    "lista de informacion de botones"
+    "lista de información de botones"
 
     archivoFuente: str = None
     "fuente para texto de botones"
@@ -171,14 +171,7 @@ class MiStreamDeck(dispositivo):
 
         logger.info(f"Deck[Dibujar] {self.nombre}")
 
-        self.propiedadFolder = dict()
-
-        for accion in self.listaAcciones:
-            if not isinstance(accion, dict):
-                continue
-            if accion.get("key") == "propiedad_folder":
-                self.propiedadFolder = accion
-                break
+        self.actualizarDataFolder()
 
         self.pausarDibujando = True
         for i in range(self.cantidadBotones):
@@ -419,13 +412,12 @@ class MiStreamDeck(dispositivo):
         """
 
         TituloInicial: str = titulo
-        opciones: dict = accion.get("titulo_opciones", dict())
-        if opciones is None:
-            opciones = dict()
+        opciones: dict = accion.get("titulo_opciones", dict()) or {}
         tamañoFuente: int = opciones.get("tamanno", 40)
         tamañoFuenteMinimo: int = opciones.get("tamanno_minimo")
-        alinear: str = opciones.get("alinear", "centro")
-        Borde_Color: str = opciones.get("borde_color", "black")
+        tamañoFuenteMaximo: int = opciones.get("tamanno_maximo")
+        alinear: str = opciones.get("alinear")
+        Borde_Color: str = opciones.get("", "black")
         Borde_Grosor: int = opciones.get("borde_grosor", 6)
         Ajustar: bool = opciones.get("ajustar", True)
         Titulo_Color: str = opciones.get("color", "white")
@@ -433,6 +425,7 @@ class MiStreamDeck(dispositivo):
         if self.propiedadFolder:
             opcionesFolder = (self.propiedadFolder or {}).get("titulo_opciones") or {}
             tamañoFuenteMinimo = opcionesFolder.get("tamanno_minimo") or tamañoFuenteMinimo
+            tamañoFuenteMaximo = opcionesFolder.get("tamanno_maximo") or tamañoFuenteMaximo
 
         Lineas = TituloInicial.split("\\n")
         titulo = "\n".join(Lineas)
@@ -447,7 +440,7 @@ class MiStreamDeck(dispositivo):
         dibujo: ImageDraw = ImageDraw.Draw(Imagen)
 
         if hayImagen:
-            alinear = "abajo"
+            alinear = alinear or "abajo"
             if tamañoFuenteMinimo is None or tamañoFuenteMinimo < 20:
                 tamañoFuenteMinimo = 20
 
@@ -463,12 +456,12 @@ class MiStreamDeck(dispositivo):
 
         textoX = (Imagen.width - anchoTitulo) / 2 + Borde_Grosor
 
-        if alinear == "centro":
-            textoY = (Imagen.height - altoTitulo) / 2
-        elif alinear == "ariba":
-            textoY = 0
-        else:
+        if alinear == "abajo":
             textoY = Imagen.height - altoTitulo
+        elif alinear == "arriba":
+            textoY = 0
+        else:  # centro
+            textoY = (Imagen.height - altoTitulo) / 2
 
         posicionTexto = (textoX, textoY)
 
@@ -700,3 +693,15 @@ class MiStreamDeck(dispositivo):
 
             if tiempoEspera >= 0:
                 time.sleep(tiempoEspera)
+
+    def actualizarDataFolder(self) -> None:
+        """Actualiza las propiedades de folder para los botones."""
+
+        self.propiedadFolder = dict()
+
+        for accion in self.listaAcciones:
+            if not isinstance(accion, dict):
+                continue
+            if accion.get("key") == "propiedad_folder":
+                self.propiedadFolder = accion
+                break

@@ -30,6 +30,9 @@ class MiStreamDeckPlus(MiStreamDeck):
     cantidadBotonesTouchscreen: int = 0
     "Cantidad de botones en touchscreen"
 
+    listaBotonesTouchscreenViejas: list[dict] = None
+    "lista de información de botones touchscreen viejas para comparar cambios"
+
     def __init__(self, dataConfiguracion: dict) -> None:
         """Inicializando Dispositivo de teclado
 
@@ -83,8 +86,50 @@ class MiStreamDeckPlus(MiStreamDeck):
                     self.buscarAccion(f"deslizar_derecha_{botonPresionado}")
 
     def actualizarIconos(self) -> None:
+        """Actualiza los iconos del touchscreen del Stream Deck Plus."""
 
         super().actualizarIconos()
+
+        if self.deck is None or not self.deck.is_open():
+            self.conectado = False
+            return
+
+        if self.listaBotonesTouchscreenViejas is None:
+            self.listaBotonesTouchscreenViejas = [
+                {
+                    "imagen": None,
+                    "titulo": None,
+                    "gif": None,
+                }
+                for _ in range(self.cantidadBotonesTouchscreen)
+            ]
+
+        actualizarTouchscreen: bool = False
+
+        for boton in range(0, len(self.listaBotonesTouchscreen)):
+            accionActual: dict = self.listaBotonesTouchscreen[boton]
+            accionVieja: dict = self.listaBotonesTouchscreenViejas[boton]
+
+            imagenActual: str = self.buscarDirecionImagen(accionActual)
+            tituloActual: str = self.buscarTitulo(accionActual)
+
+            imagenVieja: str = accionVieja.get("imagen")
+            tituloViejo: str = accionVieja.get("titulo")
+
+            if imagenActual == imagenVieja and tituloActual == tituloViejo:
+                continue
+            else:
+                accionVieja["imagen"] = imagenActual
+                accionVieja["titulo"] = tituloActual
+                actualizarTouchscreen = True
+
+        if not actualizarTouchscreen:
+            return
+
+        self.generarImagenTouchscreen()
+
+    def generarImagenTouchscreen(self) -> None:
+        """Genera y actualiza la imagen del touchscreen del Stream Deck Plus."""
 
         imagenBase = Image.new("RGB", (self.anchoBarra, self.altoBarra))
         anchoBoton = int(self.anchoBarra / self.cantidadBotonesTouchscreen)
@@ -96,7 +141,7 @@ class MiStreamDeckPlus(MiStreamDeck):
 
             imagenLista: Image.Image = self.obtenerImagen(imagenLimpia, accionActual)
 
-            posicionX: int = int((boton + 0.5) * 800 / self.cantidadBotonesTouchscreen - anchoBoton / 2)
+            posicionX: int = int((boton + 0.5) * self.anchoBarra / self.cantidadBotonesTouchscreen - anchoBoton / 2)
             posicionY: int = 0
             imagenBase.paste(imagenLista, (posicionX, posicionY))
 
@@ -104,7 +149,7 @@ class MiStreamDeckPlus(MiStreamDeck):
         imagenBase.save(img_bytes, format="JPEG")
         touchscreen_image_bytes = img_bytes.getvalue()
 
-        self.deck.set_touchscreen_image(touchscreen_image_bytes, 0, 0, 800, 100)
+        self.deck.set_touchscreen_image(touchscreen_image_bytes, 0, 0, self.anchoBarra, self.altoBarra)
 
     def actualizar(self) -> None:
         super().actualizar()
