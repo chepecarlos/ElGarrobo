@@ -7,10 +7,11 @@ requests
 pillow
 importlib-resources
 numpy
+psutil
 
 notify-py # para notificaciones de escritorio
 paho-mqtt # para MQTT
-nicegui>=2.5.0 # para interfaz web
+nicegui>=3.4.0 # para interfaz web
 StreamDeck # para Elgato Stream Deck y Pedal
 obsws-python # Conector de WebSocket para OBS Studio
 sounddevice # para acción reproducir audio

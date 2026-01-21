@@ -26,6 +26,7 @@ from .miLibrerias import (
     leerData,
     obtenerArchivoPaquete,
 )
+from .modulos import cargarModulos, modulo
 from .modulos.mi_obs import MiOBS
 
 logger = ConfigurarLogging(__name__)
@@ -39,13 +40,19 @@ class elGarrobo(object):
 
     listaDispositivos: list[dispositivo] = list()
     "Lista de dispositivos disponibles"
+    listaModulos: list[modulo] = list()
+    "Lista de modulos disponibles"
     listaClasesAcciones: dict[str,] = dict()
+
     ListaAcciones = None
 
     PathActual = None
 
-    def __init__(self) -> None:
+    def __init__(self, **modulos) -> None:
 
+        # print(modulos)
+        # print(modulos.keys())
+        # print(modulos.get("gui"))
         logger.info("Abrí[config]")
 
         self.Data = obtenerArchivoPaquete("elGarrobo", "data/config.md")
@@ -63,7 +70,7 @@ class elGarrobo(object):
 
         self.acciones = dict()
 
-        self.IniciarModulo()
+        self.iniciarModulo(**modulos)
 
         self.IniciarAcciones()
         self.iniciarDispositivos()
@@ -108,13 +115,13 @@ class elGarrobo(object):
                 dispositivoActual.conectar()
                 dispositivoActual.actualizar()
 
-    def IniciarModulo(self) -> None:
+    def iniciarModulo(self, **modulos) -> None:
         """
         Carga los modulos activos.
         """
         logger.info("Configurando[Modulos]")
         Modulos = leerData("modulos")
-        self.modulos = Modulos
+        self.modulos: dict = Modulos
 
         if Modulos is None:
             rutaConfig = miLibrerias.ObtenerFolderConfig()
@@ -148,9 +155,49 @@ class elGarrobo(object):
             self.ModuloAlias = Modulos.get("alias", False)
             self.ModuloGui = Modulos.get("gui", False)
 
+        self.cargarClasesModulos()
+
+    def cargarClasesModulos(self) -> None:
+        """Carga y inicializa los módulos configurados del sistema.
+
+        Este método obtiene todas las clases de módulos disponibles, intenta instanciarlas,
+        y las añade a la lista de módulos activos según su estado de configuración.
+
+        Para cada módulo encontrado:
+        - Intenta crear una instancia de la clase del módulo
+        - Verifica si el módulo está configurado en self.modulos
+        - Si está activado: ejecuta el módulo y lo añade a self.listaModulos
+        - Si está desactivado: registra el estado pero no lo ejecuta
+        - Si no está configurado: registra una advertencia
+        """
+
+        clasesModulos = cargarModulos()
+
+        self.listaModulos = []
+
+        for moduloClase in clasesModulos:
+            try:
+                moduloInstancia = moduloClase()
+            except TypeError as error:
+                logger.warning(f"moduloClase es instancia no clase: {error}")
+                continue
+
+            nombreModulo = moduloInstancia.nombre
+            moduloModulo = moduloInstancia.modulo
+            if moduloModulo in self.modulos:
+                estadoModulo = self.modulos[moduloModulo]
+                if estadoModulo:
+                    logger.info(f"Modulo[{nombreModulo}] Activado")
+                    moduloInstancia.ejecutar()
+                    self.listaModulos.append(moduloInstancia)
+                else:
+                    logger.info(f"Modulo[{nombreModulo}] Desactivado")
+            else:
+                logger.info(f"Modulo[{nombreModulo}] No configurado")
+
     def IniciarAcciones(self):
         """
-        Inicializa las acciones del Sistema en dict nombre de la accion y la funcion asociada
+        Inicializa las acciones del Sistema en dict nombre de la accion y la función asociada
         """
         logger.info("ElGarrobo[Acciones] Cargando")
 
@@ -222,25 +269,25 @@ class elGarrobo(object):
 
     def ActualizarDeck(self):
 
-        for dispositivo in self.listaDispositivos:
-            if hasattr(dispositivo, "actualizarIconos"):
-                logger.info(f"Se puede limpiar los iconos {dispositivo.nombre}")
-                dispositivo.actualizarIconos()
+        for dispositivoActual in self.listaDispositivos:
+            if hasattr(dispositivoActual, "actualizarIconos"):
+                logger.info(f"Se puede limpiar los iconos {dispositivoActual.nombre}")
+                dispositivoActual.actualizarIconos()
 
     def LimpiarDeck(self):
 
-        for dispositivo in self.listaDispositivos:
-            if hasattr(dispositivo, "limpiarIconos"):
-                logger.info(f"Se puede limpiar los iconos {dispositivo.nombre}")
-                dispositivo.limpiarIconos()
+        for dispositivoActual in self.listaDispositivos:
+            if hasattr(dispositivoActual, "limpiarIconos"):
+                logger.info(f"Se puede limpiar los iconos {dispositivoActual.nombre}")
+                dispositivoActual.limpiarIconos()
 
     def CargarAcciones(self, Dispositivo, Data):
         # TODO: quitar Data y self.Data
         Estado = False
         dispositivoActual = self.Data.get(Dispositivo)
         if dispositivoActual is not None:
-            for dispositivo in dispositivoActual:
-                nombreDispositivo = dispositivo.get("nombre")
+            for dispositivoActual in dispositivoActual:
+                nombreDispositivo = dispositivoActual.get("nombre")
                 accionesDispositivo = Data.get(nombreDispositivo)
                 if accionesDispositivo:
                     logger.info(f"Folder[Configurado] {nombreDispositivo}")
@@ -643,11 +690,11 @@ class elGarrobo(object):
         # raise SystemExit
         os._exit(0)
 
-    def SolisitarDibujar(self):
+    def SolisitarDibujar(self) -> None:
 
         self.ActualizarDeck()
 
-    def SolisitarNotifiacacion(self, texto, opciones: dict[valoresAcciones]):
+    def SolisitarNotifiacacion(self, texto: str, opciones: dict[valoresAcciones]):
         if self.ModuloOBSNotificacion:
             objetoAccion: accion = self.listaClasesAcciones["notificacion"]()
             objetoAccion.configurar({"texto": texto})
@@ -667,8 +714,13 @@ class elGarrobo(object):
             if atributo == valor.atributo:
                 return valor.valor
 
-    def mensajeMonitorESP(self, mensaje: dict, tema: str):
-        """Envia mensaje por mqtt de las acciones del ElGarrobo"""
+    def mensajeMonitorESP(self, mensaje: dict, tema: str) -> None:
+        """Envia mensaje por mqtt de las acciones del ElGarrobo
+
+        args:
+            mensaje [dict]: Data a mansar por mqtt
+            tema [str]: en topic se enviara el mensaje
+        """
         if self.ModuloMonitorESP:
             topicBase = self.ModuloMonitorESP.get("topic")
             if topicBase:
@@ -676,7 +728,7 @@ class elGarrobo(object):
                     "mensaje": mensaje,
                     "topic": f"{topicBase}/{tema}",
                 }
-                AccionMQTT = self.listaClasesAcciones["mqtt"]()
+                AccionMQTT: accion = self.listaClasesAcciones["mqtt"]()
                 AccionMQTT.configurar(opciones)
                 AccionMQTT.ejecutar()
             else:
