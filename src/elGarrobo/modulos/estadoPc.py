@@ -16,8 +16,10 @@ class estadoPc(modulo):
     modulo = "estado_pc"
     descripcion = "Módulo para obtener el estado del PC"
 
-    topicCPU: str = "umaru/cpu"
-    topicRAM: str = "umaru/ram"
+    topicCPU: str = "cpu"
+    topicRAM: str = "ram"
+    nombrePC: str = "umaru"
+    "Nombre del PC"
 
     hiloMonitoreo: threading.Thread
     """Módulo para obtener el estado del PC y monitorear recursos en segundo plano"""
@@ -48,7 +50,7 @@ class estadoPc(modulo):
                 accionEnviar = accionMQTT()
                 accionEnviar.configurar(
                     {
-                        "topic": self.topicCPU,
+                        "topic": f"estado_pc/{self.nombrePC}/{self.topicCPU}",
                         "mensaje": str(cpu),
                     }
                 )
@@ -57,7 +59,7 @@ class estadoPc(modulo):
                 accionEnviar = accionMQTT()
                 accionEnviar.configurar(
                     {
-                        "topic": self.topicRAM,
+                        "topic": f"estado_pc/{self.nombrePC}/{self.topicRAM}",
                         "mensaje": str(memoria),
                     }
                 )
