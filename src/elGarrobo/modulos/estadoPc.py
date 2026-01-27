@@ -1,5 +1,6 @@
 import threading
 import time
+from typing import Optional
 
 import psutil
 
@@ -17,17 +18,23 @@ class estadoPc(modulo):
     descripcion = "Módulo para obtener el estado del PC"
 
     topicCPU: str = "cpu"
+    "Topic para publicar el uso de CPU"
     topicRAM: str = "ram"
-    nombrePC: str = "umaru"
+    "Topic para publicar el uso de RAM"
+    nombrePC: str = "pc_default"
     "Nombre del PC"
+    archivoConfiguracion = "modulos/estado_pc.md"
+    """Archivo de configuración del módulo"""
 
-    hiloMonitoreo: threading.Thread
+    hiloMonitoreo: Optional[threading.Thread]
     """Módulo para obtener el estado del PC y monitorear recursos en segundo plano"""
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, dataModulo: dict) -> None:
+        super().__init__(dataModulo)
         self.activo = False
         self.hiloMonitoreo = None
+        self.nombrePC = dataModulo.get("nombre_pc", self.nombrePC)
+        logger.info(f"Modulo[{self.nombre}] - Publicando estado de PC[{self.nombrePC}] por MQTT")
 
     def ejecutar(self) -> None:
         """Obtiene el estado actual del PC"""

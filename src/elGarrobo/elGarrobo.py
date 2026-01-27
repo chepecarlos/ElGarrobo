@@ -21,6 +21,7 @@ from .accionesOOP.heramientas.valoresAccion import valoresAcciones
 from .dispositivos import cargarDispositivos, dispositivo
 from .miLibrerias import (
     ConfigurarLogging,
+    ObtenerArchivo,
     ObtenerValor,
     SalvarValor,
     leerData,
@@ -42,11 +43,12 @@ class elGarrobo(object):
     "Lista de dispositivos disponibles"
     listaModulos: list[modulo] = list()
     "Lista de modulos disponibles"
-    listaClasesAcciones: dict[str,] = dict()
+    listaClasesAcciones: dict[str, type[accion]] = dict()
 
     ListaAcciones = None
 
     PathActual = None
+    modulos: dict[str, bool] = dict()
 
     def __init__(self, **modulos) -> None:
 
@@ -120,10 +122,10 @@ class elGarrobo(object):
         Carga los modulos activos.
         """
         logger.info("Configurando[Modulos]")
-        Modulos = leerData("modulos")
-        self.modulos: dict = Modulos
+        # Modulos: dict = leerData("modulos")
+        self.modulos = leerData("modulos")
 
-        if Modulos is None:
+        if self.modulos is None:
             rutaConfig = miLibrerias.ObtenerFolderConfig()
             logger.error(f"No existe archivo modulos.md en {rutaConfig}")
             os._exit(0)
@@ -140,21 +142,20 @@ class elGarrobo(object):
         self.ModuloAlias = False
         self.ModuloGui = False
 
-        if Modulos is not None:
-            if "obs_notificacion" in Modulos:
-                self.ModuloOBSNotificacion = Modulos["obs_notificacion"]
+        if self.modulos is not None:
+            if "obs_notificacion" in self.modulos:
+                self.ModuloOBSNotificacion = self.modulos["obs_notificacion"]
 
-            if Modulos.get("monitor_esp", False):
+            if self.modulos.get("monitor_esp", False):
                 self.ModuloMonitorESP = leerData("modulos/monitor_esp/mqtt")
 
-            self.ModuloOBS = Modulos.get("obs", False)
-            self.ModuloCombinado = Modulos.get("deck_combinado", False)
-            self.ModuloDeck = Modulos.get("deck", False)
-            self.ModuloMQTT = Modulos.get("mqtt", False)
-            self.ModuloMQTTEstado = Modulos.get("mqtt_estado", False)
-            self.ModuloAlias = Modulos.get("alias", False)
-            self.ModuloGui = Modulos.get("gui", False)
-
+            self.ModuloOBS = self.modulos.get("obs", False)
+            self.ModuloCombinado = self.modulos.get("deck_combinado", False)
+            self.ModuloDeck = self.modulos.get("deck", False)
+            self.ModuloMQTT = self.modulos.get("mqtt", False)
+            self.ModuloMQTTEstado = self.modulos.get("mqtt_estado", False)
+            self.ModuloAlias = self.modulos.get("alias", False)
+            self.ModuloGui = self.modulos.get("gui", False)
         self.cargarClasesModulos()
 
     def cargarClasesModulos(self) -> None:
@@ -176,11 +177,19 @@ class elGarrobo(object):
         self.listaModulos = []
 
         for moduloClase in clasesModulos:
-            try:
-                moduloInstancia = moduloClase()
-            except TypeError as error:
-                logger.warning(f"moduloClase es instancia no clase: {error}")
-                continue
+
+            dataModulo = ObtenerArchivo(moduloClase.archivoConfiguracion) or {}
+
+            # Si moduloClase ya es una instancia, usarla directamente
+            # Si es una clase, instanciarla
+            if isinstance(moduloClase, type):
+                try:
+                    moduloInstancia = moduloClase(dataModulo)
+                except TypeError as error:
+                    logger.warning(f"Error al instanciar moduloClase: {error}")
+                    continue
+            else:
+                moduloInstancia = moduloClase
 
             nombreModulo = moduloInstancia.nombre
             moduloModulo = moduloInstancia.modulo
