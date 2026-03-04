@@ -19,8 +19,14 @@ from .mipedal.mi_pedal import MiPedal
 from .miteclado.mi_teclado_macro import MiTecladoMacro
 
 
-def cargarDispositivos() -> list[dispositivo]:
+def cargarDispositivos() -> list[type["dispositivo"]]:
 
-    listaDispositivos: list[dispositivo] = [MiTecladoMacro, MiPedal, MiDeckCombinado, MiMQTT, miGui]
+    listaDispositivos: list[type["dispositivo"]] = [
+        MiTecladoMacro,
+        MiPedal,
+        MiDeckCombinado,
+        MiMQTT,
+        miGui,
+    ]
 
     return listaDispositivos

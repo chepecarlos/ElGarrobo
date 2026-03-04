@@ -1,8 +1,9 @@
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Type
+from typing import Any, Callable, Optional, Type
 
+from elGarrobo.accionesOOP.accion import accion
 from elGarrobo.miLibrerias import (
     ConfigurarLogging,
     ObtenerArchivo,
@@ -24,23 +25,25 @@ class dispositivo:
     "Ruta virtual de donde se encuentra dispositivo"
     archivo: str
     "Archivos por folder donde se cargara la acciones"
-    ejecutarAcción: callable
+    ejecutarAcción: Callable[[dict, bool, int], Any] | None = None
     "Función que se llama para ejecutar una acción"
     conectado: bool = False
     "El dispositivo esta listo para usarse"
-    folderActual: str = None
+    folderActual: str | None = None
     "Folder donde esta leyendo las acciones cargadas"
     folderPerfil: str = "default"
     "Carpeta del perfil actual"
-    listaAcciones: list = None
+    listaAcciones: list | None = None
     "Lista de Acciones cargadas"
-    _listaAcciones: list = None
+    _listaAcciones: list | None = None
     tipo: str = ""
     "Tipo de dispositivo"
     clase: str
     "Sub Categoria del dispositivo"
-    funcionActualizarPestaña: callable = None
+    funcionActualizarPestaña: Optional[Callable] = None
     "Función que llama actualizar la information de GUI"
+    propiedadFolder: dict = dict()
+    "propiedades para aplicar a todos los botos"
 
     pestaña = None
     "Pestaña del dispositivo en la interfaz"
@@ -54,8 +57,6 @@ class dispositivo:
     archivoConfiguracion: str = ""
     activado: bool = True
     "Si el dispositivo esta activo o no"
-    ejecutarAcción: callable = None
-    "Función que se llama para ejecutar una acción"
     recargar: bool = True
     "Es necesario actualizar la imagen o titulo"
 
@@ -82,7 +83,7 @@ class dispositivo:
         self.panel = None
 
     @staticmethod
-    def cargarDispositivos(modulosCargados: dict, claseDispositivo: type["dispositivo"]) -> list[Type["dispositivo"]]:
+    def cargarDispositivos(modulosCargados: dict, claseDispositivo: type["dispositivo"]) -> list["dispositivo"]:
         """
         Preparara la informacion de los dispositivos en base a una clase
 
@@ -94,7 +95,7 @@ class dispositivo:
             list (dispositivo): Lista de dispositivos configurados
         """
 
-        listaDispositivos: list[Type[dispositivo]] = list()
+        listaDispositivos: list[dispositivo] = list()
 
         moduloCargado = modulosCargados.get(claseDispositivo.modulo)
         if moduloCargado is None or moduloCargado is False:
@@ -105,11 +106,14 @@ class dispositivo:
         dataDispositivos = ObtenerArchivo(claseDispositivo.archivoConfiguracion)
 
         if dataDispositivos is None:
-            logger.warning(f"Falta información para cargar {claseDispositivo.tipo} {claseDispositivo.archivoConfiguracion}")
-            return
+            logger.warning(
+                f"Falta información para cargar {claseDispositivo.tipo} ",
+                f"{claseDispositivo.archivoConfiguracion}",
+            )
+            return listaDispositivos
 
         for dataActual in dataDispositivos:
-            dispositivoActual = claseDispositivo(dataActual)
+            dispositivoActual: dispositivo = claseDispositivo(dataActual)
             if dispositivoActual.activado:
                 listaDispositivos.append(dispositivoActual)
 
@@ -122,6 +126,8 @@ class dispositivo:
             bool: False si fallo la conexión
         """
         logger.error(f"Falta implementar conectar en {self.tipo}")
+
+        raise (NotImplementedError)
 
     def desconectar(self):
         "Desconecta el dispositivo"
@@ -281,8 +287,71 @@ class dispositivo:
             else:
                 logger.info(f"Evento[No asignado] {self.nombre}[{tecla}]")
 
-    def configurarFuncionAccion(self, funcionAccion: callable):
+    def configurarFuncionAccion(self, funcionAccion: Callable[[dict, bool, int], Any]):
         self.ejecutarAcción = funcionAccion
+
+    def _obtenerValorAnidado(self, datos: dict, claves: list) -> Any:
+        """Helper privado para buscar un valor en diccionario anidado.
+
+        Args:
+            datos (dict): Diccionario donde buscar
+            claves (list): Lista de claves anidadas (ej: ["imagen_opciones", "fondo"])
+
+        Returns:
+            Any: Valor encontrado o None
+        """
+        valor_actual = datos
+        for clave in claves:
+            if isinstance(valor_actual, dict):
+                valor_actual = valor_actual.get(clave)
+            else:
+                return None
+        return valor_actual
+
+    def obtenerPropiedadAccion(self, accionData: dict, key: str, default=None) -> Any:
+        """Obtiene una propiedad de una acción, con fallback a propiedadFolder.
+
+        Soporta claves anidadas usando "/" como separador.
+        Ejemplo: "imagen_opciones/fondo"
+
+        Args:
+            accionData (dict): Datos de la acción
+            key (str): Clave a buscar (puede ser anidada con "/")
+            default: Valor por defecto si no se encuentra
+
+        Returns:
+            Any: Valor encontrado o default
+        """
+
+        # Caso: clave anidada con separador "/"
+        if isinstance(key, str) and "/" in key:
+            claves = key.split("/")
+
+            # Primero busca en accionData
+            valor = self._obtenerValorAnidado(accionData, claves)
+            if valor is not None:
+                return valor
+
+            # Si no encuentra, busca en propiedadFolder
+            if self.propiedadFolder and isinstance(self.propiedadFolder, dict):
+                valor = self._obtenerValorAnidado(self.propiedadFolder, claves)
+                if valor is not None:
+                    return valor
+
+            return default
+
+        # Caso: clave simple
+        valor = accionData.get(key)
+        if valor is not None:
+            return valor
+
+        # Fallback a propiedadFolder
+        if self.propiedadFolder and isinstance(self.propiedadFolder, dict):
+            valor = self.propiedadFolder.get(key)
+            if valor is not None:
+                return valor
+
+        return default
 
     @staticmethod
     def agregarIndexUsado(indexUsado: int):
@@ -296,4 +365,5 @@ class dispositivo:
         return f"{self.nombre}[{self.tipo}]"
 
     def __repr__(self):
+        return f"{self.nombre}[{self.tipo}]"
         return f"{self.nombre}[{self.tipo}]"

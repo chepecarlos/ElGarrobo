@@ -30,7 +30,7 @@ class MiStreamDeck(dispositivo):
     rotar: int = 0
     "Rota los iconos del botones del teclado"
 
-    baseTeclas: int = None
+    baseTeclas: int = 0
     "base inicio del conteo de teclas"
     desfaceTeclas: int = 0
     """Cuantas botones esta adelante del inicio
@@ -52,8 +52,6 @@ class MiStreamDeck(dispositivo):
 
     pausarDibujando: bool = False
     "Pausar el dibujado mientra se actualiza la información"
-    propiedadFolder: dict = None
-    "propiedades para aplicar a todos los botos"
 
     fps: int = 60
     "fotogramas por segundo para gif"
@@ -412,20 +410,15 @@ class MiStreamDeck(dispositivo):
         """
 
         TituloInicial: str = titulo
-        opciones: dict = accion.get("titulo_opciones", dict()) or {}
-        tamañoFuente: int = opciones.get("tamanno", 40)
-        tamañoFuenteMinimo: int = opciones.get("tamanno_minimo")
-        tamañoFuenteMaximo: int = opciones.get("tamanno_maximo")
-        alinear: str = opciones.get("alinear")
-        Borde_Color: str = opciones.get("", "black")
-        Borde_Grosor: int = opciones.get("borde_grosor", 6)
-        Ajustar: bool = opciones.get("ajustar", True)
-        Titulo_Color: str = opciones.get("color", "white")
 
-        if self.propiedadFolder:
-            opcionesFolder = (self.propiedadFolder or {}).get("titulo_opciones") or {}
-            tamañoFuenteMinimo = opcionesFolder.get("tamanno_minimo") or tamañoFuenteMinimo
-            tamañoFuenteMaximo = opcionesFolder.get("tamanno_maximo") or tamañoFuenteMaximo
+        tamañoFuente: int = self.obtenerPropiedadAccion(accion, "titulo_opciones/tamanno", 40)
+        tamañoFuenteMáximo: int | None = self.obtenerPropiedadAccion(accion, "titulo_opciones/tamanno_maximo")
+        tamañoFuenteMínimo: int | None = self.obtenerPropiedadAccion(accion, "titulo_opciones/tamanno_minimo")
+        alinear: str | None = self.obtenerPropiedadAccion(accion, "titulo_opciones/alinear")
+        Borde_Color: str = self.obtenerPropiedadAccion(accion, "titulo_opciones/borde_color", "black")
+        Borde_Grosor: int = self.obtenerPropiedadAccion(accion, "titulo_opciones/borde_grosor", 6)
+        Ajustar: bool = self.obtenerPropiedadAccion(accion, "titulo_opciones/ajustar", True)
+        Titulo_Color: str = self.obtenerPropiedadAccion(accion, "titulo_opciones/color", "white")
 
         Lineas = TituloInicial.split("\\n")
         titulo = "\n".join(Lineas)
@@ -441,15 +434,16 @@ class MiStreamDeck(dispositivo):
 
         if hayImagen:
             alinear = alinear or "abajo"
-            if tamañoFuenteMinimo is None or tamañoFuenteMinimo < 20:
-                tamañoFuenteMinimo = 20
+            if tamañoFuenteMínimo is None or tamañoFuenteMínimo < 20:
+                tamañoFuenteMínimo = 20
 
         tamañoFuente, altoTitulo, anchoTitulo = self.calcularTamañoFuente(
             Imagen,
             titulo,
             Borde_Grosor,
             espacioLinea,
-            tamañoFuenteMinimo,
+            minimo=tamañoFuenteMínimo,
+            maximo=tamañoFuenteMáximo,
         )
 
         fuente = ImageFont.truetype(self.archivoFuente, size=tamañoFuente)
@@ -476,7 +470,7 @@ class MiStreamDeck(dispositivo):
             spacing=espacioLinea,
         )
 
-    def calcularTamañoFuente(self, imagen: ImageDraw, texto: str, grosorBorde: int, espacioLinea: int, minimo: int | None) -> tuple[int, int, int]:
+    def calcularTamañoFuente(self, imagen: ImageDraw, texto: str, grosorBorde: int, espacioLinea: int, minimo: int | None, maximo: int | None = None) -> tuple[int, int, int]:
         """Calcula tamaño de fuente para texto en botón de StreamDeck.
 
         Args:
@@ -485,6 +479,7 @@ class MiStreamDeck(dispositivo):
             grosorBorde (int): Grosor del borde del texto
             espacioLinea (int): Espacio entre líneas del texto
             minimo (int | None): Tamaño mínimo de fuente
+            maximo (int | None): Tamaño máximo de fuente
 
         Returns:
             tuple[int, int, int]: Tamaño de fuente, alto del texto y ancho del texto
@@ -493,7 +488,9 @@ class MiStreamDeck(dispositivo):
         anchoImagen, altoImagen = imagen.width, imagen.height
 
         tamañoFuente = 100
-        dibujo: ImageDraw = ImageDraw.Draw(imagen)
+        from PIL.ImageDraw import ImageDraw as ImageDrawType
+
+        dibujo: ImageDrawType = ImageDraw.Draw(imagen)
 
         fuentePrueba = ImageFont.truetype(self.archivoFuente, size=tamañoFuente)
         cajaTexto = dibujo.multiline_textbbox(
@@ -518,7 +515,12 @@ class MiStreamDeck(dispositivo):
         tamañoFuente = max(3, tamañoCalculo)
 
         if minimo is not None:
-            tamañoFuente = min(minimo, tamañoFuente)
+            if tamañoFuente < minimo:
+                fuentePrueba = minimo
+
+        if maximo is not None:
+            if tamañoFuente > maximo:
+                tamañoFuente = maximo
 
         fuentePrueba = ImageFont.truetype(self.archivoFuente, size=tamañoFuente)
         cajaTexto = dibujo.multiline_textbbox(
