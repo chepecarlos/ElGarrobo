@@ -6,7 +6,7 @@
 ### Linux Mint
 
 ```bash
-sudo apt install python3-pip python3-setuptools python3-tk python3-dev pipx ffmpeg git 
+sudo apt install python3-pip python3-setuptools python3-tk python3-dev pipx ffmpeg git xdotool
 ```
 
 # Clonar 
@@ -45,6 +45,7 @@ Recomendación reiniciar la pc después de agregarse a permisos
 
 ```bash
 sudo apt-get install -y libasound2-dev
+sudo apt install libportaudio2 libsndfile1
 ```
 
 ### Manejador de Ventanas
@@ -87,6 +88,8 @@ Para aplicar los permisos de usb se necesita reiniciar la computadora
 ### Configuraciones de StreamDeck
 ```bash
 sudo apt install -y libhidapi-hidraw0 libudev-dev libusb-1.0-0-dev libhidapi-libusb0 zlib1g-dev
+sudo apt install -y libjpeg-dev zlib1g-dev libopenjp2-7 libtiff6
+
 sudo usermod -a -G plugdev `whoami`
 pip3 install wheel
 pip3 install pillow

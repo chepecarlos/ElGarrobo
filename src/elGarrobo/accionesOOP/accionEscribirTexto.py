@@ -1,6 +1,6 @@
 """Escribe un texto como un teclado"""
 
-import pyautogui
+import subprocess
 
 from elGarrobo.accionesOOP.accion import accion, propiedadAccion
 from elGarrobo.miLibrerias import ConfigurarLogging
@@ -21,7 +21,7 @@ class accionEscribirTexto(accion):
         propiedadTexto = propiedadAccion(
             nombre="Texto",
             atributo="texto",
-            tipo=str,
+            tipo=[str],
             obligatorio=True,
             descripcion="texto a escribir",
             ejemplo="Hola mundo",
@@ -30,7 +30,7 @@ class accionEscribirTexto(accion):
         propiedadVelocidad = propiedadAccion(
             nombre="Velocidad",
             atributo="intervalo",
-            tipo=float,
+            tipo=[float],
             obligatorio=False,
             descripcion="Intervalo entre letra a letra cuando se escriba en segundos",
             ejemplo="0.01",
@@ -49,7 +49,8 @@ class accionEscribirTexto(accion):
         intervalo = self.obtenerValor("intervalo")
 
         if texto is not None and intervalo is not None:
-            pyautogui.write(texto, interval=intervalo)
+            delay_ms = int(intervalo * 1000)
+            subprocess.run(["xdotool", "type", "--delay", str(delay_ms), texto])
             logger.info(f"Escribiendo[{texto}] v{intervalo}s")
         else:
             logger.error("Falta valores para escribir")

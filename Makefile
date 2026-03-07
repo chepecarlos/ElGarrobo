@@ -44,4 +44,5 @@ extras:
 	sudo apt install -y python3-pip python3-setuptools python3-tk python3-dev pipx ffmpeg git 
 	sudo apt install -y libasound2-dev
 	@echo "Instalado Manejador de ventana"
+	@echo "Instalando xdotool para simulación de teclado con caracteres especiales"
 	sudo apt install -y xdotool
