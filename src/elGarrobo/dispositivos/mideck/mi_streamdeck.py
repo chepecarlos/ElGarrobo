@@ -2,6 +2,7 @@
 
 import itertools
 import os
+import re
 import threading
 import time
 from fractions import Fraction
@@ -55,6 +56,9 @@ class MiStreamDeck(dispositivo):
 
     fps: int = 60
     "fotogramas por segundo para gif"
+
+    patronTitulo: re.Pattern = re.compile(r"(?<!{){[^{}]*}(?!})")
+    "Patrón para detectar campos de formato en el título, evitando los dobles {{}} usados para escapar llaves en formato."
 
     _gitCache: dict[tuple[str, str, str], itertools.cycle] = {}
     "Caché para Gifs: clave(rutaGif, colorFondo, titulo)"
@@ -329,7 +333,7 @@ class MiStreamDeck(dispositivo):
             str | None: Título encontrado o None
         """
 
-        titulo: str = None
+        titulo: str | None = None
 
         TextoCargar = accion.get("cargar_titulo")
         if TextoCargar is not None:
@@ -339,8 +343,8 @@ class MiStreamDeck(dispositivo):
                 titulo = ObtenerValor(archivoTexto, atributoTexto)
                 return titulo
 
-        if "titulo" in accion:
-            titulo: str = str(accion.get("titulo"))
+        tituloValor = accion.get("titulo")
+        titulo = str(tituloValor) if tituloValor is not None else None
 
         opciones: dict = accion.get("titulo_opciones", dict())
         if opciones is None:
@@ -348,13 +352,31 @@ class MiStreamDeck(dispositivo):
 
         topicTituloMQTT: str = opciones.get("mqtt", False)
 
-        if topicTituloMQTT:
-            tituloMQTT = self.obtenerTituloMQTT(topicTituloMQTT, titulo)
+        if topicTituloMQTT and isinstance(topicTituloMQTT, str):
+            datoTituloMQTT = self.obtenerTituloMQTT(topicTituloMQTT, titulo)
 
-            if "{}" in titulo and titulo != tituloMQTT:
-                titulo = titulo.format(tituloMQTT)
+            if titulo is not None and self.patronTitulo.search(titulo):
+                try:
+                    titulo = titulo.format(datoTituloMQTT)
+                except (ValueError, TypeError):
+                    # Soporta formatos numéricos como {:.2f} cuando llega texto por MQTT.
+                    valorFormateable = datoTituloMQTT
+                    if isinstance(datoTituloMQTT, str):
+                        datoNormalizado = datoTituloMQTT.strip().replace(",", ".")
+                        try:
+                            valorFormateable = float(datoNormalizado)
+                        except ValueError:
+                            valorFormateable = datoTituloMQTT
+
+                    try:
+                        titulo = titulo.format(valorFormateable)
+                    except (ValueError, TypeError, IndexError, KeyError):
+                        titulo = str(datoTituloMQTT)
             else:
-                titulo = tituloMQTT
+                titulo = datoTituloMQTT
+
+        if isinstance(titulo, str):
+            titulo = titulo.strip()
 
         return titulo
 
