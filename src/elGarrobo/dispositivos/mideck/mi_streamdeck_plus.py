@@ -1,6 +1,7 @@
 import io
 
 from PIL import Image
+from PIL.Image import Image as ImageImage
 from StreamDeck.Devices.StreamDeck import DialEventType, TouchscreenEventType
 
 from elGarrobo.dispositivos.mideck.mi_streamdeck import MiStreamDeck
@@ -29,8 +30,10 @@ class MiStreamDeckPlus(MiStreamDeck):
 
     cantidadBotonesTouchscreen: int = 0
     "Cantidad de botones en touchscreen"
+    cantidadBotonesTouchscreenAnterior: int = 0
+    "Cantidad de botones en touchscreen anterior para comparar cambios"
 
-    listaBotonesTouchscreenViejas: list[dict] = None
+    listaBotonesTouchscreenViejas: list[dict] | None = None
     "lista de información de botones touchscreen viejas para comparar cambios"
 
     def __init__(self, dataConfiguracion: dict) -> None:
@@ -41,8 +44,12 @@ class MiStreamDeckPlus(MiStreamDeck):
         """
         super().__init__(dataConfiguracion)
         self.nombre = dataConfiguracion.get("nombre", "streamdeckplus")
+        self.listaBotonesTouchscreen = []
+        self.listaBotonesTouchscreenViejas = None
+        self.cantidadBotonesTouchscreen = 0
+        self.cantidadBotonesTouchscreenAnterior = 0
 
-    def conectar(self) -> None:
+    def conectar(self) -> bool:
 
         super().conectar()
 
@@ -50,6 +57,8 @@ class MiStreamDeckPlus(MiStreamDeck):
             self.deck.set_dial_callback(self.actualizarEncoderRotatorio)
             self.deck.set_touchscreen_callback(self.actualizarTouchScreen)
             self.cantidadDial = self.deck.DIAL_COUNT
+
+        return self.conectado
 
     def actualizarEncoderRotatorio(self, deck, numeroDial, evento, estado):
         numeroDial += 1
@@ -66,7 +75,10 @@ class MiStreamDeckPlus(MiStreamDeck):
 
     def actualizarTouchScreen(self, deck, evt_type, value):
         posicionX = value["x"]
-        posicionY = value["y"]
+
+        if self.cantidadBotonesTouchscreen <= 0:
+            return
+
         botonPresionado = int(posicionX / (self.anchoBarra / self.cantidadBotonesTouchscreen)) + 1
 
         if evt_type == TouchscreenEventType.SHORT:
@@ -94,7 +106,13 @@ class MiStreamDeckPlus(MiStreamDeck):
             self.conectado = False
             return
 
-        if self.listaBotonesTouchscreenViejas is None:
+        actualizarTouchscreen: bool = False
+
+        if self.cantidadBotonesTouchscreen <= 0:
+            self.generarImagenTouchscreen()
+            return
+
+        if self.listaBotonesTouchscreenViejas is None or len(self.listaBotonesTouchscreenViejas) != self.cantidadBotonesTouchscreen:
             self.listaBotonesTouchscreenViejas = [
                 {
                     "imagen": None,
@@ -103,18 +121,17 @@ class MiStreamDeckPlus(MiStreamDeck):
                 }
                 for _ in range(self.cantidadBotonesTouchscreen)
             ]
-
-        actualizarTouchscreen: bool = False
+            actualizarTouchscreen = True
 
         for boton in range(0, len(self.listaBotonesTouchscreen)):
             accionActual: dict = self.listaBotonesTouchscreen[boton]
             accionVieja: dict = self.listaBotonesTouchscreenViejas[boton]
 
-            imagenActual: str = self.buscarDirecionImagen(accionActual)
-            tituloActual: str = self.buscarTitulo(accionActual)
+            imagenActual: str | None = self.buscarDirecionImagen(accionActual)
+            tituloActual: str | None = self.buscarTitulo(accionActual)
 
-            imagenVieja: str = accionVieja.get("imagen")
-            tituloViejo: str = accionVieja.get("titulo")
+            imagenVieja: str | None = accionVieja.get("imagen")
+            tituloViejo: str | None = accionVieja.get("titulo")
 
             if imagenActual == imagenVieja and tituloActual == tituloViejo:
                 continue
@@ -132,18 +149,22 @@ class MiStreamDeckPlus(MiStreamDeck):
         """Genera y actualiza la imagen del touchscreen del Stream Deck Plus."""
 
         imagenBase = Image.new("RGB", (self.anchoBarra, self.altoBarra))
-        anchoBoton = int(self.anchoBarra / self.cantidadBotonesTouchscreen)
 
-        for boton in range(0, len(self.listaBotonesTouchscreen)):
+        print("Generando imagen del touchscreen con " + str(self.cantidadBotonesTouchscreen) + " botones.")
 
-            imagenLimpia: Image.Image = Image.new("RGB", (anchoBoton, self.altoBarra))
-            accionActual: dict = self.listaBotonesTouchscreen[boton]
+        if self.cantidadBotonesTouchscreen > 0:
+            anchoBoton = int(self.anchoBarra / self.cantidadBotonesTouchscreen)
 
-            imagenLista: Image.Image = self.obtenerImagen(imagenLimpia, accionActual)
+            for boton in range(0, len(self.listaBotonesTouchscreen)):
 
-            posicionX: int = int((boton + 0.5) * self.anchoBarra / self.cantidadBotonesTouchscreen - anchoBoton / 2)
-            posicionY: int = 0
-            imagenBase.paste(imagenLista, (posicionX, posicionY))
+                imagenLimpia: ImageImage = Image.new("RGB", (anchoBoton, self.altoBarra))
+                accionActual: dict = self.listaBotonesTouchscreen[boton]
+
+                imagenLista: ImageImage = self.obtenerImagen(imagenLimpia, accionActual)
+
+                posicionX: int = int((boton + 0.5) * self.anchoBarra / self.cantidadBotonesTouchscreen - anchoBoton / 2)
+                posicionY: int = 0
+                imagenBase.paste(imagenLista, (posicionX, posicionY))
 
         img_bytes = io.BytesIO()
         imagenBase.save(img_bytes, format="JPEG")
@@ -152,11 +173,20 @@ class MiStreamDeckPlus(MiStreamDeck):
         self.deck.set_touchscreen_image(touchscreen_image_bytes, 0, 0, self.anchoBarra, self.altoBarra)
 
     def actualizar(self) -> None:
+
+        listaBotonesTouchscreenNueva = [d for d in self.listaAcciones if str(d.get("key", "")).startswith("touchscreen_")]
+        listaBotonesTouchscreenNueva.sort(key=lambda x: int(x["key"].split("_")[1]))
+
+        cantidadBotonesTouchscreenNueva = len(listaBotonesTouchscreenNueva)
+        touchscreenCambio = cantidadBotonesTouchscreenNueva != self.cantidadBotonesTouchscreen or listaBotonesTouchscreenNueva != self.listaBotonesTouchscreen
+
+        if self.recargar or touchscreenCambio:
+            self.listaBotonesTouchscreen = listaBotonesTouchscreenNueva
+            self.cantidadBotonesTouchscreenAnterior = self.cantidadBotonesTouchscreen
+            self.cantidadBotonesTouchscreen = cantidadBotonesTouchscreenNueva
+
+            if self.cantidadBotonesTouchscreen != self.cantidadBotonesTouchscreenAnterior:
+                self.listaBotonesTouchscreenViejas = None
+
+            self.actualizarIconos()
         super().actualizar()
-
-        self.listaBotonesTouchscreen.clear()
-        self.listaBotonesTouchscreen.extend([d for d in self.listaAcciones if str(d.get("key", "")).startswith("touchscreen_")])
-        self.listaBotonesTouchscreen.sort(key=lambda x: int(x["key"].split("_")[1]))
-        self.cantidadBotonesTouchscreen = len(self.listaBotonesTouchscreen)
-
-        self.actualizarIconos()

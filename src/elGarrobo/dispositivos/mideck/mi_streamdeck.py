@@ -9,6 +9,7 @@ from fractions import Fraction
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont, ImageSequence
+from PIL.Image import Image as ImageImage
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Devices.StreamDeck import StreamDeck
 from StreamDeck.ImageHelpers import PILHelper
@@ -83,7 +84,7 @@ class MiStreamDeck(dispositivo):
         self._gitCache = {}
         # self.archivoImagen = None
 
-    def conectar(self) -> None:
+    def conectar(self) -> bool:
         listaStreamdecks = DeviceManager().enumerate()
         listaIdUsados = dispositivo.listaIndexUsados
 
@@ -121,7 +122,7 @@ class MiStreamDeck(dispositivo):
 
                         logger.info(f"StreamDeck[Conectado] - {self.nombre}[{self.deck.get_serial_number()}]")
 
-                        return
+                        return True
                     else:
                         self.deck.close()
 
@@ -129,14 +130,15 @@ class MiStreamDeck(dispositivo):
                     self.conectado = False
                     self.deck = None
                     logger.exception(f"StreamDeck[Error] {self.nombre}[{self.dispositivo}]{error}")
-                    return
+                    return False
                 except Exception as error:
                     self.conectado = False
                     self.deck = None
                     logger.exception(f"StreamDeck[Error] {error}")
-                    return
+                    return False
         logger.warning(f"StreamDeck[No encontró] - {self.nombre}")
         self.conectado = False
+        return False
 
     def actualizarIconos(self) -> None:
         """Refresca iconos, tomando en cuenta pagina actual."""
@@ -285,13 +287,13 @@ class MiStreamDeck(dispositivo):
         else:
             rotar = self.rotar
 
-        imagenDeck: Image = PILHelper.create_image(self.deck, background=colorFondo)
-        imagenBoton: Image = self.obtenerImagen(imagenDeck, accionActual)
+        imagenDeck: ImageImage = PILHelper.create_image(self.deck, background=colorFondo)
+        imagenBoton: ImageImage = self.obtenerImagen(imagenDeck, accionActual)
         imagenBoton = imagenBoton.rotate(rotar, resample=Image.BICUBIC, expand=False)
 
         self.deck.set_key_image(indice, PILHelper.to_native_format(self.deck, imagenBoton))
 
-    def obtenerImagen(self, imagen: Image, accion: dict) -> Image:
+    def obtenerImagen(self, imagen: ImageImage, accion: dict) -> ImageImage:
         modificado: bool = False
         imagenFondo = None
 
@@ -402,7 +404,7 @@ class MiStreamDeck(dispositivo):
 
         return str(pathImagen.resolve())
 
-    def ponerImagen(self, Imagen: Image, NombreIcono: str, accion, fondo: bool = False):
+    def ponerImagen(self, Imagen: ImageImage, NombreIcono: str, accion, fondo: bool = False):
         if NombreIcono is None:
             return
 

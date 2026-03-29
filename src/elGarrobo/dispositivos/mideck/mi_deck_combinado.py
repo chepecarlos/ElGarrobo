@@ -1,3 +1,5 @@
+from typing import Optional, Union
+
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.miLibrerias import ConfigurarLogging
 
@@ -13,9 +15,9 @@ class MiDeckCombinado(dispositivo):
     tipo = "deck_combinado"
     archivoConfiguracion = "deck_combinado.md"
     "Archivo de configuración del dispositivo"
-    listaDeck: list[MiStreamDeck] = list()
+    listaDeck: list[Union[MiStreamDeck, MiStreamDeckPlus]] = list()
     "Lista de Dispositivos StreamDeck a combinar"
-    imagenesBase: dict = None
+    imagenesBase: Optional[dict[str, str]] = None
     "Imagen que se una por defecto"
     desface: int = 0
     """Cuantas botones esta adelante del inicio
@@ -28,7 +30,7 @@ class MiDeckCombinado(dispositivo):
     cantidadDial: int = 0
     "Cantidad de Dial en StreamDeck Combinado"
 
-    archivoFuente: str = None
+    archivoFuente: Optional[str] = None
     "fuente para texto de botones"
     fps: int = 60
     "fotogramas por segundo para gif"
@@ -43,15 +45,15 @@ class MiDeckCombinado(dispositivo):
         super().__init__(dataConfiguracion)
         self.listaDeck = list()
         self.nombre = dataConfiguracion.get("nombre", "DeckCombinado")
-        self.archivoFuente = dataConfiguracion.get("fuente", "")
-        self.imagenesBase = dataConfiguracion.get("imagen_base", "")
+        self.archivoFuente: str = dataConfiguracion.get("fuente", "")
+        self.imagenesBase: dict[str, str] = dataConfiguracion.get("imagen_base", dict())
         self.fps = dataConfiguracion.get("fps", 20)
         dataStreamDecks: dict = dataConfiguracion.get("streamDecks")
         dataStreamDecksPlus: dict = dataConfiguracion.get("streamDecksPlus")
 
         if dataStreamDecks is not None:
             for deckActual in dataStreamDecks:
-                deckTemporal: MiStreamDeck = MiStreamDeck(deckActual)
+                deckTemporal = MiStreamDeck(deckActual)
                 deckTemporal.archivoFuente = self.archivoFuente
                 deckTemporal.imagenesBase = self.imagenesBase
                 deckTemporal.fps = self.fps

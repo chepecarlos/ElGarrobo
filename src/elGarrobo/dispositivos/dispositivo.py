@@ -198,7 +198,7 @@ class dispositivo:
         "Recarga las acciones del folder actual"
         self.cargarAccionesFolder(".", recargar=True)
 
-    def cargarData(self, archivo: str) -> any:
+    def cargarData(self, archivo: str) -> Any:
         """Carga datos desde un archivo.
 
         Args:
@@ -357,8 +357,8 @@ class dispositivo:
     def agregarIndexUsado(indexUsado: int):
         dispositivo.listaIndexUsados.append(indexUsado)
 
-    def actualizar(self):
-        "Actualiza la imagen del dispositivo"
+    def actualizar(self) -> None:
+        """Actualiza la imagen del dispositivo"""
         self.recargar = False
 
     def __str__(self):
