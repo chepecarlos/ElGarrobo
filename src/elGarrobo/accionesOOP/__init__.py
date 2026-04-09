@@ -52,6 +52,7 @@ from .accionDelay import accionDelay
 from .accionEmularRaton import accionEmularRaton
 from .accionEntrarFolder import accionEntrarFolder
 from .accionEscribirTexto import accionEscribirTexto
+from .accionesOctoprint.accionReimprimirOctoprint import accionReimprimirOctoprint
 from .accionFolder import accionFolder
 from .accionMQTT import accionMQTT
 from .accionNavegador import accionNavegador
@@ -67,7 +68,7 @@ from .accionTeclas import accionTeclas
 from .accionTelegram import accionTelegram
 
 
-def cargarClasesAcciones() -> dict[str, accion]:
+def cargarClasesAcciones() -> dict[str, type["accion"]]:
     """
     Carga las acciones en una dic con nombre de accion y función asociada.
 
@@ -106,4 +107,5 @@ def cargarClasesAcciones() -> dict[str, accion]:
         "volumen": accionVolumen,
         "salvar_audio": accionSalvarPulse,
         "mute": accionMute,
+        "reimprimir_octoprint": accionReimprimirOctoprint,
     }
