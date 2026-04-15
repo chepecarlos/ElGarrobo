@@ -5,8 +5,11 @@
 
 ### Linux Mint
 
+Preparar paquete básicos para preparar la instalación
+
 ```bash
-sudo apt install python3-pip python3-setuptools python3-tk python3-dev pipx ffmpeg git xdotool
+sudo apt update && sudo apt dist-upgrade -y
+sudo apt install -y git python3-pip python3-setuptools python3-tk python3-dev pipx ffmpeg git xdotool
 ```
 
 # Clonar 
@@ -23,7 +26,7 @@ cd ElGarrobo
 ```
 
 ## Submodulos 
-Ejecuta lo siguiente
+Descarga sub modulos 
 
 ```bash
 git submodule init
@@ -35,18 +38,41 @@ git submodule update
 
 ### Control teclado USB
 
+Para controlar tecaldos 
+
 ```bash
 sudo usermod -a -G input $USER
 ```
 
 Recomendación reiniciar la pc después de agregarse a permisos
 
-## Audio
+### Audio
+
+Paquetes extras para poder reproducir sonidos 
 
 ```bash
-sudo apt-get install -y libasound2-dev
-sudo apt install libportaudio2 libsndfile1
+sudo apt install -y libportaudio2 libsndfile1 libasound2-dev
 ```
+
+### Configurar StreamDeck
+
+Para configurar para diferentes versiones
+```bash
+sudo apt install -y libudev-dev libusb-1.0-0-dev libhidapi-libusb0
+sudo apt install -y libjpeg-dev zlib1g-dev libopenjp2-7 libtiff6
+``` 
+
+crear el archivo /etc/udev/rules.d/10-streamdeck.rules y escribiri
+```bash
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0fd9", GROUP="users", TAG+="uaccess"
+```
+
+reiniciar colección por usb con StreamDeck
+
+```bash
+sudo udevadm control --reload-rules
+```
+desconectar y conectar el Stramdeck
 
 ### Manejador de Ventanas
 
@@ -60,8 +86,8 @@ sudo apt install xdotool
 sudo apt install espeak
 ```
 
-### Configurar pipx
-Agregar ruta de pipx si aun no se a agregado
+## Configurar pipx
+Agregar gestor de paquetes de python pipx, para instalar paquetes en el sistema
 
 ```bash
 pipx ensurepath
@@ -95,10 +121,6 @@ pip3 install wheel
 pip3 install pillow
 ```
 
-### Repoducion Sonidos
-```bash
-sudo apt-get install -y libasound2-dev
-```
 
 ### Crear y Agregar e los archivos
 
@@ -115,14 +137,7 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="006c", MODE:="660"
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="006d", MODE:="660", GROUP="plugdev"
 ```
 
+recargar modulos de 
 ```bash
 sudo udevadm control --reload-rules
-pip3 install streamdeck
-```
-
-
-## funciones
-
-```bash
-pip3 install argparse
 ```
