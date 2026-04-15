@@ -1,11 +1,12 @@
 import threading
 import time
+from pathlib import Path
 from typing import Optional
 
 import psutil
 
 from elGarrobo.accionesOOP.accionMQTT import accionMQTT
-from elGarrobo.miLibrerias import ConfigurarLogging
+from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, SalvarArchivo
 from elGarrobo.modulos.modulo import modulo
 
 logger = ConfigurarLogging(__name__)
@@ -21,7 +22,7 @@ class estadoPc(modulo):
     "Topic para publicar el uso de CPU"
     topicRAM: str = "ram"
     "Topic para publicar el uso de RAM"
-    nombrePC: str = "pc_default"
+    nombrePC: str = "pc-default"
     "Nombre del PC"
     archivoConfiguracion = "modulos/estado_pc.md"
     """Archivo de configuración del módulo"""
@@ -33,8 +34,27 @@ class estadoPc(modulo):
         super().__init__(dataModulo)
         self.activo = False
         self.hiloMonitoreo = None
+        dataModulo = dataModulo or {}
+        self._crear_configuracion_por_defecto(dataModulo)
         self.nombrePC = dataModulo.get("nombre_pc", self.nombrePC)
-        logger.info(f"Modulo[{self.nombre}] - Publicando estado de PC[{self.nombrePC}] por MQTT")
+
+        if self.nombrePC == "pc-default":
+            logger.warning(f"Estado[{self.nombrePC}] - No se especificó nombre del PC, " f"usando valor por defecto: {self.nombrePC}, " "edita el archivo de configuración para cambiarlo")
+
+        logger.info(f"Estado[{self.nombrePC}] - Publicando estado de PC[{self.nombrePC}] por MQTT")
+
+    def _crear_configuracion_por_defecto(self, dataModulo: dict) -> None:
+        archivoConfiguracion = Path(ObtenerFolderConfig()) / self.archivoConfiguracion
+
+        if archivoConfiguracion.exists():
+            return
+
+        nombre_pc = dataModulo.get("nombre_pc", self.nombrePC)
+        dataDefecto = {"nombre_pc": nombre_pc}
+        SalvarArchivo(str(archivoConfiguracion), dataDefecto)
+        if "nombre_pc" not in dataModulo:
+            dataModulo.update(dataDefecto)
+        logger.info(f"Modulo[{self.nombre}] - Archivo de configuración creado en {archivoConfiguracion}")
 
     def ejecutar(self) -> None:
         """Obtiene el estado actual del PC"""
@@ -72,13 +92,13 @@ class estadoPc(modulo):
                 )
                 accionEnviar.ejecutar()
 
-                logger.info(f"CPU: {cpu}% | Memoria: {memoria}%")
+                logger.info(f"Estado[{self.nombrePC}] - CPU: {cpu}% | Memoria: {memoria}%")
                 time.sleep(10)
             except Exception as e:
-                logger.error(f"Error en monitoreo: {e}")
+                logger.error(f"Estado[{self.nombrePC}] - Error en monitoreo: {e}")
                 break
 
     def detener(self):
         """Detiene el monitoreo"""
         self.activo = False
-        logger.info(f"Modulo[{self.nombre}] - Monitoreo detenido")
+        logger.info(f"Estado[{self.nombrePC}] - Monitoreo detenido")
