@@ -8,6 +8,8 @@ from math import log
 
 import obsws_python as obs
 from obsws_python import error as OBSerror
+from collections.abc import Callable
+from typing import Any
 
 from elGarrobo.accionesOOP import accion, accionMQTT
 from elGarrobo.miLibrerias import (
@@ -24,9 +26,9 @@ logger = ConfigurarLogging(__name__, logging.DEBUG)
 class MiOBS:
     """Concepción con OBS WebSocket."""
 
-    clienteConsultas: obs.ReqClient = None
+    clienteConsultas: obs.ReqClient | None = None
     "Cliente para mandar información a OBS WebSocket"
-    clienteEvento: obs.EventClient = None
+    clienteEvento: obs.EventClient | None = None
     "Cliente para recibir información de OBS WebSocket"
     conectado: bool = False
     "Esta conectado con OBS WebSocket"
@@ -35,7 +37,7 @@ class MiOBS:
     "Servidor a conectarse con obs"
     puerto: int
     "Puerto a usar para conectarse con obs"
-    password: str
+    password: str | None
     "Contraseña para conectar con obs"
 
     escenaActual: str
@@ -54,7 +56,7 @@ class MiOBS:
     consultaCliente: bool
     "se esta haciendo una consulta fuente"
 
-    notificaciones: callable
+    notificaciones: Callable[[str, Any], None] | None
     "Función para notificaciones a MQTT"
 
     def __init__(self) -> None:
@@ -63,7 +65,7 @@ class MiOBS:
         """Archivo de estado de OBS."""
         self.audioMonitoriar = list()
         self.dibujar = None
-        self.notificaciones: callable = None
+        self.notificaciones = None
         self.conectado = False
         self.procesoTiempo = None
         self.consultaCliente = False
@@ -85,11 +87,11 @@ class MiOBS:
             self.Notificar("OBS-Ya-Conectado")
             return False
 
-        self.servidor: str = opciones.get("servidor", "localhost")
-        self.puerto: int = int(opciones.get("puerto", 4455))
-        self.password: str | None = opciones.get("password", None)
+        self.servidor = opciones.get("servidor", "localhost")
+        self.puerto = int(opciones.get("puerto", 4455))
+        self.password = opciones.get("password", None)
 
-        modulos = leerData("modulos")
+        modulos = leerData("modulos") or {}
         monitorAudio = modulos.get("obs_monitor_audio", False)
 
         if monitorAudio:
@@ -228,10 +230,10 @@ class MiOBS:
         if self.dibujar is not None:
             self.dibujar()
 
-    def AgregarNotificacion(self, funcion: callable):
+    def AgregarNotificacion(self, función: Callable[[str, Any], None]):
         """Agrega función para notificación."""
         self.alertaOBS = leerData("modulos/alerta_obs/mqtt")
-        self.notificaciones = funcion
+        self.notificaciones = función
 
     def conectarOBS(self, mensaje):
         self.conectado = True
