@@ -1,4 +1,4 @@
-"""Acción para reimprimir un trabajo en Octoprint"""
+"""Acción para cancelar una impresión en Octoprint"""
 
 import requests
 
@@ -9,12 +9,12 @@ from elGarrobo.miLibrerias import ConfigurarLogging
 Logger = ConfigurarLogging(__name__)
 
 
-class accionReimprimirOctoprint(accion):
-    """Reimprime un trabajo en Octoprint"""
+class accionCancelarOctoprint(accion):
+    """Cancela una impresión en Octoprint"""
 
-    nombre = "Reimprimir Octoprint"
-    comando = "reimprimir_octoprint"
-    descripcion = "Reimprime un trabajo en Octoprint"
+    nombre = "Cancelar Octoprint"
+    comando = "cancelar_octoprint"
+    descripcion = "Cancela una impresión en Octoprint"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
@@ -24,7 +24,7 @@ class accionReimprimirOctoprint(accion):
             atributo="url",
             tipo=[str],
             obligatorio=True,
-            descripcion="URL del trabajo a reimprimir",
+            descripcion="URL de Octoprint",
             ejemplo="http://octoprint.local",
         )
 
@@ -40,41 +40,28 @@ class accionReimprimirOctoprint(accion):
         self.agregarPropiedad(propiedadURL)
         self.agregarPropiedad(propiedadToken)
 
-        self.funcion = self.reimprimirTrabajo
+        self.funcion = self.cancelarImpresion
 
-    def reimprimirTrabajo(self):
-        """Reimprime un trabajo en Octoprint"""
+    def cancelarImpresion(self):
+        """Cancela una impresión en Octoprint"""
         url = str(self.obtenerValor("url")).strip()
         token = str(self.obtenerValor("token")).strip()
 
-        # Si ya llega /api/job no lo duplicamos.
         base_url = url.rstrip("/")
         endpoint = base_url if base_url.endswith("/api/job") else f"{base_url}/api/job"
 
         headers = {"X-Api-Key": token, "Content-Type": "application/json"}
-        # El comando 'restart' reinicia el archivo cargado; si no aplica, hacemos fallback a 'start'.
-        data = {"command": "restart"}
+        data = {"command": "cancel"}
 
         try:
             response = requests.post(endpoint, headers=headers, json=data, timeout=10)
 
             if response.status_code in [200, 204]:
-                Logger.info(f"Octoprint[OK] Reimpresión enviada a {endpoint}")
+                Logger.info(f"Octoprint[OK] Cancelación enviada a {endpoint}")
                 notificación = accionNotificacion()
-                notificación.configurar({"texto": f"Octoprint[OK] Reimpresión enviada a {endpoint}"})
+                notificación.configurar({"texto": f"Octoprint[OK] Impresión cancelada en {endpoint}"})
                 notificación.ejecutar()
                 return
-
-            if response.status_code == 409:
-                data = {"command": "start"}
-                response = requests.post(endpoint, headers=headers, json=data, timeout=10)
-                if response.status_code in [200, 204]:
-                    Logger.info(f"Octoprint[OK] Se inició impresión con fallback 'start' en {endpoint}")
-
-                    notificación = accionNotificacion()
-                    notificación.configurar({"texto": f"Octoprint[OK] Reimpresión enviada a {endpoint}"})
-                    notificación.ejecutar()
-                    return
 
             detalle = (response.text or "").strip()
             if len(detalle) > 300:

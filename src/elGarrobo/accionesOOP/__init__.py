@@ -52,6 +52,7 @@ from .accionDelay import accionDelay
 from .accionEmularRaton import accionEmularRaton
 from .accionEntrarFolder import accionEntrarFolder
 from .accionEscribirTexto import accionEscribirTexto
+from .accionesOctoprint.accionCancelarOctoprint import accionCancelarOctoprint
 from .accionesOctoprint.accionReimprimirOctoprint import accionReimprimirOctoprint
 from .accionFolder import accionFolder
 from .accionMQTT import accionMQTT
@@ -108,4 +109,5 @@ def cargarClasesAcciones() -> dict[str, type["accion"]]:
         "salvar_audio": accionSalvarPulse,
         "mute": accionMute,
         "reimprimir_octoprint": accionReimprimirOctoprint,
+        "cancelar_octoprint": accionCancelarOctoprint,
     }
