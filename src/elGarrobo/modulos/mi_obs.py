@@ -4,12 +4,12 @@
 import logging
 import threading
 import time
+from collections.abc import Callable
 from math import log
+from typing import Any
 
 import obsws_python as obs
 from obsws_python import error as OBSerror
-from collections.abc import Callable
-from typing import Any
 
 from elGarrobo.accionesOOP import accion, accionMQTT
 from elGarrobo.miLibrerias import (
@@ -160,6 +160,9 @@ class MiOBS:
         return True
 
     def configurarEventos(self):
+        if self.clienteEvento is None:
+            logger.warning("OBS[Eventos] Cliente de eventos no disponible")
+            return
 
         self.clienteEvento.callback.register(
             [
@@ -176,7 +179,7 @@ class MiOBS:
                 self.on_exit_started,
             ]
         )
-        logger.info(f"Eventos registrados en OBS:")
+        logger.info("Eventos registrados en OBS:")
         for evento in self.clienteEvento.callback.get():
             logger.info(f" - {evento}")
 
@@ -326,45 +329,53 @@ class MiOBS:
             logger.warning("Ya se esta salvando fuente")
             return
 
+        if self.clienteConsultas is None:
+            logger.warning("OBS[Fuente] Cliente de consultas no disponible")
+            return
+
         self.consultaCliente = True
         try:
             HiloFuentes = threading.Thread(target=self.hiloSalvarFuentes, name="ElGarroboOBS-salvarFuentes")
             HiloFuentes.start()
         except Exception as error:
             logger.exception(f"OBS[Error] Hilo Fuente {error}")
-        self.consultaCliente = False
+            self.consultaCliente = False
 
     def hiloSalvarFuentes(self):
         """Salva la información de las fuentes"""
 
         refrescar = False
+        try:
+            if not self.conectado or self.clienteConsultas is None:
+                return
 
-        if not self.conectado:
-            return
+            escenaActual = self.clienteConsultas.get_scene_list()
+            self.escenaActual = escenaActual.current_program_scene_name
 
-        escenaActual: str = self.clienteConsultas.get_scene_list()
-        self.escenaActual = escenaActual.current_program_scene_name
+            data = self.clienteConsultas.get_scene_item_list(self.escenaActual)
+            if data is None:
+                return
 
-        data = self.clienteConsultas.get_scene_item_list(self.escenaActual)
-        if data is None:
-            return
+            for fuente in data.scene_items:
+                idFuente = fuente.get("sceneItemId")
+                nombreFuente = fuente.get("sourceName")
+                estadoFuente = fuente.get("sceneItemEnabled")
+                estadoFuenteViejo = ObtenerValor(unirPath(self.archivoEstado, "fuente"), nombreFuente)
 
-        for fuente in data.scene_items:
-            idFuente = fuente.get("sceneItemId")
-            nombreFuente = fuente.get("sourceName")
-            estadoFuente = fuente.get("sceneItemEnabled")
-            tipoFuente = fuente.get("sourceType")
-            estadoFuenteViejo = ObtenerValor(unirPath(self.archivoEstado, "fuente"), nombreFuente)
+                if estadoFuente != estadoFuenteViejo:
+                    SalvarValor(unirPath(self.archivoEstado, "fuente"), nombreFuente, estadoFuente)
+                    refrescar = True
 
-            if estadoFuente != estadoFuenteViejo:
-                SalvarValor(unirPath(self.archivoEstado, "fuente"), nombreFuente, estadoFuente)
-                refrescar = True
+                SalvarValor(unirPath(self.archivoEstado, "fuente_id"), [self.escenaActual, idFuente], nombreFuente)
+                try:
+                    self.SalvarFiltroFuente(nombreFuente)
+                except Exception as error:
+                    logger.warning(f"OBS[Filtro] Error salvando filtros de '{nombreFuente}': {error}")
 
-            SalvarValor(unirPath(self.archivoEstado, "fuente_id"), [self.escenaActual, idFuente], nombreFuente)
-            self.SalvarFiltroFuente(nombreFuente)
-
-        if refrescar:
-            self.actualizarDeck()
+            if refrescar:
+                self.actualizarDeck()
+        finally:
+            self.consultaCliente = False
 
     def AgregarEvento(self, Funcion, Evento):
         """Registra evento de OBS a una funcion."""
@@ -415,10 +426,10 @@ class MiOBS:
         logger.info(f"OBS[EnVivo] - {estado}")
         if estado:
             self.Notificar("OBS-EnVivo")
-            self.envivo = True
+            self.enVivo = True
         else:
             self.Notificar("OBS-No-EnVivo")
-            self.envivo = False
+            self.enVivo = False
         self.actualizarDeck()
 
     def on_virtualcam_state_changed(self, mensaje):
@@ -465,17 +476,43 @@ class MiOBS:
             fuente (str): Nombre de la fuente
         """
 
-        consultaFiltros = self.clienteConsultas.get_source_filter_list(fuente)
-
-        if consultaFiltros is None:
-            print("No hay filtros")
+        if self.clienteConsultas is None:
+            logger.warning("OBS[Filtro] Cliente de consultas no disponible")
             return
 
-        filtros = consultaFiltros.filters
+        if not fuente:
+            logger.warning("OBS[Filtro] Fuente vacia")
+            return
+
+        try:
+            consultaFiltros = self.clienteConsultas.get_source_filter_list(fuente)
+        except OBSerror.OBSSDKRequestError as error:
+            logger.warning(f"OBS[Filtro] Consulta fallida para '{fuente}': {error}")
+            return
+        except Exception as error:
+            logger.warning(f"OBS[Filtro] Error consultando filtros de '{fuente}': {error}")
+            return
+
+        if consultaFiltros is None:
+            logger.debug(f"OBS[Filtro] Sin respuesta para '{fuente}'")
+            return
+
+        if hasattr(consultaFiltros, "filters"):
+            filtros = consultaFiltros.filters
+        elif isinstance(consultaFiltros, dict):
+            filtros = consultaFiltros.get("filters")
+        else:
+            logger.warning(
+                "OBS[Filtro] Respuesta inesperada para '%s': %s",
+                fuente,
+                type(consultaFiltros).__name__,
+            )
+            return
 
         if filtros is None:
             return
 
+        dataFuenteAnterior = None
         dataPropiedades = leerData(unirPath(self.archivoEstado, "filtro_propiedades"))
         if dataPropiedades is not None:
             dataFuenteAnterior = dataPropiedades.get(fuente)
@@ -495,12 +532,17 @@ class MiOBS:
                         if valorPropiedadAnterior is not None and valorPropiedadAnterior == propiedadesFiltro[propiedad]:
                             continue
 
-                SalvarValor(unirPath(self.archivoEstado, "filtro_propiedades"), [fuente, nombreFiltro, propiedad], propiedadesFiltro[propiedad])
+                SalvarValor(
+                    unirPath(self.archivoEstado, "filtro_propiedades"),
+                    [fuente, nombreFiltro, propiedad],
+                    propiedadesFiltro[propiedad],
+                )
 
     def on_vendor_event(self, mensaje):
         """Recibe mensajes de plugins extras"""
         vendedor = mensaje.vendor_name
         if vendedor == "aitum-vertical-canvas":
+            # Documentación de eventos del plugin Vertical: https://github.com/Aitum/obs-vertical-canvas/blob/49885f17601e39e67b670614205824dfbec5ed29/vertical-canvas.cpp#L680
             self.eventoVertical(mensaje)
         else:
             logger.warning(f"OBS[Plugin Desconocido] {vendedor} - {mensaje.event_type}")
@@ -653,7 +695,7 @@ class MiOBS:
         )
         self.SalvarFiltroFuente(fuente)
 
-    def cambiarGrabacion(self, opciones: dict = None):
+    def cambiarGrabacion(self, opciones: dict | None = None):
         """Envía solicitud de cambiar estado de Grabación."""
         if self.conectado:
             logger.info("Cambiando[Grabación]")
@@ -683,7 +725,7 @@ class MiOBS:
             logger.info("OBS no Conectado")
             self.Notificar("OBS-No-Conectado")
 
-    def cambiarCamaraVirtual(self, opciones: dict = None):
+    def cambiarCamaraVirtual(self, opciones: dict | None = None):
         """Envía solicitud de cambio estado Cámara Virtual"""
         if self.conectado:
             try:
@@ -717,8 +759,11 @@ class MiOBS:
             logger.info("OBS no Conectado")
             self.Notificar("OBS-No-Conectado")
 
-    def cambiarEscenaVertical(self, opciones=None):
+    def cambiarEscenaVertical(self, opciones: dict | None = None):
         """Envía solicitud de cambiar de Escena en plugin Vertical."""
+        if opciones is None:
+            opciones = {}
+
         escena = opciones.get("escena")
 
         if escena is None:
@@ -732,7 +777,7 @@ class MiOBS:
                 self.clienteConsultas.call_vendor_request("aitum-vertical-canvas", "switch_scene", mensaje)
             except KeyError as e:
                 # Captura el error específico de 'requestStatus'
-                logger.error(f"OBS[Error-Vertical] La solicitud falló o hay una incompatibilidad de protocolo. Error: {e}")
+                logger.error("OBS[Error-Vertical] La solicitud falló o hay una incompatibilidad de protocolo. " f"Error: {e}")
 
             logger.info(f"OBS[Cambiando-Vertical] {escena}")
         else:
@@ -740,10 +785,10 @@ class MiOBS:
             self.Notificar("OBS-No-Encontrado")
 
     def TiempoGrabando(self, opciones=None):
-        if self.conectado:
-            consulta = self.OBS.call(requests.GetStreamingStatus())
-            if consulta.getRecording():
-                tiempo = consulta.getRecTimecode().split(".")[0]
+        if self.conectado and self.clienteConsultas is not None:
+            consulta = self.clienteConsultas.get_record_status()
+            if consulta.output_active:
+                tiempo = consulta.output_timecode.split(".")[0]
                 logger.info(f"Tiempo Grabando: {tiempo}")
                 return tiempo
         else:
@@ -752,10 +797,10 @@ class MiOBS:
         return "No-Grabando"
 
     def TiempoEnVivo(self, opciones=None):
-        if self.conectado:
-            consulta = self.OBS.call(requests.GetStreamingStatus())
-            if consulta.getStreaming():
-                tiempo = consulta.getStreamTimecode().split(".")[0]
+        if self.conectado and self.clienteConsultas is not None:
+            consulta = self.clienteConsultas.get_stream_status()
+            if consulta.output_active:
+                tiempo = consulta.output_timecode.split(".")[0]
                 logger.info(f"Tiempo Envivo: {tiempo}")
                 return tiempo
         else:
@@ -772,7 +817,7 @@ class MiOBS:
         SalvarArchivo(unirPath(self.archivoEstado, "fuente_id"), dict())
 
     def desconectar(self, opciones=False):
-        """Deconectar de OBS websocket."""
+        """Desconectar de OBS websocket."""
         logger.info(f"OBS[Desconectando] - {self.host}")
         self.Notificar("OBS-No-Conectado")
         # self._cola_consultas.put(None)
@@ -787,7 +832,7 @@ class MiOBS:
         logger.info("OBS[Desconectado]")
 
     def on_exit_started(self, mensaje):
-        """Recibe desconeccion de OBS websocket."""
+        """Recibe mensaje desconectar de OBS websocket."""
         logger.info("OBS[Desconectado]")
         self.Notificar("OBS-No-Conectado")
         self.conectado = False
