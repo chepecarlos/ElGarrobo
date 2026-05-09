@@ -1,10 +1,12 @@
 from .estadoPc import estadoPc
 from .modulo import modulo
+from .estadoOctoprint import estadoOctoprint
 
 
-def cargarModulos() -> list[modulo]:
+def cargarModulos() -> list[type["modulo"]]:
     """Función para cargar los módulos disponibles"""
-    modulosDisponibles = [
+    listaModulos: list[type["modulo"]] = [
         estadoPc,
+        estadoOctoprint,
     ]
-    return modulosDisponibles
+    return listaModulos
