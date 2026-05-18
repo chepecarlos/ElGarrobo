@@ -20,6 +20,7 @@
 - Ejecuta accion preciosa y otra se suelta: [accionPresionar](./accionesOOP/accionPresionar)
 - Escribir archivo[accionEscribirArchivo](./accionesOOP/accionArchivo)
 - Lee un valor de un archivo[accionLeerValor](./accionesOOP/accionArchivo)
+- Muestra una lista de tareas emergente: [accionListaCheckBox](./accionesOOP/accionListaCheckBox)
 
 ### Acciones de ElGarrobo
 - Abri interface web: [accionAbirGUI](./accionesOOP/accionAbirGUI)
@@ -55,6 +56,7 @@ from .accionEscribirTexto import accionEscribirTexto
 from .accionesOctoprint.accionCancelarOctoprint import accionCancelarOctoprint
 from .accionesOctoprint.accionReimprimirOctoprint import accionReimprimirOctoprint
 from .accionFolder import accionFolder
+from .accionListaCheckBox import accionListaCheckBox
 from .accionMQTT import accionMQTT
 from .accionNavegador import accionNavegador
 from .accionNotificacion import accionNotificacion
@@ -105,6 +107,7 @@ def cargarClasesAcciones() -> dict[str, type["accion"]]:
         "presionar": accionPresionar,
         "escribir_archivo": accionEscribirArchivo,
         "leer_valor": accionLeerValor,
+        "lista_checkbox": accionListaCheckBox,
         "volumen": accionVolumen,
         "salvar_audio": accionSalvarPulse,
         "mute": accionMute,
