@@ -69,6 +69,8 @@ class MiOBS:
         self.conectado = False
         self.procesoTiempo = None
         self.consultaCliente = False
+        self.grabandoVertical = False
+        self.tiempoInicioVertical: float | None = None
 
         self.Reiniciar()
 
@@ -312,13 +314,20 @@ class MiOBS:
                 tiempoGrabando: str = respuestaEstado.output_timecode
                 tiempoGrabando = tiempoGrabando.split(".")[0]
 
+            elif self.grabandoVertical and self.tiempoInicioVertical is not None:
+
+                segundos = int(time.time() - self.tiempoInicioVertical)
+                tiempoGrabando = f"{segundos // 3600:02d}:{(segundos % 3600) // 60:02d}:{segundos % 60:02d}"
+
             else:
                 tiempoGrabando = "00:00:00"
 
-            opciones = {"mensaje": tiempoGrabando, "topic": "alsw/tiempo_obs"}
-            objetoMQTT: accion = accionMQTT()
-            objetoMQTT.configurar(opciones)
-            objetoMQTT.ejecutar()
+            # opcionesVertical = {"mensaje": tiempoVertical, "topic": "alsw/tiempo_obs_vertical"}
+            # TODO: separar tiempo de grabación para vertical y normal
+            opcionesVertical = {"mensaje": tiempoGrabando, "topic": "alsw/tiempo_obs"}
+            objetoMQTTVertical: accion = accionMQTT()
+            objetoMQTTVertical.configurar(opcionesVertical)
+            objetoMQTTVertical.ejecutar()
 
             time.sleep(1)
         logger.info("OBS[Consulta Tiempo] - Terminado")
@@ -557,9 +566,13 @@ class MiOBS:
             logger.info(f"OBS[Escena-Vertical] {escenaActual}")
         elif tipo == "recording_started":
             self.Notificar("obs-grabando-vertival")
+            self.grabandoVertical = True
+            self.tiempoInicioVertical = time.time()
             SalvarValor(self.archivoEstado, "obs_grabar_vertical", True)
         elif tipo == "recording_stopping":
             self.Notificar("obs-no-grabando-vertival")
+            self.grabandoVertical = False
+            self.tiempoInicioVertical = None
             SalvarValor(self.archivoEstado, "obs_grabar_vertical", False)
         else:
             logger.info(f"OBS[Vertical] No procesar: {tipo}")
