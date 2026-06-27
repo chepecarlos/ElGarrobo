@@ -1,5 +1,4 @@
 import json
-import logging
 import threading
 
 import paho.mqtt.client as mqtt
@@ -112,7 +111,8 @@ class MiMQTT(dispositivo):
 
             if hostAccion == self.nombreControl or hostAccion == "todos":
                 logger.info(f"MQTT[Control] - Acción({mensaje.get('accion')})")
-                self.Evento(mensaje)
+                if callable(self.ejecutarAcción):
+                    self.ejecutarAcción(mensaje)
             else:
                 logger.info("MQTT[Control] - NoConMigo")
 

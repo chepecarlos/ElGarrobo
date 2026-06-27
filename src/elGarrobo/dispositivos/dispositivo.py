@@ -287,7 +287,19 @@ class dispositivo:
             else:
                 logger.info(f"Evento[No asignado] {self.nombre}[{tecla}]")
 
-    def configurarFuncionAccion(self, funcionAccion: Callable[[dict, bool, int], Any]):
+    def configurarFuncionAccion(self, funcionAccion: Callable[[dict, bool, int], Any]) -> None:
+        """Asigna la función que ejecuta acciones cuando el dispositivo recibe un evento.
+
+        Todos los dispositivos (teclado, MQTT, GUI, etc.) llaman a esta función
+        al detectar una interacción, pasando el dict de la acción para que el
+        sistema central lo procese.
+
+        Args:
+            funcionAccion: Función con firma ``(accion: dict, estado: bool, fuerza: int) -> Any``.
+                - accion:  dict con al menos ``"accion"`` y opcionalmente ``"opciones"``, ``"key"``, ``"nombre"``.
+                - estado:  True si el evento es de presión/activación, False si es de liberación.
+                - fuerza:  Multiplicador de intensidad (por defecto 1).
+        """
         self.ejecutarAcción = funcionAccion
 
     def _obtenerValorAnidado(self, datos: dict, claves: list) -> Any:
