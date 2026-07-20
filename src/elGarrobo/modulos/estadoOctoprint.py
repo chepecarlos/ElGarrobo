@@ -17,6 +17,8 @@ _IMPRESORA_DEFECTO = {
     "url": "http://octoprint.local",
     "token": "",
     "intervalo_segundos": 30,
+    "intervalo_error_segundos": 120,
+    "limite_errores_log": 3,
 }
 
 
@@ -41,6 +43,8 @@ class estadoOctoprint(modulo):
             url: http://192.168.1.11:5000
             token: TU_API_KEY
             intervalo_segundos: 30
+            intervalo_error_segundos: 120
+            limite_errores_log: 3
     """
 
     def __init__(self, dataModulo: dict) -> None:
@@ -94,9 +98,19 @@ class estadoOctoprint(modulo):
             except (TypeError, ValueError):
                 intervalo = 30
 
+            try:
+                intervalo_error = max(intervalo, int(config.get("intervalo_error_segundos", 120)))
+            except (TypeError, ValueError):
+                intervalo_error = 120
+
+            try:
+                limite_errores_log = max(1, int(config.get("limite_errores_log", 3)))
+            except (TypeError, ValueError):
+                limite_errores_log = 3
+
             hilo = threading.Thread(
                 target=self._monitorear_estado,
-                args=(nombre, topic, url, token, intervalo),
+                args=(nombre, topic, url, token, intervalo, intervalo_error, limite_errores_log),
                 daemon=True,
                 name=f"octoprint-{nombre}",
             )
@@ -128,7 +142,9 @@ class estadoOctoprint(modulo):
             "tiempo_restante_humano": self._formatear_tiempo(restante_seg),
         }
 
-    def _obtener_temperaturas_octoprint(self, nombre: str, url: str, token: str) -> Optional[dict[str, str]]:
+    def _obtener_temperaturas_octoprint(
+        self, nombre: str, url: str, token: str, silenciar_error: bool = False
+    ) -> Optional[dict[str, str]]:
         base_url = url.rstrip("/")
         endpoint = f"{base_url}/api/printer"
         headers = {"X-Api-Key": token}
@@ -162,10 +178,12 @@ class estadoOctoprint(modulo):
             logger.debug(f"EstadoOctoprint[{nombre}] - Temperaturas: {resultado}")
             return resultado
         except requests.RequestException as error:
-            logger.error(f"EstadoOctoprint[{nombre}] - Error consultando temperaturas: {error}")
+            nivel = logger.debug if silenciar_error else logger.error
+            nivel(f"EstadoOctoprint[{nombre}] - Error consultando temperaturas: {error}")
             return None
         except ValueError as error:
-            logger.error(f"EstadoOctoprint[{nombre}] - JSON inválido en temperaturas: {error}")
+            nivel = logger.debug if silenciar_error else logger.error
+            nivel(f"EstadoOctoprint[{nombre}] - JSON inválido en temperaturas: {error}")
             return None
 
     def _obtener_temperaturas_fallback(self, nombre: str, base_url: str, headers: dict[str, str]) -> Optional[dict[str, str]]:
@@ -214,7 +232,9 @@ class estadoOctoprint(modulo):
         logger.debug(f"EstadoOctoprint[{nombre}] - Temperaturas fallback: {resultado}")
         return resultado
 
-    def _obtener_estado_octoprint(self, nombre: str, url: str, token: str) -> Optional[dict[str, str]]:
+    def _obtener_estado_octoprint(
+        self, nombre: str, url: str, token: str, silenciar_error: bool = False
+    ) -> Optional[dict[str, str]]:
         base_url = url.rstrip("/")
         endpoint = base_url if base_url.endswith("/api/job") else f"{base_url}/api/job"
         headers = {"X-Api-Key": token}
@@ -226,10 +246,12 @@ class estadoOctoprint(modulo):
             logger.debug(f"EstadoOctoprint[{nombre}] - Payload recibido: {payload}")
             return self._normalizar_estado(payload)
         except requests.RequestException as error:
-            logger.error(f"EstadoOctoprint[{nombre}] - Error consultando {endpoint}: {error}")
+            nivel = logger.debug if silenciar_error else logger.error
+            nivel(f"EstadoOctoprint[{nombre}] - Error consultando {endpoint}: {error}")
             return None
         except ValueError as error:
-            logger.error(f"EstadoOctoprint[{nombre}] - Respuesta JSON inválida: {error}")
+            nivel = logger.debug if silenciar_error else logger.error
+            nivel(f"EstadoOctoprint[{nombre}] - Respuesta JSON inválida: {error}")
             return None
 
     def _publicar(self, topic: str, sub_topic: str, mensaje: str) -> None:
@@ -238,10 +260,22 @@ class estadoOctoprint(modulo):
         accionEnviar.configurar({"topic": topic_completo, "mensaje": str(mensaje)})
         accionEnviar.ejecutar()
 
-    def _monitorear_estado(self, nombre: str, topic: str, url: str, token: str, intervalo: int) -> None:
+    def _monitorear_estado(
+        self,
+        nombre: str,
+        topic: str,
+        url: str,
+        token: str,
+        intervalo: int,
+        intervalo_error: int,
+        limite_errores_log: int,
+    ) -> None:
+        errores_consecutivos = 0
+
         while self.activo:
+            silenciar_error = errores_consecutivos >= limite_errores_log
             try:
-                estadoActual = self._obtener_estado_octoprint(nombre, url, token)
+                estadoActual = self._obtener_estado_octoprint(nombre, url, token, silenciar_error)
                 if estadoActual:
                     self._publicar(topic, "estado", estadoActual["estado"])
                     self._publicar(topic, "progreso", estadoActual["progreso"])
@@ -258,16 +292,30 @@ class estadoOctoprint(modulo):
                         f"Restante: {estadoActual['tiempo_restante_humano']}"
                     )
 
-                temperaturas = self._obtener_temperaturas_octoprint(nombre, url, token)
+                temperaturas = self._obtener_temperaturas_octoprint(nombre, url, token, silenciar_error)
                 if temperaturas:
                     for sub_topic, valor in temperaturas.items():
                         self._publicar(topic, f"temperatura/{sub_topic}", valor)
-                    logger.info(f"EstadoOctoprint[{nombre}] - Temperaturas: { {k: v for k, v in temperaturas.items()} }")
+                    logger.info(f"EstadoOctoprint[{nombre}] - Temperaturas: {temperaturas}")
+
+                if estadoActual or temperaturas:
+                    if errores_consecutivos >= limite_errores_log:
+                        logger.info(f"EstadoOctoprint[{nombre}] - Conexión recuperada")
+                    errores_consecutivos = 0
+                else:
+                    errores_consecutivos += 1
+                    if errores_consecutivos == limite_errores_log:
+                        logger.warning(
+                            f"EstadoOctoprint[{nombre}] - {limite_errores_log} errores seguidos, "
+                            f"se silencian logs y se reintenta cada {intervalo_error}s"
+                        )
 
             except Exception as error:
-                logger.error(f"EstadoOctoprint[{nombre}] - Error en monitoreo: {error}")
+                errores_consecutivos += 1
+                if not silenciar_error:
+                    logger.error(f"EstadoOctoprint[{nombre}] - Error en monitoreo: {error}")
 
-            time.sleep(intervalo)
+            time.sleep(intervalo_error if errores_consecutivos >= limite_errores_log else intervalo)
 
     def _formatear_tiempo(self, segundos: int) -> str:
         if segundos <= 0:
