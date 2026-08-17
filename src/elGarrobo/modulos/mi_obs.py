@@ -20,7 +20,7 @@ from elGarrobo.miLibrerias import (
     leerData,
 )
 
-logger = ConfigurarLogging(__name__, logging.DEBUG)
+logger = ConfigurarLogging(__name__)
 
 
 class MiOBS:
