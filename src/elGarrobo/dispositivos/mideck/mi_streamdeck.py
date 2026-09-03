@@ -16,7 +16,7 @@ from StreamDeck.ImageHelpers import PILHelper
 from StreamDeck.Transport.Transport import TransportError
 
 from elGarrobo.dispositivos import dispositivo
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor
+from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor, SalvarArchivo
 
 logger = ConfigurarLogging(__name__)
 
@@ -626,11 +626,18 @@ class MiStreamDeck(dispositivo):
 
         return Estado
 
+    @staticmethod
+    def iniciarTituloMQTT() -> None:
+        """Inicializa el título MQTT, creando el archivo si no existe."""
+        archivoTituloMQTT: str = "data/tituloMQTT"
+        SalvarArchivo(archivoTituloMQTT, {})
+
     def obtenerTituloMQTT(self, topicTitulo: str, tituloInicial: str = "") -> str:
         """Obtiene el titulo enviado por MQTT
 
         Args:
             topicTitulo (str): Cual topic hay que leer
+            tituloInicial (str): Titulo inicial si no se encuentra el topic
 
         Returns:
             str: devuelve el titulo encontrado
