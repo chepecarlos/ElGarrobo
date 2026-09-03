@@ -20,8 +20,10 @@ class miGui(dispositivo):
     Interface Web del ElGarrobo
     """
 
+    nombre = "Interfaz Gráfica"
     modulo = "gui"
     tipo = "gui"
+    descripcion = "Interfaz web/gráfica (GUI) de ElGarrobo"
     archivoConfiguracion = "gui.md"
 
     listaDispositivos: list[dispositivo] = None
@@ -78,6 +80,10 @@ class miGui(dispositivo):
         @ui.page("/")
         def paginaAcciones() -> None:
             """Estructura de pagina de acciones"""
+            from elGarrobo.accionesOOP.accionListaCheckBox import accionListaCheckBox
+
+            accionListaCheckBox.registrarCliente(ui.context.client)
+
             with ui.splitter(value=20, limits=(15, 50)) as splitter:
                 splitter.classes("w-full")
                 with splitter.before:
@@ -92,11 +98,17 @@ class miGui(dispositivo):
 
         @ui.page("/modulos")
         def paginaModulos():
+            from elGarrobo.accionesOOP.accionListaCheckBox import accionListaCheckBox
+
+            accionListaCheckBox.registrarCliente(ui.context.client)
             ui.label("Pagina Módulos")
             self.estructura()
 
         @ui.page("/dispositivos")
         def paginaDispositivos():
+            from elGarrobo.accionesOOP.accionListaCheckBox import accionListaCheckBox
+
+            accionListaCheckBox.registrarCliente(ui.context.client)
             ui.label("Pagina Dispositivos")
             self.estructura()
 
@@ -465,18 +477,26 @@ class miGui(dispositivo):
                 ui.link("Youtube", "https://www.youtube.com/@chepecarlo")
                 ui.link("Tiktok", "https://www.tiktok.com/@chepecarlo")
 
-    def seConectorGUI(self):
+    def seConectorGUI(self, client=None):
         """
         Inicia la interface web.
         """
+        from elGarrobo.accionesOOP.accionListaCheckBox import accionListaCheckBox
 
-        logger.info("Conectando NiceGUI")
+        if client is not None:
+            accionListaCheckBox.registrarCliente(client)
+            logger.info(f"Conectando NiceGUI - cliente {client.id}")
+        else:
+            logger.info("Conectando NiceGUI")
 
-    def seDesconectoGUI(self):
+    def seDesconectoGUI(self, client=None):
         """
         Desconecta la interface web.
         """
-        logger.info("Desconectando NiceGUI")
+        if client is not None:
+            logger.info(f"Desconectando NiceGUI - cliente {client.id}")
+        else:
+            logger.info("Desconectando NiceGUI")
         # app.shutdown()
 
     def conectar(self):

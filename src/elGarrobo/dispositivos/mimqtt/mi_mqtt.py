@@ -11,8 +11,10 @@ logger = ConfigurarLogging(__name__)
 
 class MiMQTT(dispositivo):
 
+    nombre = "Servidor MQTT"
     modulo = "mqtt"
     tipo = "mqtt"
+    descripcion = "Conexión con broker MQTT para dispositivos remotos"
     archivoConfiguracion = "mqtt.md"
 
     broker: str = ""

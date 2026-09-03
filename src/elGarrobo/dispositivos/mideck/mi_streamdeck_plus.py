@@ -150,8 +150,6 @@ class MiStreamDeckPlus(MiStreamDeck):
 
         imagenBase = Image.new("RGB", (self.anchoBarra, self.altoBarra))
 
-        print("Generando imagen del touchscreen con " + str(self.cantidadBotonesTouchscreen) + " botones.")
-
         if self.cantidadBotonesTouchscreen > 0:
             anchoBoton = int(self.anchoBarra / self.cantidadBotonesTouchscreen)
 

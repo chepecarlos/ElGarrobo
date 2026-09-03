@@ -9,7 +9,7 @@ from elGarrobo.accionesOOP.accionMQTT import accionMQTT
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, SalvarArchivo
 from elGarrobo.modulos.modulo import modulo
 
-logger = ConfigurarLogging(__name__, 10)
+logger = ConfigurarLogging(__name__)
 
 _IMPRESORA_DEFECTO = {
     "nombre": "impresora-1",

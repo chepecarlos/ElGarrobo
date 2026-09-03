@@ -1,5 +1,6 @@
 import os
 import random
+from typing import Any
 
 from elGarrobo import miLibrerias
 
@@ -19,10 +20,12 @@ from .accionesOOP import (
 )
 from .accionesOOP.heramientas.valoresAccion import valoresAcciones
 from .dispositivos import cargarDispositivos, dispositivo
+from .dispositivos.mideck.mi_streamdeck import MiStreamDeck
 from .miLibrerias import (
     ConfigurarLogging,
     ObtenerArchivo,
     ObtenerValor,
+    SalvarArchivo,
     SalvarValor,
     leerData,
     obtenerArchivoPaquete,
@@ -31,6 +34,9 @@ from .modulos import cargarModulos, modulo
 from .modulos.mi_obs import MiOBS
 
 logger = ConfigurarLogging(__name__)
+
+CLAVES_DISPOSITIVOS = ("teclado", "pedal", "deck_combinado", "mqtt", "gui")
+"Claves de dispositivos físicos, antes mezcladas en modulos.md, ahora viven en dispositivos.md"
 
 
 class elGarrobo(object):
@@ -49,6 +55,7 @@ class elGarrobo(object):
 
     PathActual = None
     modulos: dict[str, bool] = dict()
+    dispositivos: dict[str, bool] = dict()
 
     def __init__(self, **modulos) -> None:
 
@@ -104,10 +111,11 @@ class elGarrobo(object):
 
     def iniciarDispositivos(self) -> None:
         """Crea y inicializa los dispositivos que enviar las acciones"""
+        MiStreamDeck.iniciarTituloMQTT()
         self.dispositivosDisponibles: list[dispositivo] = cargarDispositivos()
 
         for claseDispositivo in self.dispositivosDisponibles:
-            self.listaDispositivos.extend(claseDispositivo.cargarDispositivos(self.modulos, claseDispositivo))
+            self.listaDispositivos.extend(claseDispositivo.cargarDispositivos(self.dispositivos, claseDispositivo))
 
         for dispositivoActual in self.listaDispositivos:
             dispositivoActual.configurarFuncionAccion(self.ejecutarAcción)
@@ -130,6 +138,8 @@ class elGarrobo(object):
             logger.error(f"No existe archivo modulos.md en {rutaConfig}")
             os._exit(0)
 
+        self.dispositivos = self._cargarDataDispositivos()
+
         # TODO: Modulos en un dict
 
         self.ModuloOBS = False
@@ -150,13 +160,24 @@ class elGarrobo(object):
                 self.ModuloMonitorESP = leerData("modulos/monitor_esp/mqtt")
 
             self.ModuloOBS = self.modulos.get("obs", False)
-            self.ModuloCombinado = self.modulos.get("deck_combinado", False)
+            self.ModuloCombinado = self.dispositivos.get("deck_combinado", False)
             self.ModuloDeck = self.modulos.get("deck", False)
-            self.ModuloMQTT = self.modulos.get("mqtt", False)
+            self.ModuloMQTT = self.dispositivos.get("mqtt", False)
             self.ModuloMQTTEstado = self.modulos.get("mqtt_estado", False)
             self.ModuloAlias = self.modulos.get("alias", False)
-            self.ModuloGui = self.modulos.get("gui", False)
+            self.ModuloGui = self.dispositivos.get("gui", False)
         self.cargarClasesModulos()
+
+    def _cargarDataDispositivos(self) -> dict[str, bool]:
+        """Carga dispositivos.md; si no existe, lo migra una vez desde modulos.md."""
+        dispositivos = leerData("dispositivos")
+        if dispositivos is not None:
+            return dispositivos
+
+        logger.info("No existe dispositivos.md, migrando claves de dispositivos desde modulos.md")
+        dispositivos = {clave: self.modulos.get(clave, False) for clave in CLAVES_DISPOSITIVOS}
+        SalvarArchivo("dispositivos", dispositivos)
+        return dispositivos
 
     def cargarClasesModulos(self) -> None:
         """Carga y inicializa los módulos configurados del sistema.
@@ -189,6 +210,8 @@ class elGarrobo(object):
                     logger.warning(f"Error al instanciar moduloClase: {error}")
                     continue
             else:
+                logger.info(f"Modulo {moduloClase} ya es una instancia, usándola directamente.")
+                continue
                 moduloInstancia = moduloClase
 
             nombreModulo = moduloInstancia.nombre
@@ -371,7 +394,7 @@ class elGarrobo(object):
         #     if accion == "presionar" or estado == "presionado":
         #         self.ejecutarAcción(evento)
 
-    def ejecutarAcción(self, accionActual: dict, estado: bool = True, fuerza: int = 1) -> any:
+    def ejecutarAcción(self, accionActual: dict, estado: bool = True, fuerza: int = 1) -> Any:
         """Ejecuta una acción según el comando y las opciones proporcionadas.
 
         Args:
@@ -587,17 +610,17 @@ class elGarrobo(object):
         seRegreso: bool = False
 
         if nombreDispositivo is None:
-            for dispositivo in self.listaDispositivos:
-                dispositivo.regresarFolderActual()
-                if dispositivo.recargar:
+            for dispositivoActual in self.listaDispositivos:
+                dispositivoActual.regresarFolderActual()
+                if dispositivoActual.recargar:
                     seRegreso = True
-                dispositivo.actualizar()
+                dispositivoActual.actualizar()
         else:
-            for disposito in self.listaDispositivos:
-                if disposito.nombre.lower() == nombreDispositivo.lower():
-                    disposito.regresarFolderActual(directo=True)
-                    dispositivo.actualizar()
-                    if dispositivo.recargar:
+            for dispositivoActual in self.listaDispositivos:
+                if dispositivoActual.nombre.lower() == nombreDispositivo.lower():
+                    dispositivoActual.regresarFolderActual(directo=True)
+                    dispositivoActual.actualizar()
+                    if dispositivoActual.recargar:
                         seRegreso = True
 
         if not seRegreso:
@@ -717,7 +740,7 @@ class elGarrobo(object):
                 accionMQTT.configurar(opciones)
                 accionMQTT.ejecutar()
 
-    def obtenerValor(self, listaValores: list[valoresAcciones], atributo: str):
+    def obtenerValor(self, listaValores: list[valoresAcciones], atributo: str) -> Any:
         """Devuelve el valores configurado"""
         for valor in listaValores:
             if atributo == valor.atributo:

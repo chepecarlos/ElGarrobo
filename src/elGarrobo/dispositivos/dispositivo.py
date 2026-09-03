@@ -54,6 +54,8 @@ class dispositivo:
 
     modulo: str = ""
     "Modulo para cargar dispositivo"
+    descripcion: str = ""
+    "Descripción del tipo de dispositivo"
     archivoConfiguracion: str = ""
     activado: bool = True
     "Si el dispositivo esta activo o no"
@@ -83,12 +85,12 @@ class dispositivo:
         self.panel = None
 
     @staticmethod
-    def cargarDispositivos(modulosCargados: dict, claseDispositivo: type["dispositivo"]) -> list["dispositivo"]:
+    def cargarDispositivos(dispositivosCargados: dict, claseDispositivo: type["dispositivo"]) -> list["dispositivo"]:
         """
         Preparara la informacion de los dispositivos en base a una clase
 
         Args:
-            modulosCargados (dict): Dispositivos cargados y desactivados
+            dispositivosCargados (dict): Estado activado/desactivado de cada tipo de dispositivo (dispositivos.md)
             claseDispositivo (dispositivo): Clase del dispositivo a cargar es basada es dispositivo
 
         Returns:
@@ -97,7 +99,7 @@ class dispositivo:
 
         listaDispositivos: list[dispositivo] = list()
 
-        moduloCargado = modulosCargados.get(claseDispositivo.modulo)
+        moduloCargado = dispositivosCargados.get(claseDispositivo.modulo)
         if moduloCargado is None or moduloCargado is False:
             logger.debug(f"No cargado Dispositivo-{claseDispositivo.tipo}")
             return listaDispositivos

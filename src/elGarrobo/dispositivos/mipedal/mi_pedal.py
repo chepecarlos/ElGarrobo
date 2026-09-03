@@ -11,8 +11,10 @@ logger = ConfigurarLogging(__name__)
 
 class MiPedal(dispositivo):
 
+    nombre = "Pedal StreamDeck"
     modulo = "pedal"
     tipo = "pedal"
+    descripcion = "Pedal Elgato StreamDeck"
     compatibles = ["Stream Deck Pedal"]
 
     archivoConfiguracion = "pedal.md"

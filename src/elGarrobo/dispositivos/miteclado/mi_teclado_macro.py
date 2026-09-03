@@ -16,8 +16,10 @@ logger = ConfigurarLogging(__name__)
 class MiTecladoMacro(dispositivo):
     """Clase de Teclado Macro para Linux."""
 
+    nombre = "Teclado Macro"
     modulo = "teclado"
     tipo = "teclado"
+    descripcion = "Teclado USB reprogramado como macro pad"
     archivoConfiguracion = "teclados.md"
 
     teclado: InputDevice | None = None
@@ -36,10 +38,11 @@ class MiTecladoMacro(dispositivo):
         self.Activo = True
         self.esperaReconectar = 5
 
-    def conectar(self):
+    def conectar(self) -> bool:
         """Conecta con un teclado para escuchas botones presionados."""
         self.procesoTeclado = threading.Thread(name="teclados-" + self.nombre, target=self.HiloTeclado)
         self.procesoTeclado.start()
+        return True
 
     def HiloTeclado(self):
         """Hilo del estado del Teclado."""
@@ -75,12 +78,12 @@ class MiTecladoMacro(dispositivo):
             else:
                 try:
                     logger.info(f"Teclado[Conectándose] {self.nombre} - {self.dispositivo}")
-                    self.teclado: InputDevice = InputDevice(self.dispositivo)
+                    self.teclado = InputDevice(self.dispositivo)
                     self.teclado.grab()
                     self.conectado = True
                     logger.info(f"Teclado[Conectado] {self.nombre}")
                 except Exception as error:
-                    logger.exception("An error occurred during division.")
+                    logger.exception(f"Teclado[Error] No se pudo conectar {self.nombre}")
                     logger.warning(f"Teclado[Error] {self.nombre} Re-Intensando en {self.esperaReconectar} Error {error.errno}")
                     if self.esperaReconectar < 60:
                         self.esperaReconectar += 5

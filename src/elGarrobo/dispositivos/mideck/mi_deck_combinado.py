@@ -11,8 +11,10 @@ logger = ConfigurarLogging(__name__)
 
 class MiDeckCombinado(dispositivo):
 
+    nombre = "StreamDeck"
     modulo = "deck_combinado"
     tipo = "deck_combinado"
+    descripcion = "Elgato StreamDeck (incluye StreamDeck+)"
     archivoConfiguracion = "deck_combinado.md"
     "Archivo de configuración del dispositivo"
     listaDeck: list[Union[MiStreamDeck, MiStreamDeckPlus]] = list()
