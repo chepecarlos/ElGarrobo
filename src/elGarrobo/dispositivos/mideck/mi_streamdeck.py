@@ -64,6 +64,9 @@ class MiStreamDeck(dispositivo):
     _gitCache: dict[tuple[str, str, str], itertools.cycle] = {}
     "Caché para Gifs: clave(rutaGif, colorFondo, titulo)"
 
+    _mapaTeclasCache: tuple[list[int], dict[int, int]] = None
+    "Caché de (lógico->nativo, nativo->lógico) calculado por _mapaTeclas()"
+
     def __init__(self, dataConfiguracion: dict) -> None:
         """Inicializando Dispositivo de MiDeckCombinado
 
@@ -79,6 +82,7 @@ class MiStreamDeck(dispositivo):
 
         self.deckGif = None
         self.layout = None
+        self._mapaTeclasCache = None
         self.ultimoDibujo = None
         self.tiempoDibujar: float = 0.4
         self._gitCache = {}
@@ -140,6 +144,35 @@ class MiStreamDeck(dispositivo):
         self.conectado = False
         return False
 
+    def _mapaTeclas(self) -> tuple[list[int], dict[int, int]]:
+        """Mapea índices nativos del StreamDeck a índices lógicos según `rotar`.
+
+        El SDK numera las teclas en su propio layout sin rotar. `rotar` orienta
+        físicamente el dispositivo (mismo ángulo que rota los íconos), así que las
+        teclas lógicas -las que se usan como `key` en la configuración- quedan
+        numeradas en orden de lectura (arriba-abajo, izquierda-derecha) sobre el
+        layout ya rotado, en vez del orden nativo del SDK.
+
+        Returns:
+            tuple[list[int], dict[int, int]]: lista lógico->nativo, dict nativo->lógico
+        """
+
+        if self._mapaTeclasCache is not None:
+            return self._mapaTeclasCache
+
+        filas, columnas = self.layout
+        grid = [[fila * columnas + columna for columna in range(columnas)] for fila in range(filas)]
+
+        pasos = (self.rotar // 90) % 4
+        for _ in range(pasos):
+            grid = [list(fila) for fila in zip(*grid[::-1])]
+
+        logicoANativo = [nativo for fila in grid for nativo in fila]
+        nativoALogico = {nativo: logico for logico, nativo in enumerate(logicoANativo)}
+
+        self._mapaTeclasCache = (logicoANativo, nativoALogico)
+        return self._mapaTeclasCache
+
     def actualizarIconos(self) -> None:
         """Refresca iconos, tomando en cuenta pagina actual."""
         if not self.conectado:
@@ -177,9 +210,11 @@ class MiStreamDeck(dispositivo):
 
         self.actualizarDataFolder()
 
+        _, nativoALogico = self._mapaTeclas()
+
         self.pausarDibujando = True
         for i in range(self.cantidadBotones):
-            botonDesface: int = i + self.baseTeclas + self.desfaceTeclas
+            botonDesface: int = nativoALogico[i] + self.baseTeclas + self.desfaceTeclas
 
             dibujar = list(filter(lambda accion: accion.get("key") == botonDesface, self.listaAcciones))
 
@@ -245,7 +280,8 @@ class MiStreamDeck(dispositivo):
 
     def actualizarBoton(self, deck, key, estado) -> None:
 
-        numeroTecla = key + self.baseTeclas + self.desfaceTeclas
+        _, nativoALogico = self._mapaTeclas()
+        numeroTecla = nativoALogico[key] + self.baseTeclas + self.desfaceTeclas
         if estado:
             self.buscarAccion(numeroTecla, self.estadoTecla.PRESIONADA)
         else:
