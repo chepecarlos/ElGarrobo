@@ -9,7 +9,7 @@ from elGarrobo.accionesOOP.accionMQTT import accionMQTT
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, SalvarArchivo
 from elGarrobo.modulos.modulo import modulo
 
-logger = ConfigurarLogging(__name__, 10)
+logger = ConfigurarLogging(__name__)
 
 _IMPRESORA_DEFECTO = {
     "nombre": "impresora-1",
@@ -142,9 +142,7 @@ class estadoOctoprint(modulo):
             "tiempo_restante_humano": self._formatear_tiempo(restante_seg),
         }
 
-    def _obtener_temperaturas_octoprint(
-        self, nombre: str, url: str, token: str, silenciar_error: bool = False
-    ) -> Optional[dict[str, str]]:
+    def _obtener_temperaturas_octoprint(self, nombre: str, url: str, token: str, silenciar_error: bool = False) -> Optional[dict[str, str]]:
         base_url = url.rstrip("/")
         endpoint = f"{base_url}/api/printer"
         headers = {"X-Api-Key": token}
@@ -175,7 +173,7 @@ class estadoOctoprint(modulo):
                 # Algunos servidores no exponen "temperature" en /api/printer pero sí en /api/printer/tool y /api/printer/bed
                 return self._obtener_temperaturas_fallback(nombre, base_url, headers)
 
-            logger.debug(f"EstadoOctoprint[{nombre}] - Temperaturas: {resultado}")
+            # logger.debug(f"EstadoOctoprint[{nombre}] - Temperaturas: {resultado}")
             return resultado
         except requests.RequestException as error:
             nivel = logger.debug if silenciar_error else logger.error
@@ -229,12 +227,10 @@ class estadoOctoprint(modulo):
             logger.debug(f"EstadoOctoprint[{nombre}] - Sin temperaturas disponibles por fallback")
             return None
 
-        logger.debug(f"EstadoOctoprint[{nombre}] - Temperaturas fallback: {resultado}")
+        # logger.debug(f"EstadoOctoprint[{nombre}] - Temperaturas fallback: {resultado}")
         return resultado
 
-    def _obtener_estado_octoprint(
-        self, nombre: str, url: str, token: str, silenciar_error: bool = False
-    ) -> Optional[dict[str, str]]:
+    def _obtener_estado_octoprint(self, nombre: str, url: str, token: str, silenciar_error: bool = False) -> Optional[dict[str, str]]:
         base_url = url.rstrip("/")
         endpoint = base_url if base_url.endswith("/api/job") else f"{base_url}/api/job"
         headers = {"X-Api-Key": token}
@@ -243,7 +239,7 @@ class estadoOctoprint(modulo):
             response = requests.get(endpoint, headers=headers, timeout=10)
             response.raise_for_status()
             payload = response.json()
-            logger.debug(f"EstadoOctoprint[{nombre}] - Payload recibido: {payload}")
+            # logger.debug(f"EstadoOctoprint[{nombre}] - Payload recibido: {payload}")
             return self._normalizar_estado(payload)
         except requests.RequestException as error:
             nivel = logger.debug if silenciar_error else logger.error
@@ -296,7 +292,7 @@ class estadoOctoprint(modulo):
                 if temperaturas:
                     for sub_topic, valor in temperaturas.items():
                         self._publicar(topic, f"temperatura/{sub_topic}", valor)
-                    logger.info(f"EstadoOctoprint[{nombre}] - Temperaturas: {temperaturas}")
+                    # logger.info(f"EstadoOctoprint[{nombre}] - Temperaturas: {temperaturas}")
 
                 if estadoActual or temperaturas:
                     if errores_consecutivos >= limite_errores_log:
@@ -305,10 +301,7 @@ class estadoOctoprint(modulo):
                 else:
                     errores_consecutivos += 1
                     if errores_consecutivos == limite_errores_log:
-                        logger.warning(
-                            f"EstadoOctoprint[{nombre}] - {limite_errores_log} errores seguidos, "
-                            f"se silencian logs y se reintenta cada {intervalo_error}s"
-                        )
+                        logger.warning(f"EstadoOctoprint[{nombre}] - {limite_errores_log} errores seguidos, " f"se silencian logs y se reintenta cada {intervalo_error}s")
 
             except Exception as error:
                 errores_consecutivos += 1

@@ -1,6 +1,7 @@
 from .estadoPc import estadoPc
 from .modulo import modulo
 from .estadoOctoprint import estadoOctoprint
+from .estadoKlipper import estadoKlipper
 
 
 def cargarModulos() -> list[type["modulo"]]:
@@ -8,5 +9,6 @@ def cargarModulos() -> list[type["modulo"]]:
     listaModulos: list[type["modulo"]] = [
         estadoPc,
         estadoOctoprint,
+        estadoKlipper,
     ]
     return listaModulos
