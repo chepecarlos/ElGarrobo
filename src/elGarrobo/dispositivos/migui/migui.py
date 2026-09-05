@@ -5,7 +5,7 @@ from nicegui import app, ui
 
 from elGarrobo.accionesOOP import accion
 from elGarrobo.dispositivos.dispositivo import dispositivo
-from elGarrobo.miLibrerias import ConfigurarLogging
+from elGarrobo.miLibrerias import ConfigurarLogging, SalvarValor, leerData
 
 # librería https://nicegui.io/
 # estilo https://tailwindcss.com/
@@ -98,17 +98,19 @@ class miGui(dispositivo):
         @ui.page("/modulos")
         def paginaModulos():
             from elGarrobo.accionesOOP.accionListaCheckBox import accionListaCheckBox
+            from elGarrobo.modulos import cargarModulos
 
             accionListaCheckBox.registrarCliente(ui.context.client)
-            ui.label("Pagina Módulos")
+            self.mostrarListaActivables("Módulos", "modulos", cargarModulos())
             self.estructura()
 
         @ui.page("/dispositivos")
         def paginaDispositivos():
             from elGarrobo.accionesOOP.accionListaCheckBox import accionListaCheckBox
+            from elGarrobo.dispositivos import cargarDispositivos
 
             accionListaCheckBox.registrarCliente(ui.context.client)
-            ui.label("Pagina Dispositivos")
+            self.mostrarListaActivables("Dispositivos", "dispositivos", cargarDispositivos())
             self.estructura()
 
     def mostrarFormulario(self):
@@ -395,6 +397,68 @@ class miGui(dispositivo):
                 return dispositivoActual
         return None
 
+    def mostrarListaActivables(self, titulo: str, archivo: str, listaClases: list) -> None:
+        """Lista módulos o dispositivos con un switch para activarlos/desactivarlos
+
+        Args:
+            titulo (str): Título de la página
+            archivo (str): Archivo de configuración ("modulos" o "dispositivos")
+            listaClases (list): Clases con atributos `modulo`, `nombre` y `descripcion`
+        """
+        configuracion = leerData(archivo) or {}
+
+        def cambiarEstado(clave: str, valor: bool, nombre: str) -> None:
+            SalvarValor(archivo, clave, valor)
+            ui.notify(f"{nombre} {'activado' if valor else 'desactivado'} - reiniciá elgarrobo para aplicar")
+
+        ui.label(titulo).classes("text-h5 p-4")
+        ui.label("Los cambios requieren reiniciar elgarrobo para aplicarse").classes(f"text-caption px-4 text-{self.colorClaro}")
+        with ui.column().classes("p-4 gap-2 w-full"):
+            for clase in listaClases:
+                activo = configuracion.get(clase.modulo, False)
+                with ui.row().classes(f"items-center w-full border-b border-{self.colorOscuro} pb-2"):
+                    ui.switch(value=activo, on_change=lambda e, c=clase: cambiarEstado(c.modulo, e.value, c.nombre))
+                    with ui.column().classes("gap-0"):
+                        ui.label(clase.nombre).classes("font-bold")
+                        ui.label(clase.descripcion).classes("text-caption")
+
+    def crearDialogoConfirmacion(self, mensaje: str, accionConfirmada) -> ui.dialog:
+        """Crea (sin abrir) un dialogo de confirmación para una acción crítica.
+
+        Se crea una sola vez al armar la página: si se crea recién al hacer
+        click en el menú, el diálogo no se pinta hasta el siguiente refresco
+        porque compite con la animación de cierre del menú.
+        """
+        with ui.dialog() as dialogo, ui.card():
+            ui.label(mensaje)
+            with ui.row():
+                ui.button("Cancelar", on_click=dialogo.close).props("flat")
+
+                def confirmar():
+                    dialogo.close()
+                    accionConfirmada()
+
+                ui.button("Confirmar", color="negative", on_click=confirmar).props("flat")
+        return dialogo
+
+    def ejecutarAccionSistema(self, comando: str) -> None:
+        """Ejecuta una acción registrada por su comando (ej. `salir`, `reiniciar_app`)"""
+        claseAccion = self.listaClasesAcciones.get(comando)
+        if claseAccion is None:
+            ui.notify(f"No se encontró la acción {comando}")
+            return
+        objetoAccion = claseAccion()
+        objetoAccion.configurar()
+        objetoAccion.ejecutar()
+
+    def salir(self) -> None:
+        """Cierra ElGarrobo"""
+        self.ejecutarAccionSistema("salir")
+
+    def reiniciar(self) -> None:
+        """Reinicia el proceso de ElGarrobo"""
+        self.ejecutarAccionSistema("reiniciar_app")
+
     def estructura(self):
         """Estructura de la interfaz, cabecera y pie de página"""
         with ui.header(elevated=True) as cabecera:
@@ -406,11 +470,16 @@ class miGui(dispositivo):
                 self.tipoLabel = ui.label("Cargando...")
                 ui.label("Folder: ")
                 self.folderLabel = ui.label("Cargando...")
+            dialogoReiniciar = self.crearDialogoConfirmacion("¿Reiniciar ElGarrobo?", self.reiniciar)
+            dialogoSalir = self.crearDialogoConfirmacion("¿Cerrar ElGarrobo?", self.salir)
             with ui.button(icon="menu").props("flat color=white").classes("px-8"):
                 with ui.menu():
                     ui.menu_item("Acciones", on_click=lambda: ui.navigate.to("/"))
                     ui.menu_item("Módulos", on_click=lambda: ui.navigate.to("/modulos"))
                     ui.menu_item("Dispositivos", on_click=lambda: ui.navigate.to("/dispositivos"))
+                    ui.separator()
+                    ui.menu_item("Reiniciar", on_click=dialogoReiniciar.open)
+                    ui.menu_item("Salir", on_click=dialogoSalir.open)
 
         with ui.footer().classes(f"bg-{self.colorOscuro}").style("height: 5vh; padding: 1px"):
             with ui.row().classes("w-full").style("padding: 0 10px"):

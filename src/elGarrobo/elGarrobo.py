@@ -1,5 +1,6 @@
 import os
 import random
+import sys
 from typing import Any
 
 from elGarrobo import miLibrerias
@@ -13,6 +14,7 @@ from .accionesOOP import (
     accionPresionar,
     accionRecargarFolder,
     accionRegresarFolder,
+    accionReiniciarApp,
     accionSalir,
     accionSalvarPulse,
     accionSiquientePagina,
@@ -234,6 +236,7 @@ class elGarrobo(object):
         logger.info("ElGarrobo[Acciones] Cargando")
 
         accionSalir.funcionExterna = self.Salir
+        accionReiniciarApp.funcionExterna = self.ReiniciarApp
         accionEntrarFolder.funcionExterna = self.entrar_Folder
         accionRegresarFolder.funcionExterna = self.regresar_Folder
         accionRecargarFolder.funcionExterna = self.Reiniciar
@@ -707,20 +710,29 @@ class elGarrobo(object):
     def __del__(self):
         print("I'm being automatically destroyed. Goodbye!")
 
-    def Salir(self, opciones: list) -> None:
+    def _desconectarTodo(self) -> None:
+        """Desconecta OBS y todos los dispositivos"""
+        if self.ModuloOBS:
+            self.OBS.desconectar()
+        for dispositivoActual in self.listaDispositivos:
+            dispositivoActual.desconectar()
+
+    def Salir(self, opciones: list = None) -> None:
         """
         Cierra el programa.
         """
         logger.info("ElGarrobo[Saliendo] - Adios :) ")
-        if self.ModuloOBS:
-            self.OBS.desconectar()
-        # if self.ModuloMQTT:
-        #     for Servidor in self.ListaMQTT:
-        #         Servidor.Desconectar()
-        for dispositivoActual in self.listaDispositivos:
-            dispositivoActual.desconectar()
+        self._desconectarTodo()
         # raise SystemExit
         os._exit(0)
+
+    def ReiniciarApp(self, opciones: list = None) -> None:
+        """
+        Reinicia el proceso de ElGarrobo (desconecta todo y se vuelve a lanzar).
+        """
+        logger.info("ElGarrobo[Reiniciando]")
+        self._desconectarTodo()
+        os.execv(sys.executable, [sys.executable] + sys.argv)
 
     def SolisitarDibujar(self) -> None:
 
