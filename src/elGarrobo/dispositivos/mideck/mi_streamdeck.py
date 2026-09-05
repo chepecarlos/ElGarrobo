@@ -287,6 +287,11 @@ class MiStreamDeck(dispositivo):
         else:
             self.buscarAccion(numeroTecla, self.estadoTecla.LIBERADA)
 
+    def actualizar(self) -> None:
+        if self.recargar:
+            self.actualizarIconos()
+        super().actualizar()
+
     def desconectar(self) -> None:
         if self.conectado:
             logger.info(f"Deck[Desconectando] - {self.nombre}")
@@ -753,7 +758,7 @@ class MiStreamDeck(dispositivo):
                                 continue
                             self.deck.set_key_image(i, next(frames))
                 except TransportError as err:
-                    print("TransportError: {0}".format(err))
+                    logger.info(f"StreamDeck[Desconectado] - {self.nombre} durante animación: {err}")
                     break
 
             siguienteFrame += tiempoFrame

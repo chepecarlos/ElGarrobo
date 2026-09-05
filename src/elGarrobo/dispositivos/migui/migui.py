@@ -57,7 +57,6 @@ class miGui(dispositivo):
         self.puerto = dataConfiguracion.get("puerto", 8080)
 
         self.folder: str = "?"
-        self.listaDispositivosVieja: list = list()
         self.listaClasesAcciones: dict = dict()
         self.salvarAcciones: callable = None
         self.ejecutaEvento: callable = None
@@ -138,83 +137,47 @@ class miGui(dispositivo):
                     ui.notify(f"Seleccione una acción")
                 return
 
-            incrementar = 0
-            if self.dispositivoEditar is not None:
-                tipo = self.dispositivoEditar.tipo
-            else:
-                tipo = self.tipoDispositivoSeleccionado()
-                incrementar = 1
-            if tipo in ["steamdeck", "padal"]:
+            dispositivoDestino = self.dispositivoEditar or self.obtenerDispositivoSeleccionado(nombreDispositivo)
+            if dispositivoDestino is None:
+                ui.notify(f"No se encontró el dispositivo {nombreDispositivo}")
+                return
+
+            if dispositivoDestino.tipo in ["streamdeck", "streamdeckplus", "deck_combinado", "pedal"]:
                 try:
-                    tecla = int(tecla) - incrementar
-                except:
+                    tecla = int(tecla)
+                except ValueError:
                     ui.notify("Error con tecla no numero")
                     return
 
-            if self.dispositivoEditar is None:
+            if self.botonAgregar.icon == "edit":
+                self.accionEditar["nombre"] = nombre
+                self.accionEditar["key"] = tecla
+                self.accionEditar["accion"] = acción
+                self.accionEditar["titulo"] = titulo
 
-                for dispositivo in self.listaDispositivosVieja:
-                    if dispositivo.get("nombre") == nombreDispositivo:
-                        tipoDispositivo = dispositivo.get("tipo")
-                        if tipoDispositivo in ["steamdeck", "pedal"]:
-                            try:
-                                tecla = int(tecla)
-                            except ValueError:
-                                ui.notify(f"Tecla tiene que ser un numero para {nombreDispositivo}")
-                                return
-                        accionesDispositivo = dispositivo.get("acciones")
+                if self.opcionesEditar is not None:
+                    try:
+                        self.accionEditar["opciones"] = obtenerPropiedades(acción)
+                    except Exception as e:
+                        return
 
-                        if self.botonAgregar.icon == "edit":
-                            self.accionEditar["nombre"] = nombre
-                            self.accionEditar["key"] = tecla
-                            self.accionEditar["accion"] = acción
-                            # if tipoDispositivo == "steamdeck" and titulo != "":
-                            self.accionEditar["titulo"] = titulo
-
-                            if self.opcionesEditar is not None:
-                                try:
-                                    self.accionEditar["opciones"] = obtenerPropiedades(acción)
-                                except Exception as e:
-                                    return
-
-                            ui.notify(f"Editar acción {nombre}")
-                            logger.info(f"Editar acción {nombre} a {nombreDispositivo}")
-                        else:
-                            acciónNueva: dict[str:any] = {"nombre": nombre, "key": tecla, "accion": acción}
-                            if tipoDispositivo == "steamdeck" and titulo != "":
-                                acciónNueva["titulo"] = titulo
-                            accionesDispositivo.append(acciónNueva)
-
-                            if self.opcionesEditar is not None:
-                                try:
-                                    acciónNueva["opciones"] = obtenerPropiedades(acción)
-                                except Exception as e:
-                                    return
-
-                            ui.notify(f"Agregando acción {nombre}")
-                            logger.info(f"Agregando acción {nombre} a {nombreDispositivo}")
-                        accionesDispositivo.sort(key=lambda x: x.get("key"), reverse=False)
-                        folder = dispositivo.get("folder")
-                        self.salvarAcciones(accionesDispositivo, dispositivo, folder)
+                ui.notify(f"Editar acción {nombre}")
+                logger.info(f"Editar acción {nombre} a {nombreDispositivo}")
             else:
-                if self.botonAgregar.icon == "edit":
-                    self.accionEditar["nombre"] = nombre
-                    self.accionEditar["key"] = tecla
-                    self.accionEditar["accion"] = acción
-                    self.accionEditar["titulo"] = titulo
+                acciónNueva: dict[str:any] = {"nombre": nombre, "key": tecla, "accion": acción, "titulo": titulo}
 
-                    if self.opcionesEditar is not None:
-                        try:
-                            self.accionEditar["opciones"] = obtenerPropiedades(acción)
-                        except Exception as e:
-                            return
-                else:
-                    acciónNueva: dict[str:any] = {"nombre": nombre, "key": tecla, "accion": acción}
-                    acciónNueva["titulo"] = titulo
-                    self.dispositivoEditar.listaAcciones.append(acciónNueva)
-                self.dispositivoEditar.salvarAcciones()
-                self.actualizarPestaña(self.dispositivoEditar)
-            self.mostrarPestañas()
+                if self.opcionesEditar is not None:
+                    try:
+                        acciónNueva["opciones"] = obtenerPropiedades(acción)
+                    except Exception as e:
+                        return
+
+                dispositivoDestino.listaAcciones.append(acciónNueva)
+                ui.notify(f"Agregando acción {nombre}")
+                logger.info(f"Agregando acción {nombre} a {nombreDispositivo}")
+
+            dispositivoDestino.salvarAcciones()
+            self.actualizarPestaña(dispositivoDestino)
             self.limpiarFormulario()
 
         def obtenerPropiedades(acciónSeleccionada: str) -> dict:
@@ -281,7 +244,8 @@ class miGui(dispositivo):
         self.editorDescripcion.visible = False
         self.editorPropiedades.clear()
         if self.accionEditar:
-            accionSelecionada = self.accionEditar.get("accion")
+            claseAccionEditar = self.obtenerAcciónOop(self.accionEditar.get("accion"))
+            accionSelecionada = claseAccionEditar().nombre if claseAccionEditar is not None else None
         else:
             accionSelecionada = self.editorAcción.value
 
@@ -382,15 +346,7 @@ class miGui(dispositivo):
         self.botonAgregar.icon = "edit"
         self.editorNombre.value = accion.get("nombre")
 
-        if self.dispositivoEditar is None:
-            tipo = self.tipoDispositivoSeleccionado()
-
-            if tipo in ["steamdeck", "pedal"]:
-                self.editorTecla.value = int(accion.get("key")) + 1
-            else:
-                self.editorTecla.value = accion.get("key")
-        else:
-            self.editorTecla.value = accion.get("key")
+        self.editorTecla.value = accion.get("key")
 
         claseAcción = self.obtenerAcciónOop(accion.get("accion"))
         if claseAcción is None:
@@ -427,31 +383,17 @@ class miGui(dispositivo):
 
                 self.editorOpción.value = textoOpciones
 
-    def tipoDispositivoSeleccionado(self) -> str:
-        nombreDispositivo = self.pestañas.value
-        for dispositivo in self.listaDispositivosVieja:
-            if dispositivo.get("nombre") == nombreDispositivo:
-                return dispositivo.get("tipo")
-        return ""
+    def obtenerDispositivoSeleccionado(self, nombreDispositivo: str = None) -> dispositivo:
+        """Busca la instancia real del dispositivo por nombre de pestaña
 
-    def eliminarAcción(self, accion):
-        nombreDispositivo = self.pestañas.value
-        for dispositivo in self.listaDispositivosVieja:
-            if dispositivo.get("nombre") == nombreDispositivo:
-                tipo = dispositivo.get("tipo")
-
-        if nombreDispositivo is None:
-            ui.notify(f"Falta seleccionar dispositivo")
-            return
-
-        for dispositivo in self.listaDispositivosVieja:
-            if dispositivo.get("nombre") == nombreDispositivo:
-                acciones = dispositivo.get("acciones")
-                acciones.remove(accion)
-                folder = dispositivo.get("folder")
-                self.salvarAcciones(acciones, dispositivo, folder)
-                ui.notify(f"Se elimino la accion {accion.get('nombre')}")
-                self.mostrarPestañas()
+        Args:
+            nombreDispositivo (str, optional): Nombre de la pestaña, por defecto la seleccionada
+        """
+        nombreDispositivo = nombreDispositivo or self.pestañas.value
+        for dispositivoActual in self.listaDispositivos:
+            if dispositivoActual.nombre == nombreDispositivo:
+                return dispositivoActual
+        return None
 
     def estructura(self):
         """Estructura de la interfaz, cabecera y pie de página"""
@@ -529,15 +471,6 @@ class miGui(dispositivo):
         logger.info("Saliendo de NiceGUI")
         app.shutdown()
 
-    def agregarDispositivos(self, dispositivo):
-        dispositivo["acciones"] = None
-        for dispositivoActual in self.listaDispositivosVieja:
-            if dispositivoActual.get("nombre") == dispositivo.get("nombre"):
-                return
-        logger.info(f"GUI agregando Dispositivo: {dispositivo.get('nombre')}")
-        self.listaDispositivosVieja.append(dispositivo)
-        self.mostrarPestañas()
-
     def agregarAcciones(self, listaClasesAcciones: list):
         for accion in listaClasesAcciones:
             self.listaClasesAcciones.append(accion)
@@ -547,10 +480,6 @@ class miGui(dispositivo):
             self.editorAcción.update()
 
     def actualizarAcciones(self, nombreDispositivo: str, acciones: list, folder: str):
-        for dispositivo in self.listaDispositivosVieja:
-            if dispositivo.get("nombre") == nombreDispositivo:
-                dispositivo["acciones"] = acciones
-                dispositivo["folder"] = folder
         self.mostrarPestañas()
 
     def obtenerAcciónOop(self, comandoAcción: str) -> accion:
@@ -603,11 +532,14 @@ class miGui(dispositivo):
                         ui.label("No acciones")
                         return
 
-                    self.dibujarAcciones(acciones)
+                    self.dibujarAcciones(acciones, dispositivo)
 
             self.actualizarCabecera()
 
-    def dibujarAcciones(self, listaAcciones: list[dict]) -> None:
+        if hasattr(dispositivo, "actualizarIconos"):
+            dispositivo.actualizarIconos()
+
+    def dibujarAcciones(self, listaAcciones: list[dict], dispositivo: dispositivo) -> None:
         """Dibuja las acciones de los dispositivos en la interfaz web
 
         Args:
@@ -672,7 +604,7 @@ class miGui(dispositivo):
     def borrarAcción(self, accion, dispositivo: dispositivo):
         dispositivo.listaAcciones.remove(accion)
         dispositivo.salvarAcciones()
-        self.actualizarPestañas(dispositivo)
+        self.actualizarPestaña(dispositivo)
 
     def actualizarIconos(self):
         logger.info("Dibujando GUI")

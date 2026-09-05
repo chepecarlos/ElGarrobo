@@ -18,6 +18,8 @@ class accionDelay(accion):
     comando = "delay"
     descripcion = "Espera una cantidad de tiempo"
 
+    esperarSegundos: int | str = 0
+
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
 
@@ -36,19 +38,19 @@ class accionDelay(accion):
 
     def esperarTiempo(self):
         """espera un tiempo"""
-        esperaSegundos = self.obtenerValor("tiempo")
-        if esperaSegundos is None:
+        self.esperaSegundos = self.obtenerValor("tiempo")
+        if self.esperaSegundos is None:
             Logger.error("Falta tiempo")
             return
 
-        if isinstance(esperaSegundos, str):
-            pedadosTiempo: str = esperaSegundos.split(":")
+        if isinstance(self.esperaSegundos, str):
+            pedadosTiempo: list[str] = self.esperaSegundos.split(":")
             segundos: int = int(pedadosTiempo[-1])
             if len(pedadosTiempo) > 1:
                 segundos += int(pedadosTiempo[-2]) * 60
             if len(pedadosTiempo) > 2:
                 segundos += int(pedadosTiempo[-3]) * 3600
-            esperaSegundos = segundos
+            self.esperaSegundos = segundos
 
-        Logger.info(f"Delay[{esperaSegundos}s]")
-        time.sleep(esperaSegundos)
+        Logger.info(f"Delay[{self.esperaSegundos}s]")
+        time.sleep(self.esperaSegundos)

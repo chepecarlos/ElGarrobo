@@ -10,7 +10,10 @@ logger = ConfigurarLogging(__name__)
 
 
 class accionEscribirArchivo(accion):
-    """Escribe en un archivo la información"""
+    """Escribe en un archivo la información
+
+    Se puede sobre escribir todo el archivo o solo un atributo si es un json o  md
+    """
 
     nombre = "Escribir Archivo"
     comando = "escribir_archivo"
@@ -37,8 +40,18 @@ class accionEscribirArchivo(accion):
             ejemplo='{"nombre": "carlos"}',
         )
 
+        propiedadAtributo = propiedadAccion(
+            nombre="Atributo",
+            atributo="atributo",
+            tipo=str,
+            obligatorio=False,
+            descripcion="Cual atributo a salvar",
+            ejemplo="nombre",
+        )
+
         self.agregarPropiedad(propiedadArchivo)
         self.agregarPropiedad(propiedadData)
+        self.agregarPropiedad(propiedadAtributo)
 
         self.funcion = self.escribirArchivo
 
@@ -46,12 +59,19 @@ class accionEscribirArchivo(accion):
 
         archivo = self.obtenerValor("archivo")
         data = self.obtenerValor("data")
+        atributo = self.obtenerValor("atributo")
 
         if archivo is None or data is None:
             logger.info("Falta información para")
             return
 
-        FuncionesArchivos.SalvarArchivo(archivo, data)
+        if atributo is None:
+            logger.info(f"Escribir[{archivo}]={data}")
+            FuncionesArchivos.SalvarArchivo(archivo, data)
+            return
+        else:
+            logger.info(f"Escribir[{archivo}] {atributo}={data}")
+            FuncionesArchivos.SalvarValor(archivo, atributo, data)
 
 
 class accionLeerValor(accion):

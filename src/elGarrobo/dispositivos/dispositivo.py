@@ -245,7 +245,7 @@ class dispositivo:
 
     def salvarAcciones(self):
         folderBase = str(ObtenerFolderConfig())
-        archivo = os.path.abspath(os.path.join(folderBase, self.folderPerfil, self.folderActual.lstrip("/"), self.archivo))
+        archivo = os.path.abspath(os.path.join(folderBase, self.folderPerfil, str(self.folderActual).lstrip("/"), self.archivo))
         accionesSalvar = self.listaAcciones.copy()
 
         for acción in accionesSalvar:

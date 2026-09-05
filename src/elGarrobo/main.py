@@ -2,6 +2,7 @@
 Este es el Inicio del Código que llama a las funciones
 """
 
+import threading
 from typing import Optional
 
 import typer
@@ -20,7 +21,6 @@ logger = ConfigurarLogging(__name__)
 
 app = typer.Typer(
     help="Herramientas de Macros de ALSW",
-    add_completion=False,
     context_settings={"help_option_names": ["-h", "--help"]},
 )
 modulos_app = typer.Typer(help="Gestión de los módulos de ElGarrobo")
@@ -60,13 +60,31 @@ def _cli(
         ConfigurarModulos()
     elif gui:
         logger.info("Iniciando la APP Gráfica")
-        elGarrobo(gui="true")
+        app = elGarrobo(gui="true")
+        _mantenerVivo(app)
     else:
         logger.info("ElGarrobo[sin parametros]")
         try:
-            elGarrobo()
+            app = elGarrobo()
+            _mantenerVivo(app)
         except Exception as error:
             logger.exception(f"Error Main[{error}]")
+
+
+def _mantenerVivo(app: elGarrobo) -> None:
+    """Bloquea el hilo principal para que los hilos de los dispositivos (GUI, teclado, mqtt, etc.)
+    sigan corriendo. Sin esto, el hilo principal termina apenas se crea elGarrobo() y Python
+    empieza a cerrar el interprete mientras esos hilos todavia estan arrancando.
+
+    Al salir (Ctrl+C) llama a Salir(), que desconecta los dispositivos y mata el proceso.
+    De lo contrario los hilos en segundo plano (teclado, deck, GUI) quedan vivos para siempre
+    y el proceso nunca termina.
+    """
+    try:
+        threading.Event().wait()
+    except KeyboardInterrupt:
+        logger.info("ElGarrobo[Saliendo]")
+        app.Salir([])
 
 
 def _mostrar_info(titulo: str, archivo: str, cargar_clases) -> None:

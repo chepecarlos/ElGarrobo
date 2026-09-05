@@ -181,6 +181,15 @@ class accionListaCheckBox(accion):
     comando = "lista_checkbox"
     descripcion = "Maneja una lista de checkboxes"
 
+    clientesRegistrados: dict = {}
+    "Clientes NiceGUI conectados, por id"
+
+    @classmethod
+    def registrarCliente(cls, client) -> None:
+        """Guarda el cliente NiceGUI conectado para uso posterior de la acción"""
+        if client is not None:
+            cls.clientesRegistrados[client.id] = client
+
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
 
