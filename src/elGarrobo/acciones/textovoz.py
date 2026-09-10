@@ -15,7 +15,7 @@ def TextoVoz(opciones):
     mensaje = opciones.get("mensaje")
     volumen = opciones.get("volumen", 1)
     velocidad = opciones.get("velocidad", 180)
-    lenguaje = opciones.get("lenguaje", "spanish")
+    lenguaje = opciones.get("lenguaje", "Spanish (Latin America)")
     esperar = opciones.get("esperar", True)
 
     if mensaje is None:

@@ -23,7 +23,7 @@
 - Muestra una lista de tareas emergente: [accionListaCheckBox](./accionesOOP/accionListaCheckBox)
 
 ### Acciones de ElGarrobo
-- Abri interface web: [accionAbirGUI](./accionesOOP/accionAbirGUI)
+- Abri interface web: [accionAbrirGUI](./accionesOOP/accionAbrirGUI)
 - Recarga acciones dentro del folder: [accionRecargarFolder](./accionesOOP/accionRecargarFolder)
 - Entra y carga acciones de un folder: [accionEntrarFolder](./accionesOOP/accionEntrarFolder)
 - Entra en un folder en los dispositivos: [accionFolder](./accionesOOP/accionFolder)
@@ -39,7 +39,7 @@
 """
 
 from .accion import accion
-from .accionAbirGUI import accionAbirGUI
+from .accionAbrirGUI import accionAbrirGUI
 from .accionArchivo import accionEscribirArchivo, accionLeerValor
 from .accionBuscarVentana import accionBuscarVentana
 from .accionCambiarPagina import (
@@ -82,7 +82,7 @@ def cargarClasesAcciones() -> dict[str, type["accion"]]:
     """
 
     return {
-        "abir_gui": accionAbirGUI,
+        "abrir_gui": accionAbrirGUI,
         "mostrar_ventana": accionBuscarVentana,
         "anterior_pagina": accionAnteriorPagina,
         "siquiente_pagina": accionSiquientePagina,
@@ -105,8 +105,8 @@ def cargarClasesAcciones() -> dict[str, type["accion"]]:
         "telegram": accionTelegram,
         "cerrar_ventana": accionCerrarVentana,
         "copiar": accionCopiarPapelera,
-        "reproducion": accionReproducir,
-        "detener_reproducion": accionPararReproducciones,
+        "reproduccion": accionReproducir,
+        "detener_reproduccion": accionPararReproducciones,
         "presionar": accionPresionar,
         "escribir_archivo": accionEscribirArchivo,
         "leer_valor": accionLeerValor,

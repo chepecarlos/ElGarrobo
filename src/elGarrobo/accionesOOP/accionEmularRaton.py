@@ -41,10 +41,10 @@ class accionEmularRaton(accion):
         self.agregarPropiedad(propiedadEstado)
         self.agregarPropiedad(propiedadBoton)
 
-        self.funcion = self.precionarRaton
+        self.funcion = self.presionarRaton
 
-    def precionarRaton(self):
-        """Precionar boton del raton."""
+    def presionarRaton(self):
+        """Presionar boton del raton."""
 
         listaBotones = {"izquierdo": "left", "centro": "middle", "derecho": "right"}
 

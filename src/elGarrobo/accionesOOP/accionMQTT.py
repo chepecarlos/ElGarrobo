@@ -34,7 +34,7 @@ class accionMQTT(accion):
 
         propiedadTopic = propiedadAccion(
             nombre="Topic",
-            tipo=str,
+            tipo=[str],
             obligatorio=True,
             atributo="topic",
             descripcion="Tema por el cual se envía el mensaje",

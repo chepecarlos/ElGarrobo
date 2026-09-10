@@ -1,6 +1,5 @@
 """Abre la interface de ElGarrobo en el Navegador"""
 
-import logging
 import socket
 
 from elGarrobo.miLibrerias import ConfigurarLogging
@@ -11,19 +10,19 @@ from .accionNavegador import accionNavegador
 Logger = ConfigurarLogging(__name__)
 
 
-class accionAbirGUI(accion):
+class accionAbrirGUI(accion):
     """Abre la interface web del ElGarrobo"""
 
     nombre = "Abri GUI"
-    comando = "abir_gui"
+    comando = "abrir_gui"
     descripcion = "Abri la Configuración del ElGarrobo en Navegador"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
 
-        self.funcion = self.abirGUI
+        self.funcion = self.abrirGUI
 
-    def abirGUI(self):
+    def abrirGUI(self):
         """Abre la interface en el Navegador"""
 
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

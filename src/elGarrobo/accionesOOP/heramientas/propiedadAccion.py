@@ -14,10 +14,10 @@ class propiedadAccion:
 
     nombre: str
     atributo: str
-    tipo: list[str] | str = field(default_factory=list)
+    tipo: list[type] = field(default_factory=list)
     obligatorio: bool = False
-    descripcion: str = None
-    ejemplo: str = None
+    descripcion: Optional[str] = None
+    ejemplo: Optional[str] = None
     defecto: Optional[Any] = None
 
     def __post_init__(self) -> None:

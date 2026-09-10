@@ -519,13 +519,13 @@ class elGarrobo(object):
 
     def accionesPresionar(self, opciones: list[valoresAcciones]):
 
-        precionado: dict = self.obtenerValor(opciones, "presionado")
+        presionado: dict = self.obtenerValor(opciones, "presionado")
         soltar: dict = self.obtenerValor(opciones, "soltar")
         estado: bool = self.obtenerValor(opciones, "estado")
 
         if estado:
-            logger.info(f"AccionOOP[presionar] - Precionando")
-            return self.ejecutarAcción(precionado)
+            logger.info(f"AccionOOP[presionar] - Presionando")
+            return self.ejecutarAcción(presionado)
         else:
             logger.info(f"AccionOOP[presionar] - Soltando")
             return self.ejecutarAcción(soltar)

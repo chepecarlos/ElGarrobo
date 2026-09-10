@@ -86,7 +86,7 @@ class accionReproducir(accion):
     """Reproduce un sonido"""
 
     nombre = "Reproducir Sonido"
-    comando = "reproducion"
+    comando = "reproduccion"
     descripcion = "Reproduce un sonido"
 
     def __init__(self) -> None:
@@ -97,7 +97,7 @@ class accionReproducir(accion):
             tipo=str,
             obligatorio=True,
             atributo="archivo",
-            descripcion="pista a reproducira",
+            descripcion="pista a reproducir",
             ejemplo="sonido.mp4",
         )
 
@@ -128,7 +128,7 @@ class accionReproducir(accion):
 
     def reproducir(self):
         """
-        Crear un susproceso para Reproduccion.
+        Crear un subproceso para Reproducción.
         """
         global listaSonidos
         global _listaSonidosBloqueo
@@ -182,15 +182,15 @@ class accionPararReproducciones(accion):
     """Para todas las reproducciones un sonido"""
 
     nombre = "Parar Sonidos"
-    comando = "detener_reproducion"
-    descripcion = "Pata todas las reproducciones de sonidos"
+    comando = "detener_reproduccion"
+    descripcion = "Para todas las reproducciones de sonidos"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
 
-        self.funcion = self.pararReproducion
+        self.funcion = self.pararReproduccion
 
-    def pararReproducion(self):
+    def pararReproduccion(self):
         """
         Parar todos los subprocess de reproducción de sonido.
         """
@@ -204,17 +204,3 @@ class accionPararReproducciones(accion):
         listaSonidos = []
 
 
-if __name__ == "__main__":
-
-    archivo = "/sonidos/golpe.wav"
-    print("Empesando a Reproducir")
-
-    accionTest: accionReproducir = accionReproducir()
-    opciones = {"archivo": archivo}
-    accionTest.configurar(opciones)
-    accionTest.ejecutar()
-    print("Reproduciendo")
-
-    while _ := input("Press <Enter> to exit\n"):
-        print("Iniciando: ----")
-    print("Saliendo")

@@ -1,4 +1,4 @@
-"""Preciona una combinación de teclas"""
+"""Presiona una combinación de teclas"""
 
 import pyautogui
 
@@ -10,18 +10,18 @@ Logger = ConfigurarLogging(__name__)
 
 
 class accionTeclas(accion):
-    """Preciona una combinación de teclas"""
+    """Presiona una combinación de teclas"""
 
     nombre: str = "Teclas"
     comando: str = "teclas"
-    descripcion: str = "Preciona una combinación de teclas"
+    descripcion: str = "Presiona una combinación de teclas"
 
     propiedadTeclas: propiedadAccion = propiedadAccion(
         nombre="Teclas",
         tipo=[str, list],
         obligatorio=True,
         atributo="teclas",
-        descripcion="teclas a presionarte",
+        descripcion="teclas a presionar",
         ejemplo="ctrl + c",
     )
     "Propiedad para definir las teclas a presionar"
@@ -34,7 +34,7 @@ class accionTeclas(accion):
         self.funcion = self.presionarTeclas
 
     def presionarTeclas(self):
-        """preciosa teclas"""
+        """presiona teclas"""
         teclas = self.obtenerValor("teclas")
 
         if teclas is None:
