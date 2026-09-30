@@ -54,6 +54,7 @@ from .accionDelay import accionDelay
 from .accionEmularRaton import accionEmularRaton
 from .accionEntrarFolder import accionEntrarFolder
 from .accionEscribirTexto import accionEscribirTexto
+from .accionesKlipper.accionReimprimirKlipper import accionReimprimirKlipper
 from .accionesOctoprint.accionCancelarOctoprint import accionCancelarOctoprint
 from .accionesOctoprint.accionReimprimirOctoprint import accionReimprimirOctoprint
 from .accionFolder import accionFolder
@@ -116,4 +117,5 @@ def cargarClasesAcciones() -> dict[str, type["accion"]]:
         "mute": accionMute,
         "reimprimir_octoprint": accionReimprimirOctoprint,
         "cancelar_octoprint": accionCancelarOctoprint,
+        "reimprimir_klipper": accionReimprimirKlipper,
     }
