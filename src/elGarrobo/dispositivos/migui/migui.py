@@ -178,6 +178,12 @@ class miGui(dispositivo):
                 ui.notify(f"Agregando acción {nombre}")
                 logger.info(f"Agregando acción {nombre} a {nombreDispositivo}")
 
+            # Números primero (streamdeck/pedal), luego texto (teclados), sin comparar int con str
+            def ordenTecla(a: dict) -> tuple:
+                tecla = a.get("key")
+                return (0, tecla, "") if isinstance(tecla, int) else (1, 0, str(tecla))
+
+            dispositivoDestino.listaAcciones.sort(key=ordenTecla)
             dispositivoDestino.salvarAcciones()
             self.actualizarPestaña(dispositivoDestino)
             self.limpiarFormulario()
