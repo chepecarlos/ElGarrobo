@@ -34,7 +34,7 @@ class accionEscribirArchivo(accion):
         propiedadData = propiedadAccion(
             nombre="Data",
             atributo="data",
-            tipo=Any,
+            tipo=[],
             obligatorio=True,
             descripcion="Información a salvar",
             ejemplo='{"nombre": "carlos"}',

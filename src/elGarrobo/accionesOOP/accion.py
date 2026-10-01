@@ -198,4 +198,4 @@ class accion:
         self.fuerza = fuerza
 
     def __str__(self) -> str:
-        return f"Acción: {self.nombre}[{self.atributo}]"
+        return f"Acción: {self.nombre}[{self.comando}]"

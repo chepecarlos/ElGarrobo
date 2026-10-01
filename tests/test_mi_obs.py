@@ -188,7 +188,7 @@ class TestMiOBS:
         salvar_valor.assert_called_once_with(mi_obs.archivoEstado, "obs_envivo", True)
         mi_obs.Notificar.assert_called_once_with("OBS-EnVivo")
         mi_obs.actualizarDeck.assert_called_once()
-        assert mi_obs.envivo is True
+        assert mi_obs.enVivo is True
 
     def test_evento_stream_inactivo_notifica_y_guarda_estado(self, monkeypatch):
         modulo_mi_obs = cargar_modulo_mi_obs()
@@ -205,7 +205,7 @@ class TestMiOBS:
         salvar_valor.assert_called_once_with(mi_obs.archivoEstado, "obs_envivo", False)
         mi_obs.Notificar.assert_called_once_with("OBS-No-EnVivo")
         mi_obs.actualizarDeck.assert_called_once()
-        assert mi_obs.envivo is False
+        assert mi_obs.enVivo is False
 
     def test_evento_grabacion_iniciada_actualiza_estado(self, monkeypatch):
         modulo_mi_obs = cargar_modulo_mi_obs()
