@@ -94,6 +94,8 @@ class miGui(dispositivo):
                     self.paneles.classes("w-full")
                     self.crearPestañas()
             self.estructura()
+            # Las etiquetas de la cabecera se crean en estructura(), después de las pestañas
+            self.actualizarCabecera()
 
         @ui.page("/modulos")
         def paginaModulos():
@@ -112,6 +114,20 @@ class miGui(dispositivo):
             accionListaCheckBox.registrarCliente(ui.context.client)
             self.mostrarListaActivables("Dispositivos", "dispositivos", cargarDispositivos())
             self.estructura()
+
+    @staticmethod
+    def teclaRepetida(listaAcciones: list[dict], tecla, ignorar: dict = None) -> dict:
+        """Devuelve la acción que ya usa la tecla (sin contar ignorar), o None"""
+        for acción in listaAcciones:
+            if acción is not ignorar and str(acción.get("key")) == str(tecla):
+                return acción
+        return None
+
+    @staticmethod
+    def ordenTecla(acción: dict) -> tuple:
+        """Números primero (streamdeck/pedal), luego texto (teclados), sin comparar int con str"""
+        tecla = acción.get("key")
+        return (0, tecla, "") if isinstance(tecla, int) else (1, 0, str(tecla))
 
     def mostrarFormulario(self):
         """Muestra el formulario para agregar o editar acciones"""
@@ -152,15 +168,12 @@ class miGui(dispositivo):
                     return
 
             editando = self.botonAgregar.icon == "edit"
-            for otraAcción in dispositivoDestino.listaAcciones:
-                if editando and otraAcción is self.accionEditar:
-                    continue
-                if str(otraAcción.get("key")) == str(tecla):
-                    ui.notify(
-                        f"La tecla {tecla} ya está usada por '{otraAcción.get('nombre')}', cámbiela",
-                        type="warning",
-                    )
-                    return
+            repetida = self.teclaRepetida(
+                dispositivoDestino.listaAcciones, tecla, self.accionEditar if editando else None
+            )
+            if repetida is not None:
+                ui.notify(f"La tecla {tecla} ya está usada por '{repetida.get('nombre')}', cámbiela", type="warning")
+                return
 
             if editando:
                 self.accionEditar["nombre"] = nombre
@@ -189,12 +202,7 @@ class miGui(dispositivo):
                 ui.notify(f"Agregando acción {nombre}")
                 logger.info(f"Agregando acción {nombre} a {nombreDispositivo}")
 
-            # Números primero (streamdeck/pedal), luego texto (teclados), sin comparar int con str
-            def ordenTecla(a: dict) -> tuple:
-                tecla = a.get("key")
-                return (0, tecla, "") if isinstance(tecla, int) else (1, 0, str(tecla))
-
-            dispositivoDestino.listaAcciones.sort(key=ordenTecla)
+            dispositivoDestino.listaAcciones.sort(key=self.ordenTecla)
             dispositivoDestino.salvarAcciones()
             self.actualizarPestaña(dispositivoDestino)
             self.limpiarFormulario()
@@ -223,9 +231,9 @@ class miGui(dispositivo):
             ancho = "200px"
 
             # self.editorTitulo.visible = False
-            self.editorNombre = ui.input("Nombre").style(f"width: {ancho}").props("clearable")
-            self.editorTitulo = ui.input("Titulo").style(f"width: {ancho}").props("clearable")
-            self.editorTecla = ui.input("Tecla").style(f"width: {ancho}").props("clearable")
+            self.editorNombre = ui.input("Nombre").style(f"width: {ancho}").props("clearable").mark("editorNombre")
+            self.editorTitulo = ui.input("Titulo").style(f"width: {ancho}").props("clearable").mark("editorTitulo")
+            self.editorTecla = ui.input("Tecla").style(f"width: {ancho}").props("clearable").mark("editorTecla")
 
             self.listaNombreAcciones: list[str] = list()
             for clave in self.listaClasesAcciones.keys():
@@ -233,7 +241,7 @@ class miGui(dispositivo):
                 nombreAccion = claseAccion().nombre
                 self.listaNombreAcciones.append(nombreAccion)
 
-            self.editorAcción = ui.select(options=self.listaNombreAcciones, with_input=True, label="acción", on_change=self.mostrarOpciones).style(f"width: {ancho}")
+            self.editorAcción = ui.select(options=self.listaNombreAcciones, with_input=True, label="acción", on_change=self.mostrarOpciones).style(f"width: {ancho}").mark("editorAcción")
             self.editorDescripcion = ui.label("").style(f"width: {ancho}").classes("bg-teal-700 p-2 text-white rounded-lg")
             self.editorDescripcion.visible = False
             self.editorPropiedades = ui.column()
@@ -241,8 +249,8 @@ class miGui(dispositivo):
             self.editorOpción.visible = False
 
         with ui.button_group().props("rounded"):
-            self.botonAgregar = ui.button(icon="add", color=self.colorOscuro, on_click=agregarAcción)
-            ui.button(icon="delete", color=self.colorOscuro, on_click=self.limpiarFormulario)
+            self.botonAgregar = ui.button(icon="add", color=self.colorOscuro, on_click=agregarAcción).mark("botonAgregar")
+            ui.button(icon="delete", color=self.colorOscuro, on_click=self.limpiarFormulario).mark("botonLimpiar")
 
     def actualizarCabecera(self) -> None:
         """Muestra información del dispositivo rutas de la interfaz web"""
@@ -292,7 +300,7 @@ class miGui(dispositivo):
                     obligatorio: bool = propiedad.obligatorio
                     if obligatorio:
                         etiqueta = "* " + etiqueta
-                    self.opcionesEditar[nombre] = ui.input(label=etiqueta, placeholder=ejemplo)
+                    self.opcionesEditar[nombre] = ui.input(label=etiqueta, placeholder=ejemplo).mark(f"opción-{nombre}")
                     with self.opcionesEditar[nombre]:
                         with ui.button(on_click=lambda d=descripción: ui.notify(d)).props("flat dense"):
                             ui.icon("help", color="teal-300")
@@ -491,12 +499,12 @@ class miGui(dispositivo):
             dialogoSalir = self.crearDialogoConfirmacion("¿Cerrar ElGarrobo?", self.salir)
             with ui.button(icon="menu").props("flat color=white").classes("px-8"):
                 with ui.menu():
-                    ui.menu_item("Acciones", on_click=lambda: ui.navigate.to("/"))
-                    ui.menu_item("Módulos", on_click=lambda: ui.navigate.to("/modulos"))
-                    ui.menu_item("Dispositivos", on_click=lambda: ui.navigate.to("/dispositivos"))
+                    ui.menu_item("Acciones", on_click=lambda: ui.navigate.to("/")).mark("menu-Acciones")
+                    ui.menu_item("Módulos", on_click=lambda: ui.navigate.to("/modulos")).mark("menu-Módulos")
+                    ui.menu_item("Dispositivos", on_click=lambda: ui.navigate.to("/dispositivos")).mark("menu-Dispositivos")
                     ui.separator()
-                    ui.menu_item("Reiniciar", on_click=dialogoReiniciar.open)
-                    ui.menu_item("Salir", on_click=dialogoSalir.open)
+                    ui.menu_item("Reiniciar", on_click=dialogoReiniciar.open).mark("menu-Reiniciar")
+                    ui.menu_item("Salir", on_click=dialogoSalir.open).mark("menu-Salir")
 
         with ui.footer().classes(f"bg-{self.colorOscuro}").style("height: 5vh; padding: 1px"):
             with ui.row().classes("w-full").style("padding: 0 10px"):
@@ -556,14 +564,6 @@ class miGui(dispositivo):
     def desconectar(self) -> None:
         logger.info("Saliendo de NiceGUI")
         app.shutdown()
-
-    def agregarAcciones(self, listaClasesAcciones: list):
-        for accion in listaClasesAcciones:
-            self.listaClasesAcciones.append(accion)
-        self.listaClasesAcciones.sort()
-        if self.editorAcción is not None:
-            self.editorAcción.options = self.listaClasesAcciones
-            self.editorAcción.update()
 
     def actualizarAcciones(self, nombreDispositivo: str, acciones: list, folder: str):
         self.mostrarPestañas()
@@ -678,10 +678,11 @@ class miGui(dispositivo):
                     ui.label(f"{acciónAcción}-vieja").style("width: 125px")
                     # TODO: montar función viejas
 
+                marca = f"{dispositivo.nombre}-{teclaAcción}"
                 with ui.button_group().props("rounded"):
-                    ui.button(icon="play_arrow", color="teal-500", on_click=lambda a=acciónActual: self.buscarAccion(a, self.estadoTecla.PRESIONADA))
-                    ui.button(icon="edit", color="teal-500", on_click=lambda a=acciónActual: self.seleccionarAcción(a, dispositivo))
-                    ui.button(icon="delete", color="teal-500", on_click=lambda a=acciónActual, d=dispositivo: self.borrarAcción(a, d))
+                    ui.button(icon="play_arrow", color="teal-500", on_click=lambda a=acciónActual: self.buscarAccion(a, self.estadoTecla.PRESIONADA)).mark(f"ejecutar-{marca}")
+                    ui.button(icon="edit", color="teal-500", on_click=lambda a=acciónActual: self.seleccionarAcción(a, dispositivo)).mark(f"editar-{marca}")
+                    ui.button(icon="delete", color="teal-500", on_click=lambda a=acciónActual, d=dispositivo: self.borrarAcción(a, d)).mark(f"borrar-{marca}")
 
     def buscarAccion(self, acción: dict, estado):
         logger.info(f"Evento[{acción.get('nombre')}] {self.nombre}[{acción.get('key')}-{estado.name}]")

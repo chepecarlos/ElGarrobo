@@ -246,13 +246,11 @@ class dispositivo:
     def salvarAcciones(self):
         folderBase = str(ObtenerFolderConfig())
         archivo = os.path.abspath(os.path.join(folderBase, self.folderPerfil, str(self.folderActual).lstrip("/"), self.archivo))
-        accionesSalvar = self.listaAcciones.copy()
-
-        for acción in accionesSalvar:
-            if isinstance(acción, dict):
-                for propiedad, valor in acción.items():
-                    if "__" in propiedad:
-                        del acción[propiedad]
+        # Las claves con "__" son estado en tiempo de ejecución, no se guardan
+        accionesSalvar = [
+            {propiedad: valor for propiedad, valor in acción.items() if "__" not in propiedad} if isinstance(acción, dict) else acción
+            for acción in self.listaAcciones
+        ]
 
         SalvarArchivo(f"{archivo}.md", accionesSalvar)
 

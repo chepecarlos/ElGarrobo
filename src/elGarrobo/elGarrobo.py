@@ -92,12 +92,6 @@ class elGarrobo(object):
         if self.ModuloOBS:
             self.CargarOBS()
 
-            # TODO: recivir acciones desde Modulo de Pulse
-            if self.ModuloGui:
-                for dispositivoActual in self.listaDispositivos:
-                    if dispositivoActual.nombre == "gui":
-                        dispositivoActual.agregarAcciones(("salvar_pulse", "volumen", "mute"))
-
         if self.ModuloMQTT:
             for dispositivoActual in self.listaDispositivos:
                 if dispositivoActual.tipo == "mqtt":

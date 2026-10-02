@@ -28,7 +28,7 @@ elgarrobo = "elGarrobo.main:main"
 elgarrobo-tool = "elGarrobo.tool:main"
 
 [project.optional-dependencies]
-dev = ["pytest>=9.0", "pytest-cov>=4.0"]
+dev = ["pytest>=9.0", "pytest-cov>=4.0", "pytest-asyncio>=1.0"]
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -40,3 +40,9 @@ exclude = ["tests*", "testing*"]
 [tool.setuptools.dynamic]
 version = { file = ["VERSION"] }
 dependencies = { file = ["requirements.txt"] }
+
+[tool.pytest.ini_options]
+# GUI simulada de nicegui (fixture `user`), sin main.py: las páginas se crean en cada test
+addopts = "-p nicegui.testing.user_plugin"
+asyncio_mode = "auto"
+main_file = ""
