@@ -151,7 +151,18 @@ class miGui(dispositivo):
                     ui.notify("Error con tecla no numero")
                     return
 
-            if self.botonAgregar.icon == "edit":
+            editando = self.botonAgregar.icon == "edit"
+            for otraAcción in dispositivoDestino.listaAcciones:
+                if editando and otraAcción is self.accionEditar:
+                    continue
+                if str(otraAcción.get("key")) == str(tecla):
+                    ui.notify(
+                        f"La tecla {tecla} ya está usada por '{otraAcción.get('nombre')}', cámbiela",
+                        type="warning",
+                    )
+                    return
+
+            if editando:
                 self.accionEditar["nombre"] = nombre
                 self.accionEditar["key"] = tecla
                 self.accionEditar["accion"] = acción
