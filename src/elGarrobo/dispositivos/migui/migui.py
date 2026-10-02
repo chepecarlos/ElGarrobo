@@ -66,6 +66,8 @@ class miGui(dispositivo):
         self.pestañas = None
         self.paneles: ui.tab_panel = None
         self.editorAcción = None
+        self.ordenCampo: str = "key"
+        self.ordenInverso: bool = False
 
         self.listaDispositivos = list()
         # self.tipo = "GUI"
@@ -128,6 +130,21 @@ class miGui(dispositivo):
         """Números primero (streamdeck/pedal), luego texto (teclados), sin comparar int con str"""
         tecla = acción.get("key")
         return (0, tecla, "") if isinstance(tecla, int) else (1, 0, str(tecla))
+
+    @staticmethod
+    def ordenarAcciones(listaAcciones: list[dict], campo: str, inverso: bool = False) -> list[dict]:
+        """Copia ordenada de las acciones por "nombre", "titulo", "key" o "accion", sin tocar la lista guardada"""
+        if campo == "key":
+            orden = miGui.ordenTecla
+        else:
+            orden = lambda acción: str(acción.get(campo) or "").lower()
+        return sorted(listaAcciones, key=orden, reverse=inverso)
+
+    def cambiarOrden(self, campo: str, dispositivo: dispositivo) -> None:
+        """Ordena por campo; si ya estaba ordenado por ese campo invierte el sentido"""
+        self.ordenInverso = not self.ordenInverso if self.ordenCampo == campo else False
+        self.ordenCampo = campo
+        self.actualizarPestaña(dispositivo)
 
     def mostrarFormulario(self):
         """Muestra el formulario para agregar o editar acciones"""
@@ -632,15 +649,25 @@ class miGui(dispositivo):
             listaAcciones (list[dict]): Lista de acciones a dibujar
         """
 
-        with ui.row().classes("content p-2"):
-            ui.label("Nombre").style("font-weight: bold; width: 100px")
-            ui.label("Titulo").style("font-weight: bold; width: 100px")
-            # ui.label("Imagen").style("font-weight: bold; width: 150px")
-            ui.label("Tecla").style("font-weight: bold; width: 100px")
-            ui.label("Acción").style("font-weight: bold; width: 125px")
-            ui.label("Opciones").style("font-weight: bold; width: 180px")
+        def cabecera(texto: str, ancho: int, campo: str = None) -> None:
+            if campo is None:
+                ui.label(texto).style(f"font-weight: bold; width: {ancho}px")
+                return
+            if campo == self.ordenCampo:
+                texto += " ▼" if self.ordenInverso else " ▲"
+            etiqueta = ui.label(texto).style(f"font-weight: bold; width: {ancho}px; cursor: pointer")
+            etiqueta.on("click", lambda c=campo: self.cambiarOrden(c, dispositivo))
+            etiqueta.mark(f"orden-{campo}-{dispositivo.nombre}")
 
-        for acciónActual in listaAcciones:
+        with ui.row().classes("content p-2"):
+            cabecera("Nombre", 100, "nombre")
+            cabecera("Titulo", 100, "titulo")
+            # ui.label("Imagen").style("font-weight: bold; width: 150px")
+            cabecera("Tecla", 100, "key")
+            cabecera("Acción", 125, "accion")
+            cabecera("Opciones", 180)
+
+        for acciónActual in self.ordenarAcciones(listaAcciones, self.ordenCampo, self.ordenInverso):
             nombreAcción = acciónActual.get("nombre")
             teclaAcción = acciónActual.get("key")
             acciónAcción = acciónActual.get("accion")

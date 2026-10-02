@@ -115,6 +115,20 @@ class TestOrdenTecla:
         assert [a["key"] for a in lista] == [2, 10, "a", "b"]
 
 
+class TestOrdenarAcciones:
+    lista = [{"nombre": "b", "key": 2, "accion": "os"}, {"nombre": "A", "key": 1, "accion": "escribir"}]
+
+    def test_por_nombre_ignora_mayusculas(self):
+        assert [a["nombre"] for a in miGui.ordenarAcciones(self.lista, "nombre")] == ["A", "b"]
+
+    def test_por_accion_inverso(self):
+        assert [a["accion"] for a in miGui.ordenarAcciones(self.lista, "accion", True)] == ["os", "escribir"]
+
+    def test_no_modifica_lista_original(self):
+        miGui.ordenarAcciones(self.lista, "key")
+        assert self.lista[0]["key"] == 2
+
+
 class TestPaginaAcciones:
     async def test_muestra_acciones_y_cabecera(self, user: User, gui: miGui):
         await user.open("/")
