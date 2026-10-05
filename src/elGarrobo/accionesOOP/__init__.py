@@ -11,7 +11,8 @@
 - Escribe en un archivo: [accionEscribirTexto](./accionesOOP/accionEscribirTexto)
 - Abre una pagina web: [accionNavegador](./accionesOOP/accionNavegador)
 - Cierra la ventana usando el cursor: [accionCerrarVentana](./accionesOOP/accionCerrarVentana)
-- Copia texto a papelera: [accionCopiarPapelera](./accionesOOP/accionCopiarPapelera)
+- Copia texto al portapapeles: [accionCopiarPapelera](./accionesOOP/accionCopiarPapelera)
+- Pega texto usando el portapapeles: [accionPegarTexto](./accionesOOP/accionCopiarPapelera)
 - Manda una notificación al escritorio: [accionNotificacion](./accionesOOP/accionNotificacion)
 - Ejecuta la comando en terminal: [accionOS](./accionesOOP/accionOS)
 - Controla la PC a distancia: [accionControl](./accionesOOP/accionControl)
@@ -49,7 +50,7 @@ from .accionCambiarPagina import (
 )
 from .accionCerrarVentana import accionCerrarVentana
 from .accionControl import accionControl
-from .accionCopiarPapelera import accionCopiarPapelera
+from .accionCopiarPapelera import accionCopiarPapelera, accionPegarTexto
 from .accionDelay import accionDelay
 from .accionEmularRaton import accionEmularRaton
 from .accionEntrarFolder import accionEntrarFolder
@@ -107,6 +108,7 @@ def cargarClasesAcciones() -> dict[str, type["accion"]]:
         "telegram": accionTelegram,
         "cerrar_ventana": accionCerrarVentana,
         "copiar": accionCopiarPapelera,
+        "pegar": accionPegarTexto,
         "reproduccion": accionReproducir,
         "detener_reproduccion": accionPararReproducciones,
         "presionar": accionPresionar,
