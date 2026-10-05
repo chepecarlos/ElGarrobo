@@ -127,8 +127,9 @@ class MiStreamDeckPlus(MiStreamDeck):
             accionActual: dict = self.listaBotonesTouchscreen[boton]
             accionVieja: dict = self.listaBotonesTouchscreenViejas[boton]
 
-            imagenActual: str | None = self.buscarDirecionImagen(accionActual)
-            tituloActual: str | None = self.buscarTitulo(accionActual)
+            dibujo = self.dibujo()
+            imagenActual: str | None = dibujo.buscarDireccionImagen(accionActual)
+            tituloActual: str | None = dibujo.buscarTitulo(accionActual)
             # Copia: se compara con lo dibujado para redibujar si cambia fondo, rotar, etc.
             opcionesActual: dict = dict(accionActual.get("imagen_opciones") or {})
 
@@ -161,7 +162,7 @@ class MiStreamDeckPlus(MiStreamDeck):
                 imagenLimpia: ImageImage = Image.new("RGB", (anchoBoton, self.altoBarra))
                 accionActual: dict = self.listaBotonesTouchscreen[boton]
 
-                imagenLista: ImageImage = self.obtenerImagen(imagenLimpia, accionActual)
+                imagenLista: ImageImage = self.dibujo().obtenerImagen(imagenLimpia, accionActual)
 
                 posicionX: int = int((boton + 0.5) * self.anchoBarra / self.cantidadBotonesTouchscreen - anchoBoton / 2)
                 posicionY: int = 0

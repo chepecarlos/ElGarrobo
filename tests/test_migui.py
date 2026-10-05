@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from nicegui import ui
+from PIL import Image
 from nicegui.testing import User
 from nicegui.testing.user_interaction import UserInteraction
 
@@ -14,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from elGarrobo.accionesOOP import cargarClasesAcciones
 from elGarrobo.dispositivos.dataAccion import dataAccion
+from elGarrobo.dispositivos.dibujoBoton import dibujoBoton
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.migui import migui as moduloMiGui
 from elGarrobo.dispositivos.migui.migui import miGui
@@ -354,7 +356,7 @@ class TestActivables:
         await user.should_see("activado - reiniciá elgarrobo para aplicar")
 
 
-
+class TestEditorApariencia:
     async def test_editor_boton_guarda_titulo_y_fondo(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
         user.find(marker="editar-deck-1").click()
@@ -370,3 +372,35 @@ class TestActivables:
 
         user.find(marker="editar-deck-1").click()
         assert gui.editorFondo.value == "#2b7a10"
+
+
+    async def test_vista_previa_oculta_si_no_dibuja(self, user: User, gui: miGui, deck: dispositivoFalso):
+        await user.open("/")
+        user.find(marker="editar-deck-1").click()
+        user.find(marker="botonEditarBoton").click()
+        assert not gui.vistaPrevia.visible
+
+    async def test_vista_previa_dibuja_fondo(self, user: User, gui: miGui, deck: dispositivoFalso, tmp_path):
+        # ponytail: el dispositivo falso dibuja como un StreamDeck sin conectar
+        deck.dibujo = lambda: dibujoBoton(folderPerfil=tmp_path)
+        deck.tamañoBoton = lambda: (72, 72)
+        await user.open("/")
+        user.find(marker="editar-deck-1").click()
+        user.find(marker="botonEditarBoton").click()
+        gui.editorFondo.value = "#ff0000"
+
+        assert gui.vistaPrevia.visible
+        assert isinstance(gui.vistaPrevia.source, Image.Image)
+        assert gui.vistaPrevia.source.convert("RGB").getpixel((1, 1)) == (255, 0, 0)
+        assert deck.listaAcciones[0].fondo is None, "la vista previa no guarda"
+
+
+    async def test_editar_carga_fondo_sin_borrarlo(self, user: User, gui: miGui, deck: dispositivoFalso, tmp_path):
+        deck.listaAcciones[0].fondo = "#ff8000"
+        deck.dibujo = lambda: dibujoBoton(folderPerfil=tmp_path)
+        deck.tamañoBoton = lambda: (72, 72)
+        await user.open("/")
+        user.find(marker="editar-deck-1").click()
+
+        assert gui.editorFondo.value == "#ff8000"
+        assert deck.listaAcciones[0].fondo == "#ff8000", "la vista previa no debe modificar la acción"

@@ -1,3 +1,4 @@
+import copy
 import logging
 import threading
 
@@ -158,11 +159,7 @@ class miGui(dispositivo):
             nombre = valores["nombre"]
             tecla = valores["key"]
             acción = self.editorAcción.value
-            for AtributoAccion in self.listaClasesAcciones.keys():
-                objetoClase: accion = self.listaClasesAcciones[AtributoAccion]()
-                if objetoClase.nombre == acción:
-                    acción = objetoClase.comando
-                    break
+            acción = self.comandoAcción(acción) or acción
             nombreDispositivo = self.pestañas.value
 
             if not nombreDispositivo:
@@ -254,12 +251,15 @@ class miGui(dispositivo):
             self.editoresData = {propiedad.atributo: self.crearEditor(propiedad, f"editor-{propiedad.atributo}").props("clearable") for propiedad in dataAccion.propiedadesGui()}
 
             # Apariencia del botón en un diálogo aparte para no llenar el formulario
-            with ui.dialog() as self.dialogoBoton, ui.card().classes("w-80"):
+            with ui.dialog() as self.dialogoBoton, ui.card():
                 ui.label("Apariencia del botón").classes("text-lg")
-                self.editorTitulo = ui.input("Titulo").classes("w-full").props("clearable").mark("editor-titulo")
-                self.editorFondo = ui.color_input("Fondo", preview=True).classes("w-full").mark("editor-fondo")
+                with ui.row().classes("items-start no-wrap"):
+                    with ui.column().classes("w-64"):
+                        self.editorTitulo = ui.input("Titulo", on_change=self.actualizarVistaPrevia).classes("w-full").props("clearable").mark("editor-titulo")
+                        self.editorFondo = ui.color_input("Fondo", preview=True, on_change=self.actualizarVistaPrevia).classes("w-full").mark("editor-fondo")
+                    self.vistaPrevia = ui.image().classes("w-24 h-24 rounded").mark("vistaPrevia")
                 ui.button("Listo", on_click=self.dialogoBoton.close).mark("botonListoBoton")
-            ui.button("Editar apariencia", icon="palette", color=self.colorOscuro, on_click=self.dialogoBoton.open).classes("w-full").mark("botonEditarBoton")
+            ui.button("Editar apariencia", icon="palette", color=self.colorOscuro, on_click=self.abrirEditorApariencia).classes("w-full").mark("botonEditarBoton")
 
             self.listaNombreAcciones: list[str] = list()
             for clave in self.listaClasesAcciones.keys():
@@ -337,6 +337,45 @@ class miGui(dispositivo):
                 with ui.button(on_click=lambda d=propiedad.descripcion: ui.notify(d)).props("flat dense"):
                     ui.icon("help", color="teal-300")
         return editor
+
+    def comandoAcción(self, nombreAcción: str) -> str | None:
+        """Comando de la acción a partir del nombre que muestra el selector"""
+        for claseAcción in self.listaClasesAcciones.values():
+            objetoClase: accion = claseAcción()
+            if objetoClase.nombre == nombreAcción:
+                return objetoClase.comando
+        return None
+
+    @staticmethod
+    def deckVistaPrevia(dispositivoActual: dispositivo):
+        """StreamDeck con el que se dibuja la vista previa: el mismo, o el primero de un deck combinado; None si no dibuja"""
+        if hasattr(dispositivoActual, "dibujo"):
+            return dispositivoActual
+        return next(iter(getattr(dispositivoActual, "listaDeck", None) or []), None)
+
+    def abrirEditorApariencia(self) -> None:
+        self.actualizarVistaPrevia()
+        self.dialogoBoton.open()
+
+    def actualizarVistaPrevia(self, *_) -> None:
+        """Dibuja el botón con lo que hay en el formulario, sin guardar"""
+        dispositivoActual = self.dispositivoEditar or (self.obtenerDispositivoSeleccionado() if self.pestañas else None)
+        deck = self.deckVistaPrevia(dispositivoActual) if dispositivoActual else None
+        self.vistaPrevia.visible = deck is not None
+        if deck is None:
+            return
+
+        # Copia profunda: imagen_opciones es un dict y aplicarApariencia lo modifica, no debe tocar la acción guardada
+        acción = copy.deepcopy(self.accionEditar) if self.accionEditar else dataAccion()
+        acción.accion = self.comandoAcción(self.editorAcción.value) or acción.accion
+        self.aplicarApariencia(acción)
+        try:
+            imagen = deck.dibujo().dibujar(acción, deck.tamañoBoton(), conGif=True)
+        except Exception as error:
+            # Ej: color a medio escribir, se deja la vista previa anterior
+            logger.debug(f"Vista previa[Error] {error}")
+            return
+        self.vistaPrevia.set_source(imagen)
 
     def aplicarApariencia(self, acción: dataAccion) -> None:
         """Pasa a la acción el título y fondo del editor del botón"""

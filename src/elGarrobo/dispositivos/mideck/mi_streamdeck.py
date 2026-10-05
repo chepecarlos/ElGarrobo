@@ -1,14 +1,11 @@
 # https://python-elgato-streamdeck.readthedocs.io/en/stable/index.html
 
 import itertools
-import os
-import re
 import threading
 import time
 from fractions import Fraction
-from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont, ImageSequence
+from PIL import Image, ImageSequence
 from PIL.Image import Image as ImageImage
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Devices.StreamDeck import StreamDeck
@@ -17,6 +14,7 @@ from StreamDeck.Transport.Transport import TransportError
 
 from elGarrobo.dispositivos import dispositivo
 from elGarrobo.dispositivos.dataAccion import dataAccion
+from elGarrobo.dispositivos.dibujoBoton import dibujoBoton
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor, SalvarArchivo
 
 logger = ConfigurarLogging(__name__)
@@ -58,9 +56,6 @@ class MiStreamDeck(dispositivo):
 
     fps: int = 60
     "fotogramas por segundo para gif"
-
-    patronTitulo: re.Pattern = re.compile(r"(?<!{){[^{}]*}(?!})")
-    "Patrón para detectar campos de formato en el título, evitando los dobles {{}} usados para escapar llaves en formato."
 
     _gitCache: dict[tuple[str, str, str], itertools.cycle] = {}
     "Caché para Gifs: clave(rutaGif, colorFondo, titulo)"
@@ -223,8 +218,9 @@ class MiStreamDeck(dispositivo):
                 accionActual: dict = dibujar[0]
                 accionVieja = self.listaBotones[i]
 
-                imagenActual: str = self.buscarDirecionImagen(accionActual)
-                tituloActual: str = self.buscarTitulo(accionActual)
+                dibujo = self.dibujo()
+                imagenActual: str = dibujo.buscarDireccionImagen(accionActual)
+                tituloActual: str = dibujo.buscarTitulo(accionActual)
                 # Copia: se compara con lo dibujado para redibujar si cambia fondo, rotar, etc.
                 opcionesActual: dict = dict(accionActual.get("imagen_opciones") or {})
 
@@ -306,6 +302,23 @@ class MiStreamDeck(dispositivo):
     def __str__(self) -> str:
         return f"MiStreamDeck(id={self.id}, nombre={self.nombre}, serial={self.dispositivo}, layout={self.layout})"
 
+    def dibujo(self) -> dibujoBoton:
+        """Datos de este StreamDeck y su folder para dibujar botones"""
+        return dibujoBoton(
+            folderPerfil=self._folderConfigPerfil(),
+            folderActual=self.folderActual,
+            archivoFuente=self.archivoFuente,
+            propiedadFolder=self.propiedadFolder,
+            imagenesBase=self.imagenesBase or {},
+            rotar=self.rotar,
+        )
+
+    def tamañoBoton(self) -> tuple[int, int]:
+        """Tamaño en pixeles de las teclas, 72x72 (StreamDeck Original) si no está conectado"""
+        if self.deck is None:
+            return (72, 72)
+        return self.deck.key_image_format()["size"]
+
     def actualizarIconoBoton(self, indice: int, accionActual: dict) -> None:
         """Dibuja la información de un botón en base la accion.
         Usando imagen, titulo y otra información para mostrar en steamdeck
@@ -314,386 +327,14 @@ class MiStreamDeck(dispositivo):
             indice [int]: id del botón a actualizar
             accionActual [dict]: información de la accion
         """
-
-        colorFondo: str = "black"
-
-        opcionesFolder = (self.propiedadFolder or {}).get("imagen_opciones") or {}
-        opciones = accionActual.get("imagen_opciones") or {}
-
-        if "fondo" in opciones:
-            colorFondo = opciones["fondo"]
-        elif "fondo" in opcionesFolder:
-            colorFondo = opcionesFolder.get("fondo")
-
-        if "rotar" in opciones:
-            rotar = opciones.get("rotar")
-        elif "rotar" in opcionesFolder:
-            rotar = opcionesFolder.get("rotar")
-        else:
-            rotar = self.rotar
-
-        imagenDeck: ImageImage = PILHelper.create_image(self.deck, background=colorFondo)
-        imagenBoton: ImageImage = self.obtenerImagen(imagenDeck, accionActual)
-        imagenBoton = imagenBoton.rotate(rotar, resample=Image.BICUBIC, expand=False)
-
+        imagenBoton: ImageImage = self.dibujo().dibujar(accionActual, self.tamañoBoton())
         self.deck.set_key_image(indice, PILHelper.to_native_format(self.deck, imagenBoton))
-
-    def obtenerImagen(self, imagen: ImageImage, accion: dict) -> ImageImage:
-        modificado: bool = False
-        imagenFondo = None
-
-        if "imagen_opciones" in accion:
-            opciones = accion["imagen_opciones"]
-            if "imagen" in opciones:
-                imagenFondo = opciones["imagen"]
-                modificado = True
-
-        if imagenFondo is not None:
-            modificado = True
-            self.ponerImagen(imagen, imagenFondo, accion, True)
-
-        DirecionImagen: str = self.buscarDirecionImagen(accion)
-
-        if DirecionImagen is not None:
-            modificado = True
-            if DirecionImagen.endswith(".gif"):
-                # TODO: Meter proceso gif adentro
-                return None
-
-        self.ponerImagen(imagen, DirecionImagen, accion)
-
-        tituloBoton: str = self.buscarTitulo(accion)
-
-        if tituloBoton is not None:
-            modificado = True
-            self.ponerTexto(imagen, tituloBoton, accion, isinstance(DirecionImagen, str))
-
-        return imagen
-
-    def buscarTitulo(self, accion: dict) -> str | None:
-        """Busca el título para el botón
-
-        Args:
-            accion (dict): Datos de la acción del botón
-
-        Returns:
-            str | None: Título encontrado o None
-        """
-
-        titulo: str | None = None
-
-        TextoCargar = accion.get("cargar_titulo")
-        if TextoCargar is not None:
-            archivoTexto = TextoCargar.get("archivo")
-            atributoTexto = TextoCargar.get("atributo")
-            if archivoTexto is not None and atributoTexto is not None:
-                titulo = ObtenerValor(archivoTexto, atributoTexto)
-                return titulo
-
-        tituloValor = accion.get("titulo")
-        titulo = str(tituloValor) if tituloValor is not None else None
-
-        opciones: dict = accion.get("titulo_opciones", dict())
-        if opciones is None:
-            opciones = dict()
-
-        topicTituloMQTT: str = opciones.get("mqtt", False)
-
-        if topicTituloMQTT and isinstance(topicTituloMQTT, str):
-            datoTituloMQTT = self.obtenerTituloMQTT(topicTituloMQTT, titulo)
-
-            if titulo is not None and self.patronTitulo.search(titulo):
-                try:
-                    titulo = titulo.format(datoTituloMQTT)
-                except (ValueError, TypeError):
-                    # Soporta formatos numéricos como {:.2f} cuando llega texto por MQTT.
-                    valorFormateable = datoTituloMQTT
-                    if isinstance(datoTituloMQTT, str):
-                        datoNormalizado = datoTituloMQTT.strip().replace(",", ".")
-                        try:
-                            valorFormateable = float(datoNormalizado)
-                        except ValueError:
-                            valorFormateable = datoTituloMQTT
-
-                    try:
-                        titulo = titulo.format(valorFormateable)
-                    except (ValueError, TypeError, IndexError, KeyError):
-                        titulo = str(datoTituloMQTT)
-            else:
-                titulo = datoTituloMQTT
-
-        if isinstance(titulo, str):
-            titulo = titulo.strip()
-
-        return titulo
-
-    def calcularRutaImagen(self, rutaImagen: str) -> str:
-        """Calcula la Ruta absoluta de imagen
-
-        Args:
-            rutaImagen (str): ruta relativa de la imagen
-
-        Returns:
-            str: ruta absoluta de la imagen
-        """
-
-        folderPerfil = self._folderConfigPerfil()
-        # folderActual = Path(self.folderActual)
-
-        pathImagen = Path(rutaImagen)
-
-        if rutaImagen.startswith("/"):
-            pathImagen = folderPerfil / rutaImagen.lstrip("/")
-        else:
-            pathImagen = folderPerfil / self.folderActual / pathImagen
-
-        return str(pathImagen.resolve())
-
-    def ponerImagen(self, Imagen: ImageImage, NombreIcono: str, accion, fondo: bool = False):
-        if NombreIcono is None:
-            return
-
-        DirecionIcono = self.calcularRutaImagen(NombreIcono)
-
-        if os.path.exists(DirecionIcono):
-            Icono = Image.open(DirecionIcono).convert("RGBA")
-            if "titulo" in accion and not fondo:
-                Icono.thumbnail((Imagen.width, Imagen.height - 20), Image.LANCZOS)
-            else:
-                Icono.thumbnail((Imagen.width, Imagen.height), Image.LANCZOS)
-        else:
-            logger.warning(f"Deck[No Imagen] {NombreIcono} - {DirecionIcono}")
-            Icono = Image.new(mode="RGBA", size=(256, 256), color=(153, 153, 255))
-            Icono.thumbnail((Imagen.width, Imagen.height), Image.LANCZOS)
-
-        IconoPosicion = ((Imagen.width - Icono.width) // 2, 0)
-        Imagen.paste(Icono, IconoPosicion, Icono)
-
-    def ponerTexto(self, Imagen, titulo: str, accion: dict, hayImagen: bool = False, cortePalabra: bool = False):
-        """Agrega Texto a Botones de StreamDeck.
-
-        Args:
-            Imagen (Image): Imagen del botón
-            accion (dict): Datos de la acción del botón
-            hayImagen (bool, optional): Si ya tiene imagen el botón. Defaults to False.
-        """
-
-        TituloInicial: str = titulo
-
-        tamañoFuente: int = self.obtenerPropiedadAccion(accion, "titulo_opciones/tamanno", 40)
-        tamañoFuenteMáximo: int | None = self.obtenerPropiedadAccion(accion, "titulo_opciones/tamanno_maximo")
-        tamañoFuenteMínimo: int | None = self.obtenerPropiedadAccion(accion, "titulo_opciones/tamanno_minimo")
-        alinear: str | None = self.obtenerPropiedadAccion(accion, "titulo_opciones/alinear")
-        Borde_Color: str = self.obtenerPropiedadAccion(accion, "titulo_opciones/borde_color", "black")
-        Borde_Grosor: int = self.obtenerPropiedadAccion(accion, "titulo_opciones/borde_grosor", 6)
-        Ajustar: bool = self.obtenerPropiedadAccion(accion, "titulo_opciones/ajustar", True)
-        Titulo_Color: str = self.obtenerPropiedadAccion(accion, "titulo_opciones/color", "white")
-
-        Lineas = TituloInicial.split("\\n")
-        titulo = "\n".join(Lineas)
-        if cortePalabra:
-            Lineas = titulo.split(" ")
-            titulo = "\n".join(Lineas)
-
-        titulo = titulo.replace("⁰", "\u00b0")
-
-        espacioLinea: int = 1
-
-        dibujo: ImageDraw = ImageDraw.Draw(Imagen)
-
-        if hayImagen:
-            alinear = alinear or "abajo"
-            if tamañoFuenteMínimo is None or tamañoFuenteMínimo < 20:
-                tamañoFuenteMínimo = 20
-
-        tamañoFuente, altoTitulo, anchoTitulo = self.calcularTamañoFuente(
-            Imagen,
-            titulo,
-            Borde_Grosor,
-            espacioLinea,
-            minimo=tamañoFuenteMínimo,
-            maximo=tamañoFuenteMáximo,
-        )
-
-        fuente = ImageFont.truetype(self.archivoFuente, size=tamañoFuente)
-
-        textoX = (Imagen.width - anchoTitulo) / 2 + Borde_Grosor
-
-        if alinear == "abajo":
-            textoY = Imagen.height - altoTitulo
-        elif alinear == "arriba":
-            textoY = 0
-        else:  # centro
-            textoY = (Imagen.height - altoTitulo) / 2
-
-        posicionTexto = (textoX, textoY)
-
-        dibujo.multiline_text(
-            posicionTexto,
-            text=titulo,
-            font=fuente,
-            fill=Titulo_Color,
-            stroke_width=Borde_Grosor,
-            stroke_fill=Borde_Color,
-            align="center",
-            spacing=espacioLinea,
-        )
-
-    def calcularTamañoFuente(self, imagen: ImageDraw, texto: str, grosorBorde: int, espacioLinea: int, minimo: int | None, maximo: int | None = None) -> tuple[int, int, int]:
-        """Calcula tamaño de fuente para texto en botón de StreamDeck.
-
-        Args:
-            imagen (ImageDraw): Imagen del botón
-            texto (str): Texto a colocar en el botón
-            grosorBorde (int): Grosor del borde del texto
-            espacioLinea (int): Espacio entre líneas del texto
-            minimo (int | None): Tamaño mínimo de fuente
-            maximo (int | None): Tamaño máximo de fuente
-
-        Returns:
-            tuple[int, int, int]: Tamaño de fuente, alto del texto y ancho del texto
-        """
-
-        anchoImagen, altoImagen = imagen.width, imagen.height
-
-        tamañoFuente = 100
-        from PIL.ImageDraw import ImageDraw as ImageDrawType
-
-        dibujo: ImageDrawType = ImageDraw.Draw(imagen)
-
-        fuentePrueba = ImageFont.truetype(self.archivoFuente, size=tamañoFuente)
-        cajaTexto = dibujo.multiline_textbbox(
-            xy=[0, 0],
-            text=texto,
-            font=fuentePrueba,
-            align="center",
-            spacing=espacioLinea,
-            stroke_width=grosorBorde,
-        )
-
-        anchoTitulo = cajaTexto[2] - cajaTexto[0]
-        altoTitulo = cajaTexto[3] - cajaTexto[1]
-
-        calculoAncho = anchoImagen / anchoTitulo
-        calculoAlto = altoImagen / altoTitulo
-
-        escala = min(calculoAncho, calculoAlto)
-
-        tamañoCalculo = int(tamañoFuente * escala)
-
-        tamañoFuente = max(3, tamañoCalculo)
-
-        if minimo is not None:
-            if tamañoFuente < minimo:
-                fuentePrueba = minimo
-
-        if maximo is not None:
-            if tamañoFuente > maximo:
-                tamañoFuente = maximo
-
-        fuentePrueba = ImageFont.truetype(self.archivoFuente, size=tamañoFuente)
-        cajaTexto = dibujo.multiline_textbbox(
-            xy=[0, 0],
-            text=texto,
-            font=fuentePrueba,
-            align="center",
-            spacing=espacioLinea,
-            stroke_width=grosorBorde,
-        )
-
-        anchoTitulo = cajaTexto[2] - cajaTexto[0]
-        altoTitulo = cajaTexto[3] - cajaTexto[1]
-
-        return tamañoFuente, altoTitulo, anchoTitulo
-
-    def buscarDirecionImagen(self, accion: dict) -> str | None:
-        """Busca la direccion de imagen
-
-        Args:
-            accion: dict
-        """
-
-        if "imagen_estado" in accion:
-
-            imagenEstado = accion.get("imagen_estado")
-            nombreAccion = accion.get("accion")
-            opcionesAccion = accion.get("opciones")
-
-            if nombreAccion.startswith("obs"):
-                estadoImagen = self.BuscarImagenOBS(nombreAccion, opcionesAccion)
-                if estadoImagen:
-                    DirecionImagen = imagenEstado.get("imagen_true")
-                else:
-                    DirecionImagen = imagenEstado.get("imagen_false")
-
-                return DirecionImagen
-
-        if "imagen" in accion:
-            DirecionImagen = accion.get("imagen")
-            return DirecionImagen
-        elif "accion" in accion:
-            nombreAccion = accion.get("accion")
-            if nombreAccion in self.imagenesBase:
-                return self.imagenesBase[nombreAccion]
-
-        return None
-
-    def BuscarImagenOBS(self, NombreAccion: str, opcionesAccion: dict) -> bool | None:
-        Estado = None
-
-        ListaBasicas = ["obs_conectar", "obs_grabar", "obs_pausar", "obs_envivo", "obs_camara_virtual", "obs_grabar_vertical"]
-        for Basica in ListaBasicas:
-            if NombreAccion == Basica:
-                Estado = ObtenerValor("data/obs/obs", Basica)
-
-        if NombreAccion == "obs_escena":
-            if "escena" in opcionesAccion:
-                EscenaActual = opcionesAccion["escena"]
-                EscenaActiva = ObtenerValor("data/obs/obs", "obs_escena")
-                if EscenaActual == EscenaActiva:
-                    Estado = True
-                else:
-                    Estado = False
-        elif NombreAccion == "obs_fuente":
-            if "fuente" in opcionesAccion:
-                FuenteActual = opcionesAccion["fuente"]
-                Estado = ObtenerValor("data/obs/obs_fuente", FuenteActual)
-        elif NombreAccion == "obs_filtro":
-            if "fuente" in opcionesAccion:
-                Fuente = opcionesAccion["fuente"]
-            if "filtro" in opcionesAccion:
-                Filtro = opcionesAccion["filtro"]
-            if Fuente is not None and Filtro is not None:
-                Estado = ObtenerValor("data/obs/obs_filtro", [Fuente, Filtro])
-
-        if Estado is None:
-            Estado = False
-
-        return Estado
 
     @staticmethod
     def iniciarTituloMQTT() -> None:
         """Inicializa el título MQTT, creando el archivo si no existe."""
         archivoTituloMQTT: str = "data/tituloMQTT"
         SalvarArchivo(archivoTituloMQTT, {})
-
-    def obtenerTituloMQTT(self, topicTitulo: str, tituloInicial: str = "") -> str:
-        """Obtiene el titulo enviado por MQTT
-
-        Args:
-            topicTitulo (str): Cual topic hay que leer
-            tituloInicial (str): Titulo inicial si no se encuentra el topic
-
-        Returns:
-            str: devuelve el titulo encontrado
-        """
-
-        archivoTituloMQTT: str = "data/tituloMQTT"
-
-        titulo = ObtenerValor(archivoTituloMQTT, topicTitulo)
-        if titulo is None:
-            return tituloInicial
-        return titulo
 
     def crearGif(self, indice: int, accionActual: dict) -> itertools.cycle:
         """Preparar el git para usar con StreamDeck
@@ -708,9 +349,10 @@ class MiStreamDeck(dispositivo):
 
         listaFrame: list = list()
         colorFondo: str = "black"
-        rutaGif: str = self.buscarDirecionImagen(accionActual)
+        dibujo = self.dibujo()
+        rutaGif: str = dibujo.buscarDireccionImagen(accionActual)
 
-        rutaGif = self.calcularRutaImagen(rutaGif)
+        rutaGif = dibujo.calcularRutaImagen(rutaGif)
 
         if rutaGif is None:
             logger.warning(f"{self.nombre}[No Gifs] {indice + self.baseTeclas + self.desfaceTeclas} {rutaGif}")
@@ -721,7 +363,7 @@ class MiStreamDeck(dispositivo):
         if opciones:
             colorFondo = opciones.get("fondo") or colorFondo
 
-        titulo = self.buscarTitulo(accionActual)
+        titulo = dibujo.buscarTitulo(accionActual)
 
         claveCache = (str(rutaGif), str(colorFondo), str(titulo))
 
@@ -733,7 +375,7 @@ class MiStreamDeck(dispositivo):
             frameActual = PILHelper.create_scaled_image(self.deck, frame, background=colorFondo)
 
             if titulo:
-                self.ponerTexto(frameActual, titulo, accionActual, (rutaGif, str))
+                dibujo.ponerTexto(frameActual, titulo, accionActual, (rutaGif, str))
 
             frameActual = frameActual.rotate(self.rotar, resample=Image.BICUBIC, expand=False)
             imagenNativa = PILHelper.to_native_format(self.deck, frameActual)

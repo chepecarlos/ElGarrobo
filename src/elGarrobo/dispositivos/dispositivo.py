@@ -322,69 +322,6 @@ class dispositivo:
         """
         self.ejecutarAcción = funcionAccion
 
-    def _obtenerValorAnidado(self, datos: dict, claves: list) -> Any:
-        """Helper privado para buscar un valor en diccionario anidado.
-
-        Args:
-            datos (dict): Diccionario donde buscar
-            claves (list): Lista de claves anidadas (ej: ["imagen_opciones", "fondo"])
-
-        Returns:
-            Any: Valor encontrado o None
-        """
-        valor_actual = datos
-        for clave in claves:
-            if isinstance(valor_actual, dict):
-                valor_actual = valor_actual.get(clave)
-            else:
-                return None
-        return valor_actual
-
-    def obtenerPropiedadAccion(self, accionData: dict, key: str, default=None) -> Any:
-        """Obtiene una propiedad de una acción, con fallback a propiedadFolder.
-
-        Soporta claves anidadas usando "/" como separador.
-        Ejemplo: "imagen_opciones/fondo"
-
-        Args:
-            accionData (dict): Datos de la acción
-            key (str): Clave a buscar (puede ser anidada con "/")
-            default: Valor por defecto si no se encuentra
-
-        Returns:
-            Any: Valor encontrado o default
-        """
-
-        # Caso: clave anidada con separador "/"
-        if isinstance(key, str) and "/" in key:
-            claves = key.split("/")
-
-            # Primero busca en accionData
-            valor = self._obtenerValorAnidado(accionData, claves)
-            if valor is not None:
-                return valor
-
-            # Si no encuentra, busca en propiedadFolder
-            if self.propiedadFolder and isinstance(self.propiedadFolder, dict):
-                valor = self._obtenerValorAnidado(self.propiedadFolder, claves)
-                if valor is not None:
-                    return valor
-
-            return default
-
-        # Caso: clave simple
-        valor = accionData.get(key)
-        if valor is not None:
-            return valor
-
-        # Fallback a propiedadFolder
-        if self.propiedadFolder and isinstance(self.propiedadFolder, dict):
-            valor = self.propiedadFolder.get(key)
-            if valor is not None:
-                return valor
-
-        return default
-
     @staticmethod
     def agregarIndexUsado(indexUsado: int):
         dispositivo.listaIndexUsados.append(indexUsado)
