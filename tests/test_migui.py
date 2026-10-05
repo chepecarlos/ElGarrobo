@@ -55,9 +55,9 @@ def gui(user: User, deck: dispositivoFalso) -> miGui:
 
 async def llenarFormulario(user: User, nombre: str = "", tecla: str = "", acción: str = "", **opciones) -> None:
     if nombre:
-        user.find(marker="editorNombre").clear().type(nombre)
+        user.find(marker="editor-nombre").clear().type(nombre)
     if tecla:
-        user.find(marker="editorTecla").clear().type(tecla)
+        user.find(marker="editor-key").clear().type(tecla)
     if acción:
         user.find(marker="editorAcción").click()
         user.find(acción).click()
@@ -145,10 +145,19 @@ class TestPaginaAcciones:
 
         await user.should_see("Agregando acción Tres")
         nueva = deck.listaAcciones[-1]
-        assert nueva.aDict() == {"nombre": "Tres", "key": 3, "accion": "escribir", "titulo": "", "opciones": {"texto": "adios"}}
+        assert nueva.aDict() == {"nombre": "Tres", "key": 3, "accion": "escribir", "opciones": {"texto": "adios"}}
         assert deck.vecesSalvado == 1
         await user.should_see(marker="editar-deck-3")
-        assert gui.editorNombre.value == ""
+
+    async def test_agregar_accion_con_descripcion(self, user: User, gui: miGui, deck: dispositivoFalso):
+        await user.open("/")
+        await llenarFormulario(user, "Tres", "3", "Escribir texto", Texto="adios")
+        user.find(marker="editor-descripcion").type("Escribe adios")
+        user.find(marker="botonAgregar").click()
+
+        await user.should_see("Agregando acción Tres")
+        assert deck.listaAcciones[-1].descripcion == "Escribe adios"
+        assert gui.editoresData["nombre"].value == ""
 
     async def test_agregar_ordena_por_tecla(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
@@ -164,13 +173,13 @@ class TestPaginaAcciones:
         await user.should_see("La tecla 1 ya está usada por 'Uno', cámbiela")
         assert teclas(deck) == [1, 2]
         assert deck.vecesSalvado == 0
-        assert gui.editorNombre.value == "Otra", "el formulario no se limpia para poder corregir"
+        assert gui.editoresData["nombre"].value == "Otra", "el formulario no se limpia para poder corregir"
 
     @pytest.mark.parametrize(
         "campos, mensaje",
         [
-            ({}, "Ingrese un nombre"),
-            ({"nombre": "A"}, "Ingrese una tecla"),
+            ({}, "Ingrese Nombre"),
+            ({"nombre": "A"}, "Ingrese Tecla"),
             ({"nombre": "A", "tecla": "9"}, "Seleccione una acción"),
             ({"nombre": "A", "tecla": "x", "acción": "Delay"}, "Error con tecla no numero"),
         ],
@@ -193,8 +202,8 @@ class TestPaginaAcciones:
         await user.open("/")
         user.find(marker="editar-deck-1").click()
         assert gui.botonAgregar.icon == "edit"
-        assert gui.editorNombre.value == "Uno"
-        assert gui.editorTecla.value == 1
+        assert gui.editoresData["nombre"].value == "Uno"
+        assert gui.editoresData["key"].value == 1
         assert gui.editorAcción.value == "Escribir texto"
         assert gui.opcionesEditar["Texto"].value == "hola"
 
@@ -252,7 +261,7 @@ class TestPaginaAcciones:
         user.find(marker="botonLimpiar").click()
         assert gui.botonAgregar.icon == "add"
         assert gui.accionEditar is None
-        assert gui.editorNombre.value == ""
+        assert gui.editoresData["nombre"].value == ""
 
     async def test_borrar_accion(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")

@@ -4,6 +4,7 @@ import threading
 from nicegui import app, ui
 
 from elGarrobo.accionesOOP import accion
+from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.miLibrerias import ConfigurarLogging, SalvarValor, leerData
@@ -67,6 +68,7 @@ class miGui(dispositivo):
         self.pestañas = None
         self.paneles: ui.tab_panel = None
         self.editorAcción = None
+        self.editoresData: dict = {}
         self.ordenCampo: str = "key"
         self.ordenInverso: bool = False
 
@@ -151,26 +153,27 @@ class miGui(dispositivo):
         """Muestra el formulario para agregar o editar acciones"""
 
         def agregarAcción():
-            nombre = self.editorNombre.value
-            tecla = self.editorTecla.value
+            # Los vacíos son None para no guardar claves vacías en el .md
+            valores = {atributo: None if editor.value in ("", None) else editor.value for atributo, editor in self.editoresData.items()}
+            nombre = valores["nombre"]
+            tecla = valores["key"]
             acción = self.editorAcción.value
             for AtributoAccion in self.listaClasesAcciones.keys():
                 objetoClase: accion = self.listaClasesAcciones[AtributoAccion]()
                 if objetoClase.nombre == acción:
                     acción = objetoClase.comando
                     break
-            titulo = self.editorTitulo.value
             nombreDispositivo = self.pestañas.value
 
-            if not (nombre and tecla and acción and nombreDispositivo):
-                if not nombreDispositivo:
-                    ui.notify(f"Selecciones un dispositivo")
-                elif not nombre:
-                    ui.notify(f"Ingrese un nombre")
-                elif not tecla:
-                    ui.notify(f"Ingrese una tecla")
-                elif not acción:
-                    ui.notify(f"Seleccione una acción")
+            if not nombreDispositivo:
+                ui.notify(f"Selecciones un dispositivo")
+                return
+            for propiedad in dataAccion.propiedadesGui():
+                if propiedad.obligatorio and not valores[propiedad.atributo]:
+                    ui.notify(f"Ingrese {propiedad.nombre}")
+                    return
+            if not acción:
+                ui.notify(f"Seleccione una acción")
                 return
 
             dispositivoDestino = self.dispositivoEditar or self.obtenerDispositivoSeleccionado(nombreDispositivo)
@@ -180,24 +183,21 @@ class miGui(dispositivo):
 
             if dispositivoDestino.tipo in ["streamdeck", "streamdeckplus", "deck_combinado", "pedal"]:
                 try:
-                    tecla = int(tecla)
+                    tecla = valores["key"] = int(tecla)
                 except ValueError:
                     ui.notify("Error con tecla no numero")
                     return
 
             editando = self.botonAgregar.icon == "edit"
-            repetida = self.teclaRepetida(
-                dispositivoDestino.listaAcciones, tecla, self.accionEditar if editando else None
-            )
+            repetida = self.teclaRepetida(dispositivoDestino.listaAcciones, tecla, self.accionEditar if editando else None)
             if repetida is not None:
                 ui.notify(f"La tecla {tecla} ya está usada por '{repetida.get('nombre')}', cámbiela", type="warning")
                 return
 
             if editando:
-                self.accionEditar["nombre"] = nombre
-                self.accionEditar["key"] = tecla
+                for atributo, valor in valores.items():
+                    self.accionEditar[atributo] = valor
                 self.accionEditar["accion"] = acción
-                self.accionEditar["titulo"] = titulo
 
                 if self.opcionesEditar is not None:
                     try:
@@ -208,7 +208,7 @@ class miGui(dispositivo):
                 ui.notify(f"Editar acción {nombre}")
                 logger.info(f"Editar acción {nombre} a {nombreDispositivo}")
             else:
-                acciónNueva: dict[str:any] = {"nombre": nombre, "key": tecla, "accion": acción, "titulo": titulo}
+                acciónNueva: dict[str:any] = {**valores, "accion": acción}
 
                 if self.opcionesEditar is not None:
                     try:
@@ -247,10 +247,8 @@ class miGui(dispositivo):
 
         with ui.scroll_area().classes("w-full").style("height: 75vh"):
 
-            # self.editorTitulo.visible = False
-            self.editorNombre = ui.input("Nombre").classes("w-full").props("clearable").mark("editorNombre")
-            self.editorTitulo = ui.input("Titulo").classes("w-full").props("clearable").mark("editorTitulo")
-            self.editorTecla = ui.input("Tecla").classes("w-full").props("clearable").mark("editorTecla")
+            # Campos de dataAccion marcados con gui, la clave del dict es la clave en el .md
+            self.editoresData = {propiedad.atributo: self.crearEditor(propiedad, f"editor-{propiedad.atributo}").props("clearable") for propiedad in dataAccion.propiedadesGui()}
 
             self.listaNombreAcciones: list[str] = list()
             for clave in self.listaClasesAcciones.keys():
@@ -309,33 +307,34 @@ class miGui(dispositivo):
                 self.opcionesEditar = dict()
                 for propiedad in acciónTmp.listaPropiedades:
                     nombre: str = propiedad.nombre
-                    etiqueta: str = nombre
-                    ejemplo: str = propiedad.ejemplo
-                    descripción: str = propiedad.descripcion
-                    obligatorio: bool = propiedad.obligatorio
-                    if obligatorio:
-                        etiqueta = "* " + etiqueta
-                    crearInput = ui.textarea if propiedad.multilinea else ui.input
-                    editor = crearInput(label=etiqueta, placeholder=ejemplo).classes("w-full").mark(f"opción-{nombre}")
+                    editor = self.crearEditor(propiedad, f"opción-{nombre}")
                     if valoresAnteriores.get(nombre):
                         editor.value = valoresAnteriores[nombre]
                     self.opcionesEditar[nombre] = editor
-                    with editor:
-                        with ui.button(on_click=lambda d=descripción: ui.notify(d)).props("flat dense"):
-                            ui.icon("help", color="teal-300")
             return
 
         logger.warning(f"No hay opciones para: {accionSeleccionada}")
 
+    @staticmethod
+    def crearEditor(propiedad: propiedadAccion, marca: str) -> ui.input:
+        """Crea el input de una propiedad: * si es obligatoria, ejemplo, ayuda y textarea si es multilinea"""
+        etiqueta = f"* {propiedad.nombre}" if propiedad.obligatorio else propiedad.nombre
+        crearInput = ui.textarea if propiedad.multilinea else ui.input
+        editor = crearInput(label=etiqueta, placeholder=propiedad.ejemplo).classes("w-full").mark(marca)
+        if propiedad.descripcion:
+            with editor:
+                with ui.button(on_click=lambda d=propiedad.descripcion: ui.notify(d)).props("flat dense"):
+                    ui.icon("help", color="teal-300")
+        return editor
+
     def limpiarFormulario(self):
         """Limpia el formulario de acciones"""
         self.botonAgregar.icon = "add"
-        self.editorNombre.value = ""
-        self.editorTecla.value = ""
+        for editor in self.editoresData.values():
+            editor.value = ""
         self.editorAcción.value = ""
         self.editorOpción.value = ""
         self.editorOpción.visible = False
-        self.editorTitulo.value = ""
         self.editorDescripcion.text = ""
         self.editorDescripcion.visible = False
         self.editorPropiedades.clear()
@@ -359,7 +358,6 @@ class miGui(dispositivo):
 
                 with self.paneles:
                     dispositivoActual.panel = ui.tab_panel(dispositivoActual.pestaña)
-                    dispositivoActual.panel.classes("h-svh")
                     with dispositivoActual.panel:
                         ui.label(f"Cargando acciones de {nombreDispositivo}...")
                 dispositivoActual.funcionActualizarPestaña = self.actualizarPestaña
@@ -390,9 +388,8 @@ class miGui(dispositivo):
 
         self.accionEditar = accion
         self.botonAgregar.icon = "edit"
-        self.editorNombre.value = accion.get("nombre")
-
-        self.editorTecla.value = accion.get("key")
+        for atributo, editor in self.editoresData.items():
+            editor.value = accion.get(atributo)
 
         # Sin esto mostrarOpciones pasaría los valores de la acción editada antes
         self.opcionesEditar = None
@@ -406,8 +403,6 @@ class miGui(dispositivo):
         textoOpciones = ""
         opcionesActuales = accion.get("opciones")
         self.editorOpción.visible = False
-
-        self.editorTitulo.value = accion.get("titulo")
 
         if opcionesActuales:
 
@@ -632,8 +627,9 @@ class miGui(dispositivo):
                 acciones = dispositivo.listaAcciones
 
                 with ui.scroll_area() as areaScroll:
-                    areaScroll.classes("h-96 border border-2 border-teal-600h")
-                    areaScroll.style("height: 75vh")
+                    areaScroll.classes("w-full border-2 border-teal-600")
+                    # Alto disponible: 100vh - cabecera (5vh) - pie (5vh) - pestañas (48px) - padding del panel (32px)
+                    areaScroll.style("height: calc(90vh - 80px)")
 
                     if acciones is None:
                         ui.label("No acciones")

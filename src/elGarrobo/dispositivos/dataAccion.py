@@ -1,34 +1,63 @@
 from dataclasses import dataclass, field, fields
 from typing import Any
 
+from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 
-def clave(nombre: str, **kwargs) -> Any:
-    """Campo cuya clave en el .md/.json es distinta al nombre de la variable"""
-    return field(metadata={"clave": nombre}, **kwargs)
+
+def campo(clave: str = None, gui: propiedadAccion = None, **kwargs) -> Any:
+    """Campo de dataAccion con metadata
+
+    Args:
+        clave (str, optional): clave en el .md/.json si es distinta al nombre de la variable
+        gui (propiedadAccion, optional): si se indica, el usuario lo puede editar en la GUI
+    """
+    metadata = {}
+    if clave:
+        metadata["clave"] = clave
+    if gui:
+        metadata["gui"] = gui
+    return field(metadata=metadata, **kwargs)
 
 
 @dataclass
 class dataAccion:
     """Una entrada de acción tal como está en el .md/.json del usuario.
 
-    Por defecto la clave en el archivo es el nombre del campo; si es distinta se indica con clave("...").
+    Por defecto la clave en el archivo es el nombre del campo; si es distinta se indica con campo(clave="...").
+    Los campos con campo(gui=propiedadAccion(...)) aparecen en el formulario de la GUI, en este orden.
     """
 
-    nombre: str = None
-    titulo: str = None
-    key: str = None
-    descripcion: str = None
+    nombre: str = campo(gui=propiedadAccion(nombre="Nombre", atributo="nombre", obligatorio=True), default=None)
+    titulo: str = campo(
+        gui=propiedadAccion(nombre="Titulo", atributo="titulo", descripcion="Texto que se muestra en el botón"),
+        default=None,
+    )
+    key: str = campo(gui=propiedadAccion(nombre="Tecla", atributo="key", obligatorio=True), default=None)
+    descripcion: str = campo(
+        gui=propiedadAccion(
+            nombre="Descripción",
+            atributo="descripcion",
+            descripcion="Nota para recordar qué hace esta acción",
+            multilinea=True,
+        ),
+        default=None,
+    )
     accion: str = None
     opciones: dict = field(default_factory=dict)
     imagen: str = None
-    imagenOpciones: dict = clave("imagen_opciones", default_factory=dict)
-    tituloOpciones: dict = clave("titulo_opciones", default_factory=dict)
+    imagenOpciones: dict = campo("imagen_opciones", default_factory=dict)
+    tituloOpciones: dict = campo("titulo_opciones", default_factory=dict)
     extra: dict = field(default_factory=dict)
     "Claves del archivo que no tienen campo, se guardan aquí para no perderlas al salvar"
 
     @staticmethod
     def claveArchivo(campo) -> str:
         return campo.metadata.get("clave", campo.name)
+
+    @classmethod
+    def propiedadesGui(cls) -> list[propiedadAccion]:
+        """Propiedades que el usuario puede editar en la GUI, su atributo es la clave en el .md"""
+        return [f.metadata["gui"] for f in fields(cls) if "gui" in f.metadata]
 
     @classmethod
     def desdeDict(cls, data: dict) -> "dataAccion":
@@ -88,4 +117,5 @@ if __name__ == "__main__":
     acción["titulo_opciones"] = {"mqtt": "t"}
     acción["__estado"] = True
     assert acción.tituloOpciones == {"mqtt": "t"} and acción.extra["__estado"] is True
+    assert [p.atributo for p in dataAccion.propiedadesGui()] == ["nombre", "titulo", "key", "descripcion"]
     print("ok")
