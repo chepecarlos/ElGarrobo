@@ -22,6 +22,7 @@ class accionEscribirTexto(accion):
             nombre="Texto",
             atributo="texto",
             tipo=[str],
+            multilinea=True,
             obligatorio=True,
             descripcion="texto a escribir",
             ejemplo="Hola mundo",

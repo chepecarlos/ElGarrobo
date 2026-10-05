@@ -19,6 +19,8 @@ class propiedadAccion:
     descripcion: Optional[str] = None
     ejemplo: Optional[str] = None
     defecto: Optional[Any] = None
+    multilinea: bool = False
+    "Solo para tipo str: si es True la GUI muestra un área de texto de varias líneas en vez de un input de una línea"
 
     def __post_init__(self) -> None:
         # Normalizar tipo a lista de tipos

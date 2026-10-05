@@ -317,7 +317,8 @@ class miGui(dispositivo):
                     obligatorio: bool = propiedad.obligatorio
                     if obligatorio:
                         etiqueta = "* " + etiqueta
-                    self.opcionesEditar[nombre] = ui.input(label=etiqueta, placeholder=ejemplo).mark(f"opción-{nombre}")
+                    crearInput = ui.textarea if propiedad.multilinea else ui.input
+                    self.opcionesEditar[nombre] = crearInput(label=etiqueta, placeholder=ejemplo).mark(f"opción-{nombre}")
                     with self.opcionesEditar[nombre]:
                         with ui.button(on_click=lambda d=descripción: ui.notify(d)).props("flat dense"):
                             ui.icon("help", color="teal-300")
