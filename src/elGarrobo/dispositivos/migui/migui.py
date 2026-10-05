@@ -285,12 +285,10 @@ class miGui(dispositivo):
         """Muestra las opciones de la acción seleccionada"""
         self.editorDescripcion.text = ""
         self.editorDescripcion.visible = False
+        # Guarda los valores para pasarlos a las propiedades con el mismo nombre de la nueva acción
+        valoresAnteriores = {nombre: editor.value for nombre, editor in (self.opcionesEditar or {}).items()}
         self.editorPropiedades.clear()
-        if self.accionEditar:
-            claseAccionEditar = self.obtenerAcciónOop(self.accionEditar.get("accion"))
-            accionSelecionada = claseAccionEditar().nombre if claseAccionEditar is not None else None
-        else:
-            accionSelecionada = self.editorAcción.value
+        accionSelecionada = self.editorAcción.value
 
         if accionSelecionada is None or accionSelecionada == "":
             return
@@ -317,8 +315,11 @@ class miGui(dispositivo):
                     if obligatorio:
                         etiqueta = "* " + etiqueta
                     crearInput = ui.textarea if propiedad.multilinea else ui.input
-                    self.opcionesEditar[nombre] = crearInput(label=etiqueta, placeholder=ejemplo).classes("w-full").mark(f"opción-{nombre}")
-                    with self.opcionesEditar[nombre]:
+                    editor = crearInput(label=etiqueta, placeholder=ejemplo).classes("w-full").mark(f"opción-{nombre}")
+                    if valoresAnteriores.get(nombre):
+                        editor.value = valoresAnteriores[nombre]
+                    self.opcionesEditar[nombre] = editor
+                    with editor:
                         with ui.button(on_click=lambda d=descripción: ui.notify(d)).props("flat dense"):
                             ui.icon("help", color="teal-300")
             return
@@ -392,6 +393,8 @@ class miGui(dispositivo):
 
         self.editorTecla.value = accion.get("key")
 
+        # Sin esto mostrarOpciones pasaría los valores de la acción editada antes
+        self.opcionesEditar = None
         claseAcción = self.obtenerAcciónOop(accion.get("accion"))
         if claseAcción is None:
             self.editorAcción.value = accion.get("accion")

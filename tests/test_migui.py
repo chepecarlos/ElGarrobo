@@ -198,6 +198,24 @@ class TestPaginaAcciones:
         assert gui.editorAcción.value == "Escribir texto"
         assert gui.opcionesEditar["Texto"].value == "hola"
 
+    async def test_cambiar_accion_mantiene_propiedades(self, user: User, gui: miGui, deck: dispositivoFalso):
+        await user.open("/")
+        user.find(marker="editar-deck-1").click()
+        await llenarFormulario(user, acción="Pegar texto")
+        assert gui.opcionesEditar["Texto"].value == "hola"
+
+        user.find(marker="botonAgregar").click()
+        await user.should_see("Editar acción Uno")
+        assert deck.listaAcciones[0]["accion"] == "pegar"
+        assert deck.listaAcciones[0]["opciones"] == {"texto": "hola"}
+
+    async def test_editar_otra_accion_no_arrastra_valores(self, user: User, gui: miGui, deck: dispositivoFalso):
+        deck.listaAcciones.append({"nombre": "Tres", "key": 3, "accion": "pegar", "titulo": "", "opciones": {}})
+        await user.open("/")
+        user.find(marker="editar-deck-1").click()
+        user.find(marker="editar-deck-3").click()
+        assert gui.opcionesEditar["Texto"].value in ("", None)
+
     async def test_editar_misma_tecla(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
         user.find(marker="editar-deck-1").click()
