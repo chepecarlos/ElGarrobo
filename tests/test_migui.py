@@ -15,7 +15,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from elGarrobo.accionesOOP import cargarClasesAcciones
 from elGarrobo.dispositivos.dataAccion import dataAccion
-from elGarrobo.dispositivos.dibujoBoton import dibujoBoton
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.migui import migui as moduloMiGui
 from elGarrobo.dispositivos.migui.migui import miGui
@@ -374,16 +373,7 @@ class TestEditorApariencia:
         assert gui.editorFondo.value == "#2b7a10"
 
 
-    async def test_vista_previa_oculta_si_no_dibuja(self, user: User, gui: miGui, deck: dispositivoFalso):
-        await user.open("/")
-        user.find(marker="editar-deck-1").click()
-        user.find(marker="botonEditarBoton").click()
-        assert not gui.vistaPrevia.visible
-
-    async def test_vista_previa_dibuja_fondo(self, user: User, gui: miGui, deck: dispositivoFalso, tmp_path):
-        # ponytail: el dispositivo falso dibuja como un StreamDeck sin conectar
-        deck.dibujo = lambda: dibujoBoton(folderPerfil=tmp_path)
-        deck.tamañoBoton = lambda: (72, 72)
+    async def test_vista_previa_dibuja_fondo(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
         user.find(marker="editar-deck-1").click()
         user.find(marker="botonEditarBoton").click()
@@ -395,10 +385,8 @@ class TestEditorApariencia:
         assert deck.listaAcciones[0].fondo is None, "la vista previa no guarda"
 
 
-    async def test_editar_carga_fondo_sin_borrarlo(self, user: User, gui: miGui, deck: dispositivoFalso, tmp_path):
+    async def test_editar_carga_fondo_sin_borrarlo(self, user: User, gui: miGui, deck: dispositivoFalso):
         deck.listaAcciones[0].fondo = "#ff8000"
-        deck.dibujo = lambda: dibujoBoton(folderPerfil=tmp_path)
-        deck.tamañoBoton = lambda: (72, 72)
         await user.open("/")
         user.find(marker="editar-deck-1").click()
 

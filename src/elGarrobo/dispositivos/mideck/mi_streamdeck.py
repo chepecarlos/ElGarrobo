@@ -14,7 +14,6 @@ from StreamDeck.Transport.Transport import TransportError
 
 from elGarrobo.dispositivos import dispositivo
 from elGarrobo.dispositivos.dataAccion import dataAccion
-from elGarrobo.dispositivos.dibujoBoton import dibujoBoton
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor, SalvarArchivo
 
 logger = ConfigurarLogging(__name__)
@@ -302,21 +301,10 @@ class MiStreamDeck(dispositivo):
     def __str__(self) -> str:
         return f"MiStreamDeck(id={self.id}, nombre={self.nombre}, serial={self.dispositivo}, layout={self.layout})"
 
-    def dibujo(self) -> dibujoBoton:
-        """Datos de este StreamDeck y su folder para dibujar botones"""
-        return dibujoBoton(
-            folderPerfil=self._folderConfigPerfil(),
-            folderActual=self.folderActual,
-            archivoFuente=self.archivoFuente,
-            propiedadFolder=self.propiedadFolder,
-            imagenesBase=self.imagenesBase or {},
-            rotar=self.rotar,
-        )
-
     def tamañoBoton(self) -> tuple[int, int]:
         """Tamaño en pixeles de las teclas, 72x72 (StreamDeck Original) si no está conectado"""
         if self.deck is None:
-            return (72, 72)
+            return super().tamañoBoton()
         return self.deck.key_image_format()["size"]
 
     def actualizarIconoBoton(self, indice: int, accionActual: dict) -> None:

@@ -5,6 +5,7 @@ from typing import Any, Callable, Optional, Type
 
 from elGarrobo.accionesOOP.accion import accion
 from elGarrobo.dispositivos.dataAccion import dataAccion
+from elGarrobo.dispositivos.dibujoBoton import dibujoBoton
 from elGarrobo.miLibrerias import (
     ConfigurarLogging,
     ObtenerArchivo,
@@ -182,6 +183,21 @@ class dispositivo:
         self.folderActual = folderData.relative_to(folderPerfil)
         logger.info(f"AccionesCargadas[{self.nombre}] {len(self.listaAcciones)} - /{self.folderActual}")
         return
+
+    def dibujo(self) -> dibujoBoton:
+        """Datos de este dispositivo y su folder para dibujar botones (vista previa en la GUI y StreamDeck)"""
+        return dibujoBoton(
+            folderPerfil=self._folderConfigPerfil(),
+            folderActual=self.folderActual,
+            archivoFuente=getattr(self, "archivoFuente", None),
+            propiedadFolder=self.propiedadFolder,
+            imagenesBase=getattr(self, "imagenesBase", None) or {},
+            rotar=getattr(self, "rotar", 0),
+        )
+
+    def tamañoBoton(self) -> tuple[int, int]:
+        """Tamaño en pixeles de los botones, 72x72 (StreamDeck Original) por defecto"""
+        return (72, 72)
 
     def _folderConfigPerfil(self) -> Path:
         "Devuelve la ruta obsoleta del folder de perfil"

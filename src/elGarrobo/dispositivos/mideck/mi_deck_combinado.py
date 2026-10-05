@@ -128,6 +128,12 @@ class MiDeckCombinado(dispositivo):
         for deck in self.listaDeck:
             deck.limpiarIconos()
 
+    def tamañoBoton(self) -> tuple[int, int]:
+        """Tamaño de las teclas del primer StreamDeck"""
+        if self.listaDeck:
+            return self.listaDeck[0].tamañoBoton()
+        return super().tamañoBoton()
+
     def actualizarIconos(self):
         "pone los iconos en base de la lista de acciones cargadas"
 

@@ -5,6 +5,7 @@ Lo usan el StreamDeck para mandar la imagen a la tecla y la GUI para la vista pr
 
 import os
 import re
+from functools import cache
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -12,9 +13,16 @@ from typing import Any
 from PIL import Image, ImageDraw, ImageFont
 from PIL.Image import Image as ImageImage
 
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor
+from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor, leerData
 
 logger = ConfigurarLogging(__name__)
+
+
+@cache
+def fuenteConfig() -> str | None:
+    """'fuente' de config.md del usuario, se lee una vez"""
+    # ponytail: cacheada, si se cambia la fuente en config.md hay que reiniciar
+    return (leerData("config") or {}).get("fuente")
 
 
 @dataclass
@@ -26,7 +34,7 @@ class dibujoBoton:
     folderActual: Path = Path("/")
     "Folder actual dentro del perfil, base de las rutas de imágenes relativas"
     archivoFuente: str | None = None
-    "Fuente para el título, si no hay se usa la de Pillow"
+    "Fuente para el título, si no hay se usa 'fuente' de config.md y si tampoco la de Pillow"
     propiedadFolder: Any = None
     "Acción 'propiedad_folder' del folder, sus opciones son el valor por defecto de los botones"
     imagenesBase: dict = field(default_factory=dict)
@@ -83,8 +91,9 @@ class dibujoBoton:
         return default
 
     def fuente(self, tamaño: int) -> ImageFont.FreeTypeFont:
-        if self.archivoFuente:
-            return ImageFont.truetype(self.archivoFuente, size=tamaño)
+        archivo = self.archivoFuente or fuenteConfig()
+        if archivo:
+            return ImageFont.truetype(archivo, size=tamaño)
         return ImageFont.load_default(size=tamaño)
 
     def obtenerImagen(self, imagen: ImageImage, accion, conGif: bool = False) -> ImageImage | None:

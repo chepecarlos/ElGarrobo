@@ -346,13 +346,6 @@ class miGui(dispositivo):
                 return objetoClase.comando
         return None
 
-    @staticmethod
-    def deckVistaPrevia(dispositivoActual: dispositivo):
-        """StreamDeck con el que se dibuja la vista previa: el mismo, o el primero de un deck combinado; None si no dibuja"""
-        if hasattr(dispositivoActual, "dibujo"):
-            return dispositivoActual
-        return next(iter(getattr(dispositivoActual, "listaDeck", None) or []), None)
-
     def abrirEditorApariencia(self) -> None:
         self.actualizarVistaPrevia()
         self.dialogoBoton.open()
@@ -360,9 +353,7 @@ class miGui(dispositivo):
     def actualizarVistaPrevia(self, *_) -> None:
         """Dibuja el botón con lo que hay en el formulario, sin guardar"""
         dispositivoActual = self.dispositivoEditar or (self.obtenerDispositivoSeleccionado() if self.pestañas else None)
-        deck = self.deckVistaPrevia(dispositivoActual) if dispositivoActual else None
-        self.vistaPrevia.visible = deck is not None
-        if deck is None:
+        if dispositivoActual is None:
             return
 
         # Copia profunda: imagen_opciones es un dict y aplicarApariencia lo modifica, no debe tocar la acción guardada
@@ -370,7 +361,7 @@ class miGui(dispositivo):
         acción.accion = self.comandoAcción(self.editorAcción.value) or acción.accion
         self.aplicarApariencia(acción)
         try:
-            imagen = deck.dibujo().dibujar(acción, deck.tamañoBoton(), conGif=True)
+            imagen = dispositivoActual.dibujo().dibujar(acción, dispositivoActual.tamañoBoton(), conGif=True)
         except Exception as error:
             # Ej: color a medio escribir, se deja la vista previa anterior
             logger.debug(f"Vista previa[Error] {error}")
