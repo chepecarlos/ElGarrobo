@@ -6,7 +6,7 @@ from elGarrobo.miLibrerias import ConfigurarLogging
 
 from .accion import accion, propiedadAccion
 
-# from .heramientas.propiedadAccion import propiedadAccion
+# from .herramientas.propiedadAccion import propiedadAccion
 
 Logger = ConfigurarLogging(__name__)
 

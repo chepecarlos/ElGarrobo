@@ -8,6 +8,16 @@ install:
 	@echo "Instalando Paquete..."
 	pipx install . --force
 
+uninstall:
+	@echo "Desinstalando Paquete..."
+	pipx uninstall elgarrobo
+
+# Instalar en venv editable para pruebas (los cambios en src/ se ven sin reinstalar)
+install-dev:
+	@echo "Instalando Paquete en venv para pruebas..."
+	test -d venv || python3 -m venv venv
+	venv/bin/pip install -e ".[dev]"
+
 # Generar documentación
 docs:
 	@echo "Generando documentación con pdoc..."

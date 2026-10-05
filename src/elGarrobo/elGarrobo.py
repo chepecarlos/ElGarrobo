@@ -20,7 +20,7 @@ from .accionesOOP import (
     accionSiquientePagina,
     cargarClasesAcciones,
 )
-from .accionesOOP.heramientas.valoresAccion import valoresAcciones
+from .accionesOOP.herramientas.valoresAccion import valoresAcciones
 from .dispositivos import cargarDispositivos, dispositivo
 from .dispositivos.mideck.mi_streamdeck import MiStreamDeck
 from .miLibrerias import (

@@ -5,8 +5,8 @@ from typing import Any, Callable, Optional
 
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig
 
-from .heramientas.propiedadAccion import propiedadAccion
-from .heramientas.valoresAccion import valoresAcciones
+from .herramientas.propiedadAccion import propiedadAccion
+from .herramientas.valoresAccion import valoresAcciones
 
 logger = ConfigurarLogging(__name__)
 

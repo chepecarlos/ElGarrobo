@@ -16,6 +16,7 @@ from StreamDeck.ImageHelpers import PILHelper
 from StreamDeck.Transport.Transport import TransportError
 
 from elGarrobo.dispositivos import dispositivo
+from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor, SalvarArchivo
 
 logger = ConfigurarLogging(__name__)
@@ -774,7 +775,7 @@ class MiStreamDeck(dispositivo):
         self.propiedadFolder = dict()
 
         for accion in self.listaAcciones:
-            if not isinstance(accion, dict):
+            if not isinstance(accion, (dict, dataAccion)):
                 continue
             if accion.get("key") == "propiedad_folder":
                 self.propiedadFolder = accion

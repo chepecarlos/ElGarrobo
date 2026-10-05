@@ -145,7 +145,7 @@ class TestPaginaAcciones:
 
         await user.should_see("Agregando acción Tres")
         nueva = deck.listaAcciones[-1]
-        assert nueva == {"nombre": "Tres", "key": 3, "accion": "escribir", "titulo": "", "opciones": {"texto": "adios"}}
+        assert nueva.aDict() == {"nombre": "Tres", "key": 3, "accion": "escribir", "titulo": "", "opciones": {"texto": "adios"}}
         assert deck.vecesSalvado == 1
         await user.should_see(marker="editar-deck-3")
         assert gui.editorNombre.value == ""

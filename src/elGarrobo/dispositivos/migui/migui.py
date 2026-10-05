@@ -4,6 +4,7 @@ import threading
 from nicegui import app, ui
 
 from elGarrobo.accionesOOP import accion
+from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.miLibrerias import ConfigurarLogging, SalvarValor, leerData
 
@@ -215,7 +216,7 @@ class miGui(dispositivo):
                     except Exception as e:
                         return
 
-                dispositivoDestino.listaAcciones.append(acciónNueva)
+                dispositivoDestino.listaAcciones.append(dataAccion.desdeDict(acciónNueva))
                 ui.notify(f"Agregando acción {nombre}")
                 logger.info(f"Agregando acción {nombre} a {nombreDispositivo}")
 
@@ -288,18 +289,18 @@ class miGui(dispositivo):
         # Guarda los valores para pasarlos a las propiedades con el mismo nombre de la nueva acción
         valoresAnteriores = {nombre: editor.value for nombre, editor in (self.opcionesEditar or {}).items()}
         self.editorPropiedades.clear()
-        accionSelecionada = self.editorAcción.value
+        accionSeleccionada = self.editorAcción.value
 
-        if accionSelecionada is None or accionSelecionada == "":
+        if accionSeleccionada is None or accionSeleccionada == "":
             return
 
-        logger.info(f"Mostrando opciones para: {accionSelecionada}")
+        logger.info(f"Mostrando opciones para: {accionSeleccionada}")
 
         for acción in self.listaClasesAcciones.keys():
             claseAccion = self.listaClasesAcciones.get(acción)
             acciónTmp: accion = claseAccion()
             # if acción == accionOpciones or acciónTmp.nombre == accionOpciones:
-            if acciónTmp.nombre != accionSelecionada:
+            if acciónTmp.nombre != accionSeleccionada:
                 continue
 
             self.editorDescripcion.visible = True
@@ -324,7 +325,7 @@ class miGui(dispositivo):
                             ui.icon("help", color="teal-300")
             return
 
-        logger.warning(f"No hay opciones para: {accionSelecionada}")
+        logger.warning(f"No hay opciones para: {accionSeleccionada}")
 
     def limpiarFormulario(self):
         """Limpia el formulario de acciones"""

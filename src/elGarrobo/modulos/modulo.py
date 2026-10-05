@@ -1,4 +1,4 @@
-from elGarrobo.accionesOOP.heramientas.valoresAccion import valoresAcciones
+from elGarrobo.accionesOOP.herramientas.valoresAccion import valoresAcciones
 
 
 class modulo:

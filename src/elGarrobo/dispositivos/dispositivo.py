@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Callable, Optional, Type
 
 from elGarrobo.accionesOOP.accion import accion
+from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.miLibrerias import (
     ConfigurarLogging,
     ObtenerArchivo,
@@ -170,6 +171,8 @@ class dispositivo:
             logger.debug(f"{self.nombre}[{self.tipo}] - No se puede cargar acciones {folderBuscar}")
             return
 
+        dataAcciones = self.convertirAcciones(dataAcciones)
+
         if self.listaAcciones == dataAcciones:
             logger.info(f"Data ya cargada {self.nombre} - {folderBuscar}")
             return
@@ -238,21 +241,38 @@ class dispositivo:
         return self._listaAcciones
 
     @listaAcciones.setter
-    def listaAcciones(self, data: list[dict]):
-        self._listaAcciones = data
+    def listaAcciones(self, data: list[dict | dataAccion]):
+        self._listaAcciones = self.convertirAcciones(data)
         if self.funcionActualizarPestaña is not None:
             self.funcionActualizarPestaña(self)
+
+    @staticmethod
+    def convertirAcciones(data: list | None) -> list | None:
+        """Convierte las entradas dict del .md/.json a dataAccion.
+
+        Es en el mismo objeto lista porque el deck combinado la comparte con sus StreamDeck
+        """
+        if not isinstance(data, list):
+            return data
+        data[:] = [dataAccion.desdeDict(acción) if isinstance(acción, dict) else acción for acción in data]
+        return data
 
     def salvarAcciones(self):
         folderBase = str(ObtenerFolderConfig())
         archivo = os.path.abspath(os.path.join(folderBase, self.folderPerfil, str(self.folderActual).lstrip("/"), self.archivo))
         # Las claves con "__" son estado en tiempo de ejecución, no se guardan
         accionesSalvar = [
-            {propiedad: valor for propiedad, valor in acción.items() if "__" not in propiedad} if isinstance(acción, dict) else acción
+            {propiedad: valor for propiedad, valor in acción.items() if "__" not in propiedad}
+            if isinstance(acción, (dict, dataAccion))
+            else acción
             for acción in self.listaAcciones
         ]
 
         SalvarArchivo(f"{archivo}.md", accionesSalvar)
+
+        # Las acciones cambiaron (agregar, editar o borrar desde la GUI), redibujar el dispositivo
+        self.recargar = True
+        self.actualizar()
 
     def asignarPerfil(self, folderPerfil: str):
         self.folderPerfil = folderPerfil

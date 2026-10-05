@@ -7,8 +7,8 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from elGarrobo.accionesOOP import accion, accionDelay, cargarClasesAcciones
-from elGarrobo.accionesOOP.heramientas.propiedadAccion import propiedadAccion
-from elGarrobo.accionesOOP.heramientas.valoresAccion import valoresAcciones
+from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
+from elGarrobo.accionesOOP.herramientas.valoresAccion import valoresAcciones
 
 
 def crearAccion(*propiedades: propiedadAccion) -> accion:
