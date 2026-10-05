@@ -20,6 +20,12 @@ class MiPedal(dispositivo):
     archivoConfiguracion = "pedal.md"
     deck: DeviceManager = None
     idDeck: int = -1
+    cantidad: int = 3
+    "Cantidad de pedales"
+    desfaceTeclas: int = 0
+    "Página actual: el primer pedal hace la acción desfaceTeclas + 1"
+    paginaGlobal: bool = False
+    "Solo cambia de página con acciones que indiquen este dispositivo, no con las globales"
 
     def __init__(self, dataConfiguracion: dict) -> None:
         """Inicializando Dispositivo de teclado
@@ -63,25 +69,54 @@ class MiPedal(dispositivo):
                     else:
                         self.deck.close()
                 except TransportError as error:
-                    self.Conectado = False
+                    self.conectado = False
                     self.deck = None
                     logger.exception(f"Error 1 {error}")
                     logger.error(f"Error 1 {error}")
                 except Exception as error:
-                    self.Conectado = False
+                    self.conectado = False
                     self.deck = None
                     logger.exception(f"Error 2 {error}")
                     logger.error(f"Error 2 {error}")
 
     def actualizarBoton(self, Deck, Key: int, Estado: bool):
         if Estado:
-            self.buscarAccion(str(Key + 1), self.estadoTecla.PRESIONADA)
+            self.buscarAccion(Key + 1 + self.desfaceTeclas, self.estadoTecla.PRESIONADA)
         else:
-            self.buscarAccion(str(Key + 1), self.estadoTecla.LIBERADA)
+            self.buscarAccion(Key + 1 + self.desfaceTeclas, self.estadoTecla.LIBERADA)
 
     def desconectar(self):
         if self.conectado:
             logger.info(f"Pedal[Desconectando] - {self.nombre}")
-            self.Conectado = False
+            self.conectado = False
             self.deck.reset()
             self.deck.close()
+
+    def distribucionBotones(self) -> tuple[int, int]:
+        return (1, self.cantidad)
+
+    def cargarAccionesFolder(self, folder: str = "/", recargar: bool = False):
+        super().cargarAccionesFolder(folder, recargar)
+        if self.recargar:
+            self.desfaceTeclas = 0
+
+    def siguientePagina(self) -> None:
+        """Pasa a los siguientes pedales, si hay acciones más adelante"""
+        teclas = [int(acción.get("key")) for acción in self.listaAcciones or [] if str(acción.get("key")).isdigit()]
+        if self.desfaceTeclas + self.cantidad >= max(teclas, default=0):
+            logger.info(f"No se puede adelantar pagina {self.nombre}")
+            return
+        self.desfaceTeclas += self.cantidad
+        self.avisarCambioPagina()
+
+    def anteriorPagina(self) -> None:
+        if self.desfaceTeclas - self.cantidad < 0:
+            logger.info(f"No se puede regresar pagina {self.nombre}")
+            return
+        self.desfaceTeclas -= self.cantidad
+        self.avisarCambioPagina()
+
+    def avisarCambioPagina(self) -> None:
+        logger.info(f"Pedal[Pagina] {self.nombre} teclas {self.desfaceTeclas + 1}-{self.desfaceTeclas + self.cantidad}")
+        if self.funcionActualizarPestaña is not None:
+            self.funcionActualizarPestaña(self)

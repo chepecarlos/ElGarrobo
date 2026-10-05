@@ -71,6 +71,8 @@ class miGui(dispositivo):
         self.editorAcción = None
         self.editoresData: dict = {}
         self.ordenCampo: str = "key"
+        self.dispositivosEnLista: set[str] = set()
+        "Dispositivos con distribución física que el usuario cambió a vista de lista"
         self.ordenInverso: bool = False
 
         self.listaDispositivos = list()
@@ -675,22 +677,93 @@ class miGui(dispositivo):
             dispositivo.panel.clear()
             with dispositivo.panel:
                 acciones = dispositivo.listaAcciones
+                cuadricula = dispositivo.distribucionBotones() is not None
+                if cuadricula:
+                    ui.toggle(
+                        {False: "Cuadrícula", True: "Lista"},
+                        value=nombre in self.dispositivosEnLista,
+                        on_change=lambda e, d=dispositivo: self.cambiarVista(d, e.value),
+                    ).mark(f"vista-{nombre}")
 
                 with ui.scroll_area() as areaScroll:
                     areaScroll.classes("w-full border-2 border-teal-600")
-                    # Alto disponible: 100vh - cabecera (5vh) - pie (5vh) - pestañas (48px) - padding del panel (32px)
-                    areaScroll.style("height: calc(90vh - 80px)")
+                    # Alto disponible: 100vh - cabecera (5vh) - pie (5vh) - pestañas (48px) - padding del panel (32px) - interruptor (40px)
+                    areaScroll.style(f"height: calc(90vh - {120 if cuadricula else 80}px)")
 
                     if acciones is None:
                         ui.label("No acciones")
                         return
 
-                    self.dibujarAcciones(acciones, dispositivo)
+                    if cuadricula and nombre not in self.dispositivosEnLista:
+                        self.dibujarCuadricula(acciones, dispositivo)
+                    else:
+                        self.dibujarAcciones(acciones, dispositivo)
 
             self.actualizarCabecera()
 
         if hasattr(dispositivo, "actualizarIconos"):
             dispositivo.actualizarIconos()
+
+    def cambiarVista(self, dispositivo: dispositivo, enLista: bool) -> None:
+        if enLista:
+            self.dispositivosEnLista.add(dispositivo.nombre)
+        else:
+            self.dispositivosEnLista.discard(dispositivo.nombre)
+        self.actualizarPestaña(dispositivo)
+
+    def dibujarCuadricula(self, listaAcciones: list, dispositivo: dispositivo) -> None:
+        """Dibuja la página actual del dispositivo como sus botones físicos, con la vista previa de cada uno
+
+        Args:
+            listaAcciones (list): Lista de acciones del dispositivo
+            dispositivo (dispositivo): dispositivo con distribucionBotones()
+        """
+        filas, columnas = dispositivo.distribucionBotones()
+        cantidad = filas * columnas
+        desface = getattr(dispositivo, "desfaceTeclas", 0)
+        accionesPorTecla = {str(acción.get("key")): acción for acción in listaAcciones}
+        dibujo = dispositivo.dibujo()
+        tamaño = dispositivo.tamañoBoton()
+        nombre = dispositivo.nombre
+
+        if hasattr(dispositivo, "siguientePagina"):
+            with ui.row().classes("items-center p-2"):
+                ui.button(icon="chevron_left", color="teal-500", on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.anteriorPagina)).mark(f"paginaAnterior-{nombre}")
+                ui.label(f"Teclas {desface + 1} - {desface + cantidad}").mark(f"pagina-{nombre}")
+                ui.button(icon="chevron_right", color="teal-500", on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.siguientePagina)).mark(f"paginaSiguiente-{nombre}")
+
+        # ponytail: la primera tecla es 1 (pedal); el StreamDeck numera distinto, ajustar al agregarlo
+        with ui.grid(columns=columnas).classes("gap-2 p-2"):
+            for indice in range(cantidad):
+                tecla = desface + indice + 1
+                acción = accionesPorTecla.get(str(tecla))
+                imagen = None
+                if acción is not None:
+                    try:
+                        imagen = dibujo.dibujar(acción, tamaño, conGif=True)
+                    except Exception as error:
+                        logger.warning(f"Vista previa[Error] {nombre}[{tecla}] {error}")
+
+                with ui.column().classes("items-center gap-1"):
+                    if imagen is not None:
+                        boton = ui.image(imagen).classes("w-24 h-24 rounded cursor-pointer")
+                        boton.on("click", lambda a=acción: self.seleccionarAcción(a, dispositivo))
+                    else:
+                        boton = ui.button(icon="add", color="grey-8", on_click=lambda t=tecla: self.nuevaAcciónTecla(dispositivo, t)).classes("w-24 h-24")
+                    boton.mark(f"tecla-{nombre}-{tecla}")
+                    ui.label(f"{tecla}: {acción.get('nombre')}" if acción is not None else str(tecla)).classes("text-xs")
+
+    def cambiarPagina(self, dispositivo: dispositivo, cambiar) -> None:
+        """Cambia la página del dispositivo físico y redibuja la pestaña"""
+        cambiar()
+        dispositivo.actualizar()
+        self.actualizarPestaña(dispositivo)
+
+    def nuevaAcciónTecla(self, dispositivo: dispositivo, tecla: int) -> None:
+        """Prepara el formulario para agregar una acción en una tecla vacía de la cuadrícula"""
+        self.limpiarFormulario()
+        self.dispositivoEditar = dispositivo
+        self.editoresData["key"].value = tecla
 
     def dibujarAcciones(self, listaAcciones: list[dict], dispositivo: dispositivo) -> None:
         """Dibuja las acciones de los dispositivos en la interfaz web

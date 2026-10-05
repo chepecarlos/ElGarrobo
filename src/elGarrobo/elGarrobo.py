@@ -656,17 +656,29 @@ class elGarrobo(object):
     def Actualizar_Folder(self, opciones: list[valoresAcciones]):
         self.ActualizarDeck()
 
+    def dispositivosPagina(self, opciones: list[valoresAcciones]) -> list:
+        """Dispositivos con páginas: el indicado en la opción 'dispositivo', o si no hay, los de página global"""
+        nombre = next((opción.valor for opción in opciones if opción.atributo == "dispositivo"), None)
+        return [
+            dispositivoActual
+            for dispositivoActual in self.listaDispositivos
+            if hasattr(dispositivoActual, "siguientePagina")
+            and (
+                dispositivoActual.nombre.lower() == str(nombre).lower()
+                if nombre
+                else getattr(dispositivoActual, "paginaGlobal", True)
+            )
+        ]
+
     def siquiente_Pagina(self, opciones: list[valoresAcciones]):
-        for dispositivoActual in self.listaDispositivos:
-            if hasattr(dispositivoActual, "siguientePagina"):
-                dispositivoActual.siguientePagina()
-                dispositivoActual.actualizar()
+        for dispositivoActual in self.dispositivosPagina(opciones):
+            dispositivoActual.siguientePagina()
+            dispositivoActual.actualizar()
 
     def anterior_Pagina(self, opciones: list[valoresAcciones]):
-        for dispositivoActual in self.listaDispositivos:
-            if hasattr(dispositivoActual, "anteriorPagina"):
-                dispositivoActual.anteriorPagina()
-                dispositivoActual.actualizar()
+        for dispositivoActual in self.dispositivosPagina(opciones):
+            dispositivoActual.anteriorPagina()
+            dispositivoActual.actualizar()
 
     def DeckBrillo(self, opciones):
         Brillo = ObtenerValor("data/streamdeck.json", "brillo")

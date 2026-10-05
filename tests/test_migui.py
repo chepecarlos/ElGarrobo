@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from elGarrobo.accionesOOP import cargarClasesAcciones
 from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
+from elGarrobo.dispositivos.mipedal.mi_pedal import MiPedal
 from elGarrobo.dispositivos.migui import migui as moduloMiGui
 from elGarrobo.dispositivos.migui.migui import miGui
 
@@ -392,3 +393,61 @@ class TestEditorApariencia:
 
         assert gui.editorFondo.value == "#ff8000"
         assert deck.listaAcciones[0].fondo == "#ff8000", "la vista previa no debe modificar la acción"
+
+
+
+@pytest.fixture
+def pedal() -> MiPedal:
+    pedal = MiPedal({"nombre": "pedal"})
+    pedal._listaAcciones = pedal.convertirAcciones(
+        [
+            {"nombre": "Uno", "key": 1, "accion": "escribir", "opciones": {"texto": "hola"}},
+            {"nombre": "Cinco", "key": 5, "accion": "escribir", "opciones": {"texto": "cinco"}},
+        ]
+    )
+    pedal.salvarAcciones = lambda: None
+    return pedal
+
+
+@pytest.fixture
+def guiPedal(user: User, pedal: MiPedal) -> miGui:
+    gui = miGui({"nombre": "gui"})
+    gui.listaClasesAcciones = cargarClasesAcciones()
+    gui.listaDispositivos = [pedal]
+    return gui
+
+
+class TestCuadricula:
+    async def test_muestra_los_pedales_de_la_pagina(self, user: User, guiPedal: miGui, pedal: MiPedal):
+        await user.open("/")
+        await user.should_see(marker="tecla-pedal-1")
+        await user.should_see(marker="tecla-pedal-3")
+        await user.should_see("Teclas 1 - 3")
+        await user.should_not_see(marker="tecla-pedal-4")
+
+    async def test_click_en_boton_edita_la_accion(self, user: User, guiPedal: miGui, pedal: MiPedal):
+        await user.open("/")
+        user.find(marker="tecla-pedal-1").click()
+        assert guiPedal.editoresData["nombre"].value == "Uno"
+        assert guiPedal.dispositivoEditar is pedal
+
+    async def test_click_en_vacio_prepara_la_tecla(self, user: User, guiPedal: miGui, pedal: MiPedal):
+        await user.open("/")
+        user.find(marker="tecla-pedal-2").click()
+        assert guiPedal.editoresData["key"].value == 2
+        assert guiPedal.editoresData["nombre"].value == ""
+        assert guiPedal.dispositivoEditar is pedal
+
+    async def test_cambiar_pagina_mueve_el_pedal(self, user: User, guiPedal: miGui, pedal: MiPedal):
+        await user.open("/")
+        user.find(marker="paginaSiguiente-pedal").click()
+        await user.should_see("Teclas 4 - 6")
+        await user.should_see(marker="tecla-pedal-5")
+        assert pedal.desfaceTeclas == 3
+
+    async def test_interruptor_a_lista(self, user: User, guiPedal: miGui, pedal: MiPedal):
+        await user.open("/")
+        with user:
+            guiPedal.cambiarVista(pedal, True)
+        await user.should_see(marker="orden-key-pedal")
+        await user.should_not_see(marker="tecla-pedal-1")

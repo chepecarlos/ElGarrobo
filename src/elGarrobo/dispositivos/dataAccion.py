@@ -77,7 +77,11 @@ class dataAccion:
             for f in fields(cls)
             if f.name != "extra" and cls.claveArchivo(f) in data
         }
-        return cls(**valores, extra=data)
+        acción = cls(**valores, extra=data)
+        # Teclas numéricas como int ('3' -> 3), las de teclado ("KEY_A") quedan como texto
+        if isinstance(acción.key, str) and acción.key.isdigit():
+            acción.key = int(acción.key)
+        return acción
 
     def aDict(self) -> dict:
         """Dict listo para salvar en el .md/.json, sin los campos vacíos"""
@@ -113,7 +117,7 @@ class dataAccion:
 if __name__ == "__main__":
     original = {
         "nombre": "OBS",
-        "key": "1",
+        "key": 1,
         "accion": "obs_escena",
         "opciones": {"escena": "a"},
         "imagen_opciones": {"fondo": "red"},
@@ -132,4 +136,5 @@ if __name__ == "__main__":
     assert acción.aDict()["imagen_opciones"] == {"fondo": "#2b7a10"}
     acción.fondo = None
     assert "imagen_opciones" not in acción
+    assert dataAccion.desdeDict({"key": "3"}).key == 3 and dataAccion.desdeDict({"key": "KEY_A"}).key == "KEY_A"
     print("ok")

@@ -195,6 +195,10 @@ class dispositivo:
             rotar=getattr(self, "rotar", 0),
         )
 
+    def distribucionBotones(self) -> tuple[int, int] | None:
+        """(filas, columnas) de los botones físicos para dibujar el dispositivo en la GUI; None muestra la tabla"""
+        return None
+
     def tamañoBoton(self) -> tuple[int, int]:
         """Tamaño en pixeles de los botones, 72x72 (StreamDeck Original) por defecto"""
         return (72, 72)
