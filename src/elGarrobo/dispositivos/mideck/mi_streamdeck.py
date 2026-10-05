@@ -225,15 +225,18 @@ class MiStreamDeck(dispositivo):
 
                 imagenActual: str = self.buscarDirecionImagen(accionActual)
                 tituloActual: str = self.buscarTitulo(accionActual)
+                # Copia: se compara con lo dibujado para redibujar si cambia fondo, rotar, etc.
+                opcionesActual: dict = dict(accionActual.get("imagen_opciones") or {})
 
                 imagenVieja: str = accionVieja.get("imagen")
                 tituloViejo: str = accionVieja.get("titulo")
 
-                if imagenActual == imagenVieja and tituloActual == tituloViejo:
+                if imagenActual == imagenVieja and tituloActual == tituloViejo and opcionesActual == accionVieja.get("opciones"):
                     continue
 
                 accionVieja["imagen"] = imagenActual
                 accionVieja["titulo"] = tituloActual
+                accionVieja["opciones"] = opcionesActual
 
                 if imagenActual is not None and imagenActual.endswith(".gif"):
                     accionVieja["gif"] = self.crearGif(i, accionActual)
@@ -322,7 +325,7 @@ class MiStreamDeck(dispositivo):
         elif "fondo" in opcionesFolder:
             colorFondo = opcionesFolder.get("fondo")
 
-        if "rota" in opciones:
+        if "rotar" in opciones:
             rotar = opciones.get("rotar")
         elif "rotar" in opcionesFolder:
             rotar = opcionesFolder.get("rotar")

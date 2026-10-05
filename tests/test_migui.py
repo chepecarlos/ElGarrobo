@@ -13,6 +13,7 @@ from nicegui.testing.user_interaction import UserInteraction
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from elGarrobo.accionesOOP import cargarClasesAcciones
+from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.migui import migui as moduloMiGui
 from elGarrobo.dispositivos.migui.migui import miGui
@@ -25,7 +26,7 @@ class dispositivoFalso(dispositivo):
         super().__init__({"nombre": nombre})
         self.tipo = tipo
         self.folderActual = "/"
-        self._listaAcciones = acciones
+        self._listaAcciones = self.convertirAcciones(acciones)
         self.vecesSalvado = 0
 
     def salvarAcciones(self):
@@ -219,7 +220,7 @@ class TestPaginaAcciones:
         assert deck.listaAcciones[0]["opciones"] == {"texto": "hola"}
 
     async def test_editar_otra_accion_no_arrastra_valores(self, user: User, gui: miGui, deck: dispositivoFalso):
-        deck.listaAcciones.append({"nombre": "Tres", "key": 3, "accion": "pegar", "titulo": "", "opciones": {}})
+        deck.listaAcciones.append(dataAccion.desdeDict({"nombre": "Tres", "key": 3, "accion": "pegar", "opciones": {}}))
         await user.open("/")
         user.find(marker="editar-deck-1").click()
         user.find(marker="editar-deck-3").click()
@@ -352,3 +353,20 @@ class TestActivables:
         assert salvar.call_args.args[2] is True
         await user.should_see("activado - reiniciá elgarrobo para aplicar")
 
+
+
+    async def test_editor_boton_guarda_titulo_y_fondo(self, user: User, gui: miGui, deck: dispositivoFalso):
+        await user.open("/")
+        user.find(marker="editar-deck-1").click()
+        user.find(marker="botonEditarBoton").click()
+        user.find(marker="editor-titulo").clear().type("Hola")
+        gui.editorFondo.value = "#2b7a10"  # ponytail: el simulador no escribe en color_input
+        user.find(marker="botonListoBoton").click()
+        user.find(marker="botonAgregar").click()
+
+        await user.should_see("Editar acción Uno")
+        assert deck.listaAcciones[0].titulo == "Hola"
+        assert deck.listaAcciones[0].aDict()["imagen_opciones"] == {"fondo": "#2b7a10"}
+
+        user.find(marker="editar-deck-1").click()
+        assert gui.editorFondo.value == "#2b7a10"

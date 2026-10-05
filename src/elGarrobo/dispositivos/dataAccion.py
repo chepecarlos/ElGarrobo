@@ -28,10 +28,8 @@ class dataAccion:
     """
 
     nombre: str = campo(gui=propiedadAccion(nombre="Nombre", atributo="nombre", obligatorio=True), default=None)
-    titulo: str = campo(
-        gui=propiedadAccion(nombre="Titulo", atributo="titulo", descripcion="Texto que se muestra en el botón"),
-        default=None,
-    )
+    titulo: str = None
+    "Texto del botón, se edita en el editor del botón de la GUI"
     key: str = campo(gui=propiedadAccion(nombre="Tecla", atributo="key", obligatorio=True), default=None)
     descripcion: str = campo(
         gui=propiedadAccion(
@@ -53,6 +51,18 @@ class dataAccion:
     @staticmethod
     def claveArchivo(campo) -> str:
         return campo.metadata.get("clave", campo.name)
+
+    @property
+    def fondo(self) -> str | None:
+        """Color de fondo del botón, en el .md vive en imagen_opciones.fondo"""
+        return self.imagenOpciones.get("fondo")
+
+    @fondo.setter
+    def fondo(self, color: str | None) -> None:
+        if color:
+            self.imagenOpciones["fondo"] = color
+        else:
+            self.imagenOpciones.pop("fondo", None)
 
     @classmethod
     def propiedadesGui(cls) -> list[propiedadAccion]:
@@ -117,5 +127,9 @@ if __name__ == "__main__":
     acción["titulo_opciones"] = {"mqtt": "t"}
     acción["__estado"] = True
     assert acción.tituloOpciones == {"mqtt": "t"} and acción.extra["__estado"] is True
-    assert [p.atributo for p in dataAccion.propiedadesGui()] == ["nombre", "titulo", "key", "descripcion"]
+    assert [p.atributo for p in dataAccion.propiedadesGui()] == ["nombre", "key", "descripcion"]
+    acción.fondo = "#2b7a10"
+    assert acción.aDict()["imagen_opciones"] == {"fondo": "#2b7a10"}
+    acción.fondo = None
+    assert "imagen_opciones" not in acción
     print("ok")

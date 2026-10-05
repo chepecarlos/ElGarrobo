@@ -129,15 +129,18 @@ class MiStreamDeckPlus(MiStreamDeck):
 
             imagenActual: str | None = self.buscarDirecionImagen(accionActual)
             tituloActual: str | None = self.buscarTitulo(accionActual)
+            # Copia: se compara con lo dibujado para redibujar si cambia fondo, rotar, etc.
+            opcionesActual: dict = dict(accionActual.get("imagen_opciones") or {})
 
             imagenVieja: str | None = accionVieja.get("imagen")
             tituloViejo: str | None = accionVieja.get("titulo")
 
-            if imagenActual == imagenVieja and tituloActual == tituloViejo:
+            if imagenActual == imagenVieja and tituloActual == tituloViejo and opcionesActual == accionVieja.get("opciones"):
                 continue
             else:
                 accionVieja["imagen"] = imagenActual
                 accionVieja["titulo"] = tituloActual
+                accionVieja["opciones"] = opcionesActual
                 actualizarTouchscreen = True
 
         if not actualizarTouchscreen:

@@ -198,6 +198,7 @@ class miGui(dispositivo):
                 for atributo, valor in valores.items():
                     self.accionEditar[atributo] = valor
                 self.accionEditar["accion"] = acción
+                self.aplicarApariencia(self.accionEditar)
 
                 if self.opcionesEditar is not None:
                     try:
@@ -216,7 +217,9 @@ class miGui(dispositivo):
                     except Exception as e:
                         return
 
-                dispositivoDestino.listaAcciones.append(dataAccion.desdeDict(acciónNueva))
+                acciónNueva = dataAccion.desdeDict(acciónNueva)
+                self.aplicarApariencia(acciónNueva)
+                dispositivoDestino.listaAcciones.append(acciónNueva)
                 ui.notify(f"Agregando acción {nombre}")
                 logger.info(f"Agregando acción {nombre} a {nombreDispositivo}")
 
@@ -249,6 +252,14 @@ class miGui(dispositivo):
 
             # Campos de dataAccion marcados con gui, la clave del dict es la clave en el .md
             self.editoresData = {propiedad.atributo: self.crearEditor(propiedad, f"editor-{propiedad.atributo}").props("clearable") for propiedad in dataAccion.propiedadesGui()}
+
+            # Apariencia del botón en un diálogo aparte para no llenar el formulario
+            with ui.dialog() as self.dialogoBoton, ui.card().classes("w-80"):
+                ui.label("Apariencia del botón").classes("text-lg")
+                self.editorTitulo = ui.input("Titulo").classes("w-full").props("clearable").mark("editor-titulo")
+                self.editorFondo = ui.color_input("Fondo", preview=True).classes("w-full").mark("editor-fondo")
+                ui.button("Listo", on_click=self.dialogoBoton.close).mark("botonListoBoton")
+            ui.button("Editar apariencia", icon="palette", color=self.colorOscuro, on_click=self.dialogoBoton.open).classes("w-full").mark("botonEditarBoton")
 
             self.listaNombreAcciones: list[str] = list()
             for clave in self.listaClasesAcciones.keys():
@@ -327,11 +338,18 @@ class miGui(dispositivo):
                     ui.icon("help", color="teal-300")
         return editor
 
+    def aplicarApariencia(self, acción: dataAccion) -> None:
+        """Pasa a la acción el título y fondo del editor del botón"""
+        acción.titulo = self.editorTitulo.value or None
+        acción.fondo = self.editorFondo.value or None
+
     def limpiarFormulario(self):
         """Limpia el formulario de acciones"""
         self.botonAgregar.icon = "add"
         for editor in self.editoresData.values():
             editor.value = ""
+        self.editorTitulo.value = ""
+        self.editorFondo.value = ""
         self.editorAcción.value = ""
         self.editorOpción.value = ""
         self.editorOpción.visible = False
@@ -390,6 +408,8 @@ class miGui(dispositivo):
         self.botonAgregar.icon = "edit"
         for atributo, editor in self.editoresData.items():
             editor.value = accion.get(atributo)
+        self.editorTitulo.value = accion.titulo or ""
+        self.editorFondo.value = accion.fondo or ""
 
         # Sin esto mostrarOpciones pasaría los valores de la acción editada antes
         self.opcionesEditar = None
