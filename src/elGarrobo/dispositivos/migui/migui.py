@@ -244,13 +244,12 @@ class miGui(dispositivo):
                             opciones[propiedad.atributo] = valor
                 return opciones
 
-        with ui.scroll_area().style("height: 75vh"):
-            ancho = "200px"
+        with ui.scroll_area().classes("w-full").style("height: 75vh"):
 
             # self.editorTitulo.visible = False
-            self.editorNombre = ui.input("Nombre").style(f"width: {ancho}").props("clearable").mark("editorNombre")
-            self.editorTitulo = ui.input("Titulo").style(f"width: {ancho}").props("clearable").mark("editorTitulo")
-            self.editorTecla = ui.input("Tecla").style(f"width: {ancho}").props("clearable").mark("editorTecla")
+            self.editorNombre = ui.input("Nombre").classes("w-full").props("clearable").mark("editorNombre")
+            self.editorTitulo = ui.input("Titulo").classes("w-full").props("clearable").mark("editorTitulo")
+            self.editorTecla = ui.input("Tecla").classes("w-full").props("clearable").mark("editorTecla")
 
             self.listaNombreAcciones: list[str] = list()
             for clave in self.listaClasesAcciones.keys():
@@ -258,11 +257,11 @@ class miGui(dispositivo):
                 nombreAccion = claseAccion().nombre
                 self.listaNombreAcciones.append(nombreAccion)
 
-            self.editorAcción = ui.select(options=self.listaNombreAcciones, with_input=True, label="acción", on_change=self.mostrarOpciones).style(f"width: {ancho}").mark("editorAcción")
-            self.editorDescripcion = ui.label("").style(f"width: {ancho}").classes("bg-teal-700 p-2 text-white rounded-lg")
+            self.editorAcción = ui.select(options=self.listaNombreAcciones, with_input=True, label="acción", on_change=self.mostrarOpciones).classes("w-full").mark("editorAcción")
+            self.editorDescripcion = ui.label("").classes("w-full bg-teal-700 p-2 text-white rounded-lg")
             self.editorDescripcion.visible = False
-            self.editorPropiedades = ui.column()
-            self.editorOpción = ui.textarea(label="Opciones", placeholder="").style(f"width: {ancho}")
+            self.editorPropiedades = ui.column().classes("w-full")
+            self.editorOpción = ui.textarea(label="Opciones", placeholder="").classes("w-full")
             self.editorOpción.visible = False
 
         with ui.button_group().props("rounded"):
@@ -318,7 +317,7 @@ class miGui(dispositivo):
                     if obligatorio:
                         etiqueta = "* " + etiqueta
                     crearInput = ui.textarea if propiedad.multilinea else ui.input
-                    self.opcionesEditar[nombre] = crearInput(label=etiqueta, placeholder=ejemplo).mark(f"opción-{nombre}")
+                    self.opcionesEditar[nombre] = crearInput(label=etiqueta, placeholder=ejemplo).classes("w-full").mark(f"opción-{nombre}")
                     with self.opcionesEditar[nombre]:
                         with ui.button(on_click=lambda d=descripción: ui.notify(d)).props("flat dense"):
                             ui.icon("help", color="teal-300")
