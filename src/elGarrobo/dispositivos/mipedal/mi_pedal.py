@@ -117,5 +117,4 @@ class MiPedal(dispositivo):
 
     def avisarCambioPagina(self) -> None:
         logger.info(f"Pedal[Pagina] {self.nombre} teclas {self.desfaceTeclas + 1}-{self.desfaceTeclas + self.cantidad}")
-        if self.funcionActualizarPestaña is not None:
-            self.funcionActualizarPestaña(self)
+        self.avisarGui()

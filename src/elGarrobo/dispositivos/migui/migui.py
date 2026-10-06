@@ -2,6 +2,7 @@ import copy
 import logging
 import threading
 
+import yaml
 from nicegui import app, ui
 
 from elGarrobo.accionesOOP import accion
@@ -273,7 +274,7 @@ class miGui(dispositivo):
             self.editorDescripcion = ui.label("").classes("w-full bg-teal-700 p-2 text-white rounded-lg")
             self.editorDescripcion.visible = False
             self.editorPropiedades = ui.column().classes("w-full")
-            self.editorOpción = ui.textarea(label="Opciones", placeholder="").classes("w-full")
+            self.editorOpción = ui.textarea(label="Opciones (solo lectura, se conservan al guardar)").classes("w-full").props("readonly").mark("editorOpción")
             self.editorOpción.visible = False
 
         with ui.button_group().props("rounded"):
@@ -385,6 +386,7 @@ class miGui(dispositivo):
         self.editorAcción.value = ""
         self.editorOpción.value = ""
         self.editorOpción.visible = False
+        self.editorAcción.set_options(self.listaNombreAcciones)
         self.editorDescripcion.text = ""
         self.editorDescripcion.visible = False
         self.editorPropiedades.clear()
@@ -447,12 +449,13 @@ class miGui(dispositivo):
         self.opcionesEditar = None
         claseAcción = self.obtenerAcciónOop(accion.get("accion"))
         if claseAcción is None:
-            self.editorAcción.value = accion.get("accion")
+            # Acción sin clase OOP (ej. macro): se agrega al selector para no perderla al guardar
+            comando = accion.get("accion")
+            self.editorAcción.set_options(self.listaNombreAcciones + [comando], value=comando)
         else:
             objetoClase = claseAcción()
             self.editorAcción.value = objetoClase.nombre
         self.mostrarOpciones()
-        textoOpciones = ""
         opcionesActuales = accion.get("opciones")
         self.editorOpción.visible = False
 
@@ -470,13 +473,9 @@ class miGui(dispositivo):
                                 objetoPropiedad = self.opcionesEditar.get(propiedad.nombre)
                                 objetoPropiedad.value = opcionesActuales.get(propiedadAccion)
             else:
+                # Sin editor para estas opciones (ej. pasos de una macro): se muestran y se guardan sin cambios
                 self.editorOpción.visible = True
-                if isinstance(opcionesActuales, dict):
-                    for opcionInterna in opcionesActuales.keys():
-                        valorOpcion = opcionesActuales.get(opcionInterna)
-                        textoOpciones = textoOpciones + f"{opcionInterna}: {valorOpcion}, "
-
-                self.editorOpción.value = textoOpciones
+                self.editorOpción.value = yaml.safe_dump(opcionesActuales, allow_unicode=True, sort_keys=False)
 
     def obtenerDispositivoSeleccionado(self, nombreDispositivo: str = None) -> dispositivo:
         """Busca la instancia real del dispositivo por nombre de pestaña
@@ -762,10 +761,9 @@ class miGui(dispositivo):
                                 ui.label(f"{tecla}: {acción.get('nombre')}" if acción is not None else str(tecla)).classes("text-xs")
 
     def cambiarPagina(self, dispositivo: dispositivo, cambiar) -> None:
-        """Cambia la página del dispositivo físico y redibuja la pestaña"""
+        """Cambia la página del dispositivo físico; el dispositivo avisa a la GUI para redibujar la pestaña"""
         cambiar()
         dispositivo.actualizar()
-        self.actualizarPestaña(dispositivo)
 
     def nuevaAcciónTecla(self, dispositivo: dispositivo, tecla: int) -> None:
         """Prepara el formulario para agregar una acción en una tecla vacía de la cuadrícula"""

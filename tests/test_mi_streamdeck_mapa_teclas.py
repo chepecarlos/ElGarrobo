@@ -98,3 +98,19 @@ def test_gui_muestra_el_icono_derecho_en_aparato_rotado(tmp_path):
 
     assert enGui.getpixel((5, 36)) == (255, 0, 0), "la GUI lo muestra como el archivo"
     assert enAparato.getpixel((5, 36)) != (255, 0, 0), "el aparato lo gira para compensar su montaje"
+
+
+def test_combinado_avisa_a_la_gui_al_cambiar_de_pagina():
+    from elGarrobo.dispositivos.dataAccion import dataAccion
+    from elGarrobo.dispositivos.mideck.mi_deck_combinado import MiDeckCombinado
+
+    combinado = MiDeckCombinado({"nombre": "combinado", "streamDecks": [{"nombre": "V2"}]})
+    combinado.cantidadBotones = 15
+    combinado._listaAcciones = [dataAccion(key=40)]
+    avisos = []
+    combinado.funcionActualizarPestaña = avisos.append
+
+    combinado.siguientePagina()
+    combinado.anteriorPagina()
+
+    assert avisos == [combinado, combinado]

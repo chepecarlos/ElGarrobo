@@ -202,6 +202,10 @@ class dispositivo:
 
     def accionesCargadas(self) -> None:
         """Se llama al cargar las acciones de un folder; los dispositivos agregan lo suyo antes de avisar a la GUI"""
+        self.avisarGui()
+
+    def avisarGui(self) -> None:
+        """Redibuja la pestaña del dispositivo en la GUI, si hay: cambió de folder, de página, etc."""
         if self.funcionActualizarPestaña is not None:
             self.funcionActualizarPestaña(self)
 

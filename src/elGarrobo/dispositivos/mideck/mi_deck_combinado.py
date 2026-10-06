@@ -162,6 +162,7 @@ class MiDeckCombinado(dispositivo):
         for deck in self.listaDeck:
             deck.desfaceTeclas += self.cantidadBotones
         self.recargar = True
+        self.avisarGui()
 
     def anteriorPagina(self):
         """Regresa una pagina los StreamDeck Combinados"""
@@ -179,6 +180,7 @@ class MiDeckCombinado(dispositivo):
             deck.desfaceTeclas -= self.cantidadBotones
 
         self.recargar = True
+        self.avisarGui()
 
     def desconectar(self):
 

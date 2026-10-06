@@ -451,3 +451,22 @@ class TestCuadricula:
             guiPedal.cambiarVista(pedal, True)
         await user.should_see(marker="orden-key-pedal")
         await user.should_not_see(marker="tecla-pedal-1")
+
+
+
+class TestAccionSinClase:
+    async def test_editar_macro_conserva_accion_y_pasos(self, user: User, gui: miGui, deck: dispositivoFalso):
+        pasos = [{"accion": "teclas", "opciones": {"teclas": ["s"]}}]
+        deck.listaAcciones.append(dataAccion.desdeDict({"nombre": "Macro", "key": 9, "accion": "macro", "opciones": pasos}))
+        await user.open("/")
+        user.find(marker="editar-deck-9").click()
+
+        assert gui.editorAcción.value == "macro"
+        assert "teclas" in gui.editorOpción.value
+
+        user.find(marker="editor-nombre").clear().type("Macro 2")
+        user.find(marker="botonAgregar").click()
+        await user.should_see("Editar acción Macro 2")
+
+        macro = deck.listaAcciones[-1]
+        assert (macro.nombre, macro.accion, macro.opciones) == ("Macro 2", "macro", pasos)
