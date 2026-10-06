@@ -46,3 +46,55 @@ class TestMapaTeclas:
         deck = self._crear_deck(3, 5, 180)
         logicoANativo, _ = deck._mapaTeclas()
         assert logicoANativo == list(reversed(range(15)))
+
+
+class TestGruposBotones:
+    def _crear_deck(self, nombre, layout, rotar, base):
+        Clase = cargar_clase()
+        deck = Clase({"nombre": nombre, "rotar": rotar})
+        deck.layout = layout
+        deck.baseTeclas = base
+        return deck
+
+    def test_rotado_se_ve_al_reves(self):
+        normal = self._crear_deck("V2", (3, 5), 0, 1).gruposBotones()[0]
+        rotado = self._crear_deck("V1", (3, 5), -90, 16).gruposBotones()[0]
+
+        assert (normal.filas, normal.columnas, normal.primeraTecla) == (3, 5, 1)
+        assert (rotado.filas, rotado.columnas, rotado.primeraTecla) == (5, 3, 16)
+
+    def test_combinado_junta_sus_streamdecks_y_sigue_la_pagina(self):
+        from elGarrobo.dispositivos.mideck.mi_deck_combinado import MiDeckCombinado
+
+        combinado = MiDeckCombinado({"nombre": "combinado", "streamDecks": [{"nombre": "V2"}, {"nombre": "V1", "rotar": -90}]})
+        for deck, base in zip(combinado.listaDeck, (1, 16)):
+            deck.layout = (3, 5)
+            deck.baseTeclas = base
+            deck.desfaceTeclas = 30
+
+        grupos = combinado.gruposBotones()
+
+        assert [(g.nombre, g.filas, g.columnas, g.primeraTecla) for g in grupos] == [("V2", 3, 5, 31), ("V1", 5, 3, 46)]
+        assert grupos[1].dibujante is combinado.listaDeck[1]
+
+
+def test_gui_muestra_el_icono_derecho_en_aparato_rotado(tmp_path):
+    from PIL import Image
+
+    from elGarrobo.dispositivos.dataAccion import dataAccion
+    from elGarrobo.dispositivos.dibujoBoton import dibujoBoton
+
+    # Mitad izquierda roja: rotado -90 en el aparato, sin rotar en la GUI
+    Image.new("RGB", (72, 72), "blue").save(tmp_path / "icono.png")
+    icono = Image.open(tmp_path / "icono.png")
+    icono.paste((255, 0, 0), (0, 0, 36, 72))
+    icono.save(tmp_path / "icono.png")
+
+    dibujo = dibujoBoton(folderPerfil=tmp_path, rotar=-90)
+    acción = dataAccion(imagen="icono.png")
+
+    enAparato = dibujo.dibujar(acción, (72, 72))
+    enGui = dibujo.dibujar(acción, (72, 72), compensarRotar=-90)
+
+    assert enGui.getpixel((5, 36)) == (255, 0, 0), "la GUI lo muestra como el archivo"
+    assert enAparato.getpixel((5, 36)) != (255, 0, 0), "el aparato lo gira para compensar su montaje"

@@ -677,7 +677,7 @@ class miGui(dispositivo):
             dispositivo.panel.clear()
             with dispositivo.panel:
                 acciones = dispositivo.listaAcciones
-                cuadricula = dispositivo.distribucionBotones() is not None
+                cuadricula = dispositivo.gruposBotones() is not None
                 if cuadricula:
                     ui.toggle(
                         {False: "Cuadrícula", True: "Lista"},
@@ -716,42 +716,50 @@ class miGui(dispositivo):
 
         Args:
             listaAcciones (list): Lista de acciones del dispositivo
-            dispositivo (dispositivo): dispositivo con distribucionBotones()
+            dispositivo (dispositivo): dispositivo con gruposBotones()
         """
-        filas, columnas = dispositivo.distribucionBotones()
-        cantidad = filas * columnas
-        desface = getattr(dispositivo, "desfaceTeclas", 0)
+        grupos = dispositivo.gruposBotones()
         accionesPorTecla = {str(acción.get("key")): acción for acción in listaAcciones}
-        dibujo = dispositivo.dibujo()
-        tamaño = dispositivo.tamañoBoton()
         nombre = dispositivo.nombre
 
-        if hasattr(dispositivo, "siguientePagina"):
+        if hasattr(dispositivo, "siguientePagina") and grupos:
+            primera = min(grupo.primeraTecla for grupo in grupos)
+            ultima = max(grupo.primeraTecla + grupo.filas * grupo.columnas - 1 for grupo in grupos)
             with ui.row().classes("items-center p-2"):
                 ui.button(icon="chevron_left", color="teal-500", on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.anteriorPagina)).mark(f"paginaAnterior-{nombre}")
-                ui.label(f"Teclas {desface + 1} - {desface + cantidad}").mark(f"pagina-{nombre}")
+                ui.label(f"Teclas {primera} - {ultima}").mark(f"pagina-{nombre}")
                 ui.button(icon="chevron_right", color="teal-500", on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.siguientePagina)).mark(f"paginaSiguiente-{nombre}")
 
-        # ponytail: la primera tecla es 1 (pedal); el StreamDeck numera distinto, ajustar al agregarlo
-        with ui.grid(columns=columnas).classes("gap-2 p-2"):
-            for indice in range(cantidad):
-                tecla = desface + indice + 1
-                acción = accionesPorTecla.get(str(tecla))
-                imagen = None
-                if acción is not None:
-                    try:
-                        imagen = dibujo.dibujar(acción, tamaño, conGif=True)
-                    except Exception as error:
-                        logger.warning(f"Vista previa[Error] {nombre}[{tecla}] {error}")
+        with ui.row().classes("items-start gap-8 p-2"):
+            for grupo in grupos:
+                dibujante = grupo.dibujante
+                dibujo = dibujante.dibujo()
+                tamaño = dibujante.tamañoBoton()
+                # El aparato ya está rotado frente al usuario, el ícono se muestra derecho
+                rotarAparato = getattr(dibujante, "rotar", 0)
 
-                with ui.column().classes("items-center gap-1"):
-                    if imagen is not None:
-                        boton = ui.image(imagen).classes("w-24 h-24 rounded cursor-pointer")
-                        boton.on("click", lambda a=acción: self.seleccionarAcción(a, dispositivo))
-                    else:
-                        boton = ui.button(icon="add", color="grey-8", on_click=lambda t=tecla: self.nuevaAcciónTecla(dispositivo, t)).classes("w-24 h-24")
-                    boton.mark(f"tecla-{nombre}-{tecla}")
-                    ui.label(f"{tecla}: {acción.get('nombre')}" if acción is not None else str(tecla)).classes("text-xs")
+                with ui.column().classes("items-center"):
+                    if len(grupos) > 1:
+                        ui.label(grupo.nombre).classes("font-bold")
+                    with ui.grid(columns=grupo.columnas).classes("gap-2"):
+                        for indice in range(grupo.filas * grupo.columnas):
+                            tecla = grupo.primeraTecla + indice
+                            acción = accionesPorTecla.get(str(tecla))
+                            imagen = None
+                            if acción is not None:
+                                try:
+                                    imagen = dibujo.dibujar(acción, tamaño, conGif=True, compensarRotar=rotarAparato)
+                                except Exception as error:
+                                    logger.warning(f"Vista previa[Error] {nombre}[{tecla}] {error}")
+
+                            with ui.column().classes("items-center gap-1"):
+                                if imagen is not None:
+                                    boton = ui.image(imagen).classes("w-24 h-24 rounded cursor-pointer")
+                                    boton.on("click", lambda a=acción: self.seleccionarAcción(a, dispositivo))
+                                else:
+                                    boton = ui.button(icon="add", color="grey-8", on_click=lambda t=tecla: self.nuevaAcciónTecla(dispositivo, t)).classes("w-24 h-24")
+                                boton.mark(f"tecla-{nombre}-{tecla}")
+                                ui.label(f"{tecla}: {acción.get('nombre')}" if acción is not None else str(tecla)).classes("text-xs")
 
     def cambiarPagina(self, dispositivo: dispositivo, cambiar) -> None:
         """Cambia la página del dispositivo físico y redibuja la pestaña"""

@@ -1,4 +1,5 @@
 import os
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Optional, Type
@@ -14,6 +15,19 @@ from elGarrobo.miLibrerias import (
 )
 
 logger = ConfigurarLogging(__name__)
+
+
+@dataclass
+class grupoBotones:
+    """Botones físicos de un aparato, como los ve el usuario (ya rotado), en la página actual"""
+
+    nombre: str
+    filas: int
+    columnas: int
+    primeraTecla: int
+    "Tecla del botón de arriba a la izquierda, siguen en orden de lectura"
+    dibujante: "dispositivo"
+    "Dispositivo que da tamaño, fuente y rotación para dibujar estos botones"
 
 
 class dispositivo:
@@ -179,10 +193,17 @@ class dispositivo:
             return
 
         self.recargar = True
-        self.listaAcciones = dataAcciones
+        # Sin el setter: la GUI se avisa en accionesCargadas(), cuando folder y todo lo demás ya cambió
+        self._listaAcciones = dataAcciones
         self.folderActual = folderData.relative_to(folderPerfil)
         logger.info(f"AccionesCargadas[{self.nombre}] {len(self.listaAcciones)} - /{self.folderActual}")
+        self.accionesCargadas()
         return
+
+    def accionesCargadas(self) -> None:
+        """Se llama al cargar las acciones de un folder; los dispositivos agregan lo suyo antes de avisar a la GUI"""
+        if self.funcionActualizarPestaña is not None:
+            self.funcionActualizarPestaña(self)
 
     def dibujo(self) -> dibujoBoton:
         """Datos de este dispositivo y su folder para dibujar botones (vista previa en la GUI y StreamDeck)"""
@@ -195,8 +216,8 @@ class dispositivo:
             rotar=getattr(self, "rotar", 0),
         )
 
-    def distribucionBotones(self) -> tuple[int, int] | None:
-        """(filas, columnas) de los botones físicos para dibujar el dispositivo en la GUI; None muestra la tabla"""
+    def gruposBotones(self) -> list["grupoBotones"] | None:
+        """Botones físicos de la página actual para dibujar el dispositivo en la GUI; None muestra la tabla"""
         return None
 
     def tamañoBoton(self) -> tuple[int, int]:

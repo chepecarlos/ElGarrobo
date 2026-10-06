@@ -98,21 +98,15 @@ class MiDeckCombinado(dispositivo):
         if not self.activado:
             return
 
-        # folderAnterior = self.folderActual
-
         super().cargarAccionesFolder(folder, recargar)
 
-        if not self.recargar:
-            return
-
+    def accionesCargadas(self) -> None:
+        """Pasa las acciones y el folder a cada StreamDeck antes de avisar a la GUI"""
         for deckActual in self.listaDeck:
             deckActual.listaAcciones = self.listaAcciones
             deckActual.folderActual = self.folderActual
             deckActual.desfaceTeclas = 0
-
-        # if self.folderActual != folderAnterior or recargar:
-        #     self.limpiarIconos()
-        #     self.actualizarIconos()
+        super().accionesCargadas()
 
     def configurarFuncionAccion(self, funcionAccion: callable):
         """Prepara la la funciona para ejecutar acciones"""
@@ -127,6 +121,10 @@ class MiDeckCombinado(dispositivo):
 
         for deck in self.listaDeck:
             deck.limpiarIconos()
+
+    def gruposBotones(self) -> list:
+        """Las teclas de cada StreamDeck que lo forman, cada uno con su tamaño y rotación"""
+        return [grupo for deck in self.listaDeck for grupo in deck.gruposBotones()]
 
     def tamañoBoton(self) -> tuple[int, int]:
         """Tamaño de las teclas del primer StreamDeck"""

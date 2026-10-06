@@ -45,7 +45,7 @@ class dibujoBoton:
     patronTitulo = re.compile(r"(?<!{){[^{}]*}(?!})")
     "Patrón para detectar campos de formato en el título, evitando los dobles {{}} usados para escapar llaves en formato."
 
-    def dibujar(self, accion, tamaño: tuple[int, int], conGif: bool = False) -> ImageImage | None:
+    def dibujar(self, accion, tamaño: tuple[int, int], conGif: bool = False, compensarRotar: int = 0) -> ImageImage | None:
         """Imagen completa del botón: fondo, imagen, título y rotación
 
         Args:
@@ -53,6 +53,7 @@ class dibujoBoton:
             tamaño: ancho y alto del botón en pixeles
             conGif: si es False y la imagen es gif devuelve None (el StreamDeck la anima aparte),
                 si es True dibuja el primer cuadro
+            compensarRotar: grados que está rotado el aparato; la GUI lo usa para mostrar el ícono como lo ve el usuario
 
         Returns:
             ImageImage | None: imagen del botón
@@ -78,7 +79,7 @@ class dibujoBoton:
         imagen = self.obtenerImagen(imagen, accion, conGif)
         if imagen is None:
             return None
-        return imagen.rotate(rotar, resample=Image.BICUBIC, expand=False)
+        return imagen.rotate(rotar - compensarRotar, resample=Image.BICUBIC, expand=False)
 
     def obtenerPropiedad(self, accion, key: str, default=None) -> Any:
         """Busca una propiedad anidada con "/" (ej: "titulo_opciones/color"), primero en la acción y luego en el folder"""

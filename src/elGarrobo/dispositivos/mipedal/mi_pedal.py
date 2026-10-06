@@ -3,7 +3,7 @@
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Transport.Transport import TransportError
 
-from elGarrobo.dispositivos.dispositivo import dispositivo
+from elGarrobo.dispositivos.dispositivo import dispositivo, grupoBotones
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 logger = ConfigurarLogging(__name__)
@@ -92,13 +92,12 @@ class MiPedal(dispositivo):
             self.deck.reset()
             self.deck.close()
 
-    def distribucionBotones(self) -> tuple[int, int]:
-        return (1, self.cantidad)
+    def gruposBotones(self) -> list[grupoBotones]:
+        return [grupoBotones(self.nombre, 1, self.cantidad, self.desfaceTeclas + 1, self)]
 
-    def cargarAccionesFolder(self, folder: str = "/", recargar: bool = False):
-        super().cargarAccionesFolder(folder, recargar)
-        if self.recargar:
-            self.desfaceTeclas = 0
+    def accionesCargadas(self) -> None:
+        self.desfaceTeclas = 0
+        super().accionesCargadas()
 
     def siguientePagina(self) -> None:
         """Pasa a los siguientes pedales, si hay acciones más adelante"""

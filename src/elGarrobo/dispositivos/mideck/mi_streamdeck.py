@@ -13,6 +13,7 @@ from StreamDeck.ImageHelpers import PILHelper
 from StreamDeck.Transport.Transport import TransportError
 
 from elGarrobo.dispositivos import dispositivo
+from elGarrobo.dispositivos.dispositivo import grupoBotones
 from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor, SalvarArchivo
 
@@ -300,6 +301,14 @@ class MiStreamDeck(dispositivo):
 
     def __str__(self) -> str:
         return f"MiStreamDeck(id={self.id}, nombre={self.nombre}, serial={self.dispositivo}, layout={self.layout})"
+
+    def gruposBotones(self) -> list[grupoBotones]:
+        """Teclas como se ven con el StreamDeck rotado: un 3x5 con rotar ±90 se ve 5x3"""
+        # ponytail: sin conectar no se sabe el layout, se asume StreamDeck Original 3x5
+        filas, columnas = self.layout or (3, 5)
+        if (self.rotar // 90) % 2:
+            filas, columnas = columnas, filas
+        return [grupoBotones(self.nombre, filas, columnas, self.baseTeclas + self.desfaceTeclas, self)]
 
     def tamañoBoton(self) -> tuple[int, int]:
         """Tamaño en pixeles de las teclas, 72x72 (StreamDeck Original) si no está conectado"""
