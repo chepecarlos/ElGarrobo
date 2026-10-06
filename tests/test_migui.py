@@ -504,3 +504,27 @@ class TestPropiedadesFolder:
         await user.open("/")
         imagen = next(e for e in user.find(marker="tecla-pedal-1").elements).source
         assert imagen.getpixel((70, 70)) == (0, 255, 0)
+
+
+
+class TestSubirFolder:
+    async def test_sube_y_se_desactiva_en_la_raiz(self, user: User, monkeypatch, tmp_path):
+        monkeypatch.setattr(sys.modules["elGarrobo.dispositivos.dispositivo"], "ObtenerFolderConfig", lambda: tmp_path)
+        (tmp_path / "default" / "sub").mkdir(parents=True)
+        (tmp_path / "default" / "pedal.json").write_text('[{"nombre": "Raiz", "key": 1}]')
+        (tmp_path / "default" / "sub" / "pedal.json").write_text('[{"nombre": "Sub", "key": 1}]')
+        pedal = MiPedal({"nombre": "pedal", "archivo": "pedal"})
+        pedal.asignarPerfil("default")
+        pedal.cargarAccionesFolder("/")
+        pedal.cargarAccionesFolder("sub")
+        gui = miGui({"nombre": "gui"})
+        gui.listaClasesAcciones = cargarClasesAcciones()
+        gui.listaDispositivos = [pedal]
+
+        await user.open("/")
+        assert next(iter(user.find(marker="subirFolder-pedal").elements)).enabled
+        user.find(marker="subirFolder-pedal").click()
+
+        await user.should_see("1: Raiz")
+        assert pedal.enFolderRaiz()
+        assert not next(iter(user.find(marker="subirFolder-pedal").elements)).enabled

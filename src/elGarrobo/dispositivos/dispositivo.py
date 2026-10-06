@@ -243,6 +243,10 @@ class dispositivo:
         folderPerfil = Path(self.folderPerfil)
         return (folderConfig / folderPerfil).resolve()
 
+    def enFolderRaiz(self) -> bool:
+        """True si está en el folder del perfil y no se puede subir más"""
+        return str(self.folderActual).strip("/") in ("", ".")
+
     def regresarFolderActual(self, directo: bool = False):
         """Sube un folder a dispositivo y carga las acciones
 

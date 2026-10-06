@@ -732,6 +732,9 @@ class miGui(dispositivo):
         nombre = dispositivo.nombre
 
         with ui.row().classes("items-center p-2 w-full"):
+            subir = ui.button(icon="arrow_upward", color="teal-500", on_click=lambda: self.subirFolder(dispositivo)).mark(f"subirFolder-{nombre}")
+            subir.tooltip("Subir al folder anterior")
+            subir.set_enabled(not dispositivo.enFolderRaiz())
             if hasattr(dispositivo, "siguientePagina") and grupos:
                 anterior = ui.button(icon="chevron_left", color="teal-500", on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.anteriorPagina)).mark(f"paginaAnterior-{nombre}")
                 anterior.set_enabled(dispositivo.puedeAnteriorPagina())
@@ -801,6 +804,11 @@ class miGui(dispositivo):
         self.dialogoFolder.close()
         ui.notify(f"Apariencia del folder guardada en {dispositivo.nombre}")
         self.actualizarPestaña(dispositivo)
+
+    def subirFolder(self, dispositivo: dispositivo) -> None:
+        """Carga el folder anterior en el dispositivo; avisa a la GUI al cargar"""
+        dispositivo.regresarFolderActual()
+        dispositivo.actualizar()
 
     def cambiarPagina(self, dispositivo: dispositivo, cambiar) -> None:
         """Cambia la página del dispositivo físico; el dispositivo avisa a la GUI para redibujar la pestaña"""
