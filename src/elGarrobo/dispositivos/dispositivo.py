@@ -58,8 +58,6 @@ class dispositivo:
     "Sub Categoria del dispositivo"
     funcionActualizarPestaña: Optional[Callable] = None
     "Función que llama actualizar la information de GUI"
-    propiedadFolder: dict = dict()
-    "propiedades para aplicar a todos los botos"
 
     pestaña = None
     "Pestaña del dispositivo en la interfaz"
@@ -208,6 +206,11 @@ class dispositivo:
         """Redibuja la pestaña del dispositivo en la GUI, si hay: cambió de folder, de página, etc."""
         if self.funcionActualizarPestaña is not None:
             self.funcionActualizarPestaña(self)
+
+    @property
+    def propiedadFolder(self) -> dataAccion | None:
+        """Acción con key 'propiedad_folder' del folder actual: sus opciones son el valor por defecto de los botones"""
+        return next((acción for acción in self.listaAcciones or [] if acción.get("key") == "propiedad_folder"), None)
 
     def dibujo(self) -> dibujoBoton:
         """Datos de este dispositivo y su folder para dibujar botones (vista previa en la GUI y StreamDeck)"""

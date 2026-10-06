@@ -114,3 +114,16 @@ def test_combinado_avisa_a_la_gui_al_cambiar_de_pagina():
     combinado.anteriorPagina()
 
     assert avisos == [combinado, combinado]
+
+
+def test_cambio_de_fondo_del_folder_redibuja_los_botones():
+    from elGarrobo.dispositivos.dataAccion import dataAccion
+
+    deck = cargar_clase()({"nombre": "V2"})
+    acción = dataAccion(key=1, titulo="A")
+    deck._listaAcciones = [acción, dataAccion(key="propiedad_folder", imagenOpciones={"fondo": "#000000"})]
+    antes = deck.opcionesDibujo(acción)
+
+    deck.propiedadFolder.fondo = "#ff0000"
+
+    assert deck.opcionesDibujo(acción) != antes

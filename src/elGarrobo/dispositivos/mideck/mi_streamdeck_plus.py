@@ -130,8 +130,7 @@ class MiStreamDeckPlus(MiStreamDeck):
             dibujo = self.dibujo()
             imagenActual: str | None = dibujo.buscarDireccionImagen(accionActual)
             tituloActual: str | None = dibujo.buscarTitulo(accionActual)
-            # Copia: se compara con lo dibujado para redibujar si cambia fondo, rotar, etc.
-            opcionesActual: dict = dict(accionActual.get("imagen_opciones") or {})
+            opcionesActual = self.opcionesDibujo(accionActual)
 
             imagenVieja: str | None = accionVieja.get("imagen")
             tituloViejo: str | None = accionVieja.get("titulo")

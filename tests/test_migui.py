@@ -470,3 +470,33 @@ class TestAccionSinClase:
 
         macro = deck.listaAcciones[-1]
         assert (macro.nombre, macro.accion, macro.opciones) == ("Macro 2", "macro", pasos)
+
+
+
+class TestPropiedadesFolder:
+    async def test_crear_editar_y_quitar(self, user: User, guiPedal: miGui, pedal: MiPedal):
+        await user.open("/")
+        user.find(marker="propiedadesFolder-pedal").click()
+        guiPedal.editorFolderFondo.value = "#0606bb"
+        guiPedal.editorFolderTamaño.value = 40
+        user.find(marker="botonGuardarFolder").click()
+
+        assert pedal.propiedadFolder.aDict() == {
+            "key": "propiedad_folder",
+            "imagen_opciones": {"fondo": "#0606bb"},
+            "titulo_opciones": {"tamanno_maximo": 40},
+        }
+
+        user.find(marker="propiedadesFolder-pedal").click()
+        assert guiPedal.editorFolderFondo.value == "#0606bb"
+        guiPedal.editorFolderFondo.value = ""
+        guiPedal.editorFolderTamaño.value = None
+        user.find(marker="botonGuardarFolder").click()
+
+        assert pedal.propiedadFolder is None, "vacía se quita del .md"
+
+    async def test_fondo_del_folder_en_la_cuadricula(self, user: User, guiPedal: miGui, pedal: MiPedal):
+        pedal.listaAcciones.append(dataAccion(key="propiedad_folder", imagenOpciones={"fondo": "#00ff00"}))
+        await user.open("/")
+        imagen = next(e for e in user.find(marker="tecla-pedal-1").elements).source
+        assert imagen.getpixel((70, 70)) == (0, 255, 0)

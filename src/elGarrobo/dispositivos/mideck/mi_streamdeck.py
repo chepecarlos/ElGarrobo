@@ -1,5 +1,6 @@
 # https://python-elgato-streamdeck.readthedocs.io/en/stable/index.html
 
+import copy
 import itertools
 import threading
 import time
@@ -204,7 +205,6 @@ class MiStreamDeck(dispositivo):
 
         logger.info(f"Deck[Dibujar] {self.nombre}")
 
-        self.actualizarDataFolder()
 
         _, nativoALogico = self._mapaTeclas()
 
@@ -221,8 +221,7 @@ class MiStreamDeck(dispositivo):
                 dibujo = self.dibujo()
                 imagenActual: str = dibujo.buscarDireccionImagen(accionActual)
                 tituloActual: str = dibujo.buscarTitulo(accionActual)
-                # Copia: se compara con lo dibujado para redibujar si cambia fondo, rotar, etc.
-                opcionesActual: dict = dict(accionActual.get("imagen_opciones") or {})
+                opcionesActual = self.opcionesDibujo(accionActual)
 
                 imagenVieja: str = accionVieja.get("imagen")
                 tituloViejo: str = accionVieja.get("titulo")
@@ -309,6 +308,18 @@ class MiStreamDeck(dispositivo):
         if (self.rotar // 90) % 2:
             filas, columnas = columnas, filas
         return [grupoBotones(self.nombre, filas, columnas, self.baseTeclas + self.desfaceTeclas, self)]
+
+    def opcionesDibujo(self, accion) -> tuple:
+        """Copia de las opciones que cambian el dibujo de un botón (las suyas y las del folder),
+        se compara con lo ya dibujado para redibujar si cambia fondo, rotar, tamaño del título, etc."""
+        propiedadFolder = self.propiedadFolder
+        return copy.deepcopy(
+            (
+                accion.get("imagen_opciones"),
+                accion.get("titulo_opciones"),
+                propiedadFolder.aDict() if propiedadFolder is not None else None,
+            )
+        )
 
     def tamañoBoton(self) -> tuple[int, int]:
         """Tamaño en pixeles de las teclas, 72x72 (StreamDeck Original) si no está conectado"""
@@ -410,15 +421,3 @@ class MiStreamDeck(dispositivo):
 
             if tiempoEspera >= 0:
                 time.sleep(tiempoEspera)
-
-    def actualizarDataFolder(self) -> None:
-        """Actualiza las propiedades de folder para los botones."""
-
-        self.propiedadFolder = dict()
-
-        for accion in self.listaAcciones:
-            if not isinstance(accion, (dict, dataAccion)):
-                continue
-            if accion.get("key") == "propiedad_folder":
-                self.propiedadFolder = accion
-                break

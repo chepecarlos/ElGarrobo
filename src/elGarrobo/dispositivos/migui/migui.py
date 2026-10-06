@@ -73,6 +73,8 @@ class miGui(dispositivo):
         self.editoresData: dict = {}
         self.ordenCampo: str = "key"
         self.dispositivosEnLista: set[str] = set()
+        self.dispositivoFolder = None
+        "Dispositivo cuyas propiedades del folder se están editando"
         "Dispositivos con distribución física que el usuario cambió a vista de lista"
         self.ordenInverso: bool = False
 
@@ -252,6 +254,14 @@ class miGui(dispositivo):
 
             # Campos de dataAccion marcados con gui, la clave del dict es la clave en el .md
             self.editoresData = {propiedad.atributo: self.crearEditor(propiedad, f"editor-{propiedad.atributo}").props("clearable") for propiedad in dataAccion.propiedadesGui()}
+
+            # Propiedades del folder: valores por defecto de los botones del folder actual
+            with ui.dialog() as self.dialogoFolder, ui.card():
+                ui.label("Apariencia del folder").classes("text-lg")
+                ui.label("Valores por defecto de los botones de este folder").classes("text-xs")
+                self.editorFolderFondo = ui.color_input("Fondo", preview=True).classes("w-64").mark("editor-folder-fondo")
+                self.editorFolderTamaño = ui.number("Tamaño máximo del título", min=1, precision=0).classes("w-64").mark("editor-folder-tamanno")
+                ui.button("Guardar", on_click=self.guardarPropiedadesFolder).mark("botonGuardarFolder")
 
             # Apariencia del botón en un diálogo aparte para no llenar el formulario
             with ui.dialog() as self.dialogoBoton, ui.card():
@@ -721,13 +731,14 @@ class miGui(dispositivo):
         accionesPorTecla = {str(acción.get("key")): acción for acción in listaAcciones}
         nombre = dispositivo.nombre
 
-        if hasattr(dispositivo, "siguientePagina") and grupos:
-            primera = min(grupo.primeraTecla for grupo in grupos)
-            ultima = max(grupo.primeraTecla + grupo.filas * grupo.columnas - 1 for grupo in grupos)
-            with ui.row().classes("items-center p-2"):
+        with ui.row().classes("items-center p-2 w-full"):
+            if hasattr(dispositivo, "siguientePagina") and grupos:
+                primera = min(grupo.primeraTecla for grupo in grupos)
+                ultima = max(grupo.primeraTecla + grupo.filas * grupo.columnas - 1 for grupo in grupos)
                 ui.button(icon="chevron_left", color="teal-500", on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.anteriorPagina)).mark(f"paginaAnterior-{nombre}")
                 ui.label(f"Teclas {primera} - {ultima}").mark(f"pagina-{nombre}")
                 ui.button(icon="chevron_right", color="teal-500", on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.siguientePagina)).mark(f"paginaSiguiente-{nombre}")
+            ui.button("Apariencia folder", icon="folder_special", color="teal-500", on_click=lambda: self.abrirPropiedadesFolder(dispositivo)).classes("ml-auto").mark(f"propiedadesFolder-{nombre}")
 
         with ui.row().classes("items-start gap-8 p-2"):
             for grupo in grupos:
@@ -759,6 +770,37 @@ class miGui(dispositivo):
                                     boton = ui.button(icon="add", color="grey-8", on_click=lambda t=tecla: self.nuevaAcciónTecla(dispositivo, t)).classes("w-24 h-24")
                                 boton.mark(f"tecla-{nombre}-{tecla}")
                                 ui.label(f"{tecla}: {acción.get('nombre')}" if acción is not None else str(tecla)).classes("text-xs")
+
+    def abrirPropiedadesFolder(self, dispositivo: dispositivo) -> None:
+        """Carga en el diálogo la propiedad_folder del folder actual del dispositivo"""
+        self.dispositivoFolder = dispositivo
+        propiedad = dispositivo.propiedadFolder
+        self.editorFolderFondo.value = (propiedad.fondo if propiedad else None) or ""
+        self.editorFolderTamaño.value = (propiedad.tituloOpciones.get("tamanno_maximo") if propiedad else None)
+        self.dialogoFolder.open()
+
+    def guardarPropiedadesFolder(self) -> None:
+        """Guarda la propiedad_folder; la crea si no existe y la quita si queda vacía"""
+        dispositivo = self.dispositivoFolder
+        propiedad = dispositivo.propiedadFolder
+        if propiedad is None:
+            propiedad = dataAccion(key="propiedad_folder")
+            dispositivo.listaAcciones.append(propiedad)
+
+        propiedad.fondo = self.editorFolderFondo.value or None
+        tamaño = self.editorFolderTamaño.value
+        if tamaño:
+            propiedad.tituloOpciones["tamanno_maximo"] = int(tamaño)
+        else:
+            propiedad.tituloOpciones.pop("tamanno_maximo", None)
+
+        if propiedad.aDict() == {"key": "propiedad_folder"}:
+            dispositivo.listaAcciones.remove(propiedad)
+
+        dispositivo.salvarAcciones()
+        self.dialogoFolder.close()
+        ui.notify(f"Apariencia del folder guardada en {dispositivo.nombre}")
+        self.actualizarPestaña(dispositivo)
 
     def cambiarPagina(self, dispositivo: dispositivo, cambiar) -> None:
         """Cambia la página del dispositivo físico; el dispositivo avisa a la GUI para redibujar la pestaña"""
