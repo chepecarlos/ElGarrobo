@@ -207,6 +207,11 @@ class dispositivo:
         if self.funcionActualizarPestaña is not None:
             self.funcionActualizarPestaña(self)
 
+    def ultimaTecla(self) -> int:
+        """Tecla numérica más alta con acción en el folder actual, 0 si no hay"""
+        teclas = [int(acción.get("key")) for acción in self.listaAcciones or [] if str(acción.get("key")).isdigit()]
+        return max(teclas, default=0)
+
     @property
     def propiedadFolder(self) -> dataAccion | None:
         """Acción con key 'propiedad_folder' del folder actual: sus opciones son el valor por defecto de los botones"""

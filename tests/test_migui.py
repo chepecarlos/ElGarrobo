@@ -422,7 +422,9 @@ class TestCuadricula:
         await user.open("/")
         await user.should_see(marker="tecla-pedal-1")
         await user.should_see(marker="tecla-pedal-3")
-        await user.should_see("Teclas 1 - 3")
+        await user.should_see("Página 1")
+        assert not next(iter(user.find(marker="paginaAnterior-pedal").elements)).enabled
+        assert next(iter(user.find(marker="paginaSiguiente-pedal").elements)).enabled
         await user.should_not_see(marker="tecla-pedal-4")
 
     async def test_click_en_boton_edita_la_accion(self, user: User, guiPedal: miGui, pedal: MiPedal):
@@ -441,7 +443,9 @@ class TestCuadricula:
     async def test_cambiar_pagina_mueve_el_pedal(self, user: User, guiPedal: miGui, pedal: MiPedal):
         await user.open("/")
         user.find(marker="paginaSiguiente-pedal").click()
-        await user.should_see("Teclas 4 - 6")
+        await user.should_see("Página 2")
+        assert next(iter(user.find(marker="paginaAnterior-pedal").elements)).enabled
+        assert not next(iter(user.find(marker="paginaSiguiente-pedal").elements)).enabled, "no hay acciones después de la 6"
         await user.should_see(marker="tecla-pedal-5")
         assert pedal.desfaceTeclas == 3
 

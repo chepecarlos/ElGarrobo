@@ -99,17 +99,26 @@ class MiPedal(dispositivo):
         self.desfaceTeclas = 0
         super().accionesCargadas()
 
+    def paginaActual(self) -> int:
+        return self.desfaceTeclas // self.cantidad + 1
+
+    def puedeSiguientePagina(self) -> bool:
+        """Hay acciones después de la página actual"""
+        return self.desfaceTeclas + self.cantidad < self.ultimaTecla()
+
+    def puedeAnteriorPagina(self) -> bool:
+        return self.desfaceTeclas >= self.cantidad
+
     def siguientePagina(self) -> None:
         """Pasa a los siguientes pedales, si hay acciones más adelante"""
-        teclas = [int(acción.get("key")) for acción in self.listaAcciones or [] if str(acción.get("key")).isdigit()]
-        if self.desfaceTeclas + self.cantidad >= max(teclas, default=0):
+        if not self.puedeSiguientePagina():
             logger.info(f"No se puede adelantar pagina {self.nombre}")
             return
         self.desfaceTeclas += self.cantidad
         self.avisarCambioPagina()
 
     def anteriorPagina(self) -> None:
-        if self.desfaceTeclas - self.cantidad < 0:
+        if not self.puedeAnteriorPagina():
             logger.info(f"No se puede regresar pagina {self.nombre}")
             return
         self.desfaceTeclas -= self.cantidad

@@ -733,11 +733,11 @@ class miGui(dispositivo):
 
         with ui.row().classes("items-center p-2 w-full"):
             if hasattr(dispositivo, "siguientePagina") and grupos:
-                primera = min(grupo.primeraTecla for grupo in grupos)
-                ultima = max(grupo.primeraTecla + grupo.filas * grupo.columnas - 1 for grupo in grupos)
-                ui.button(icon="chevron_left", color="teal-500", on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.anteriorPagina)).mark(f"paginaAnterior-{nombre}")
-                ui.label(f"Teclas {primera} - {ultima}").mark(f"pagina-{nombre}")
-                ui.button(icon="chevron_right", color="teal-500", on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.siguientePagina)).mark(f"paginaSiguiente-{nombre}")
+                anterior = ui.button(icon="chevron_left", color="teal-500", on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.anteriorPagina)).mark(f"paginaAnterior-{nombre}")
+                anterior.set_enabled(dispositivo.puedeAnteriorPagina())
+                ui.label(f"Página {dispositivo.paginaActual()}").mark(f"pagina-{nombre}")
+                siguiente = ui.button(icon="chevron_right", color="teal-500", on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.siguientePagina)).mark(f"paginaSiguiente-{nombre}")
+                siguiente.set_enabled(dispositivo.puedeSiguientePagina())
             ui.button("Apariencia folder", icon="folder_special", color="teal-500", on_click=lambda: self.abrirPropiedadesFolder(dispositivo)).classes("ml-auto").mark(f"propiedadesFolder-{nombre}")
 
         with ui.row().classes("items-start gap-8 p-2"):

@@ -138,26 +138,28 @@ class MiDeckCombinado(dispositivo):
         for deck in self.listaDeck:
             deck.actualizarIconos()
 
+    def _desface(self) -> int:
+        """Desface de la página actual, todos los StreamDeck avanzan juntos"""
+        return self.listaDeck[0].desfaceTeclas if self.listaDeck else 0
+
+    def paginaActual(self) -> int:
+        if self.cantidadBotones <= 0:
+            return 1
+        return self._desface() // self.cantidadBotones + 1
+
+    def puedeSiguientePagina(self) -> bool:
+        """Hay acciones después de la página actual"""
+        return self.cantidadBotones > 0 and self._desface() + self.cantidadBotones < self.ultimaTecla()
+
+    def puedeAnteriorPagina(self) -> bool:
+        return self.cantidadBotones > 0 and self._desface() >= self.cantidadBotones
+
     def siguientePagina(self):
         """Cambia la pagina los StreamDeck Combinados"""
 
-        if not self.listaAcciones:
-            logger.warning(f"No hay acciones para cambiar pagina en {self.nombre}")
+        if not self.puedeSiguientePagina():
+            logger.info(f"No se puede adelantar pagina {self.nombre}")
             return
-
-        def buscarKeyNumero(accionActual: dict):
-            try:
-                key = int(accionActual["key"])
-            except ValueError:
-                return 0
-            return key
-
-        ultimaAccion: int = max(self.listaAcciones, key=buscarKeyNumero).get("key")
-
-        for deck in self.listaDeck:
-            if deck.desfaceTeclas + self.cantidadBotones + 1 > ultimaAccion:
-                logger.info(f"No se puede adelantar pagina {self.nombre}")
-                return
 
         for deck in self.listaDeck:
             deck.desfaceTeclas += self.cantidadBotones
@@ -167,14 +169,9 @@ class MiDeckCombinado(dispositivo):
     def anteriorPagina(self):
         """Regresa una pagina los StreamDeck Combinados"""
 
-        if not self.listaAcciones:
-            logger.warning(f"No hay acciones para cambiar pagina en {self.nombre}")
+        if not self.puedeAnteriorPagina():
+            logger.info(f"No se puede regresar pagina {self.nombre}")
             return
-
-        for deck in self.listaDeck:
-            if deck.desfaceTeclas - self.cantidadBotones < 0:
-                logger.info(f"No se puede regresar pagina {self.nombre}")
-                return
 
         for deck in self.listaDeck:
             deck.desfaceTeclas -= self.cantidadBotones
