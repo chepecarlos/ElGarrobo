@@ -37,6 +37,9 @@ package-dir = { "" = "src" }
 where = ["src"]
 exclude = ["tests*", "testing*"]
 
+[tool.setuptools.package-data]
+"elGarrobo.data" = ["*.md"]
+
 [tool.setuptools.dynamic]
 version = { file = ["VERSION"] }
 dependencies = { file = ["requirements.txt"] }
