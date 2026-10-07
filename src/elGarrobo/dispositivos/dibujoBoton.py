@@ -250,8 +250,6 @@ class dibujoBoton:
 
         if hayImagen:
             alinear = alinear or "abajo"
-            if tamañoFuenteMínimo is None or tamañoFuenteMínimo < 20:
-                tamañoFuenteMínimo = 20
 
         tamañoFuente, altoTitulo, anchoTitulo = self.calcularTamañoFuente(
             Imagen,
@@ -302,53 +300,28 @@ class dibujoBoton:
         """
 
         anchoImagen, altoImagen = imagen.width, imagen.height
-
-        tamañoFuente = 100
-
         dibujo = ImageDraw.Draw(imagen)
 
-        fuentePrueba = self.fuente(tamañoFuente)
-        cajaTexto = dibujo.multiline_textbbox(
-            xy=[0, 0],
-            text=texto,
-            font=fuentePrueba,
-            align="center",
-            spacing=espacioLinea,
-            stroke_width=grosorBorde,
-        )
+        def medir(tamaño: int) -> tuple[int, int]:
+            caja = dibujo.multiline_textbbox(xy=[0, 0], text=texto, font=self.fuente(tamaño), align="center", spacing=espacioLinea, stroke_width=grosorBorde)
+            return caja[2] - caja[0], caja[3] - caja[1]
 
-        anchoTitulo = cajaTexto[2] - cajaTexto[0]
-        altoTitulo = cajaTexto[3] - cajaTexto[1]
+        anchoTitulo, altoTitulo = medir(100)
+        # La escala lineal se pasa porque el borde no crece con la fuente, se baja de 1 en 1 hasta que quepa
+        tamañoFuente = max(3, int(100 * min(anchoImagen / anchoTitulo, altoImagen / altoTitulo)))
+        while tamañoFuente > 3:
+            anchoTitulo, altoTitulo = medir(tamañoFuente)
+            if anchoTitulo <= anchoImagen and altoTitulo <= altoImagen:
+                break
+            tamañoFuente -= 1
 
-        calculoAncho = anchoImagen / anchoTitulo
-        calculoAlto = altoImagen / altoTitulo
+        if minimo is not None and tamañoFuente < minimo:
+            tamañoFuente = minimo
 
-        escala = min(calculoAncho, calculoAlto)
+        if maximo is not None and tamañoFuente > maximo:
+            tamañoFuente = maximo
 
-        tamañoCalculo = int(tamañoFuente * escala)
-
-        tamañoFuente = max(3, tamañoCalculo)
-
-        if minimo is not None:
-            if tamañoFuente < minimo:
-                tamañoFuente = minimo
-
-        if maximo is not None:
-            if tamañoFuente > maximo:
-                tamañoFuente = maximo
-
-        fuentePrueba = self.fuente(tamañoFuente)
-        cajaTexto = dibujo.multiline_textbbox(
-            xy=[0, 0],
-            text=texto,
-            font=fuentePrueba,
-            align="center",
-            spacing=espacioLinea,
-            stroke_width=grosorBorde,
-        )
-
-        anchoTitulo = cajaTexto[2] - cajaTexto[0]
-        altoTitulo = cajaTexto[3] - cajaTexto[1]
+        anchoTitulo, altoTitulo = medir(tamañoFuente)
 
         return tamañoFuente, altoTitulo, anchoTitulo
 
@@ -460,7 +433,9 @@ if __name__ == "__main__":
         assert dibujo.dibujar(dataAccion(imagen="a.gif"), (72, 72)) is None
         assert dibujo.dibujar(dataAccion(imagen="a.gif"), (72, 72), conGif=True) is not None
 
-        # con imagen el título no baja de 20 aunque no quepa
+        # el título cabe a lo ancho contando el borde, salvo que el usuario pida un mínimo mayor
+        _, _, ancho = dibujo.calcularTamañoFuente(Image.new("RGB", (72, 72)), "Sequencer", 6, 1, minimo=None)
+        assert ancho <= 72
         tamaño, _, _ = dibujo.calcularTamañoFuente(Image.new("RGB", (72, 72)), "texto muy largo", 6, 1, minimo=20)
         assert tamaño == 20
     print("ok")
