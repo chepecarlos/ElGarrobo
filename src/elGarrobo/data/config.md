@@ -3,7 +3,7 @@ deck_file: deck
 teclados_file: teclados
 pedal_file: pedal
 alias_file: alias/alias
-folder_path: defaul
+folder_path: default
 
 
 fuente: base/Roboto-Black.ttf
