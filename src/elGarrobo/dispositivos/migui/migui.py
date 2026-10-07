@@ -77,6 +77,8 @@ class miGui(dispositivo):
         "Dispositivo cuyas propiedades del folder se están editando"
         "Dispositivos con distribución física que el usuario cambió a vista de lista"
         self.ordenInverso: bool = False
+        self.teclaIntercambio: dict = {}
+        "Dispositivos en modo intercambiar → primera tecla seleccionada (None si aún no hay)"
 
         self.listaDispositivos = list()
         # self.tipo = "GUI"
@@ -741,7 +743,10 @@ class miGui(dispositivo):
                 ui.label(f"Página {dispositivo.paginaActual()}").mark(f"pagina-{nombre}")
                 siguiente = ui.button(icon="chevron_right", color="teal-500", on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.siguientePagina)).mark(f"paginaSiguiente-{nombre}")
                 siguiente.set_enabled(dispositivo.puedeSiguientePagina())
-            ui.button("Apariencia folder", icon="folder_special", color="teal-500", on_click=lambda: self.abrirPropiedadesFolder(dispositivo)).classes("ml-auto").mark(f"propiedadesFolder-{nombre}")
+            intercambiando = nombre in self.teclaIntercambio
+            seleccionada = self.teclaIntercambio.get(nombre)
+            ui.button("Intercambiar", icon="swap_horiz", color="orange-8" if intercambiando else "teal-500", on_click=lambda: self.cambiarModoIntercambio(dispositivo)).classes("ml-auto").mark(f"intercambiar-{nombre}")
+            ui.button("Apariencia folder", icon="folder_special", color="teal-500", on_click=lambda: self.abrirPropiedadesFolder(dispositivo)).mark(f"propiedadesFolder-{nombre}")
 
         with ui.row().classes("items-start gap-8 p-2"):
             for grupo in grupos:
@@ -766,13 +771,44 @@ class miGui(dispositivo):
                                     logger.warning(f"Vista previa[Error] {nombre}[{tecla}] {error}")
 
                             with ui.column().classes("items-center gap-1"):
+                                if intercambiando:
+                                    alClick = lambda t=tecla: self.seleccionarIntercambio(dispositivo, t)
+                                elif imagen is not None:
+                                    alClick = lambda a=acción: self.seleccionarAcción(a, dispositivo)
+                                else:
+                                    alClick = lambda t=tecla: self.nuevaAcciónTecla(dispositivo, t)
                                 if imagen is not None:
                                     boton = ui.image(imagen).classes("w-24 h-24 rounded cursor-pointer")
-                                    boton.on("click", lambda a=acción: self.seleccionarAcción(a, dispositivo))
+                                    boton.on("click", alClick)
                                 else:
-                                    boton = ui.button(icon="add", color="grey-8", on_click=lambda t=tecla: self.nuevaAcciónTecla(dispositivo, t)).classes("w-24 h-24")
+                                    boton = ui.button(icon="add", color="grey-8", on_click=alClick).classes("w-24 h-24")
+                                if intercambiando and tecla == seleccionada:
+                                    boton.classes("ring-4 ring-orange-500")
                                 boton.mark(f"tecla-{nombre}-{tecla}")
                                 ui.label(f"{tecla}: {acción.get('nombre')}" if acción is not None else str(tecla)).classes("text-xs")
+
+    def cambiarModoIntercambio(self, dispositivo: dispositivo) -> None:
+        """Activa o desactiva el modo intercambiar teclas en la cuadrícula del dispositivo"""
+        if self.teclaIntercambio.pop(dispositivo.nombre, False) is False:
+            self.teclaIntercambio[dispositivo.nombre] = None
+        self.actualizarPestaña(dispositivo)
+
+    def seleccionarIntercambio(self, dispositivo: dispositivo, tecla: int) -> None:
+        """Primer click marca la tecla, el segundo intercambia ambas; si una está vacía la acción se mueve ahí"""
+        primera = self.teclaIntercambio.get(dispositivo.nombre)
+        self.teclaIntercambio[dispositivo.nombre] = tecla if primera is None else None
+        if primera is not None and primera != tecla:
+            porTecla = {str(acción.get("key")): acción for acción in dispositivo.listaAcciones}
+            acciónA, acciónB = porTecla.get(str(primera)), porTecla.get(str(tecla))
+            if acciónA is not None:
+                acciónA.key = tecla
+            if acciónB is not None:
+                acciónB.key = primera
+            if acciónA is not None or acciónB is not None:
+                dispositivo.listaAcciones.sort(key=self.ordenTecla)
+                dispositivo.salvarAcciones()
+                dispositivo.actualizar()
+        self.actualizarPestaña(dispositivo)
 
     def abrirPropiedadesFolder(self, dispositivo: dispositivo) -> None:
         """Carga en el diálogo la propiedad_folder del folder actual del dispositivo"""

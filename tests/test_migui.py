@@ -456,6 +456,28 @@ class TestCuadricula:
         await user.should_see(marker="orden-key-pedal")
         await user.should_not_see(marker="tecla-pedal-1")
 
+    async def test_intercambiar_teclas(self, user: User, guiPedal: miGui, pedal: MiPedal):
+        await user.open("/")
+        user.find(marker="intercambiar-pedal").click()
+        user.find(marker="tecla-pedal-1").click()
+        user.find(marker="tecla-pedal-2").click()
+        assert [a.key for a in pedal.listaAcciones if a.nombre == "Uno"] == [2], "a tecla vacía se mueve"
+
+        user.find(marker="tecla-pedal-2").click()
+        user.find(marker="tecla-pedal-3").click()
+        user.find(marker="tecla-pedal-3").click()
+        user.find(marker="tecla-pedal-3").click()
+        assert [a.key for a in pedal.listaAcciones if a.nombre == "Uno"] == [3], "misma tecla dos veces no cambia nada"
+
+        pedal.listaAcciones[-1].key = 2  # Cinco a la página visible
+        user.find(marker="tecla-pedal-2").click()
+        user.find(marker="tecla-pedal-3").click()
+        assert {a.nombre: a.key for a in pedal.listaAcciones} == {"Uno": 2, "Cinco": 3}
+
+        user.find(marker="intercambiar-pedal").click()
+        user.find(marker="tecla-pedal-2").click()
+        assert guiPedal.editoresData["nombre"].value == "Uno", "fuera del modo vuelve a editar"
+
 
 
 class TestAccionSinClase:
