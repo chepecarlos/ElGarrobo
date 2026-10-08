@@ -77,7 +77,7 @@ def seleccionarPestaña(user: User, gui: miGui, nombre: str) -> None:
 
 def clickEnDialogoAbierto(user: User, texto: str) -> None:
     # El simulador también encuentra los botones de diálogos cerrados
-    botones = [b for b in user.find(texto).elements if any(isinstance(p, ui.dialog) and p.value for p in b.ancestors())]
+    botones = [b for b in user.find(kind=ui.button, content=texto).elements if any(isinstance(p, ui.dialog) and p.value for p in b.ancestors())]
     assert len(botones) == 1
     UserInteraction(user, {botones[0]}, texto).click()
 
@@ -147,7 +147,7 @@ class TestPaginaAcciones:
         await llenarFormulario(user, "Tres", "3", "Escribir texto", Texto="adios")
         user.find(marker="botonAgregar").click()
 
-        await user.should_see("Agregando acción Tres")
+        await user.should_see("Tres agregada en deck, tecla 3")
         nueva = deck.listaAcciones[-1]
         assert nueva.aDict() == {"nombre": "Tres", "key": 3, "accion": "escribir", "opciones": {"texto": "adios"}}
         assert deck.vecesSalvado == 1
@@ -159,7 +159,7 @@ class TestPaginaAcciones:
         user.find(marker="editor-descripcion").type("Escribe adios")
         user.find(marker="botonAgregar").click()
 
-        await user.should_see("Agregando acción Tres")
+        await user.should_see("Tres agregada en deck, tecla 3")
         assert deck.listaAcciones[-1].descripcion == "Escribe adios"
         assert gui.editoresData["nombre"].value == ""
 
@@ -174,7 +174,7 @@ class TestPaginaAcciones:
         await llenarFormulario(user, "Otra", "1", "Escribir texto", Texto="x")
         user.find(marker="botonAgregar").click()
 
-        await user.should_see("La tecla 1 ya está usada por 'Uno', cámbiela")
+        await user.should_see("La tecla 1 ya la usa 'Uno', elige otra")
         assert teclas(deck) == [1, 2]
         assert deck.vecesSalvado == 0
         assert gui.editoresData["nombre"].value == "Otra", "el formulario no se limpia para poder corregir"
@@ -182,10 +182,10 @@ class TestPaginaAcciones:
     @pytest.mark.parametrize(
         "campos, mensaje",
         [
-            ({}, "Ingrese Nombre"),
-            ({"nombre": "A"}, "Ingrese Tecla"),
-            ({"nombre": "A", "tecla": "9"}, "Seleccione una acción"),
-            ({"nombre": "A", "tecla": "x", "acción": "Delay"}, "Error con tecla no numero"),
+            ({}, "Falta Nombre"),
+            ({"nombre": "A"}, "Falta Tecla"),
+            ({"nombre": "A", "tecla": "9"}, "Falta elegir la acción"),
+            ({"nombre": "A", "tecla": "x", "acción": "Delay"}, "En deck la tecla es un número"),
         ],
     )
     async def test_validaciones(self, user: User, gui: miGui, deck: dispositivoFalso, campos, mensaje):
@@ -199,7 +199,8 @@ class TestPaginaAcciones:
         await user.open("/")
         await llenarFormulario(user, "Tres", "3", "Escribir texto")
         user.find(marker="botonAgregar").click()
-        await user.should_see("Error Texto es Obligatorio")
+        await user.should_see("Falta Texto")
+        assert gui.opcionesEditar["Texto"].props["error-message"] == "Falta Texto", "el error se marca en el campo"
         assert deck.vecesSalvado == 0
 
     async def test_editar_llena_formulario(self, user: User, gui: miGui):
@@ -218,7 +219,7 @@ class TestPaginaAcciones:
         assert gui.opcionesEditar["Texto"].value == "hola"
 
         user.find(marker="botonAgregar").click()
-        await user.should_see("Editar acción Uno")
+        await user.should_see("Uno guardada en deck, tecla 1")
         assert deck.listaAcciones[0]["accion"] == "pegar"
         assert deck.listaAcciones[0]["opciones"] == {"texto": "hola"}
 
@@ -235,7 +236,7 @@ class TestPaginaAcciones:
         await llenarFormulario(user, nombre="Uno editado", Texto="chao")
         user.find(marker="botonAgregar").click()
 
-        await user.should_see("Editar acción Uno editado")
+        await user.should_see("Uno editado guardada en deck, tecla 1")
         assert len(deck.listaAcciones) == 2
         assert deck.listaAcciones[0]["nombre"] == "Uno editado"
         assert deck.listaAcciones[0]["opciones"] == {"texto": "chao"}
@@ -252,9 +253,11 @@ class TestPaginaAcciones:
 
         gui.ejecutarAcción = MagicMock()
         user.find(marker="botonEjecutar").click()
-        gui.ejecutarAcción.assert_called_once_with(acción)
+        assert gui.ejecutarAcción.call_args_list == [((acción,),), ((acción, False),)], "presiona y suelta"
 
         user.find(marker="botonBorrar").click()
+        assert acción in deck.listaAcciones, "borrar pide confirmación"
+        clickEnDialogoAbierto(user, "Borrar")
         assert acción not in deck.listaAcciones and len(deck.listaAcciones) == cantidad - 1
         assert gui.accionEditar is None and not gui.botonBorrar.visible
 
@@ -264,7 +267,7 @@ class TestPaginaAcciones:
         await llenarFormulario(user, tecla="2")
         user.find(marker="botonAgregar").click()
 
-        await user.should_see("La tecla 2 ya está usada por 'Dos', cámbiela")
+        await user.should_see("La tecla 2 ya la usa 'Dos', elige otra")
         assert teclas(deck) == [1, 2]
         assert deck.vecesSalvado == 0
 
@@ -286,6 +289,8 @@ class TestPaginaAcciones:
     async def test_borrar_accion(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
         user.find(marker="borrar-deck-2").click()
+        assert teclas(deck) == [1, 2] and deck.vecesSalvado == 0, "no borra sin confirmar"
+        clickEnDialogoAbierto(user, "Borrar")
         assert teclas(deck) == [1]
         assert deck.vecesSalvado == 1
         await user.should_not_see(marker="editar-deck-2")
@@ -294,7 +299,62 @@ class TestPaginaAcciones:
         gui.ejecutarAcción = MagicMock()
         await user.open("/")
         user.find(marker="ejecutar-deck-2").click()
-        gui.ejecutarAcción.assert_called_once_with(deck.listaAcciones[1])
+        assert gui.ejecutarAcción.call_args_list[0] == ((deck.listaAcciones[1],),)
+
+
+class TestFormularioSeguro:
+    async def test_cambiar_de_tecla_pregunta_si_hay_cambios(self, user: User, gui: miGui, deck: dispositivoFalso):
+        await user.open("/")
+        user.find(marker="editar-deck-1").click()
+        assert gui.tituloFormulario.text == "Editando 'Uno' · deck · tecla 1"
+        user.find(marker="editar-deck-2").click()
+        assert gui.editoresData["nombre"].value == "Dos", "sin cambios no pregunta"
+
+        await llenarFormulario(user, nombre="Dos cambiado")
+        user.find(marker="editar-deck-1").click()
+        assert gui.editoresData["nombre"].value == "Dos cambiado", "con cambios espera la respuesta"
+        await user.should_see("Hay cambios sin guardar en 'Dos'. ¿Descartarlos?")
+        clickEnDialogoAbierto(user, "Descartar")
+        assert gui.editoresData["nombre"].value == "Uno"
+
+    async def test_guarda_numero_bool_y_yaml_con_su_tipo(self, user: User, gui: miGui, deck: dispositivoFalso):
+        await user.open("/")
+        await llenarFormulario(user, "Tres", "3", "Escribir texto", Texto="hola")
+        with user:
+            gui.opcionesEditar["Velocidad"].value = 0.5
+        user.find(marker="botonAgregar").click()
+        assert deck.listaAcciones[-1]["opciones"] == {"texto": "hola", "intervalo": 0.5}
+
+        await llenarFormulario(user, "Cuatro", "4", "Presiona", Presionado="accion: delay", Soltar="[1, 2]")
+        user.find(marker="botonAgregar").click()
+        await user.should_see("Soltar: debe ser diccionario en YAML")
+        assert deck.vecesSalvado == 1
+
+        user.find(marker="opción-Soltar").clear().type("accion: delay")
+        user.find(marker="botonAgregar").click()
+        assert deck.listaAcciones[-1]["opciones"] == {"presionado": {"accion": "delay"}, "soltar": {"accion": "delay"}}, "Estado (bool) en su valor por defecto no se guarda"
+
+    async def test_editar_muestra_yaml_y_numero(self, user: User, gui: miGui, deck: dispositivoFalso):
+        deck.listaAcciones.append(dataAccion.desdeDict({"nombre": "P", "key": 5, "accion": "presionar", "opciones": {"presionado": {"accion": "delay"}}}))
+        deck.listaAcciones.append(dataAccion.desdeDict({"nombre": "E", "key": 6, "accion": "escribir", "opciones": {"texto": "x", "intervalo": "rápido"}}))
+        await user.open("/")
+        user.find(marker="editar-deck-5").click()
+        assert gui.opcionesEditar["Presionado"].value == "accion: delay\n"
+        user.find(marker="editar-deck-6").click()
+        assert gui.opcionesEditar["Velocidad"].value is None
+        assert gui.opcionesEditar["Velocidad"].props["error"], "valor viejo inválido se marca"
+
+    async def test_perder_foco_suelta_las_teclas(self, user: User, gui: miGui, deck: dispositivoFalso, monkeypatch):
+        monkeypatch.setattr(moduloMiGui, "SalvarValor", MagicMock())
+        gui.ejecutarAcción = MagicMock()
+        await user.open("/")
+        with user:
+            gui.cambiarModo(True)
+        user.find(marker="tecla-deck-1").trigger("pointerdown")
+        with user:
+            gui.soltarTodas()
+            gui.soltarTodas()
+        assert gui.ejecutarAcción.call_args_list == [((deck.listaAcciones[0],),), ((deck.listaAcciones[0], False),)]
 
 
 class TestPestañas:
@@ -383,7 +443,7 @@ class TestEditorApariencia:
         user.find(marker="botonListoBoton").click()
         user.find(marker="botonAgregar").click()
 
-        await user.should_see("Editar acción Uno")
+        await user.should_see("Uno guardada en deck, tecla 1")
         assert deck.listaAcciones[0].titulo == "Hola"
         assert deck.listaAcciones[0].aDict()["imagen_opciones"] == {"fondo": "#2b7a10"}
 
@@ -645,7 +705,7 @@ class TestAccionSinClase:
 
         user.find(marker="editor-nombre").clear().type("Macro 2")
         user.find(marker="botonAgregar").click()
-        await user.should_see("Editar acción Macro 2")
+        await user.should_see("Macro 2 guardada en deck, tecla 9")
 
         macro = deck.listaAcciones[-1]
         assert (macro.nombre, macro.accion, macro.opciones) == ("Macro 2", "macro", pasos)
