@@ -544,6 +544,25 @@ class TestDistribucionTeclado:
         user.find(marker="tecla-teclado-KEY_F13").click()
         assert guiTeclado.editoresData["nombre"].value == "Capa Fn"
 
+    async def test_cambiar_distribucion(self, user: User, guiTeclado: miGui, teclado: MiTecladoMacro, monkeypatch):
+        moduloTeclado = sys.modules[MiTecladoMacro.__module__]
+        guardado = {}
+        monkeypatch.setattr(moduloTeclado, "ObtenerArchivo", lambda archivo: [{"nombre": "otro"}, {"nombre": "teclado", "distribucion": "ingles_87k"}])
+        monkeypatch.setattr(moduloTeclado, "SalvarArchivo", lambda archivo, data: guardado.update({archivo: data}))
+        await user.open("/")
+
+        user.find(marker="distribucion-teclado").click()
+        user.find(marker="opcionDistribucion-sonix_una_mano").click()
+        assert teclado.distribucion == "sonix_una_mano"
+        assert guardado["teclados.md"][1] == {"nombre": "teclado", "distribucion": "sonix_una_mano"}
+        await user.should_see(marker="tecla-teclado-KEY_SPACE")
+
+        user.find(marker="distribucion-teclado").click()
+        user.find(marker="opcionDistribucion-None").click()
+        assert guardado["teclados.md"] == [{"nombre": "otro"}, {"nombre": "teclado"}]
+        await user.should_see(marker="orden-key-teclado")
+        await user.should_see(marker="distribucion-teclado")
+
     async def test_sin_distribucion_muestra_lista(self, user: User, guiTeclado: miGui, teclado: MiTecladoMacro):
         teclado.distribucion = "no_existe"
         await user.open("/")

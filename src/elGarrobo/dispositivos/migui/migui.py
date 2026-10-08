@@ -265,6 +265,10 @@ class miGui(dispositivo):
                 self.editorFolderTamaño = ui.number("Tamaño máximo del título", min=1, precision=0).classes("w-64").mark("editor-folder-tamanno")
                 ui.button("Guardar", on_click=self.guardarPropiedadesFolder).mark("botonGuardarFolder")
 
+            # Se llena al abrir con las distribuciones disponibles
+            with ui.dialog() as self.dialogoDistribucion, ui.card():
+                self.listaDistribuciones = ui.column()
+
             # Apariencia del botón en un diálogo aparte para no llenar el formulario
             with ui.dialog() as self.dialogoBoton, ui.card():
                 ui.label("Apariencia del botón").classes("text-lg")
@@ -705,6 +709,9 @@ class miGui(dispositivo):
             with dispositivo.panel:
                 acciones = dispositivo.listaAcciones
                 cuadricula = dispositivo.gruposBotones() is not None or dispositivo.distribucionTeclas() is not None
+                if not cuadricula and hasattr(dispositivo, "cambiarDistribucion"):
+                    # Teclado sin distribución: único camino para elegir una
+                    self.botonDistribucion(dispositivo)
                 if cuadricula:
                     ui.toggle(
                         {False: "Cuadrícula", True: "Lista"},
@@ -764,6 +771,8 @@ class miGui(dispositivo):
             seleccionada = self.teclaIntercambio.get(nombre)
             ui.button("Intercambiar", icon="swap_horiz", color="orange-8" if intercambiando else "teal-500", on_click=lambda: self.cambiarModoIntercambio(dispositivo)).classes("ml-auto").mark(f"intercambiar-{nombre}")
             ui.button("Apariencia folder", icon="folder_special", color="teal-500", on_click=lambda: self.abrirPropiedadesFolder(dispositivo)).mark(f"propiedadesFolder-{nombre}")
+            if hasattr(dispositivo, "cambiarDistribucion"):
+                self.botonDistribucion(dispositivo)
 
         def alClick(tecla, acción):
             if intercambiando:
@@ -780,8 +789,7 @@ class miGui(dispositivo):
         if distribucion:
             # Teclado: botones con posición libre en unidades de tecla, sin vista previa porque no tiene pantalla
             unidad = 56
-            ancho = max(t.get("x", 0) + t.get("w", 1) for t in distribucion)
-            alto = max(t.get("y", 0) + t.get("h", 1) for t in distribucion)
+            ancho, alto = self.medidaDistribucion(distribucion)
             with ui.element("div").classes("relative m-2").style(f"width: {ancho * unidad}px; height: {alto * unidad}px"):
                 for teclaFisica in distribucion:
                     tecla = teclaFisica["key"]
@@ -837,6 +845,45 @@ class miGui(dispositivo):
                                     boton = ui.button(icon="add", color="grey-8", on_click=alClick(tecla, acción)).classes("w-24 h-24")
                                 marcar(boton, tecla)
                                 ui.label(f"{tecla}: {acción.get('nombre')}" if acción is not None else str(tecla)).classes("text-xs")
+
+    @staticmethod
+    def medidaDistribucion(distribucion: list[dict]) -> tuple[float, float]:
+        """Ancho y alto del teclado en unidades de tecla"""
+        ancho = max(t.get("x", 0) + t.get("w", 1) for t in distribucion)
+        alto = max(t.get("y", 0) + t.get("h", 1) for t in distribucion)
+        return ancho, alto
+
+    def botonDistribucion(self, dispositivo: dispositivo) -> None:
+        ui.button("Distribución", icon="keyboard", color="teal-500", on_click=lambda: self.abrirDistribuciones(dispositivo)).mark(f"distribucion-{dispositivo.nombre}")
+
+    def abrirDistribuciones(self, dispositivo: dispositivo) -> None:
+        """Muestra las distribuciones disponibles con una miniatura; al elegir una se guarda en teclados.md"""
+        from elGarrobo.dispositivos.miteclado.mi_teclado_macro import cargarDistribucion, distribucionesDisponibles
+
+        def elegir(nombreDistribucion: str | None) -> None:
+            dispositivo.cambiarDistribucion(nombreDistribucion)
+            self.dialogoDistribucion.close()
+            ui.notify(f"Distribución de {dispositivo.nombre}: {nombreDistribucion or 'ninguna'}")
+            self.actualizarPestaña(dispositivo)
+
+        unidad = 10
+        self.listaDistribuciones.clear()
+        with self.listaDistribuciones:
+            ui.label(f"Distribución de {dispositivo.nombre}").classes("text-lg")
+            for nombreDistribucion in [None, *distribucionesDisponibles()]:
+                actual = nombreDistribucion == dispositivo.distribucion
+                with ui.card().classes(f"w-full cursor-pointer {'border-2 border-orange-500' if actual else ''}") as tarjeta:
+                    tarjeta.on("click", lambda n=nombreDistribucion: elegir(n))
+                    tarjeta.mark(f"opcionDistribucion-{nombreDistribucion}")
+                    ui.label(nombreDistribucion or "Ninguna (ver como lista)").classes("font-bold")
+                    distribucion = cargarDistribucion(nombreDistribucion) if nombreDistribucion else None
+                    if distribucion:
+                        ancho, alto = self.medidaDistribucion(distribucion)
+                        with ui.element("div").classes("relative").style(f"width: {ancho * unidad}px; height: {alto * unidad}px"):
+                            for t in distribucion:
+                                estilo = f"left: {t.get('x', 0) * unidad}px; top: {t.get('y', 0) * unidad}px; width: {t.get('w', 1) * unidad - 1}px; height: {t.get('h', 1) * unidad - 1}px"
+                                ui.element("div").classes("absolute bg-grey-6 rounded-sm").style(estilo)
+        self.dialogoDistribucion.open()
 
     def cambiarModoIntercambio(self, dispositivo: dispositivo) -> None:
         """Activa o desactiva el modo intercambiar teclas en la cuadrícula del dispositivo"""

@@ -8,12 +8,26 @@ from evdev import InputDevice, categorize, ecodes
 from evdev.eventio import EvdevError
 
 from elGarrobo.dispositivos import dispositivo
-from elGarrobo.miLibrerias import ConfigurarLogging
+from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerArchivo, SalvarArchivo
 
 logger = ConfigurarLogging(__name__)
 
 folderDistribuciones = Path(__file__).parent / "distribuciones"
 "Distribuciones físicas de teclados: lista de {key, x, y, w, h, etiqueta} en unidades de tecla"
+
+
+def distribucionesDisponibles() -> list[str]:
+    """Nombres (sin .json) de las distribuciones incluidas"""
+    return sorted(archivo.stem for archivo in folderDistribuciones.glob("*.json"))
+
+
+def cargarDistribucion(nombre: str) -> list[dict] | None:
+    archivo = folderDistribuciones / f"{nombre}.json"
+    try:
+        return json.loads(archivo.read_text())
+    except (OSError, json.JSONDecodeError) as error:
+        logger.warning(f"Teclado[Distribución] no se pudo leer {archivo}: {error}")
+        return None
 
 # TODO  Hacer con clase threading
 
@@ -46,14 +60,19 @@ class MiTecladoMacro(dispositivo):
         "Nombre del archivo en distribuciones/ (sin .json) para dibujar el teclado en la GUI"
 
     def distribucionTeclas(self) -> list[dict] | None:
-        if not self.distribucion:
-            return None
-        archivo = folderDistribuciones / f"{self.distribucion}.json"
-        try:
-            return json.loads(archivo.read_text())
-        except (OSError, json.JSONDecodeError) as error:
-            logger.warning(f"Teclado[Distribución] {self.nombre} no se pudo leer {archivo}: {error}")
-            return None
+        return cargarDistribucion(self.distribucion) if self.distribucion else None
+
+    def cambiarDistribucion(self, nombre: str | None) -> None:
+        """Cambia la distribución y la guarda en la entrada de este teclado en teclados.md; None la quita"""
+        self.distribucion = nombre
+        teclados = ObtenerArchivo(self.archivoConfiguracion) or []
+        for dataTeclado in teclados:
+            if dataTeclado.get("nombre") == self.nombre:
+                if nombre:
+                    dataTeclado["distribucion"] = nombre
+                else:
+                    dataTeclado.pop("distribucion", None)
+        SalvarArchivo(self.archivoConfiguracion, teclados)
 
     def conectar(self) -> bool:
         """Conecta con un teclado para escuchas botones presionados."""

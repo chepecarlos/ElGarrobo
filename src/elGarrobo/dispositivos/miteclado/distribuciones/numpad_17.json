@@ -1,0 +1,19 @@
+[
+  {"key": "KEY_NUMLOCK", "x": 0, "y": 0, "etiqueta": "Num"},
+  {"key": "KEY_KPSLASH", "x": 1, "y": 0, "etiqueta": "/"},
+  {"key": "KEY_KPASTERISK", "x": 2, "y": 0, "etiqueta": "*"},
+  {"key": "KEY_KPMINUS", "x": 3, "y": 0, "etiqueta": "-"},
+  {"key": "KEY_KP7", "x": 0, "y": 1, "etiqueta": "7"},
+  {"key": "KEY_KP8", "x": 1, "y": 1, "etiqueta": "8"},
+  {"key": "KEY_KP9", "x": 2, "y": 1, "etiqueta": "9"},
+  {"key": "KEY_KPPLUS", "x": 3, "y": 1, "h": 2, "etiqueta": "+"},
+  {"key": "KEY_KP4", "x": 0, "y": 2, "etiqueta": "4"},
+  {"key": "KEY_KP5", "x": 1, "y": 2, "etiqueta": "5"},
+  {"key": "KEY_KP6", "x": 2, "y": 2, "etiqueta": "6"},
+  {"key": "KEY_KP1", "x": 0, "y": 3, "etiqueta": "1"},
+  {"key": "KEY_KP2", "x": 1, "y": 3, "etiqueta": "2"},
+  {"key": "KEY_KP3", "x": 2, "y": 3, "etiqueta": "3"},
+  {"key": "KEY_KPENTER", "x": 3, "y": 3, "h": 2, "etiqueta": "Enter"},
+  {"key": "KEY_KP0", "x": 0, "y": 4, "w": 2, "etiqueta": "0"},
+  {"key": "KEY_KPDOT", "x": 2, "y": 4, "etiqueta": "."}
+]
