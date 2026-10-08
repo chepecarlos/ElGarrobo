@@ -18,7 +18,7 @@ Acciones disponibles para ejecutarse en acciones
 
 ## Dispositvo de Entrada
 
-- Teclado USB
+- Teclado USB ([dibujar tu teclado en la GUI](./src/elGarrobo/dispositivos/miteclado/distribuciones/README.md))
 - StreamDeck
 - MQTT
 - [Lista de dispositivos](./elGarrobo/dispositivos)

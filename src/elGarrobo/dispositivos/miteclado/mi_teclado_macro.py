@@ -8,7 +8,8 @@ from evdev import InputDevice, categorize, ecodes
 from evdev.eventio import EvdevError
 
 from elGarrobo.dispositivos import dispositivo
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerArchivo, SalvarArchivo
+from elGarrobo.dispositivos.miteclado.kle import convertirKLE
+from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerArchivo, ObtenerFolderConfig, SalvarArchivo
 
 logger = ConfigurarLogging(__name__)
 
@@ -16,18 +17,36 @@ folderDistribuciones = Path(__file__).parent / "distribuciones"
 "Distribuciones físicas de teclados: lista de {key, x, y, w, h, etiqueta} en unidades de tecla"
 
 
+def folderDistribucionesUsuario() -> Path:
+    """Distribuciones propias del usuario, en formato ElGarrobo o JSON de keyboard-layout-editor.com"""
+    return Path(ObtenerFolderConfig()) / "distribuciones"
+
+
+def archivosDistribuciones() -> dict[str, Path]:
+    """Nombre → archivo; las del usuario reemplazan a las incluidas con el mismo nombre"""
+    archivos = {}
+    for folder in (folderDistribuciones, folderDistribucionesUsuario()):
+        archivos.update({archivo.stem: archivo for archivo in folder.glob("*.json")})
+    return archivos
+
+
 def distribucionesDisponibles() -> list[str]:
-    """Nombres (sin .json) de las distribuciones incluidas"""
-    return sorted(archivo.stem for archivo in folderDistribuciones.glob("*.json"))
+    return sorted(archivosDistribuciones())
 
 
 def cargarDistribucion(nombre: str) -> list[dict] | None:
-    archivo = folderDistribuciones / f"{nombre}.json"
+    archivo = archivosDistribuciones().get(nombre)
+    if archivo is None:
+        logger.warning(f"Teclado[Distribución] no existe {nombre}")
+        return None
     try:
-        return json.loads(archivo.read_text())
+        data = json.loads(archivo.read_text())
     except (OSError, json.JSONDecodeError) as error:
         logger.warning(f"Teclado[Distribución] no se pudo leer {archivo}: {error}")
         return None
+    if all(isinstance(tecla, dict) and "key" in tecla for tecla in data):
+        return data
+    return convertirKLE(data)
 
 # TODO  Hacer con clase threading
 

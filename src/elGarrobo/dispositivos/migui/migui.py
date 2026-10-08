@@ -858,7 +858,7 @@ class miGui(dispositivo):
 
     def abrirDistribuciones(self, dispositivo: dispositivo) -> None:
         """Muestra las distribuciones disponibles con una miniatura; al elegir una se guarda en teclados.md"""
-        from elGarrobo.dispositivos.miteclado.mi_teclado_macro import cargarDistribucion, distribucionesDisponibles
+        from elGarrobo.dispositivos.miteclado.mi_teclado_macro import cargarDistribucion, distribucionesDisponibles, folderDistribucionesUsuario
 
         def elegir(nombreDistribucion: str | None) -> None:
             dispositivo.cambiarDistribucion(nombreDistribucion)
@@ -870,6 +870,7 @@ class miGui(dispositivo):
         self.listaDistribuciones.clear()
         with self.listaDistribuciones:
             ui.label(f"Distribución de {dispositivo.nombre}").classes("text-lg")
+            ui.label(f"Agrega las tuyas (JSON de keyboard-layout-editor.com) en {folderDistribucionesUsuario()}").classes("text-xs")
             for nombreDistribucion in [None, *distribucionesDisponibles()]:
                 actual = nombreDistribucion == dispositivo.distribucion
                 with ui.card().classes(f"w-full cursor-pointer {'border-2 border-orange-500' if actual else ''}") as tarjeta:
