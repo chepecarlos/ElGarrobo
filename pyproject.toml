@@ -39,6 +39,7 @@ exclude = ["tests*", "testing*"]
 
 [tool.setuptools.package-data]
 "elGarrobo.data" = ["*.md"]
+"elGarrobo.dispositivos.miteclado" = ["distribuciones/*.json"]
 
 [tool.setuptools.dynamic]
 version = { file = ["VERSION"] }

@@ -1,6 +1,8 @@
 # https://python-evdev.readthedocs.io/en/latest/
+import json
 import threading
 import time
+from pathlib import Path
 
 from evdev import InputDevice, categorize, ecodes
 from evdev.eventio import EvdevError
@@ -9,6 +11,9 @@ from elGarrobo.dispositivos import dispositivo
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 logger = ConfigurarLogging(__name__)
+
+folderDistribuciones = Path(__file__).parent / "distribuciones"
+"Distribuciones físicas de teclados: lista de {key, x, y, w, h, etiqueta} en unidades de tecla"
 
 # TODO  Hacer con clase threading
 
@@ -37,6 +42,18 @@ class MiTecladoMacro(dispositivo):
         self.conectado = False
         self.Activo = True
         self.esperaReconectar = 5
+        self.distribucion: str | None = dataConfiguracion.get("distribucion")
+        "Nombre del archivo en distribuciones/ (sin .json) para dibujar el teclado en la GUI"
+
+    def distribucionTeclas(self) -> list[dict] | None:
+        if not self.distribucion:
+            return None
+        archivo = folderDistribuciones / f"{self.distribucion}.json"
+        try:
+            return json.loads(archivo.read_text())
+        except (OSError, json.JSONDecodeError) as error:
+            logger.warning(f"Teclado[Distribución] {self.nombre} no se pudo leer {archivo}: {error}")
+            return None
 
     def conectar(self) -> bool:
         """Conecta con un teclado para escuchas botones presionados."""

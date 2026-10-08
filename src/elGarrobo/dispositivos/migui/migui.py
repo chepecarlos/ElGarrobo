@@ -291,7 +291,14 @@ class miGui(dispositivo):
 
         with ui.button_group().props("rounded"):
             self.botonAgregar = ui.button(icon="add", color=self.colorOscuro, on_click=agregarAcción).mark("botonAgregar")
-            ui.button(icon="delete", color=self.colorOscuro, on_click=self.limpiarFormulario).mark("botonLimpiar")
+            self.botonAgregar.tooltip("Guardar acción")
+            # Solo se ven al editar una acción guardada
+            self.botonEjecutar = ui.button(icon="play_arrow", color=self.colorOscuro, on_click=lambda: self.buscarAccion(self.accionEditar, self.estadoTecla.PRESIONADA)).mark("botonEjecutar")
+            self.botonEjecutar.tooltip("Ejecutar acción guardada")
+            ui.button(icon="clear_all", color=self.colorOscuro, on_click=self.limpiarFormulario).mark("botonLimpiar").tooltip("Limpiar editor")
+            self.botonBorrar = ui.button(icon="delete", color=self.colorOscuro, on_click=self.borrarAcciónEditada).mark("botonBorrar")
+            self.botonBorrar.tooltip("Borrar acción")
+            self.botonEjecutar.visible = self.botonBorrar.visible = False
 
     def actualizarCabecera(self) -> None:
         """Muestra información del dispositivo rutas de la interfaz web"""
@@ -391,6 +398,7 @@ class miGui(dispositivo):
     def limpiarFormulario(self):
         """Limpia el formulario de acciones"""
         self.botonAgregar.icon = "add"
+        self.botonEjecutar.visible = self.botonBorrar.visible = False
         for editor in self.editoresData.values():
             editor.value = ""
         self.editorTitulo.value = ""
@@ -405,6 +413,13 @@ class miGui(dispositivo):
         self.accionEditar = None
         self.dispositivoEditar = None
         self.opcionesEditar = None
+
+    def borrarAcciónEditada(self) -> None:
+        """Borra la acción que está en el editor y lo limpia"""
+        acción, dispositivo = self.accionEditar, self.dispositivoEditar
+        self.limpiarFormulario()
+        self.borrarAcción(acción, dispositivo)
+        ui.notify(f"Acción {acción.get('nombre')} borrada")
 
     def crearPestañas(self) -> None:
         """Crea las pestañas de los dispositivos"""
@@ -452,6 +467,7 @@ class miGui(dispositivo):
 
         self.accionEditar = accion
         self.botonAgregar.icon = "edit"
+        self.botonEjecutar.visible = self.botonBorrar.visible = True
         for atributo, editor in self.editoresData.items():
             editor.value = accion.get(atributo)
         self.editorTitulo.value = accion.titulo or ""
@@ -688,7 +704,7 @@ class miGui(dispositivo):
             dispositivo.panel.clear()
             with dispositivo.panel:
                 acciones = dispositivo.listaAcciones
-                cuadricula = dispositivo.gruposBotones() is not None
+                cuadricula = dispositivo.gruposBotones() is not None or dispositivo.distribucionTeclas() is not None
                 if cuadricula:
                     ui.toggle(
                         {False: "Cuadrícula", True: "Lista"},
@@ -727,9 +743,10 @@ class miGui(dispositivo):
 
         Args:
             listaAcciones (list): Lista de acciones del dispositivo
-            dispositivo (dispositivo): dispositivo con gruposBotones()
+            dispositivo (dispositivo): dispositivo con gruposBotones() o distribucionTeclas()
         """
-        grupos = dispositivo.gruposBotones()
+        grupos = dispositivo.gruposBotones() or []
+        distribucion = dispositivo.distribucionTeclas()
         accionesPorTecla = {str(acción.get("key")): acción for acción in listaAcciones}
         nombre = dispositivo.nombre
 
@@ -747,6 +764,48 @@ class miGui(dispositivo):
             seleccionada = self.teclaIntercambio.get(nombre)
             ui.button("Intercambiar", icon="swap_horiz", color="orange-8" if intercambiando else "teal-500", on_click=lambda: self.cambiarModoIntercambio(dispositivo)).classes("ml-auto").mark(f"intercambiar-{nombre}")
             ui.button("Apariencia folder", icon="folder_special", color="teal-500", on_click=lambda: self.abrirPropiedadesFolder(dispositivo)).mark(f"propiedadesFolder-{nombre}")
+
+        def alClick(tecla, acción):
+            if intercambiando:
+                return lambda: self.seleccionarIntercambio(dispositivo, tecla)
+            if acción is not None:
+                return lambda: self.seleccionarAcción(acción, dispositivo)
+            return lambda: self.nuevaAcciónTecla(dispositivo, tecla)
+
+        def marcar(boton, tecla) -> None:
+            if intercambiando and tecla == seleccionada:
+                boton.classes("ring-4 ring-orange-500")
+            boton.mark(f"tecla-{nombre}-{tecla}")
+
+        if distribucion:
+            # Teclado: botones con posición libre en unidades de tecla, sin vista previa porque no tiene pantalla
+            unidad = 56
+            ancho = max(t.get("x", 0) + t.get("w", 1) for t in distribucion)
+            alto = max(t.get("y", 0) + t.get("h", 1) for t in distribucion)
+            with ui.element("div").classes("relative m-2").style(f"width: {ancho * unidad}px; height: {alto * unidad}px"):
+                for teclaFisica in distribucion:
+                    tecla = teclaFisica["key"]
+                    acción = accionesPorTecla.get(tecla)
+                    etiqueta = teclaFisica.get("etiqueta") or tecla.removeprefix("KEY_")
+                    x, y = teclaFisica.get("x", 0), teclaFisica.get("y", 0)
+                    w, h = teclaFisica.get("w", 1), teclaFisica.get("h", 1)
+                    boton = ui.button(acción.get("nombre") if acción else etiqueta, color="teal-600" if acción else "grey-8", on_click=alClick(tecla, acción))
+                    boton.props("dense no-caps").classes("absolute text-xs leading-tight overflow-hidden")
+                    boton.style(f"left: {x * unidad}px; top: {y * unidad}px; width: {w * unidad - 4}px; height: {h * unidad - 4}px")
+                    boton.tooltip(f"{etiqueta} ({tecla})" + (f": {acción.get('nombre')}" if acción else ""))
+                    marcar(boton, tecla)
+
+            # Acciones en teclas que no están dibujadas (capa Fn, teclas de otro modelo) para que no queden escondidas
+            dibujadas = {t["key"] for t in distribucion} | {"propiedad_folder"}
+            otras = [tecla for tecla in accionesPorTecla if tecla not in dibujadas]
+            if otras:
+                ui.label("Otras teclas").classes("font-bold px-2")
+                with ui.row().classes("gap-1 px-2"):
+                    for tecla in otras:
+                        acción = accionesPorTecla[tecla]
+                        boton = ui.button(acción.get("nombre"), color="teal-600", on_click=alClick(tecla, acción)).props("dense no-caps")
+                        boton.classes("text-xs").tooltip(tecla)
+                        marcar(boton, tecla)
 
         with ui.row().classes("items-start gap-8 p-2"):
             for grupo in grupos:
@@ -771,20 +830,12 @@ class miGui(dispositivo):
                                     logger.warning(f"Vista previa[Error] {nombre}[{tecla}] {error}")
 
                             with ui.column().classes("items-center gap-1"):
-                                if intercambiando:
-                                    alClick = lambda t=tecla: self.seleccionarIntercambio(dispositivo, t)
-                                elif imagen is not None:
-                                    alClick = lambda a=acción: self.seleccionarAcción(a, dispositivo)
-                                else:
-                                    alClick = lambda t=tecla: self.nuevaAcciónTecla(dispositivo, t)
                                 if imagen is not None:
                                     boton = ui.image(imagen).classes("w-24 h-24 rounded cursor-pointer")
-                                    boton.on("click", alClick)
+                                    boton.on("click", alClick(tecla, acción))
                                 else:
-                                    boton = ui.button(icon="add", color="grey-8", on_click=alClick).classes("w-24 h-24")
-                                if intercambiando and tecla == seleccionada:
-                                    boton.classes("ring-4 ring-orange-500")
-                                boton.mark(f"tecla-{nombre}-{tecla}")
+                                    boton = ui.button(icon="add", color="grey-8", on_click=alClick(tecla, acción)).classes("w-24 h-24")
+                                marcar(boton, tecla)
                                 ui.label(f"{tecla}: {acción.get('nombre')}" if acción is not None else str(tecla)).classes("text-xs")
 
     def cambiarModoIntercambio(self, dispositivo: dispositivo) -> None:

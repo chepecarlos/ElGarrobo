@@ -17,6 +17,7 @@ from elGarrobo.accionesOOP import cargarClasesAcciones
 from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.mipedal.mi_pedal import MiPedal
+from elGarrobo.dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro, folderDistribuciones
 from elGarrobo.dispositivos.migui import migui as moduloMiGui
 from elGarrobo.dispositivos.migui.migui import miGui
 
@@ -240,6 +241,22 @@ class TestPaginaAcciones:
         assert deck.listaAcciones[0]["opciones"] == {"texto": "chao"}
         assert deck.vecesSalvado == 1
         assert gui.botonAgregar.icon == "add"
+
+    async def test_botones_al_editar(self, user: User, gui: miGui, deck: dispositivoFalso):
+        await user.open("/")
+        assert not gui.botonEjecutar.visible and not gui.botonBorrar.visible
+        cantidad = len(deck.listaAcciones)
+        acción = deck.listaAcciones[0]
+        user.find(marker=f"editar-deck-{acción.key}").click()
+        assert gui.botonEjecutar.visible and gui.botonBorrar.visible
+
+        gui.ejecutarAcción = MagicMock()
+        user.find(marker="botonEjecutar").click()
+        gui.ejecutarAcción.assert_called_once_with(acción)
+
+        user.find(marker="botonBorrar").click()
+        assert acción not in deck.listaAcciones and len(deck.listaAcciones) == cantidad - 1
+        assert gui.accionEditar is None and not gui.botonBorrar.visible
 
     async def test_editar_a_tecla_ocupada(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
@@ -477,6 +494,60 @@ class TestCuadricula:
         user.find(marker="intercambiar-pedal").click()
         user.find(marker="tecla-pedal-2").click()
         assert guiPedal.editoresData["nombre"].value == "Uno", "fuera del modo vuelve a editar"
+
+
+
+@pytest.fixture
+def teclado() -> MiTecladoMacro:
+    teclado = MiTecladoMacro({"nombre": "teclado", "distribucion": "ingles_87k"})
+    teclado._listaAcciones = teclado.convertirAcciones([{"nombre": "Escena", "key": "KEY_A", "accion": "escribir", "opciones": {"texto": "a"}}])
+    teclado.salvarAcciones = lambda: None
+    return teclado
+
+
+@pytest.fixture
+def guiTeclado(user: User, teclado: MiTecladoMacro) -> miGui:
+    gui = miGui({"nombre": "gui"})
+    gui.listaClasesAcciones = cargarClasesAcciones()
+    gui.listaDispositivos = [teclado]
+    return gui
+
+
+class TestDistribucionTeclado:
+    def test_distribuciones_con_keycodes_validos(self):
+        from evdev import ecodes
+
+        for archivo in folderDistribuciones.glob("*.json"):
+            teclas = [t["key"] for t in MiTecladoMacro({"nombre": "t", "distribucion": archivo.stem}).distribucionTeclas()]
+            assert len(teclas) == len(set(teclas)), f"{archivo.name} repite teclas"
+            assert all(t in ecodes.ecodes for t in teclas), f"{archivo.name} tiene keycodes inválidos"
+
+    async def test_dibuja_y_edita(self, user: User, guiTeclado: miGui, teclado: MiTecladoMacro):
+        await user.open("/")
+        await user.should_see(marker="tecla-teclado-KEY_ESC")
+        user.find(marker="tecla-teclado-KEY_A").click()
+        assert guiTeclado.editoresData["nombre"].value == "Escena"
+        user.find(marker="tecla-teclado-KEY_B").click()
+        assert guiTeclado.editoresData["key"].value == "KEY_B"
+
+    async def test_intercambiar(self, user: User, guiTeclado: miGui, teclado: MiTecladoMacro):
+        await user.open("/")
+        user.find(marker="intercambiar-teclado").click()
+        user.find(marker="tecla-teclado-KEY_A").click()
+        user.find(marker="tecla-teclado-KEY_F1").click()
+        assert teclado.listaAcciones[0].key == "KEY_F1"
+
+    async def test_teclas_fuera_de_la_distribucion(self, user: User, guiTeclado: miGui, teclado: MiTecladoMacro):
+        teclado.listaAcciones.append(dataAccion.desdeDict({"nombre": "Capa Fn", "key": "KEY_F13", "accion": "escribir"}))
+        await user.open("/")
+        await user.should_see("Otras teclas")
+        user.find(marker="tecla-teclado-KEY_F13").click()
+        assert guiTeclado.editoresData["nombre"].value == "Capa Fn"
+
+    async def test_sin_distribucion_muestra_lista(self, user: User, guiTeclado: miGui, teclado: MiTecladoMacro):
+        teclado.distribucion = "no_existe"
+        await user.open("/")
+        await user.should_see(marker="orden-key-teclado")
 
 
 

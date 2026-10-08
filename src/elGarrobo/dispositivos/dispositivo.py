@@ -232,6 +232,10 @@ class dispositivo:
         """Botones físicos de la página actual para dibujar el dispositivo en la GUI; None muestra la tabla"""
         return None
 
+    def distribucionTeclas(self) -> list[dict] | None:
+        """Teclas físicas con posición libre ({key, x, y, w, h, etiqueta} en unidades de tecla) para dibujar en la GUI; None si no tiene"""
+        return None
+
     def tamañoBoton(self) -> tuple[int, int]:
         """Tamaño en pixeles de los botones, 72x72 (StreamDeck Original) por defecto"""
         return (72, 72)
