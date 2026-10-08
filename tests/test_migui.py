@@ -139,7 +139,7 @@ class TestPaginaAcciones:
         await user.should_see("Uno")
         await user.should_see("Dos")
         await user.should_see("Escribir texto")
-        await user.should_see("streamdeck")
+        await user.should_see("deck · /")
         await user.should_see(marker="editar-deck-1")
 
     async def test_agregar_accion(self, user: User, gui: miGui, deck: dispositivoFalso):
@@ -496,6 +496,55 @@ class TestCuadricula:
         assert guiPedal.editoresData["nombre"].value == "Uno", "fuera del modo vuelve a editar"
 
 
+class TestModoUsar:
+    @pytest.fixture(autouse=True)
+    def salvar(self, monkeypatch) -> MagicMock:
+        salvar = MagicMock()
+        monkeypatch.setattr(moduloMiGui, "SalvarValor", salvar)
+        return salvar
+
+    async def test_click_ejecuta_sin_editar(self, user: User, guiPedal: miGui, pedal: MiPedal, salvar: MagicMock):
+        guiPedal.ejecutarAcción = MagicMock()
+        await user.open("/")
+        with user:
+            guiPedal.cambiarModo(True)
+        salvar.assert_called_once_with(moduloMiGui.ARCHIVO_PREFERENCIAS, "modo_usar", True)
+        await user.should_not_see(marker="intercambiar-pedal")
+        await user.should_not_see(marker="propiedadesFolder-pedal")
+
+        user.find(marker="tecla-pedal-1").click()
+        guiPedal.ejecutarAcción.assert_called_once_with(pedal.listaAcciones[0])
+        assert guiPedal.editoresData["nombre"].value == "", "en Usar no abre el formulario"
+        await user.should_see(marker="ultimaAcción")
+        assert guiPedal.ultimaLabel.text == "Uno"
+
+    async def test_volver_a_editar_conserva_formulario(self, user: User, guiPedal: miGui, pedal: MiPedal):
+        await user.open("/")
+        user.find(marker="tecla-pedal-1").click()
+        with user:
+            guiPedal.cambiarModo(True)
+            guiPedal.cambiarModo(False)
+        assert guiPedal.editoresData["nombre"].value == "Uno"
+        await user.should_see(marker="intercambiar-pedal")
+
+    async def test_sin_cuadricula_muestra_botonera(self, user: User, gui: miGui, deck: dispositivoFalso):
+        gui.ejecutarAcción = MagicMock()
+        await user.open("/")
+        with user:
+            gui.cambiarModo(True)
+        await user.should_not_see(marker="editar-deck-1")
+        user.find(marker="tecla-deck-2").click()
+        gui.ejecutarAcción.assert_called_once_with(deck.listaAcciones[1])
+
+    async def test_error_al_ejecutar_avisa(self, user: User, gui: miGui, deck: dispositivoFalso):
+        gui.ejecutarAcción = MagicMock(side_effect=RuntimeError("sin OBS"))
+        await user.open("/")
+        with user:
+            gui.cambiarModo(True)
+        user.find(marker="tecla-deck-1").click()
+        await user.should_see("No se pudo ejecutar Uno: sin OBS")
+
+
 
 @pytest.fixture
 def teclado() -> MiTecladoMacro:
@@ -614,7 +663,8 @@ class TestPropiedadesFolder:
     async def test_fondo_del_folder_en_la_cuadricula(self, user: User, guiPedal: miGui, pedal: MiPedal):
         pedal.listaAcciones.append(dataAccion(key="propiedad_folder", imagenOpciones={"fondo": "#00ff00"}))
         await user.open("/")
-        imagen = next(e for e in user.find(marker="tecla-pedal-1").elements).source
+        boton = next(iter(user.find(marker="tecla-pedal-1").elements))
+        imagen = next(e for e in boton.descendants() if isinstance(e, ui.image)).source
         assert imagen.getpixel((70, 70)) == (0, 255, 0)
 
 
