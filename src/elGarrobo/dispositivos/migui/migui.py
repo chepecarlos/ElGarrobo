@@ -29,7 +29,7 @@ CSS_BOTONERA = """
     padding: 1.5rem;
     box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
-.tecla-viva { transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), filter 90ms cubic-bezier(0.16, 1, 0.3, 1); }
+.tecla-viva { touch-action: none; user-select: none; -webkit-touch-callout: none; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), filter 90ms cubic-bezier(0.16, 1, 0.3, 1); }
 .tecla-viva:active { transform: scale(0.94); filter: brightness(1.35); }
 .tecla-viva:focus-visible { outline: 2px solid #5eead4; outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .tecla-viva { transition: none; } }
@@ -95,6 +95,8 @@ class miGui(dispositivo):
         "Dispositivos con distribución física que el usuario cambió a vista de lista"
         self.ordenInverso: bool = False
         self.teclaIntercambio: dict = {}
+        self.teclasPresionadas: set[int] = set()
+        "id de las acciones presionadas en modo Usar, para mandar soltar una sola vez"
         "Dispositivos en modo intercambiar → primera tecla seleccionada (None si aún no hay)"
         self.modoUsar: bool = False
         "Modo Usar: click en una tecla la ejecuta; modo Editar: la abre en el formulario"
@@ -367,12 +369,31 @@ class miGui(dispositivo):
         else:
             self.splitter.classes(remove="modo-usar")
 
+    def conectarTecla(self, boton: ui.element, acción: dataAccion, dispositivo: dispositivo) -> None:
+        """Modo Usar: hundir la tecla presiona y levantarla suelta, igual que el aparato (ej. la acción Presiona)"""
+        for evento in ("pointerdown", "keydown.enter", "keydown.space"):
+            boton.on(evento, lambda: self.presionarTecla(acción, dispositivo))
+        for evento in ("pointerup", "pointerleave", "pointercancel", "keyup.enter", "keyup.space"):
+            boton.on(evento, lambda: self.soltarTecla(acción, dispositivo))
+
+    def soltarTecla(self, acción: dataAccion, dispositivo: dispositivo) -> None:
+        """Manda soltar solo si la tecla estaba presionada (pointerleave llega aunque no se haya presionado)"""
+        if id(acción) not in self.teclasPresionadas:
+            return
+        self.teclasPresionadas.discard(id(acción))
+        self.buscarAccion(acción, self.estadoTecla.LIBERADA)
+
     def presionarTecla(self, acción: dataAccion, dispositivo: dispositivo) -> None:
         """Ejecuta la acción de una tecla en modo Usar y la muestra en la cabecera"""
+        # Mantener Enter/Espacio repite keydown: se ejecuta una sola vez hasta soltar
+        if id(acción) in self.teclasPresionadas:
+            return
+        self.teclasPresionadas.add(id(acción))
         nombre = acción.get("nombre") or str(acción.get("key"))
         try:
             self.buscarAccion(acción, self.estadoTecla.PRESIONADA)
         except Exception as error:
+            self.teclasPresionadas.discard(id(acción))
             logger.warning(f"Ejecutar[Error] {dispositivo.nombre}[{acción.get('key')}] {error}")
             ui.notify(f"No se pudo ejecutar {nombre}: {error}", type="negative")
             return
@@ -704,6 +725,13 @@ class miGui(dispositivo):
                     self.ultimaFila.visible = False
             dialogoReiniciar = self.crearDialogoConfirmacion("¿Reiniciar ElGarrobo?", self.reiniciar)
             dialogoSalir = self.crearDialogoConfirmacion("¿Cerrar ElGarrobo?", self.salir)
+            with ui.dialog() as dialogoAcercaDe, ui.card():
+                ui.label("ElGarrobo").classes("text-h6")
+                ui.label("Creado por ChepeCarlos")
+                with ui.row():
+                    ui.link("YouTube", "https://www.youtube.com/@chepecarlo", new_tab=True).classes(f"text-{self.colorClaro}")
+                    ui.link("TikTok", "https://www.tiktok.com/@chepecarlo", new_tab=True).classes(f"text-{self.colorClaro}")
+                ui.button("Cerrar", on_click=dialogoAcercaDe.close).props("flat")
             with ui.row().classes("items-center gap-2 no-wrap"):
                 if conModo:
                     modo = ui.toggle({True: "Usar", False: "Editar"}, value=self.modoUsar, on_change=lambda e: self.cambiarModo(e.value))
@@ -713,17 +741,11 @@ class miGui(dispositivo):
                         ui.menu_item("Acciones", on_click=lambda: ui.navigate.to("/")).mark("menu-Acciones")
                         ui.menu_item("Módulos", on_click=lambda: ui.navigate.to("/modulos")).mark("menu-Módulos")
                         ui.menu_item("Dispositivos", on_click=lambda: ui.navigate.to("/dispositivos")).mark("menu-Dispositivos")
+                        ui.menu_item("Acerca de", on_click=dialogoAcercaDe.open).mark("menu-AcercaDe")
                         ui.separator()
                         ui.menu_item("Reiniciar", on_click=dialogoReiniciar.open).mark("menu-Reiniciar")
                         ui.menu_item("Salir", on_click=dialogoSalir.open).mark("menu-Salir")
 
-        with ui.footer().classes(f"bg-{self.colorOscuro}").style("height: 5vh; padding: 1px"):
-            with ui.row().classes("w-full").style("padding: 0 10px"):
-                ui.label("Creado por ChepeCarlos")
-                ui.space()
-                # El azul por defecto de los enlaces no contrasta con el teal oscuro
-                ui.link("Youtube", "https://www.youtube.com/@chepecarlo").classes(f"text-{self.colorClaro}")
-                ui.link("Tiktok", "https://www.tiktok.com/@chepecarlo").classes(f"text-{self.colorClaro}")
 
     def seConectorGUI(self, client=None):
         """
@@ -837,8 +859,8 @@ class miGui(dispositivo):
 
                 with ui.scroll_area() as areaScroll:
                     areaScroll.classes("w-full" if usar else "w-full border-2 border-teal-600")
-                    # Alto disponible: 100vh - cabecera (5vh) - pie (5vh) - pestañas (48px) - padding del panel (32px) - interruptor (40px)
-                    areaScroll.style(f"height: calc(90vh - {120 if cuadricula and not usar else 80}px)")
+                    # Alto disponible: 100vh - cabecera (5vh) - pestañas (48px) - padding del panel (32px) - interruptor (40px)
+                    areaScroll.style(f"height: calc(95vh - {120 if cuadricula and not usar else 80}px)")
 
                     if acciones is None:
                         ui.label("No acciones")
@@ -898,8 +920,8 @@ class miGui(dispositivo):
 
         def alClick(tecla, acción):
             if usar:
-                # Tecla vacía en Usar: no hace nada
-                return (lambda: self.presionarTecla(acción, dispositivo)) if acción is not None else None
+                # En Usar ejecutan los eventos de conectarTecla; la tecla vacía no hace nada
+                return None
             if intercambiando:
                 return lambda: self.seleccionarIntercambio(dispositivo, tecla)
             if acción is not None:
@@ -907,6 +929,9 @@ class miGui(dispositivo):
             return lambda: self.nuevaAcciónTecla(dispositivo, tecla)
 
         def marcar(boton, tecla) -> None:
+            acción = accionesPorTecla.get(str(tecla))
+            if usar and acción is not None:
+                self.conectarTecla(boton, acción, dispositivo)
             if intercambiando and tecla == seleccionada:
                 boton.classes("ring-4 ring-orange-500")
             boton.mark(f"tecla-{nombre}-{tecla}")
@@ -1101,7 +1126,8 @@ class miGui(dispositivo):
                 tecla = acción.get("key")
                 if tecla == "propiedad_folder":
                     continue
-                boton = ui.button(acción.get("nombre") or str(tecla), color="teal-700", on_click=lambda a=acción: self.presionarTecla(a, dispositivo))
+                boton = ui.button(acción.get("nombre") or str(tecla), color="teal-700")
+                self.conectarTecla(boton, acción, dispositivo)
                 boton.props("unelevated no-caps").classes("h-20 rounded-xl tecla-viva").tooltip(str(tecla))
                 boton.mark(f"tecla-{dispositivo.nombre}-{tecla}")
 
@@ -1176,7 +1202,10 @@ class miGui(dispositivo):
 
     def buscarAccion(self, acción: dict, estado):
         logger.info(f"Evento[{acción.get('nombre')}] {self.nombre}[{acción.get('key')}-{estado.name}]")
-        self.ejecutarAcción(acción)
+        if estado == self.estadoTecla.LIBERADA:
+            self.ejecutarAcción(acción, False)
+        else:
+            self.ejecutarAcción(acción)
 
     def borrarAcción(self, accion, dispositivo: dispositivo):
         dispositivo.listaAcciones.remove(accion)

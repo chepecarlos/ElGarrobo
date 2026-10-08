@@ -512,7 +512,7 @@ class TestModoUsar:
         await user.should_not_see(marker="intercambiar-pedal")
         await user.should_not_see(marker="propiedadesFolder-pedal")
 
-        user.find(marker="tecla-pedal-1").click()
+        user.find(marker="tecla-pedal-1").trigger("pointerdown")
         guiPedal.ejecutarAcción.assert_called_once_with(pedal.listaAcciones[0])
         assert guiPedal.editoresData["nombre"].value == "", "en Usar no abre el formulario"
         await user.should_see(marker="ultimaAcción")
@@ -533,7 +533,7 @@ class TestModoUsar:
         with user:
             gui.cambiarModo(True)
         await user.should_not_see(marker="editar-deck-1")
-        user.find(marker="tecla-deck-2").click()
+        user.find(marker="tecla-deck-2").trigger("pointerdown")
         gui.ejecutarAcción.assert_called_once_with(deck.listaAcciones[1])
 
     async def test_error_al_ejecutar_avisa(self, user: User, gui: miGui, deck: dispositivoFalso):
@@ -541,8 +541,22 @@ class TestModoUsar:
         await user.open("/")
         with user:
             gui.cambiarModo(True)
-        user.find(marker="tecla-deck-1").click()
+        user.find(marker="tecla-deck-1").trigger("pointerdown")
         await user.should_see("No se pudo ejecutar Uno: sin OBS")
+
+    async def test_mantener_presiona_y_suelta_una_vez(self, user: User, guiPedal: miGui, pedal: MiPedal):
+        guiPedal.ejecutarAcción = MagicMock()
+        await user.open("/")
+        with user:
+            guiPedal.cambiarModo(True)
+        tecla = user.find(marker="tecla-pedal-1")
+        tecla.trigger("pointerleave")
+        assert guiPedal.ejecutarAcción.call_count == 0, "salir sin presionar no manda soltar"
+
+        tecla.trigger("keydown.enter").trigger("keydown.enter")
+        tecla.trigger("keyup.enter").trigger("pointerleave")
+        uno = pedal.listaAcciones[0]
+        assert guiPedal.ejecutarAcción.call_args_list == [((uno,),), ((uno, False),)], "una vez presionar y una vez soltar"
 
 
 

@@ -1,4 +1,4 @@
-"""Acción para esperar un tiempo"""
+"""Acción que ejecuta una acción al presionar la tecla y otra al soltarla"""
 
 from elGarrobo.miLibrerias import ConfigurarLogging
 
@@ -8,11 +8,11 @@ Logger = ConfigurarLogging(__name__)
 
 
 class accionPresionar(accion):
-    "Ejecuta una accion si se presionar y otra cuando se suelta"
+    "Ejecuta una acción al presionar la tecla y otra al soltarla"
 
     nombre = "Presiona"
     comando = "presionar"
-    descripcion = "Ejecuta una accion si se presionar y otra cuando se suelta"
+    descripcion = "Ejecuta una acción al presionar la tecla y otra al soltarla"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
@@ -31,7 +31,7 @@ class accionPresionar(accion):
             tipo=dict,  # TODO: que entienda que es una accion
             obligatorio=True,
             atributo="soltar",
-            descripcion="Acción para ejecutarse cuando se Suelte",
+            descripcion="Acción para ejecutarse cuando se suelte",
             ejemplo="---",
         )
 
