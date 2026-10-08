@@ -1,0 +1,14 @@
+[
+  {"key": "KEY_3", "x": 0, "y": 0},
+  {"key": "KEY_2", "x": 0, "y": 1},
+  {"key": "KEY_1", "x": 0, "y": 2},
+  {"key": "KEY_6", "x": 1, "y": 0},
+  {"key": "KEY_5", "x": 1, "y": 1},
+  {"key": "KEY_4", "x": 1, "y": 2},
+  {"key": "KEY_9", "x": 2, "y": 0},
+  {"key": "KEY_8", "x": 2, "y": 1},
+  {"key": "KEY_7", "x": 2, "y": 2},
+  {"key": "KEY_EQUAL", "x": 3, "y": 0, "etiqueta": "12"},
+  {"key": "KEY_MINUS", "x": 3, "y": 1, "etiqueta": "11"},
+  {"key": "KEY_0", "x": 3, "y": 2, "etiqueta": "10"}
+]
