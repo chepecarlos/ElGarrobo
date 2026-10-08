@@ -227,10 +227,12 @@ class miGui(dispositivo):
                 ui.notify(f"Agregando acción {nombre}")
                 logger.info(f"Agregando acción {nombre} a {nombreDispositivo}")
 
+            guardada = self.accionEditar if editando else acciónNueva
             dispositivoDestino.listaAcciones.sort(key=self.ordenTecla)
             dispositivoDestino.salvarAcciones()
             self.actualizarPestaña(dispositivoDestino)
             self.limpiarFormulario()
+            self.ofrecerCrearFolder(guardada, dispositivoDestino)
 
         def obtenerPropiedades(acciónSeleccionada: str) -> dict:
             if self.opcionesEditar is not None:
@@ -265,6 +267,13 @@ class miGui(dispositivo):
                 self.editorFolderTamaño = ui.number("Tamaño máximo del título", min=1, precision=0).classes("w-64").mark("editor-folder-tamanno")
                 ui.button("Guardar", on_click=self.guardarPropiedadesFolder).mark("botonGuardarFolder")
 
+            # entrar_folder a un folder donde el dispositivo no tiene archivo de acciones
+            with ui.dialog() as self.dialogoCrearFolder, ui.card():
+                self.textoCrearFolder = ui.label("")
+                with ui.row():
+                    ui.button("Cancelar", on_click=self.dialogoCrearFolder.close).props("flat")
+                    ui.button("Crear y entrar", icon="create_new_folder", color=self.colorOscuro, on_click=self.crearFolderPendiente).mark("botonCrearFolder")
+
             # Se llena al abrir con las distribuciones disponibles
             with ui.dialog() as self.dialogoDistribucion, ui.card():
                 self.listaDistribuciones = ui.column()
@@ -297,7 +306,7 @@ class miGui(dispositivo):
             self.botonAgregar = ui.button(icon="add", color=self.colorOscuro, on_click=agregarAcción).mark("botonAgregar")
             self.botonAgregar.tooltip("Guardar acción")
             # Solo se ven al editar una acción guardada
-            self.botonEjecutar = ui.button(icon="play_arrow", color=self.colorOscuro, on_click=lambda: self.buscarAccion(self.accionEditar, self.estadoTecla.PRESIONADA)).mark("botonEjecutar")
+            self.botonEjecutar = ui.button(icon="play_arrow", color=self.colorOscuro, on_click=self.ejecutarAcciónEditada).mark("botonEjecutar")
             self.botonEjecutar.tooltip("Ejecutar acción guardada")
             ui.button(icon="clear_all", color=self.colorOscuro, on_click=self.limpiarFormulario).mark("botonLimpiar").tooltip("Limpiar editor")
             self.botonBorrar = ui.button(icon="delete", color=self.colorOscuro, on_click=self.borrarAcciónEditada).mark("botonBorrar")
@@ -417,6 +426,45 @@ class miGui(dispositivo):
         self.accionEditar = None
         self.dispositivoEditar = None
         self.opcionesEditar = None
+
+    def ejecutarAcciónEditada(self) -> None:
+        acción, dispositivo = self.accionEditar, self.dispositivoEditar
+        # Se revisa antes: si el folder existe el dispositivo entra y la ruta relativa ya no sirve
+        faltaFolder = self.folderFaltante(acción, dispositivo)
+        self.buscarAccion(acción, self.estadoTecla.PRESIONADA)
+        if faltaFolder:
+            self.ofrecerCrearFolder(acción, dispositivo)
+
+    def folderFaltante(self, acción: dataAccion, dispositivo: dispositivo) -> tuple[dispositivo, str] | None:
+        """(dispositivo, folder) si la acción es entrar_folder y ese dispositivo no tiene archivo de acciones ahí"""
+        if acción is None:
+            return None
+        opciones = acción.get("opciones")
+        if acción.get("accion") != "entrar_folder" or not isinstance(opciones, dict) or not opciones.get("folder"):
+            return None
+        # Con 'dispositivo' en las opciones el folder es de ese dispositivo, no del que se edita
+        if opciones.get("dispositivo"):
+            nombre = opciones["dispositivo"].lower()
+            dispositivo = next((d for d in self.listaDispositivos if d.nombre.lower() == nombre), None)
+        if dispositivo is None or dispositivo.tieneFolder(opciones["folder"]):
+            return None
+        return dispositivo, opciones["folder"]
+
+    def ofrecerCrearFolder(self, acción: dataAccion, dispositivo: dispositivo) -> None:
+        """Pregunta si crear el folder de un entrar_folder cuando el dispositivo no tiene acciones ahí"""
+        self.folderPendiente = self.folderFaltante(acción, dispositivo)
+        if self.folderPendiente is None:
+            return
+        dispositivo, folder = self.folderPendiente
+        self.textoCrearFolder.text = f"{dispositivo.nombre} no tiene acciones en {folder}. ¿Crear el folder y entrar?"
+        self.dialogoCrearFolder.open()
+
+    def crearFolderPendiente(self) -> None:
+        dispositivo, folder = self.folderPendiente
+        dispositivo.crearFolder(folder)
+        self.dialogoCrearFolder.close()
+        ui.notify(f"Folder {folder} creado en {dispositivo.nombre}")
+        self.actualizarPestaña(dispositivo)
 
     def borrarAcciónEditada(self) -> None:
         """Borra la acción que está en el editor y lo limpia"""

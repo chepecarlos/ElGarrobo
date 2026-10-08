@@ -117,6 +117,10 @@ class dibujoBoton:
 
         tituloBoton: str = self.buscarTitulo(accion)
 
+        # Sin título ni imagen el botón quedaría vacío: se muestra el nombre
+        if not tituloBoton and direccionImagen is None and imagenFondo is None:
+            tituloBoton = accion.get("nombre")
+
         if tituloBoton is not None:
             self.ponerTexto(imagen, tituloBoton, accion, isinstance(direccionImagen, str))
 
@@ -438,4 +442,7 @@ if __name__ == "__main__":
         assert ancho <= 72
         tamaño, _, _ = dibujo.calcularTamañoFuente(Image.new("RGB", (72, 72)), "texto muy largo", 6, 1, minimo=20)
         assert tamaño == 20
+        # sin título ni imagen se usa el nombre; con título o imagen no
+        assert dibujo.dibujar(dataAccion(nombre="Casa OS"), (72, 72)).tobytes() != dibujo.dibujar(dataAccion(), (72, 72)).tobytes()
+        assert dibujo.dibujar(dataAccion(nombre="A", titulo="B"), (72, 72)).tobytes() == dibujo.dibujar(dataAccion(nombre="X", titulo="B"), (72, 72)).tobytes()
     print("ok")

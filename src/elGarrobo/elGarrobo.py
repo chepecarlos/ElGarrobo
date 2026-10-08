@@ -598,7 +598,7 @@ class elGarrobo(object):
         else:
             for dispositivo in self.listaDispositivos:
                 if dispositivo.nombre.lower() == nombreDispositivo.lower():
-                    dispositivo.recargarAccionesFolder(directo=True)
+                    dispositivo.recargarAccionesFolder()
                     dispositivo.actualizar()
 
     def regresar_Folder(self, opciones: list[valoresAcciones]):
@@ -615,7 +615,7 @@ class elGarrobo(object):
         else:
             for dispositivoActual in self.listaDispositivos:
                 if dispositivoActual.nombre.lower() == nombreDispositivo.lower():
-                    dispositivoActual.regresarFolderActual(directo=True)
+                    dispositivoActual.regresarFolderActual()
                     dispositivoActual.actualizar()
                     if dispositivoActual.recargar:
                         seRegreso = True
@@ -645,7 +645,7 @@ class elGarrobo(object):
         else:
             for dispositivo in self.listaDispositivos:
                 if dispositivo.nombre.lower() == nombreDispositovo.lower():
-                    dispositivo.cargarAccionesFolder(folder, directo=True)
+                    dispositivo.cargarAccionesFolder(folder)
                     dispositivo.actualizar()
                     if dispositivo.recargar:
                         seCargo = True

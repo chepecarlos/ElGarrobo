@@ -46,6 +46,8 @@ sudo usermod -a -G input $USER
 
 Recomendación reiniciar la pc después de agregarse a permisos
 
+Para ver el teclado con su forma real en la GUI ver [distribuciones de teclado](./src/elGarrobo/dispositivos/miteclado/distribuciones/README.md)
+
 ### Audio
 
 Paquetes extras para poder reproducir sonidos 

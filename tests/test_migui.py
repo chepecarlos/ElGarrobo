@@ -640,3 +640,57 @@ class TestSubirFolder:
         await user.should_see("1: Raiz")
         assert pedal.enFolderRaiz()
         assert not next(iter(user.find(marker="subirFolder-pedal").elements)).enabled
+
+
+class TestCrearFolder:
+    @pytest.fixture
+    def pedalEnPerfil(self, monkeypatch, tmp_path) -> MiPedal:
+        monkeypatch.setattr(sys.modules["elGarrobo.dispositivos.dispositivo"], "ObtenerFolderConfig", lambda: tmp_path)
+        (tmp_path / "default" / "existe").mkdir(parents=True)
+        (tmp_path / "default" / "existe" / "pedal.md").write_text("--- []\n...\n")
+        (tmp_path / "default" / "pedal.json").write_text(
+            '[{"nombre": "Nuevo", "key": 1, "accion": "entrar_folder", "opciones": {"folder": "nuevo"}},'
+            ' {"nombre": "Existe", "key": 2, "accion": "entrar_folder", "opciones": {"folder": "existe"}}]'
+        )
+        pedal = MiPedal({"nombre": "pedal", "archivo": "pedal"})
+        pedal.asignarPerfil("default")
+        pedal.cargarAccionesFolder("/")
+        return pedal
+
+    def test_dispositivo(self, pedalEnPerfil: MiPedal, tmp_path):
+        assert pedalEnPerfil.tieneFolder("existe") and pedalEnPerfil.tieneFolder("/existe")
+        assert not pedalEnPerfil.tieneFolder("nuevo")
+        assert pedalEnPerfil.rutaFolder("../../fuera") is None and pedalEnPerfil.tieneFolder("../../fuera"), "fuera del perfil no se ofrece crear"
+
+        pedalEnPerfil.cargarAccionesFolder("existe")
+        assert str(pedalEnPerfil.folderActual) == "existe", "entra aunque el folder esté vacío"
+
+    async def test_ejecutar_ofrece_crear(self, user: User, pedalEnPerfil: MiPedal, tmp_path):
+        gui = miGui({"nombre": "gui"})
+        gui.listaClasesAcciones = cargarClasesAcciones()
+        gui.listaDispositivos = [pedalEnPerfil]
+        gui.ejecutarAcción = MagicMock()
+        await user.open("/")
+
+        user.find(marker="tecla-pedal-2").click()
+        user.find(marker="botonEjecutar").click()
+        assert not gui.dialogoCrearFolder.value, "el folder existe, no pregunta"
+
+        user.find(marker="tecla-pedal-1").click()
+        user.find(marker="botonEjecutar").click()
+        assert gui.dialogoCrearFolder.value
+        await user.should_see("pedal no tiene acciones en nuevo")
+        user.find(marker="botonCrearFolder").click()
+
+        assert (tmp_path / "default" / "nuevo" / "pedal.md").exists()
+        assert str(pedalEnPerfil.folderActual) == "nuevo" and pedalEnPerfil.listaAcciones == []
+
+    async def test_guardar_ofrece_crear(self, user: User, pedalEnPerfil: MiPedal, tmp_path):
+        gui = miGui({"nombre": "gui"})
+        gui.listaClasesAcciones = cargarClasesAcciones()
+        gui.listaDispositivos = [pedalEnPerfil]
+        await user.open("/")
+
+        user.find(marker="tecla-pedal-1").click()
+        user.find(marker="botonAgregar").click()
+        assert gui.dialogoCrearFolder.value

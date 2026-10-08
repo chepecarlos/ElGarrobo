@@ -1,4 +1,4 @@
-"""Esperar una cantidad de tiempo"""
+"""Abre una URL en el navegador predeterminado"""
 
 import webbrowser
 
@@ -10,11 +10,11 @@ Logger = ConfigurarLogging(__name__)
 
 
 class accionNavegador(accion):
-    """Esperar una cantidad de tiempo"""
+    """Abre una URL en el navegador predeterminado"""
 
-    nombre: str = "Navegador"
+    nombre: str = "Abrir navegador"
     comando: str = "navegador"
-    descripción: str = "Abre una url en navegador preterminado"
+    descripción: str = "Abre una url en navegador predeterminado"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripción)
@@ -24,7 +24,7 @@ class accionNavegador(accion):
             tipo=str,
             obligatorio=True,
             atributo="url",
-            descripcion="direction web a abrir",
+            descripcion="Dirección web a abrir",
             ejemplo="http://google.com",
         )
 

@@ -159,35 +159,26 @@ class dispositivo:
         """
 
         folderPerfil = self._folderConfigPerfil()
+        folderData = self.rutaFolder(folderCargar)
 
-        folderBuscar = Path(folderCargar)
-
-        if folderBuscar.is_absolute():
-            folderBuscar = Path(folderCargar.lstrip("/"))
-        else:
-            folderBuscar = self.folderActual / folderBuscar
-
-        folderData = (folderPerfil / folderBuscar).resolve()
-
-        archivoData = (folderData / self.archivo).resolve()
-
-        if folderPerfil not in archivoData.parents:
+        if folderData is None:
             logger.warning(f"{self.nombre}[{self.tipo}] - No se puede cargar acciones fuera de folder perfil")
             return
 
         if self.folderActual == folderData.relative_to(folderPerfil) and not recargar:
             return
 
-        dataAcciones = self.cargarData(str(archivoData))
+        dataAcciones = self.cargarData(str(folderData / self.archivo))
 
         if dataAcciones is None:
-            logger.debug(f"{self.nombre}[{self.tipo}] - No se puede cargar acciones {folderBuscar}")
+            logger.info(f"{self.nombre}[{self.tipo}] - No hay acciones en {folderCargar}")
             return
 
         dataAcciones = self.convertirAcciones(dataAcciones)
 
-        if self.listaAcciones == dataAcciones:
-            logger.info(f"Data ya cargada {self.nombre} - {folderBuscar}")
+        # Mismo folder sin cambios; con folder distinto se entra aunque las acciones sean iguales (ej. dos folders vacíos)
+        if self.folderActual == folderData.relative_to(folderPerfil) and self.listaAcciones == dataAcciones:
+            logger.info(f"Data ya cargada {self.nombre} - {folderCargar}")
             return
 
         self.recargar = True
@@ -240,6 +231,31 @@ class dispositivo:
         """Tamaño en pixeles de los botones, 72x72 (StreamDeck Original) por defecto"""
         return (72, 72)
 
+    def rutaFolder(self, folder: str) -> Path | None:
+        """Ruta absoluta del folder (con / desde el perfil, si no desde el folder actual); None si queda fuera del perfil"""
+        folderPerfil = self._folderConfigPerfil()
+        folderBuscar = Path(folder.lstrip("/")) if folder.startswith("/") else Path(str(self.folderActual).lstrip("/")) / folder
+        folderData = (folderPerfil / folderBuscar).resolve()
+        if folderData != folderPerfil and folderPerfil not in folderData.parents:
+            return None
+        return folderData
+
+    def tieneFolder(self, folder: str) -> bool:
+        """True si este dispositivo tiene archivo de acciones en el folder, o si queda fuera del perfil (no se puede crear)"""
+        folderData = self.rutaFolder(folder)
+        return folderData is None or any((folderData / f"{self.archivo}{tipo}").exists() for tipo in (".md", ".json"))
+
+    def crearFolder(self, folder: str) -> None:
+        """Crea el folder con un archivo de acciones vacío para este dispositivo y entra"""
+        folderData = self.rutaFolder(folder)
+        if folderData is None:
+            return
+        folderData.mkdir(parents=True, exist_ok=True)
+        SalvarArchivo(str(folderData / f"{self.archivo}.md"), [])
+        logger.info(f"{self.nombre}[{self.tipo}] - Folder creado {folderData}")
+        self.cargarAccionesFolder(folder)
+        self.actualizar()
+
     def _folderConfigPerfil(self) -> Path:
         "Devuelve la ruta obsoleta del folder de perfil"
 
@@ -251,14 +267,14 @@ class dispositivo:
         """True si está en el folder del perfil y no se puede subir más"""
         return str(self.folderActual).strip("/") in ("", ".")
 
-    def regresarFolderActual(self, directo: bool = False):
+    def regresarFolderActual(self):
         """Sube un folder a dispositivo y carga las acciones
 
         Ejemplo:
             home/pollo -> home
         """
 
-        self.cargarAccionesFolder("../", directo)
+        self.cargarAccionesFolder("../")
 
     def recargarAccionesFolder(self):
         "Recarga las acciones del folder actual"
