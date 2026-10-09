@@ -17,7 +17,7 @@ from .accionesOOP import (
     accionReiniciarApp,
     accionSalir,
     accionSalvarPulse,
-    accionSiquientePagina,
+    accionSiguientePagina,
     cargarClasesAcciones,
 )
 from .accionesOOP.herramientas.valoresAccion import valoresAcciones
@@ -247,7 +247,7 @@ class elGarrobo(object):
 
         # Acciones Deck
         if self.ModuloDeck or self.ModuloCombinado:
-            accionSiquientePagina.funcionExterna = self.siquiente_Pagina
+            accionSiguientePagina.funcionExterna = self.siguiente_Pagina
             accionAnteriorPagina.funcionExterna = self.anterior_Pagina
             accionActualizarPagina.funcionExterna = self.Actualizar_Folder
             ListaAcciones["deck_brillo"] = self.DeckBrillo
@@ -356,15 +356,15 @@ class elGarrobo(object):
 
         if "deck" in Evento:
             if "streamdeck" in self.acciones:
-                key_desface = Evento.get("key") + Evento.get("base", 0) + self.desfaceDeck
+                key_desfase = Evento.get("key") + Evento.get("base", 0) + self.desfaseDeck
                 for accion in self.acciones["streamdeck"]:
                     if "key" in accion:
-                        if accion["key"] == key_desface:
+                        if accion["key"] == key_desfase:
                             self.EjecutandoEvento(accion, Evento["estado"])
                             return
                 estadoEvento = Evento.get("estado")
                 if estadoEvento:
-                    logger.info(f"Evento[No asignado] streamdeck[{key_desface}]")
+                    logger.info(f"Evento[No asignado] streamdeck[{key_desfase}]")
                 return
             else:
                 pass
@@ -492,7 +492,7 @@ class elGarrobo(object):
 
     def AccionesMacros(self, ListaComando):
         """
-        Ejecuta acciones una por una de una lista y si existe data la pasa a la siquiente accion
+        Ejecuta acciones una por una de una lista y si existe data la pasa a la siguiente acción
 
         ListaComandos -> list
             Acciones a realizar
@@ -670,7 +670,7 @@ class elGarrobo(object):
             )
         ]
 
-    def siquiente_Pagina(self, opciones: list[valoresAcciones]):
+    def siguiente_Pagina(self, opciones: list[valoresAcciones]):
         for dispositivoActual in self.dispositivosPagina(opciones):
             dispositivoActual.siguientePagina()
             dispositivoActual.actualizar()

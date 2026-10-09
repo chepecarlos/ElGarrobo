@@ -7,11 +7,11 @@ from .accion import accion, propiedadAccion
 Logger = ConfigurarLogging(__name__)
 
 
-class accionSiquientePagina(accion):
+class accionSiguientePagina(accion):
     """Siguiente pagina en Dispositivo StreamDeck"""
 
     nombre = "Siguiente Pagina"
-    comando = "siquiente_pagina"
+    comando = "siguiente_pagina"
     descripcion = "Siguiente pagina en Dispositivos StreamDeck"
 
     def __init__(self) -> None:

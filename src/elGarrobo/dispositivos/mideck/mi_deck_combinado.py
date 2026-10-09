@@ -21,11 +21,11 @@ class MiDeckCombinado(dispositivo):
     "Lista de Dispositivos StreamDeck a combinar"
     imagenesBase: Optional[dict[str, str]] = None
     "Imagen que se una por defecto"
-    desface: int = 0
+    desfase: int = 0
     """Cuantas botones esta adelante del inicio
 
     ejemplo:
-        desface es 10, el segundo botón haría la acción 12 
+        desfase es 10, el segundo botón haría la acción 12 
     """
     cantidadBotones: int = 0
     "Cantidad de botones en StreamDeck Combinado"
@@ -105,7 +105,7 @@ class MiDeckCombinado(dispositivo):
         for deckActual in self.listaDeck:
             deckActual.listaAcciones = self.listaAcciones
             deckActual.folderActual = self.folderActual
-            deckActual.desfaceTeclas = 0
+            deckActual.desfaseTeclas = 0
         super().accionesCargadas()
 
     def configurarFuncionAccion(self, funcionAccion: callable):
@@ -138,31 +138,32 @@ class MiDeckCombinado(dispositivo):
         for deck in self.listaDeck:
             deck.actualizarIconos()
 
-    def _desface(self) -> int:
-        """Desface de la página actual, todos los StreamDeck avanzan juntos"""
-        return self.listaDeck[0].desfaceTeclas if self.listaDeck else 0
+    def _desfase(self) -> int:
+        """Desfase de la página actual, todos los StreamDeck avanzan juntos"""
+        return self.listaDeck[0].desfaseTeclas if self.listaDeck else 0
 
     def paginaActual(self) -> int:
         if self.cantidadBotones <= 0:
             return 1
-        return self._desface() // self.cantidadBotones + 1
+        return self._desfase() // self.cantidadBotones + 1
 
-    def puedeSiguientePagina(self) -> bool:
-        """Hay acciones después de la página actual"""
-        return self.cantidadBotones > 0 and self._desface() + self.cantidadBotones < self.ultimaTecla()
+    def puedeSiguientePagina(self, editando: bool = False) -> bool:
+        """Hay acciones después de la página actual; editando permite una página vacía extra para agregar acciones"""
+        extra = self.cantidadBotones if editando else 0
+        return self.cantidadBotones > 0 and self._desfase() + self.cantidadBotones < self.ultimaTecla() + extra
 
     def puedeAnteriorPagina(self) -> bool:
-        return self.cantidadBotones > 0 and self._desface() >= self.cantidadBotones
+        return self.cantidadBotones > 0 and self._desfase() >= self.cantidadBotones
 
-    def siguientePagina(self):
+    def siguientePagina(self, editando: bool = False):
         """Cambia la pagina los StreamDeck Combinados"""
 
-        if not self.puedeSiguientePagina():
+        if not self.puedeSiguientePagina(editando):
             logger.info(f"No se puede adelantar pagina {self.nombre}")
             return
 
         for deck in self.listaDeck:
-            deck.desfaceTeclas += self.cantidadBotones
+            deck.desfaseTeclas += self.cantidadBotones
         self.recargar = True
         self.avisarGui()
 
@@ -174,7 +175,7 @@ class MiDeckCombinado(dispositivo):
             return
 
         for deck in self.listaDeck:
-            deck.desfaceTeclas -= self.cantidadBotones
+            deck.desfaseTeclas -= self.cantidadBotones
 
         self.recargar = True
         self.avisarGui()

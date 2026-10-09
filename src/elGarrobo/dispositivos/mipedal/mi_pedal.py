@@ -22,8 +22,8 @@ class MiPedal(dispositivo):
     idDeck: int = -1
     cantidad: int = 3
     "Cantidad de pedales"
-    desfaceTeclas: int = 0
-    "Página actual: el primer pedal hace la acción desfaceTeclas + 1"
+    desfaseTeclas: int = 0
+    "Página actual: el primer pedal hace la acción desfaseTeclas + 1"
     paginaGlobal: bool = False
     "Solo cambia de página con acciones que indiquen este dispositivo, no con las globales"
 
@@ -81,9 +81,9 @@ class MiPedal(dispositivo):
 
     def actualizarBoton(self, Deck, Key: int, Estado: bool):
         if Estado:
-            self.buscarAccion(Key + 1 + self.desfaceTeclas, self.estadoTecla.PRESIONADA)
+            self.buscarAccion(Key + 1 + self.desfaseTeclas, self.estadoTecla.PRESIONADA)
         else:
-            self.buscarAccion(Key + 1 + self.desfaceTeclas, self.estadoTecla.LIBERADA)
+            self.buscarAccion(Key + 1 + self.desfaseTeclas, self.estadoTecla.LIBERADA)
 
     def desconectar(self):
         if self.conectado:
@@ -93,37 +93,38 @@ class MiPedal(dispositivo):
             self.deck.close()
 
     def gruposBotones(self) -> list[grupoBotones]:
-        return [grupoBotones(self.nombre, 1, self.cantidad, self.desfaceTeclas + 1, self)]
+        return [grupoBotones(self.nombre, 1, self.cantidad, self.desfaseTeclas + 1, self)]
 
     def accionesCargadas(self) -> None:
-        self.desfaceTeclas = 0
+        self.desfaseTeclas = 0
         super().accionesCargadas()
 
     def paginaActual(self) -> int:
-        return self.desfaceTeclas // self.cantidad + 1
+        return self.desfaseTeclas // self.cantidad + 1
 
-    def puedeSiguientePagina(self) -> bool:
-        """Hay acciones después de la página actual"""
-        return self.desfaceTeclas + self.cantidad < self.ultimaTecla()
+    def puedeSiguientePagina(self, editando: bool = False) -> bool:
+        """Hay acciones después de la página actual; editando permite una página vacía extra para agregar acciones"""
+        extra = self.cantidad if editando else 0
+        return self.desfaseTeclas + self.cantidad < self.ultimaTecla() + extra
 
     def puedeAnteriorPagina(self) -> bool:
-        return self.desfaceTeclas >= self.cantidad
+        return self.desfaseTeclas >= self.cantidad
 
-    def siguientePagina(self) -> None:
+    def siguientePagina(self, editando: bool = False) -> None:
         """Pasa a los siguientes pedales, si hay acciones más adelante"""
-        if not self.puedeSiguientePagina():
+        if not self.puedeSiguientePagina(editando):
             logger.info(f"No se puede adelantar pagina {self.nombre}")
             return
-        self.desfaceTeclas += self.cantidad
+        self.desfaseTeclas += self.cantidad
         self.avisarCambioPagina()
 
     def anteriorPagina(self) -> None:
         if not self.puedeAnteriorPagina():
             logger.info(f"No se puede regresar pagina {self.nombre}")
             return
-        self.desfaceTeclas -= self.cantidad
+        self.desfaseTeclas -= self.cantidad
         self.avisarCambioPagina()
 
     def avisarCambioPagina(self) -> None:
-        logger.info(f"Pedal[Pagina] {self.nombre} teclas {self.desfaceTeclas + 1}-{self.desfaceTeclas + self.cantidad}")
+        logger.info(f"Pedal[Pagina] {self.nombre} teclas {self.desfaseTeclas + 1}-{self.desfaseTeclas + self.cantidad}")
         self.avisarGui()

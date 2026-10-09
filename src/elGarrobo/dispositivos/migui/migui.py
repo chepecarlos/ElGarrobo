@@ -1109,8 +1109,8 @@ class miGui(dispositivo):
                 anterior = ui.button(icon="chevron_left", color=self.colorBotones, on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.anteriorPagina)).mark(f"paginaAnterior-{nombre}")
                 miGui.nombrar(anterior, "Página anterior").set_enabled(dispositivo.puedeAnteriorPagina())
                 ui.label(f"Página {dispositivo.paginaActual()}").mark(f"pagina-{nombre}")
-                siguiente = ui.button(icon="chevron_right", color=self.colorBotones, on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.siguientePagina)).mark(f"paginaSiguiente-{nombre}")
-                miGui.nombrar(siguiente, "Página siguiente").set_enabled(dispositivo.puedeSiguientePagina())
+                siguiente = ui.button(icon="chevron_right", color=self.colorBotones, on_click=lambda: self.cambiarPagina(dispositivo, lambda: dispositivo.siguientePagina(not usar))).mark(f"paginaSiguiente-{nombre}")
+                miGui.nombrar(siguiente, "Página siguiente").set_enabled(dispositivo.puedeSiguientePagina(not usar))
             intercambiando = nombre in self.teclaIntercambio
             seleccionada = self.teclaIntercambio.get(nombre)
             if not usar:

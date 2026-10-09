@@ -70,7 +70,7 @@ class TestGruposBotones:
         for deck, base in zip(combinado.listaDeck, (1, 16)):
             deck.layout = (3, 5)
             deck.baseTeclas = base
-            deck.desfaceTeclas = 30
+            deck.desfaseTeclas = 30
 
         grupos = combinado.gruposBotones()
 

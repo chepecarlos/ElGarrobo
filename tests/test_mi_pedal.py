@@ -15,13 +15,23 @@ def test_paginas_hasta_la_ultima_tecla_con_accion():
     pedal = crearPedal([1, 5])
 
     pedal.siguientePagina()
-    assert pedal.desfaceTeclas == 3
+    assert pedal.desfaseTeclas == 3
     pedal.siguientePagina()
-    assert pedal.desfaceTeclas == 3, "no hay acciones después de la tecla 6"
+    assert pedal.desfaseTeclas == 3, "no hay acciones después de la tecla 6"
 
     pedal.anteriorPagina()
     pedal.anteriorPagina()
-    assert pedal.desfaceTeclas == 0
+    assert pedal.desfaseTeclas == 0
+
+
+def test_editando_permite_una_pagina_vacia_extra():
+    pedal = crearPedal([1, 5])
+
+    pedal.siguientePagina(editando=True)
+    pedal.siguientePagina(editando=True)
+    assert pedal.desfaseTeclas == 6, "editando llega a la página vacía después de la tecla 5"
+    pedal.siguientePagina(editando=True)
+    assert pedal.desfaseTeclas == 6, "solo una página vacía extra"
 
 
 def test_pedal_ejecuta_la_tecla_de_su_pagina():
@@ -30,7 +40,7 @@ def test_pedal_ejecuta_la_tecla_de_su_pagina():
     pedal.ejecutarAcción = lambda acción, *args: ejecutadas.append(acción.get("key"))
 
     pedal.actualizarBoton(None, 1, True)
-    pedal.desfaceTeclas = 3
+    pedal.desfaseTeclas = 3
     pedal.actualizarBoton(None, 1, True)
 
     assert ejecutadas == [2, 5]

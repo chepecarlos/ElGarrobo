@@ -34,7 +34,7 @@
 
 ### Acciones en StreamDeck
 - Anterior pagina de StreamDeck: [accionAnteriorPagina](./accionesOOP/accionAnteriorPagina)
-- Siguiente Pagina de StreamDeck: [accionSiquientePagina](./accionesOOP/accionSiquientePagina)
+- Siguiente Pagina de StreamDeck: [accionSiguientePagina](./accionesOOP/accionSiguientePagina)
 - Actualiza la pagina de StreamDeck: [accionActualizarPagina](./accionesOOP/accionActualizarPagina)
 
 """
@@ -46,7 +46,7 @@ from .accionBuscarVentana import accionBuscarVentana
 from .accionCambiarPagina import (
     accionActualizarPagina,
     accionAnteriorPagina,
-    accionSiquientePagina,
+    accionSiguientePagina,
 )
 from .accionCerrarVentana import accionCerrarVentana
 from .accionControl import accionControl
@@ -89,7 +89,7 @@ def cargarClasesAcciones() -> dict[str, type["accion"]]:
         "abrir_gui": accionAbrirGUI,
         "mostrar_ventana": accionBuscarVentana,
         "anterior_pagina": accionAnteriorPagina,
-        "siquiente_pagina": accionSiquientePagina,
+        "siguiente_pagina": accionSiguientePagina,
         "actualizar_pagina": accionActualizarPagina,
         "control": accionControl,
         "delay": accionDelay,

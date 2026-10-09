@@ -17,7 +17,7 @@ class MiStreamDeckPlus(MiStreamDeck):
     compatibles = ["Stream Deck +"]
 
     baseDial: int = 0
-    desfaceDial: int = 0
+    desfaseDial: int = 0
     cantidadDial: int = 0
 
     altoBarra = 100

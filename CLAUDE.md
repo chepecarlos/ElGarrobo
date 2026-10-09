@@ -96,4 +96,6 @@ Pendientes detectados (no corregidos, requieren decidir si romper compatibilidad
 - `src/elGarrobo/acciones/` (paquete legacy no-OOP, no se importa desde ningún lado): mismos typos, ignorado porque parece código muerto.
 
 Corregidos (código + configs de usuario en `~/dotfile/.config/elgarrobo/default/*.md` actualizados en el mismo cambio):
+- `accionCambiarPagina.py`: `accionSiquientePagina` / `comando = "siquiente_pagina"` → `accionSiguientePagina` / `"siguiente_pagina"` (también `imagen_base.siguiente_pagina` y `base/siguiente.png`).
+- `desface*` → `desfase*` en dispositivos (solo atributos internos; el `desface` de `drevo.md` es del plugin de Blender y no se tocó).
 - `accionSonidos.py`: `comando = "reproducion"` / `"detener_reproducion"` → `"reproduccion"` / `"detener_reproduccion"`.

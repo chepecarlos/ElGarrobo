@@ -34,11 +34,11 @@ class MiStreamDeck(dispositivo):
 
     baseTeclas: int = 0
     "base inicio del conteo de teclas"
-    desfaceTeclas: int = 0
+    desfaseTeclas: int = 0
     """Cuantas botones esta adelante del inicio
 
     ejemplo:
-        desface es 10, el segundo botón haría la acción 12
+        desfase es 10, el segundo botón haría la acción 12
     """
     cantidadBotones: int = 0
     "Cantidad de botones en StreamDeck"
@@ -210,9 +210,9 @@ class MiStreamDeck(dispositivo):
 
         self.pausarDibujando = True
         for i in range(self.cantidadBotones):
-            botonDesface: int = nativoALogico[i] + self.baseTeclas + self.desfaceTeclas
+            botonDesfase: int = nativoALogico[i] + self.baseTeclas + self.desfaseTeclas
 
-            dibujar = list(filter(lambda accion: accion.get("key") == botonDesface, self.listaAcciones))
+            dibujar = list(filter(lambda accion: accion.get("key") == botonDesfase, self.listaAcciones))
 
             if dibujar:
                 accionActual: dict = dibujar[0]
@@ -280,7 +280,7 @@ class MiStreamDeck(dispositivo):
     def actualizarBoton(self, deck, key, estado) -> None:
 
         _, nativoALogico = self._mapaTeclas()
-        numeroTecla = nativoALogico[key] + self.baseTeclas + self.desfaceTeclas
+        numeroTecla = nativoALogico[key] + self.baseTeclas + self.desfaseTeclas
         if estado:
             self.buscarAccion(numeroTecla, self.estadoTecla.PRESIONADA)
         else:
@@ -307,7 +307,7 @@ class MiStreamDeck(dispositivo):
         filas, columnas = self.layout or (3, 5)
         if (self.rotar // 90) % 2:
             filas, columnas = columnas, filas
-        return [grupoBotones(self.nombre, filas, columnas, self.baseTeclas + self.desfaceTeclas, self)]
+        return [grupoBotones(self.nombre, filas, columnas, self.baseTeclas + self.desfaseTeclas, self)]
 
     def opcionesDibujo(self, accion) -> tuple:
         """Copia de las opciones que cambian el dibujo de un botón (las suyas y las del folder),
@@ -363,7 +363,7 @@ class MiStreamDeck(dispositivo):
         rutaGif = dibujo.calcularRutaImagen(rutaGif)
 
         if rutaGif is None:
-            logger.warning(f"{self.nombre}[No Gifs] {indice + self.baseTeclas + self.desfaceTeclas} {rutaGif}")
+            logger.warning(f"{self.nombre}[No Gifs] {indice + self.baseTeclas + self.desfaseTeclas} {rutaGif}")
             return
 
         opciones = accionActual.get("imagen_opciones")

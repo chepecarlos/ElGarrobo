@@ -522,9 +522,11 @@ class TestCuadricula:
         user.find(marker="paginaSiguiente-pedal").click()
         await user.should_see("Página 2")
         assert next(iter(user.find(marker="paginaAnterior-pedal").elements)).enabled
-        assert not next(iter(user.find(marker="paginaSiguiente-pedal").elements)).enabled, "no hay acciones después de la 6"
         await user.should_see(marker="tecla-pedal-5")
-        assert pedal.desfaceTeclas == 3
+        assert pedal.desfaseTeclas == 3
+        user.find(marker="paginaSiguiente-pedal").click()
+        await user.should_see("Página 3")
+        assert not next(iter(user.find(marker="paginaSiguiente-pedal").elements)).enabled, "editando solo hay una página vacía extra"
 
     async def test_interruptor_a_lista(self, user: User, guiPedal: miGui, pedal: MiPedal):
         await user.open("/")

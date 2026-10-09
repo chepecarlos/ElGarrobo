@@ -26,7 +26,7 @@
 
 ## Ortografía (requiere actualizar configs del usuario)
 
-- [ ] Comando `siquiente_pagina` → `siguiente_pagina` (clave en `cargarClasesAcciones()`, también `imagen_base.siquiente_pagina` y `base/siquiente.png` en los configs).
+- [x] Comando `siquiente_pagina` → `siguiente_pagina` (clave en `cargarClasesAcciones()`, también `imagen_base.siquiente_pagina` y `base/siquiente.png` en los configs).
 - [ ] Claves de macro `solisita` / `solisita_cambiar` → `solicita` / `solicita_cambiar` (ver CLAUDE.md).
 
 ## Configs del usuario (`~/dotfile/.config/elgarrobo/default/`)
