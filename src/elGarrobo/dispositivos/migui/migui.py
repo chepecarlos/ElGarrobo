@@ -22,17 +22,37 @@ ARCHIVO_PREFERENCIAS = "gui_preferencias"
 "Archivo de config con preferencias de la GUI (ej. el último modo Usar/Editar)"
 
 CSS_BOTONERA = """
+/* Únicos colores fijos del CSS: el fondo de la carcasa y el foco (teal-300, mismo que colorClaro) */
+:root { --color-carcasa: #0b1716; --color-foco: #5eead4; }
 .modo-usar > .q-splitter__separator { display: none; }
 .carcasa {
-    background: #0b1716;
+    background: var(--color-carcasa);
     border-radius: 1.75rem;
     padding: 1.5rem;
     box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 .tecla-viva { touch-action: none; user-select: none; -webkit-touch-callout: none; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), filter 90ms cubic-bezier(0.16, 1, 0.3, 1); }
 .tecla-viva:active { transform: scale(0.94); filter: brightness(1.35); }
-.tecla-viva:focus-visible { outline: 2px solid #5eead4; outline-offset: 3px; }
+.tecla-viva:focus-visible, .opcion-distribucion:focus-visible { outline: 2px solid var(--color-foco); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .tecla-viva { transition: none; } }
+/* Celular y tablet: el splitter deja el formulario en 20% del ancho, se apila debajo del dispositivo */
+@media (max-width: 1023px) {
+    .pagina-acciones.q-splitter { flex-direction: column; }
+    .pagina-acciones > .q-splitter__panel { width: 100% !important; }
+    .pagina-acciones > .q-splitter__before { order: 2; }
+    .pagina-acciones > .q-splitter__separator { display: none; }
+}
+/* Dedo: el interruptor Usar/Editar llega a 44px */
+@media (pointer: coarse) { .modo-toggle .q-btn { min-height: 44px; } }
+/* Vista lista: cada fila es su propia grilla, la columna de botones es fija para que todas midan igual; en celular se ocultan Título y Acción */
+.fila-acciones { width: 100%; display: grid; grid-template-columns: minmax(6rem, 2fr) minmax(5rem, 1.5fr) minmax(3.5rem, 1fr) minmax(6rem, 1.5fr) 10.25rem; gap: 0.5rem; align-items: center; }
+.fila-acciones > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fila-acciones > *:last-child { overflow: visible; }
+@media (max-width: 639px) {
+    .fila-acciones { grid-template-columns: minmax(3rem, 1fr) 2.5rem 10.25rem; gap: 0.25rem; }
+    .cabecera-acciones > * { overflow: visible; }
+    .fila-acciones > .solo-ancho { display: none; }
+}
 """
 
 
@@ -51,16 +71,33 @@ class miGui(dispositivo):
     "Lista de dispositivos conectados"
 
     accionEditar: dict
-    "Acción medicando o agregando"
+    "Acción modificando o agregando"
     dispositivoEditar: dispositivo
     "dispositivo a modificar la acción"
 
+    # Roles de color: usar estos y no colores sueltos. Los que llevan texto blanco deben dar ≥4.5:1
     colorOscuro: str = "teal-900"
-    "Color oscuro de la interfaz"
+    "Cabecera, pestañas y botones del formulario"
     colorClaro: str = "teal-300"
-    "Color claro de la interfaz"
-    colorBotones: str = "teal-500"
-    "Color para botones"
+    "Texto e íconos de acento sobre fondo oscuro"
+    colorBotones: str = "teal-700"
+    "Botones de herramientas (subir, página, intercambiar…): blanco sobre teal-700 ≈ 5.3:1 (teal-500 daba 2.4:1)"
+    colorTecla: str = "teal-700"
+    "Tecla con acción en teclados y botonera, con su nombre en texto blanco"
+    colorTeclaVacia: str = "grey-8"
+    "Tecla sin acción"
+    colorActivo: str = "orange-700"
+    "Herramienta encendida (modo intercambiar): blanco sobre orange-700 ≈ 5.2:1"
+    colorPeligro: str = "negative"
+    "Borrar, descartar, confirmar salir/reiniciar y errores"
+    colorBorde: str = "teal-600"
+    "Bordes decorativos de paneles y filas (sin texto encima)"
+    colorTeclaApagada: str = "grey-10"
+    "Tecla sin acción en modo Usar: casi invisible, no se puede presionar"
+    colorSeleccion: str = "teal-4"
+    "Opción elegida en los interruptores (Usar/Editar, Cuadrícula/Lista), con texto negro"
+    colorInterruptor: str = "teal-10"
+    "Fondo de la opción no elegida del interruptor Usar/Editar sobre la cabecera"
 
     puerto: int = 8080
     "puerto de la interface web"
@@ -129,12 +166,12 @@ class miGui(dispositivo):
 
             # Límite inferior 0: en modo Usar el formulario se oculta y el aparato ocupa todo el ancho
             with ui.splitter(value=20, limits=(0, 50)) as self.splitter:
-                self.splitter.classes("w-full")
+                self.splitter.classes("w-full pagina-acciones")
                 with self.splitter.before:
-                    with ui.column().classes("w-full") as self.contenedorFormulario:
+                    with ui.column().classes("w-full formulario-gui") as self.contenedorFormulario:
                         self.mostrarFormulario()
                 with self.splitter.after:
-                    self.pestañas = ui.tabs(on_change=self.actualizarCabecera)
+                    self.pestañas = ui.tabs(on_change=self.actualizarCabecera).props("outside-arrows mobile-arrows")
                     self.pestañas.classes(f"w-full bg-{self.colorOscuro} text-white")
                     self.paneles = ui.tab_panels(self.pestañas)
                     self.paneles.classes("w-full")
@@ -289,7 +326,7 @@ class miGui(dispositivo):
             self.textoPregunta = ui.label("")
             with ui.row():
                 ui.button("Cancelar", on_click=self.dialogoPregunta.close).props("flat")
-                self.botonPregunta = ui.button("", color="negative", on_click=self.confirmarPregunta).props("flat").mark("botonConfirmarPregunta")
+                self.botonPregunta = ui.button("", color=self.colorPeligro, on_click=self.confirmarPregunta).props("flat").mark("botonConfirmarPregunta")
 
         self.tituloFormulario = ui.label("").classes(f"text-{self.colorClaro} font-bold px-2").mark("tituloFormulario")
         with ui.scroll_area().classes("w-full").style("height: 75vh"):
@@ -321,7 +358,7 @@ class miGui(dispositivo):
                 ui.label("Apariencia del botón").classes("text-lg")
                 with ui.row().classes("items-start no-wrap"):
                     with ui.column().classes("w-64"):
-                        self.editorTitulo = ui.input("Titulo", on_change=self.actualizarVistaPrevia).classes("w-full").props("clearable").mark("editor-titulo")
+                        self.editorTitulo = ui.input("Título", on_change=self.actualizarVistaPrevia).classes("w-full").props("clearable").mark("editor-titulo")
                         self.editorFondo = ui.color_input("Fondo", preview=True, on_change=self.actualizarVistaPrevia).classes("w-full").mark("editor-fondo")
                     self.vistaPrevia = ui.image().classes("w-24 h-24 rounded").mark("vistaPrevia")
                 ui.button("Listo", on_click=self.dialogoBoton.close).mark("botonListoBoton")
@@ -333,8 +370,8 @@ class miGui(dispositivo):
                 nombreAccion = claseAccion().nombre
                 self.listaNombreAcciones.append(nombreAccion)
 
-            self.editorAcción = ui.select(options=self.listaNombreAcciones, with_input=True, label="acción", on_change=self.mostrarOpciones).classes("w-full").mark("editorAcción")
-            self.editorDescripcion = ui.label("").classes("w-full bg-teal-700 p-2 text-white rounded-lg")
+            self.editorAcción = ui.select(options=self.listaNombreAcciones, with_input=True, label="Acción", on_change=self.mostrarOpciones).classes("w-full").mark("editorAcción")
+            self.editorDescripcion = ui.label("").classes(f"w-full bg-{self.colorTecla} p-2 text-white rounded-lg")
             self.editorDescripcion.visible = False
             self.editorPropiedades = ui.column().classes("w-full")
             self.editorOpción = ui.textarea(label="Opciones (solo lectura, se conservan al guardar)").classes("w-full").props("readonly").mark("editorOpción")
@@ -342,13 +379,13 @@ class miGui(dispositivo):
 
         with ui.button_group().props("rounded"):
             self.botonAgregar = ui.button(icon="add", color=self.colorOscuro, on_click=agregarAcción).mark("botonAgregar")
-            self.botonAgregar.tooltip("Guardar acción")
+            miGui.nombrar(self.botonAgregar, "Guardar acción")
             # Solo se ven al editar una acción guardada
             self.botonEjecutar = ui.button(icon="play_arrow", color=self.colorOscuro, on_click=self.ejecutarAcciónEditada).mark("botonEjecutar")
-            self.botonEjecutar.tooltip("Ejecutar acción guardada")
-            ui.button(icon="clear_all", color=self.colorOscuro, on_click=lambda: self.siNoHayCambios(self.limpiarFormulario)).mark("botonLimpiar").tooltip("Limpiar editor")
-            self.botonBorrar = ui.button(icon="delete", color="negative", on_click=self.borrarAcciónEditada).mark("botonBorrar")
-            self.botonBorrar.tooltip("Borrar acción")
+            miGui.nombrar(self.botonEjecutar, "Ejecutar acción guardada")
+            miGui.nombrar(ui.button(icon="clear_all", color=self.colorOscuro, on_click=lambda: self.siNoHayCambios(self.limpiarFormulario)).mark("botonLimpiar"), "Limpiar formulario")
+            self.botonBorrar = ui.button(icon="delete", color=self.colorPeligro, on_click=self.borrarAcciónEditada).mark("botonBorrar")
+            miGui.nombrar(self.botonBorrar, "Borrar acción")
             self.botonEjecutar.visible = self.botonBorrar.visible = False
 
     def actualizarCabecera(self) -> None:
@@ -503,7 +540,7 @@ class miGui(dispositivo):
             except (TypeError, ValueError):
                 # Ej: guardado como texto por una versión vieja de la GUI
                 editor.value = None
-                miGui.marcarError(editor, f"Valor guardado no es un número: {valor}")
+                miGui.marcarError(editor, f"El valor guardado no es un número: {valor}")
         elif tipo == "bool":
             editor.value = bool(valor)
         else:
@@ -533,6 +570,12 @@ class miGui(dispositivo):
         return valor
 
     @staticmethod
+    def nombrar(elemento: ui.element, texto: str) -> ui.element:
+        """Tooltip y nombre accesible (aria-label) para botones de solo ícono"""
+        elemento.props["aria-label"] = texto
+        return elemento.tooltip(texto)
+
+    @staticmethod
     def marcarError(editor: ui.element, mensaje: str | None) -> None:
         """Marca (o limpia con None) el error en el campo; sin validation de nicegui hay que usar las props de Quasar"""
         if getattr(editor, "tipoEditor", None) == "bool" or isinstance(editor, ui.switch):
@@ -559,6 +602,11 @@ class miGui(dispositivo):
     def recordarFormulario(self) -> None:
         self.formularioInicial = self.estadoFormulario()
         self.actualizarTituloFormulario()
+
+    @staticmethod
+    def mostrarFormularioEnCelular() -> None:
+        """En celular/tablet el formulario queda debajo del dispositivo: se lleva a la vista al elegir una tecla"""
+        ui.run_javascript("if (innerWidth < 1024) document.querySelector('.formulario-gui')?.scrollIntoView({behavior: 'smooth'})")
 
     def hayCambios(self) -> bool:
         return self.formularioInicial is not None and self.estadoFormulario() != self.formularioInicial
@@ -750,6 +798,7 @@ class miGui(dispositivo):
 
         self.accionEditar = accion
         self.limpiarErrores()
+        self.mostrarFormularioEnCelular()
         self.botonAgregar.icon = "edit"
         self.botonEjecutar.visible = self.botonBorrar.visible = True
         for atributo, editor in self.editoresData.items():
@@ -813,20 +862,21 @@ class miGui(dispositivo):
 
         def cambiarEstado(clave: str, valor: bool, nombre: str) -> None:
             SalvarValor(archivo, clave, valor)
-            ui.notify(f"{nombre} {'activado' if valor else 'desactivado'} - reiniciá elgarrobo para aplicar")
+            ui.notify(f"{nombre} {'activado' if valor else 'desactivado'}. Reinicia ElGarrobo para aplicarlo")
 
         ui.label(titulo).classes("text-h5 p-4")
-        ui.label("Los cambios requieren reiniciar elgarrobo para aplicarse").classes(f"text-caption px-4 text-{self.colorClaro}")
+        ui.label("Los cambios se aplican al reiniciar ElGarrobo (menú → Reiniciar)").classes(f"text-caption px-4 text-{self.colorClaro}")
         with ui.column().classes("p-4 gap-2 w-full"):
             for clase in listaClases:
                 activo = configuracion.get(clase.modulo, False)
                 with ui.row().classes(f"items-center w-full border-b border-{self.colorOscuro} pb-2"):
-                    ui.switch(value=activo, on_change=lambda e, c=clase: cambiarEstado(c.modulo, e.value, c.nombre))
+                    interruptor = ui.switch(value=activo, on_change=lambda e, c=clase: cambiarEstado(c.modulo, e.value, c.nombre))
+                    interruptor.props["aria-label"] = f"Activar {clase.nombre}"
                     with ui.column().classes("gap-0"):
                         ui.label(clase.nombre).classes("font-bold")
                         ui.label(clase.descripcion).classes("text-caption")
 
-    def crearDialogoConfirmacion(self, mensaje: str, accionConfirmada) -> ui.dialog:
+    def crearDialogoConfirmacion(self, mensaje: str, textoBoton: str, accionConfirmada) -> ui.dialog:
         """Crea (sin abrir) un dialogo de confirmación para una acción crítica.
 
         Se crea una sola vez al armar la página: si se crea recién al hacer
@@ -842,7 +892,7 @@ class miGui(dispositivo):
                     dialogo.close()
                     accionConfirmada()
 
-                ui.button("Confirmar", color="negative", on_click=confirmar).props("flat")
+                ui.button(textoBoton, color=self.colorPeligro, on_click=confirmar).props("flat")
         return dialogo
 
     def ejecutarAccionSistema(self, comando: str) -> None:
@@ -877,11 +927,11 @@ class miGui(dispositivo):
                 with ui.row().classes("items-center gap-6 max-sm:hidden"):
                     self.folderLabel = ui.label("").classes(f"text-{self.colorClaro}").mark("cabecera-folder")
                     with ui.row().classes("items-center gap-1") as self.ultimaFila:
-                        ui.icon("play_arrow", color="teal-300")
+                        ui.icon("play_arrow", color=self.colorClaro)
                         self.ultimaLabel = ui.label("").mark("ultimaAcción")
                     self.ultimaFila.visible = False
-            dialogoReiniciar = self.crearDialogoConfirmacion("¿Reiniciar ElGarrobo?", self.reiniciar)
-            dialogoSalir = self.crearDialogoConfirmacion("¿Cerrar ElGarrobo?", self.salir)
+            dialogoReiniciar = self.crearDialogoConfirmacion("¿Reiniciar ElGarrobo? Las teclas no responden mientras arranca.", "Reiniciar", self.reiniciar)
+            dialogoSalir = self.crearDialogoConfirmacion("¿Cerrar ElGarrobo? Las teclas y esta página dejan de funcionar hasta que lo vuelvas a abrir.", "Salir", self.salir)
             with ui.dialog() as dialogoAcercaDe, ui.card():
                 ui.label("ElGarrobo").classes("text-h6")
                 ui.label("Creado por ChepeCarlos")
@@ -892,7 +942,7 @@ class miGui(dispositivo):
             with ui.row().classes("items-center gap-2 no-wrap"):
                 if conModo:
                     modo = ui.toggle({True: "Usar", False: "Editar"}, value=self.modoUsar, on_change=lambda e: self.cambiarModo(e.value))
-                    modo.props("dense rounded unelevated no-caps toggle-color=teal-4 toggle-text-color=black color=teal-10 text-color=white").mark("modo")
+                    modo.classes("modo-toggle").props("rounded unelevated no-caps toggle-text-color=black text-color=white").props(f"toggle-color={self.colorSeleccion} color={self.colorInterruptor}").mark("modo")
                 with ui.button(icon="menu").props("flat color=white aria-label=Menú").classes("px-8"):
                     with ui.menu():
                         ui.menu_item("Acciones", on_click=lambda: ui.navigate.to("/")).mark("menu-Acciones")
@@ -904,7 +954,7 @@ class miGui(dispositivo):
                         ui.menu_item("Salir", on_click=dialogoSalir.open).mark("menu-Salir")
 
 
-    def seConectorGUI(self, client=None):
+    def seConectaGUI(self, client=None):
         """
         Inicia la interface web.
         """
@@ -932,7 +982,7 @@ class miGui(dispositivo):
         # Aquí y no en __init__: los tests crean miGui sin conectar y no deben depender de la config del usuario
         self.modoUsar = bool((leerData(ARCHIVO_PREFERENCIAS) or {}).get("modo_usar", False))
 
-        app.on_connect(self.seConectorGUI)
+        app.on_connect(self.seConectaGUI)
         app.on_disconnect(self.seDesconectoGUI)
 
         self.HiloGui = threading.Thread(name="Gui-" + self.nombre, target=self.funciónHilo)
@@ -952,7 +1002,7 @@ class miGui(dispositivo):
                 favicon="🦎",
             )
         except Exception as error:
-            logger.error(f"GUI[Error] No se puedo iniciar GUI - {error}")
+            logger.error(f"GUI[Error] No se pudo iniciar la GUI - {error}")
 
     def desconectar(self) -> None:
         logger.info("Saliendo de NiceGUI")
@@ -972,11 +1022,6 @@ class miGui(dispositivo):
         if comandoAcción in self.listaClasesAcciones:
             return self.listaClasesAcciones[comandoAcción]
         return None
-
-    def obtenerRutaImagen(self, Imagen: str, folder: str):
-        if Imagen is None:
-            return
-        pass
 
     def actualizarPestaña(self, dispositivo: dispositivo) -> None:
         """Actualiza las acciones de la pestaña del dispositivo
@@ -1012,15 +1057,15 @@ class miGui(dispositivo):
                         {False: "Cuadrícula", True: "Lista"},
                         value=nombre in self.dispositivosEnLista,
                         on_change=lambda e, d=dispositivo: self.cambiarVista(d, e.value),
-                    ).props("toggle-color=teal-4 toggle-text-color=black").mark(f"vista-{nombre}")
+                    ).props(f"toggle-color={self.colorSeleccion} toggle-text-color=black").mark(f"vista-{nombre}")
 
                 with ui.scroll_area() as areaScroll:
-                    areaScroll.classes("w-full" if usar else "w-full border-2 border-teal-600")
+                    areaScroll.classes("w-full" if usar else f"w-full border-2 border-{self.colorBorde}")
                     # Alto disponible: 100vh - cabecera (5vh) - pestañas (48px) - padding del panel (32px) - interruptor (40px)
                     areaScroll.style(f"height: calc(95vh - {120 if cuadricula and not usar else 80}px)")
 
                     if acciones is None:
-                        ui.label("No acciones")
+                        ui.label(f"{nombre} no tiene acciones en este folder")
                         return
 
                     if cuadricula and (usar or nombre not in self.dispositivosEnLista):
@@ -1055,23 +1100,22 @@ class miGui(dispositivo):
         nombre = dispositivo.nombre
         usar = self.modoUsar
         # En Usar las teclas no llevan etiqueta: la vista previa es lo que muestra el aparato
-        tamañoTecla = "" if usar else "w-24 h-24"
 
         with ui.row().classes("items-center p-2 w-full"):
-            subir = ui.button(icon="arrow_upward", color="teal-500", on_click=lambda: self.subirFolder(dispositivo)).mark(f"subirFolder-{nombre}")
-            subir.tooltip("Subir al folder anterior")
+            subir = ui.button(icon="arrow_upward", color=self.colorBotones, on_click=lambda: self.subirFolder(dispositivo)).mark(f"subirFolder-{nombre}")
+            miGui.nombrar(subir, "Subir al folder anterior")
             subir.set_enabled(not dispositivo.enFolderRaiz())
             if hasattr(dispositivo, "siguientePagina") and grupos:
-                anterior = ui.button(icon="chevron_left", color="teal-500", on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.anteriorPagina)).mark(f"paginaAnterior-{nombre}")
-                anterior.set_enabled(dispositivo.puedeAnteriorPagina())
+                anterior = ui.button(icon="chevron_left", color=self.colorBotones, on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.anteriorPagina)).mark(f"paginaAnterior-{nombre}")
+                miGui.nombrar(anterior, "Página anterior").set_enabled(dispositivo.puedeAnteriorPagina())
                 ui.label(f"Página {dispositivo.paginaActual()}").mark(f"pagina-{nombre}")
-                siguiente = ui.button(icon="chevron_right", color="teal-500", on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.siguientePagina)).mark(f"paginaSiguiente-{nombre}")
-                siguiente.set_enabled(dispositivo.puedeSiguientePagina())
+                siguiente = ui.button(icon="chevron_right", color=self.colorBotones, on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.siguientePagina)).mark(f"paginaSiguiente-{nombre}")
+                miGui.nombrar(siguiente, "Página siguiente").set_enabled(dispositivo.puedeSiguientePagina())
             intercambiando = nombre in self.teclaIntercambio
             seleccionada = self.teclaIntercambio.get(nombre)
             if not usar:
-                ui.button("Intercambiar", icon="swap_horiz", color="orange-8" if intercambiando else "teal-500", on_click=lambda: self.cambiarModoIntercambio(dispositivo)).classes("ml-auto").mark(f"intercambiar-{nombre}")
-                ui.button("Apariencia folder", icon="folder_special", color="teal-500", on_click=lambda: self.abrirPropiedadesFolder(dispositivo)).mark(f"propiedadesFolder-{nombre}")
+                ui.button("Intercambiar", icon="swap_horiz", color=self.colorActivo if intercambiando else self.colorBotones, on_click=lambda: self.cambiarModoIntercambio(dispositivo)).classes("ml-auto").mark(f"intercambiar-{nombre}")
+                ui.button("Apariencia folder", icon="folder_special", color=self.colorBotones, on_click=lambda: self.abrirPropiedadesFolder(dispositivo)).mark(f"propiedadesFolder-{nombre}")
                 if hasattr(dispositivo, "cambiarDistribucion"):
                     self.botonDistribucion(dispositivo)
 
@@ -1090,7 +1134,7 @@ class miGui(dispositivo):
             if usar and acción is not None:
                 self.conectarTecla(boton, acción, dispositivo)
             if intercambiando and tecla == seleccionada:
-                boton.classes("ring-4 ring-orange-500")
+                boton.classes(f"ring-4 ring-{self.colorActivo}")
             boton.mark(f"tecla-{nombre}-{tecla}")
 
         if distribucion:
@@ -1105,7 +1149,7 @@ class miGui(dispositivo):
                         etiqueta = teclaFisica.get("etiqueta") or tecla.removeprefix("KEY_")
                         x, y = teclaFisica.get("x", 0), teclaFisica.get("y", 0)
                         w, h = teclaFisica.get("w", 1), teclaFisica.get("h", 1)
-                        boton = ui.button(acción.get("nombre") if acción else etiqueta, color="teal-600" if acción else "grey-8", on_click=alClick(tecla, acción))
+                        boton = ui.button(acción.get("nombre") if acción else etiqueta, color=self.colorTecla if acción else self.colorTeclaVacia, on_click=alClick(tecla, acción))
                         boton.props("dense no-caps").classes("absolute text-xs leading-tight overflow-hidden tecla-viva")
                         boton.set_enabled(not (usar and acción is None))
                         boton.style(f"left: {x * unidad}px; top: {y * unidad}px; width: {w * unidad - 4}px; height: {h * unidad - 4}px")
@@ -1119,7 +1163,7 @@ class miGui(dispositivo):
                 with ui.row().classes("gap-1 px-2"):
                     for tecla in otras:
                         acción = accionesPorTecla[tecla]
-                        boton = ui.button(acción.get("nombre"), color="teal-600", on_click=alClick(tecla, acción)).props("dense no-caps")
+                        boton = ui.button(acción.get("nombre"), color=self.colorTecla, on_click=alClick(tecla, acción)).props("dense no-caps")
                         boton.classes("text-xs tecla-viva").tooltip(tecla)
                         marcar(boton, tecla)
 
@@ -1134,8 +1178,8 @@ class miGui(dispositivo):
                 # El aparato ya está rotado frente al usuario, el ícono se muestra derecho
                 rotarAparato = getattr(dibujante, "rotar", 0)
 
-                # En Usar la tecla se achica con la pantalla para que el aparato entero quepa (ej. celular)
-                medidaTecla = f"width: clamp(3rem, calc((100vw - 9rem) / {grupo.columnas}), 7rem); height: auto; aspect-ratio: 1" if usar else ""
+                # La tecla se achica con la pantalla para que el aparato entero quepa (ej. celular); en Editar hasta 6rem
+                medidaTecla = f"width: clamp(3rem, calc((100vw - 9rem) / {grupo.columnas}), {'7rem' if usar else '6rem'}); height: auto; aspect-ratio: 1"
                 with ui.column().classes("items-center"):
                     if len(grupos) > 1:
                         ui.label(grupo.nombre).classes("font-bold")
@@ -1153,18 +1197,20 @@ class miGui(dispositivo):
                             with ui.column().classes("items-center gap-1"):
                                 if imagen is not None:
                                     # Botón y no imagen suelta: se enfoca con Tab y se activa con Enter/Espacio
-                                    boton = ui.button(on_click=alClick(tecla, acción)).props("flat padding=0").classes(f"{tamañoTecla} rounded tecla-viva").style(medidaTecla)
+                                    boton = ui.button(on_click=alClick(tecla, acción)).props("flat padding=0").classes("rounded tecla-viva").style(medidaTecla)
                                     boton.props["aria-label"] = acción.get("nombre") or str(tecla)
                                     with boton:
                                         ui.image(imagen).classes("w-full h-full rounded")
                                     boton.tooltip(acción.get("nombre") or str(tecla))
                                 elif usar:
-                                    boton = ui.element("div").classes("rounded bg-grey-10").style(medidaTecla)
+                                    boton = ui.element("div").classes(f"rounded bg-{self.colorTeclaApagada}").style(medidaTecla)
                                 else:
-                                    boton = ui.button(icon="add", color="grey-8", on_click=alClick(tecla, acción)).classes(tamañoTecla)
+                                    boton = ui.button(icon="add", color=self.colorTeclaVacia, on_click=alClick(tecla, acción)).style(medidaTecla)
+                                    boton.props["aria-label"] = f"Agregar acción en la tecla {tecla}"
                                 marcar(boton, tecla)
                                 if not usar:
-                                    ui.label(f"{tecla}: {acción.get('nombre')}" if acción is not None else str(tecla)).classes("text-xs")
+                                    etiqueta = f"{tecla}: {acción.get('nombre')}" if acción is not None else str(tecla)
+                                    ui.label(etiqueta).classes("text-xs truncate text-center").style(medidaTecla.split(";")[0]).tooltip(etiqueta)
 
     @staticmethod
     def medidaDistribucion(distribucion: list[dict]) -> tuple[float, float]:
@@ -1174,7 +1220,7 @@ class miGui(dispositivo):
         return ancho, alto
 
     def botonDistribucion(self, dispositivo: dispositivo) -> None:
-        ui.button("Distribución", icon="keyboard", color="teal-500", on_click=lambda: self.abrirDistribuciones(dispositivo)).mark(f"distribucion-{dispositivo.nombre}")
+        ui.button("Distribución", icon="keyboard", color=self.colorBotones, on_click=lambda: self.abrirDistribuciones(dispositivo)).mark(f"distribucion-{dispositivo.nombre}")
 
     def abrirDistribuciones(self, dispositivo: dispositivo) -> None:
         """Muestra las distribuciones disponibles con una miniatura; al elegir una se guarda en teclados.md"""
@@ -1193,8 +1239,10 @@ class miGui(dispositivo):
             ui.label(f"Agrega las tuyas (JSON de keyboard-layout-editor.com) en {folderDistribucionesUsuario()}").classes("text-xs")
             for nombreDistribucion in [None, *distribucionesDisponibles()]:
                 actual = nombreDistribucion == dispositivo.distribucion
-                with ui.card().classes(f"w-full cursor-pointer {'border-2 border-orange-500' if actual else ''}") as tarjeta:
-                    tarjeta.on("click", lambda n=nombreDistribucion: elegir(n))
+                with ui.card().classes(f"w-full cursor-pointer opcion-distribucion {f'border-2 border-{self.colorActivo}' if actual else ''}") as tarjeta:
+                    tarjeta.props(f"tabindex=0 role=button aria-pressed={str(actual).lower()}")
+                    for evento in ("click", "keydown.enter", "keydown.space"):
+                        tarjeta.on(evento, lambda n=nombreDistribucion: elegir(n))
                     tarjeta.mark(f"opcionDistribucion-{nombreDistribucion}")
                     ui.label(nombreDistribucion or "Ninguna (ver como lista)").classes("font-bold")
                     distribucion = cargarDistribucion(nombreDistribucion) if nombreDistribucion else None
@@ -1203,7 +1251,7 @@ class miGui(dispositivo):
                         with ui.element("div").classes("relative").style(f"width: {ancho * unidad}px; height: {alto * unidad}px"):
                             for t in distribucion:
                                 estilo = f"left: {t.get('x', 0) * unidad}px; top: {t.get('y', 0) * unidad}px; width: {t.get('w', 1) * unidad - 1}px; height: {t.get('h', 1) * unidad - 1}px"
-                                ui.element("div").classes("absolute bg-grey-6 rounded-sm").style(estilo)
+                                ui.element("div").classes(f"absolute bg-{self.colorTeclaVacia} rounded-sm").style(estilo)
         self.dialogoDistribucion.open()
 
     def cambiarModoIntercambio(self, dispositivo: dispositivo) -> None:
@@ -1276,6 +1324,7 @@ class miGui(dispositivo):
         self.dispositivoEditar = dispositivo
         self.editoresData["key"].value = tecla
         self.recordarFormulario()
+        self.mostrarFormularioEnCelular()
 
     def dibujarBotonera(self, listaAcciones: list[dict], dispositivo: dispositivo) -> None:
         """Modo Usar para dispositivos sin cuadrícula (MQTT, teclado sin distribución): un botón grande por acción"""
@@ -1284,7 +1333,7 @@ class miGui(dispositivo):
                 tecla = acción.get("key")
                 if tecla == "propiedad_folder":
                     continue
-                boton = ui.button(acción.get("nombre") or str(tecla), color="teal-700")
+                boton = ui.button(acción.get("nombre") or str(tecla), color=self.colorTecla)
                 self.conectarTecla(boton, acción, dispositivo)
                 boton.props("unelevated no-caps").classes("h-20 rounded-xl tecla-viva").tooltip(str(tecla))
                 boton.mark(f"tecla-{dispositivo.nombre}-{tecla}")
@@ -1296,67 +1345,51 @@ class miGui(dispositivo):
             listaAcciones (list[dict]): Lista de acciones a dibujar
         """
 
-        def cabecera(texto: str, ancho: int, campo: str = None) -> None:
+        def cabecera(texto: str, campo: str = None, clases: str = "") -> None:
             if campo is None:
-                ui.label(texto).style(f"font-weight: bold; width: {ancho}px")
+                ui.label(texto).classes(f"font-bold {clases}")
                 return
+            orden = "none"
             if campo == self.ordenCampo:
                 texto += " ▼" if self.ordenInverso else " ▲"
-            etiqueta = ui.label(texto).style(f"font-weight: bold; width: {ancho}px; cursor: pointer")
-            etiqueta.on("click", lambda c=campo: self.cambiarOrden(c, dispositivo))
-            etiqueta.mark(f"orden-{campo}-{dispositivo.nombre}")
+                orden = "descending" if self.ordenInverso else "ascending"
+            # Botón y no etiqueta: se ordena también con el teclado
+            boton = ui.button(texto, on_click=lambda c=campo: self.cambiarOrden(c, dispositivo)).props("flat dense no-caps align=left color=white padding=0")
+            boton.classes(f"font-bold justify-self-start {clases}").mark(f"orden-{campo}-{dispositivo.nombre}")
+            boton.props["aria-sort"] = orden
 
-        with ui.row().classes("content p-2"):
-            cabecera("Nombre", 100, "nombre")
-            cabecera("Titulo", 100, "titulo")
-            # ui.label("Imagen").style("font-weight: bold; width: 150px")
-            cabecera("Tecla", 100, "key")
-            cabecera("Acción", 125, "accion")
-            cabecera("Opciones", 180)
+        with ui.element("div").classes("fila-acciones cabecera-acciones p-2 border-2 border-transparent"):
+            cabecera("Nombre", "nombre")
+            cabecera("Título", "titulo", "solo-ancho")
+            cabecera("Tecla", "key")
+            cabecera("Acción", "accion", "solo-ancho")
+            cabecera("Opciones", clases="solo-ancho")
 
         for acciónActual in self.ordenarAcciones(listaAcciones, self.ordenCampo, self.ordenInverso):
             nombreAcción = acciónActual.get("nombre")
             teclaAcción = acciónActual.get("key")
             acciónAcción = acciónActual.get("accion")
             tituloAcción = acciónActual.get("titulo")
-            imagenAcción = acciónActual.get("imagen")
 
-            with ui.row().classes("content p-2 border-2 border-teal-600"):
-                ui.label(nombreAcción).style("width: 100px")
-                ui.label(tituloAcción).style("width: 100px")
-                # if tipo == "steamdeck":
-                # ui.image(imagenAcción)
-
-                # imagenAcción = self.obtenerRutaImagen(imagenAcción, folder)
-                # if imagenAcción is not None:
-                #     # ui.label(imagenAcción).style("width: 150px")
-                #     pass
-                # else:
-                #     pass
-                # ColorFondo = "black"
-                # image: Image = Image.new("RGB", [100, 100], color=ColorFondo)
-                # ObtenerImagen(image, acciónActual, folder)
-
-                # imagen = ui.image(image).classes("w-12").style("width: 150px")
-                # imagen.on("click", lambda a=acciónActual: self.seleccionarAcción(a))
-                # ui.label("").style("width: 150px")
-
-                ui.label(teclaAcción).style("width: 100px")
+            with ui.element("div").classes(f"fila-acciones p-2 border-2 border-{self.colorBorde}"):
+                ui.label(nombreAcción).tooltip(nombreAcción or "")
+                ui.label(tituloAcción).classes("solo-ancho")
+                ui.label(teclaAcción)
 
                 claseAcción = self.obtenerAcciónOop(acciónAcción)
                 if claseAcción is not None:
-                    objetoAcción = claseAcción()
-                    nombreClase = objetoAcción.nombre
-                    ui.label(f"{nombreClase}").style("width: 125px")
+                    ui.label(claseAcción().nombre).classes("solo-ancho")
                 else:
-                    ui.label(f"{acciónAcción}-vieja").style("width: 125px")
-                    # TODO: montar función viejas
+                    # Acción sin clase OOP (ej. macro): se muestra su comando tal cual
+                    ui.label(acciónAcción).classes("solo-ancho")
 
                 marca = f"{dispositivo.nombre}-{teclaAcción}"
-                with ui.button_group().props("rounded"):
-                    ui.button(icon="play_arrow", color="teal-500", on_click=lambda a=acciónActual: self.probarAcción(a)).mark(f"ejecutar-{marca}")
-                    ui.button(icon="edit", color="teal-500", on_click=lambda a=acciónActual: self.siNoHayCambios(lambda: self.seleccionarAcción(a, dispositivo))).mark(f"editar-{marca}")
-                ui.button(icon="delete", color="negative", on_click=lambda a=acciónActual, d=dispositivo: self.preguntarBorrar(a, d)).props("flat round").mark(f"borrar-{marca}").tooltip("Borrar")
+                # Una sola celda de la grilla para los tres botones
+                with ui.row().classes("no-wrap gap-1 items-center"):
+                    with ui.button_group().props("rounded"):
+                        miGui.nombrar(ui.button(icon="play_arrow", color=self.colorBotones, on_click=lambda a=acciónActual: self.probarAcción(a)).mark(f"ejecutar-{marca}"), f"Probar {nombreAcción}")
+                        miGui.nombrar(ui.button(icon="edit", color=self.colorBotones, on_click=lambda a=acciónActual: self.siNoHayCambios(lambda: self.seleccionarAcción(a, dispositivo))).mark(f"editar-{marca}"), f"Editar {nombreAcción}")
+                    miGui.nombrar(ui.button(icon="delete", color=self.colorPeligro, on_click=lambda a=acciónActual, d=dispositivo: self.preguntarBorrar(a, d)).props("flat round").mark(f"borrar-{marca}"), f"Borrar {nombreAcción}")
 
     def probarAcción(self, acción: dataAccion) -> None:
         """Botón ▶: presiona y suelta seguido, para que acciones como Presiona no queden a medias"""
@@ -1374,14 +1407,6 @@ class miGui(dispositivo):
         dispositivo.listaAcciones.remove(accion)
         dispositivo.salvarAcciones()
         self.actualizarPestaña(dispositivo)
-
-    def actualizarIconos(self):
-        logger.info("Dibujando GUI")
-
-        # self.editorAcción.update()
-
-        # su
-        pass
 
     def actualizar(self):
 

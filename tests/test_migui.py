@@ -387,7 +387,7 @@ class TestMenu:
         gui.ejecutarAccionSistema = MagicMock()
         await user.open("/")
         user.find(marker=f"menu-{item}").click()
-        clickEnDialogoAbierto(user, "Confirmar")
+        clickEnDialogoAbierto(user, item)
         gui.ejecutarAccionSistema.assert_called_once_with(comando)
 
     async def test_cancelar_no_ejecuta(self, user: User, gui: miGui):
@@ -423,14 +423,14 @@ class TestActivables:
         monkeypatch.setattr(moduloMiGui, "leerData", lambda _: {})
         monkeypatch.setattr(moduloMiGui, "SalvarValor", salvar)
         await user.open(ruta)
-        await user.should_see("Los cambios requieren reiniciar elgarrobo para aplicarse")
+        await user.should_see("Los cambios se aplican al reiniciar ElGarrobo (menú → Reiniciar)")
 
         switch = next(iter(user.find(kind=ui.switch).elements))
         with user:
             switch.value = True
         assert salvar.call_args.args[0] == archivo
         assert salvar.call_args.args[2] is True
-        await user.should_see("activado - reiniciá elgarrobo para aplicar")
+        await user.should_see("activado. Reinicia ElGarrobo para aplicarlo")
 
 
 class TestEditorApariencia:
@@ -685,6 +685,17 @@ class TestDistribucionTeclado:
         assert guardado["teclados.md"] == [{"nombre": "otro"}, {"nombre": "teclado"}]
         await user.should_see(marker="orden-key-teclado")
         await user.should_see(marker="distribucion-teclado")
+
+    async def test_elegir_distribucion_con_teclado(self, user: User, guiTeclado: miGui, teclado: MiTecladoMacro, monkeypatch):
+        moduloTeclado = sys.modules[MiTecladoMacro.__module__]
+        monkeypatch.setattr(moduloTeclado, "ObtenerArchivo", lambda archivo: [{"nombre": "teclado"}])
+        monkeypatch.setattr(moduloTeclado, "SalvarArchivo", lambda archivo, data: None)
+        await user.open("/")
+        user.find(marker="distribucion-teclado").click()
+        tarjeta = next(iter(user.find(marker="opcionDistribucion-sonix_una_mano").elements))
+        assert tarjeta.props["role"] == "button" and tarjeta.props["tabindex"] == "0"
+        user.find(marker="opcionDistribucion-sonix_una_mano").trigger("keydown.enter")
+        assert teclado.distribucion == "sonix_una_mano"
 
     async def test_sin_distribucion_muestra_lista(self, user: User, guiTeclado: miGui, teclado: MiTecladoMacro):
         teclado.distribucion = "no_existe"
