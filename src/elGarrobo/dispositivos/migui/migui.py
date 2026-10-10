@@ -132,6 +132,8 @@ class miGui(dispositivo):
         "Dispositivos con distribución física que el usuario cambió a vista de lista"
         self.ordenInverso: bool = False
         self.teclaIntercambio: dict = {}
+        self.acciónDuplicar: dict[str, dataAccion | None] = {}
+        "dispositivo → acción a copiar en modo duplicar; guarda la acción y no la tecla para poder pegarla en otra página o folder"
         self.teclasPresionadas: dict[int, dataAccion] = {}
         "id → acción presionada en modo Usar, para mandar soltar una sola vez"
         "Dispositivos en modo intercambiar → primera tecla seleccionada (None si aún no hay)"
@@ -403,6 +405,7 @@ class miGui(dispositivo):
         SalvarValor(ARCHIVO_PREFERENCIAS, "modo_usar", usar)
         # Intercambiar es una herramienta de edición, no debe seguir activo en Usar
         self.teclaIntercambio.clear()
+        self.acciónDuplicar.clear()
         self.aplicarModo()
         for dispositivoActual in self.listaDispositivos:
             self.actualizarPestaña(dispositivoActual)
@@ -1113,9 +1116,15 @@ class miGui(dispositivo):
                 miGui.nombrar(siguiente, "Página siguiente").set_enabled(dispositivo.puedeSiguientePagina(not usar))
             intercambiando = nombre in self.teclaIntercambio
             seleccionada = self.teclaIntercambio.get(nombre)
+            duplicando = nombre in self.acciónDuplicar
+            copiada = self.acciónDuplicar.get(nombre)
             if not usar:
-                ui.button("Intercambiar", icon="swap_horiz", color=self.colorActivo if intercambiando else self.colorBotones, on_click=lambda: self.cambiarModoIntercambio(dispositivo)).classes("ml-auto").mark(f"intercambiar-{nombre}")
-                ui.button("Apariencia folder", icon="folder_special", color=self.colorBotones, on_click=lambda: self.abrirPropiedadesFolder(dispositivo)).mark(f"propiedadesFolder-{nombre}")
+                intercambiar = ui.button(icon="swap_horiz", color=self.colorActivo if intercambiando else self.colorBotones, on_click=lambda: self.cambiarModoIntercambio(dispositivo)).classes("ml-auto").mark(f"intercambiar-{nombre}")
+                miGui.nombrar(intercambiar, "Intercambiar teclas")
+                duplicar = ui.button(icon="content_copy", color=self.colorActivo if duplicando else self.colorBotones, on_click=lambda: self.cambiarModoDuplicar(dispositivo)).mark(f"duplicar-{nombre}")
+                miGui.nombrar(duplicar, "Duplicar acción")
+                apariencia = ui.button(icon="folder_special", color=self.colorBotones, on_click=lambda: self.abrirPropiedadesFolder(dispositivo)).mark(f"propiedadesFolder-{nombre}")
+                miGui.nombrar(apariencia, "Apariencia del folder")
                 if hasattr(dispositivo, "cambiarDistribucion"):
                     self.botonDistribucion(dispositivo)
 
@@ -1125,6 +1134,8 @@ class miGui(dispositivo):
                 return None
             if intercambiando:
                 return lambda: self.seleccionarIntercambio(dispositivo, tecla)
+            if duplicando:
+                return lambda: self.seleccionarDuplicar(dispositivo, tecla, acción)
             if acción is not None:
                 return lambda: self.siNoHayCambios(lambda: self.seleccionarAcción(acción, dispositivo))
             return lambda: self.siNoHayCambios(lambda: self.nuevaAcciónTecla(dispositivo, tecla))
@@ -1133,7 +1144,7 @@ class miGui(dispositivo):
             acción = accionesPorTecla.get(str(tecla))
             if usar and acción is not None:
                 self.conectarTecla(boton, acción, dispositivo)
-            if intercambiando and tecla == seleccionada:
+            if (intercambiando and tecla == seleccionada) or (duplicando and acción is not None and acción is copiada):
                 boton.classes(f"ring-4 ring-{self.colorActivo}")
             boton.mark(f"tecla-{nombre}-{tecla}")
 
@@ -1220,7 +1231,8 @@ class miGui(dispositivo):
         return ancho, alto
 
     def botonDistribucion(self, dispositivo: dispositivo) -> None:
-        ui.button("Distribución", icon="keyboard", color=self.colorBotones, on_click=lambda: self.abrirDistribuciones(dispositivo)).mark(f"distribucion-{dispositivo.nombre}")
+        distribucion = ui.button(icon="keyboard", color=self.colorBotones, on_click=lambda: self.abrirDistribuciones(dispositivo)).mark(f"distribucion-{dispositivo.nombre}")
+        miGui.nombrar(distribucion, "Distribución del teclado")
 
     def abrirDistribuciones(self, dispositivo: dispositivo) -> None:
         """Muestra las distribuciones disponibles con una miniatura; al elegir una se guarda en teclados.md"""
@@ -1256,8 +1268,32 @@ class miGui(dispositivo):
 
     def cambiarModoIntercambio(self, dispositivo: dispositivo) -> None:
         """Activa o desactiva el modo intercambiar teclas en la cuadrícula del dispositivo"""
+        self.acciónDuplicar.pop(dispositivo.nombre, None)
         if self.teclaIntercambio.pop(dispositivo.nombre, False) is False:
             self.teclaIntercambio[dispositivo.nombre] = None
+        self.actualizarPestaña(dispositivo)
+
+    def cambiarModoDuplicar(self, dispositivo: dispositivo) -> None:
+        """Activa o desactiva el modo duplicar acción en la cuadrícula del dispositivo"""
+        self.teclaIntercambio.pop(dispositivo.nombre, None)
+        if self.acciónDuplicar.pop(dispositivo.nombre, False) is False:
+            self.acciónDuplicar[dispositivo.nombre] = None
+        self.actualizarPestaña(dispositivo)
+
+    def seleccionarDuplicar(self, dispositivo: dispositivo, tecla, acción: dataAccion | None) -> None:
+        """Primer click elige la acción a copiar, click en una tecla vacía pega la copia; click en otra acción la elige"""
+        copiada = self.acciónDuplicar.get(dispositivo.nombre)
+        if acción is not None:
+            # Click en la misma acción la suelta
+            self.acciónDuplicar[dispositivo.nombre] = None if acción is copiada else acción
+        elif copiada is not None:
+            copia = dataAccion.desdeDict(copy.deepcopy(copiada.aDict()))
+            copia.key = tecla
+            dispositivo.listaAcciones.append(copia)
+            dispositivo.listaAcciones.sort(key=self.ordenTecla)
+            dispositivo.salvarAcciones()
+            dispositivo.actualizar()
+            ui.notify(f"{copia.nombre or 'Acción'} duplicada en la tecla {tecla}")
         self.actualizarPestaña(dispositivo)
 
     def seleccionarIntercambio(self, dispositivo: dispositivo, tecla: int) -> None:

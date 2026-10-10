@@ -535,6 +535,23 @@ class TestCuadricula:
         await user.should_see(marker="orden-key-pedal")
         await user.should_not_see(marker="tecla-pedal-1")
 
+    async def test_duplicar_accion(self, user: User, guiPedal: miGui, pedal: MiPedal):
+        await user.open("/")
+        user.find(marker="duplicar-pedal").click()
+        user.find(marker="tecla-pedal-2").click()
+        assert len(pedal.listaAcciones) == 2, "sin acción elegida la tecla vacía no hace nada"
+
+        user.find(marker="tecla-pedal-1").click()
+        user.find(marker="tecla-pedal-2").click()
+        user.find(marker="tecla-pedal-3").click()
+        assert sorted(a.key for a in pedal.listaAcciones if a.nombre == "Uno") == [1, 2, 3], "sigue elegida para pegar varias veces"
+        copia = next(a for a in pedal.listaAcciones if a.key == 2)
+        assert copia is not pedal.listaAcciones[0] and copia.opciones is not pedal.listaAcciones[0].opciones
+
+        user.find(marker="duplicar-pedal").click()
+        user.find(marker="tecla-pedal-2").click()
+        assert guiPedal.editoresData["nombre"].value == "Uno", "fuera del modo vuelve a editar"
+
     async def test_intercambiar_teclas(self, user: User, guiPedal: miGui, pedal: MiPedal):
         await user.open("/")
         user.find(marker="intercambiar-pedal").click()
