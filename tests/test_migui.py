@@ -690,6 +690,16 @@ class TestDistribucionTeclado:
         user.find(marker="tecla-teclado-KEY_B").click()
         assert guiTeclado.editoresData["key"].value == "KEY_B"
 
+    async def test_vista_previa_a_la_medida_de_la_tecla(self, user: User, guiTeclado: miGui, teclado: MiTecladoMacro):
+        teclado.listaAcciones.append(dataAccion.desdeDict({"nombre": "Grabar", "key": "KEY_SPACE", "accion": "escribir", "titulo": "REC"}))
+        await user.open("/")
+        espacio = next(t for t in teclado.distribucionTeclas() if t["key"] == "KEY_SPACE")
+        imagen = user.find(marker="tecla-teclado-KEY_SPACE").elements.pop().default_slot.children[0].source
+        assert imagen.size == miGui.tamañoTecla(espacio) and imagen.width > imagen.height, "la barra espaciadora se dibuja ancha"
+        user.find(marker="tecla-teclado-KEY_SPACE").click()
+        guiTeclado.abrirEditorApariencia()
+        assert guiTeclado.vistaPrevia.source.size == miGui.tamañoTecla(espacio)
+
     async def test_intercambiar(self, user: User, guiTeclado: miGui, teclado: MiTecladoMacro):
         await user.open("/")
         user.find(marker="intercambiar-teclado").click()

@@ -364,7 +364,7 @@ class miGui(dispositivo):
                         self.editorTituloMQTT = ui.input("Tópico MQTT del título", on_change=self.actualizarVistaPrevia).classes("w-full").props("clearable").mark("editor-titulo-mqtt")
                         self.editorTituloMQTT.props["hint"] = "El valor que llega reemplaza {} en el título, ej. {:.0f}%"
                         self.editorFondo = ui.color_input("Fondo", preview=True, on_change=self.actualizarVistaPrevia).classes("w-full").mark("editor-fondo")
-                    self.vistaPrevia = ui.image().classes("w-24 h-24 rounded").mark("vistaPrevia")
+                    self.vistaPrevia = ui.image().classes("w-24 h-24 rounded").props("fit=contain").mark("vistaPrevia")
                 ui.button("Listo", on_click=self.dialogoBoton.close).mark("botonListoBoton")
             ui.button("Editar apariencia", icon="palette", color=self.colorOscuro, on_click=self.abrirEditorApariencia).classes("w-full").mark("botonEditarBoton")
 
@@ -669,8 +669,12 @@ class miGui(dispositivo):
         acción = copy.deepcopy(self.accionEditar) if self.accionEditar else dataAccion()
         acción.accion = self.comandoAcción(self.editorAcción.value) or acción.accion
         self.aplicarApariencia(acción)
+        # En teclados cada tecla mide distinto, se usa la medida de la tecla editada
+        tecla = str(self.editoresData["key"].value)
+        teclaFisica = next((t for t in dispositivoActual.distribucionTeclas() or [] if t["key"] == tecla), None)
+        tamaño = self.tamañoTecla(teclaFisica) if teclaFisica else dispositivoActual.tamañoBoton()
         try:
-            imagen = dispositivoActual.dibujo().dibujar(acción, dispositivoActual.tamañoBoton(), conGif=True)
+            imagen = dispositivoActual.dibujo().dibujar(acción, tamaño, conGif=True)
         except Exception as error:
             # Ej: color a medio escribir, se deja la vista previa anterior
             logger.debug(f"Vista previa[Error] {error}")
@@ -1157,8 +1161,9 @@ class miGui(dispositivo):
             boton.mark(f"tecla-{nombre}-{tecla}")
 
         if distribucion:
-            # Teclado: botones con posición libre en unidades de tecla, sin vista previa porque no tiene pantalla
-            unidad = 56
+            # Teclado: botones con posición libre en unidades de tecla, dibujados como el StreamDeck pero a la medida de cada tecla
+            unidad = self.unidadTecla
+            dibujo = dispositivo.dibujo()
             ancho, alto = self.medidaDistribucion(distribucion)
             with ui.element("div").classes(f"mx-auto {'carcasa box-content' if usar else 'm-2'}"):
                 with ui.element("div").classes("relative").style(f"width: {ancho * unidad}px; height: {alto * unidad}px"):
@@ -1167,11 +1172,24 @@ class miGui(dispositivo):
                         acción = accionesPorTecla.get(tecla)
                         etiqueta = teclaFisica.get("etiqueta") or tecla.removeprefix("KEY_")
                         x, y = teclaFisica.get("x", 0), teclaFisica.get("y", 0)
-                        w, h = teclaFisica.get("w", 1), teclaFisica.get("h", 1)
-                        boton = ui.button(acción.get("nombre") if acción else etiqueta, color=self.colorTecla if acción else self.colorTeclaVacia, on_click=alClick(tecla, acción))
-                        boton.props("dense no-caps").classes("absolute text-xs leading-tight overflow-hidden tecla-viva")
+                        tamaño = self.tamañoTecla(teclaFisica)
+                        imagen = None
+                        if acción is not None:
+                            try:
+                                imagen = dibujo.dibujar(acción, tamaño, conGif=True)
+                            except Exception as error:
+                                logger.warning(f"Vista previa[Error] {nombre}[{tecla}] {error}")
+                        if imagen is not None:
+                            boton = ui.button(on_click=alClick(tecla, acción)).props("flat padding=0")
+                            boton.props["aria-label"] = acción.get("nombre") or tecla
+                            with boton:
+                                ui.image(imagen).classes("w-full h-full rounded")
+                        else:
+                            boton = ui.button(acción.get("nombre") if acción else etiqueta, color=self.colorTecla if acción else self.colorTeclaVacia, on_click=alClick(tecla, acción))
+                            boton.props("dense no-caps").classes("text-xs leading-tight")
+                        boton.classes("absolute overflow-hidden rounded tecla-viva")
                         boton.set_enabled(not (usar and acción is None))
-                        boton.style(f"left: {x * unidad}px; top: {y * unidad}px; width: {w * unidad - 4}px; height: {h * unidad - 4}px")
+                        boton.style(f"left: {x * unidad}px; top: {y * unidad}px; width: {tamaño[0]}px; height: {tamaño[1]}px")
                         boton.tooltip(f"{etiqueta} ({tecla})" + (f": {acción.get('nombre')}" if acción else ""))
                         marcar(boton, tecla)
             # Acciones en teclas que no están dibujadas (capa Fn, teclas de otro modelo) para que no queden escondidas
@@ -1230,6 +1248,14 @@ class miGui(dispositivo):
                                 if not usar:
                                     etiqueta = f"{tecla}: {acción.get('nombre')}" if acción is not None else str(tecla)
                                     ui.label(etiqueta).classes("text-xs truncate text-center").style(medidaTecla.split(";")[0]).tooltip(etiqueta)
+
+    unidadTecla = 56
+    "Pixeles de una tecla de 1x1 en la distribución del teclado"
+
+    @classmethod
+    def tamañoTecla(cls, teclaFisica: dict) -> tuple[int, int]:
+        """Ancho y alto en pixeles de una tecla de la distribución, dejando 4px de separación"""
+        return (int(teclaFisica.get("w", 1) * cls.unidadTecla) - 4, int(teclaFisica.get("h", 1) * cls.unidadTecla) - 4)
 
     @staticmethod
     def medidaDistribucion(distribucion: list[dict]) -> tuple[float, float]:
