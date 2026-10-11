@@ -73,7 +73,7 @@ class accion:
                     valorActual = valoresAcciones(atributo, valor)
                     self.listaValores.append(valorActual)
                 else:
-                    logger.error(f"AcciónPOO[Error] Atribulo {atributo} incorrecto {type(valor)}")
+                    logger.error(f"AcciónPOO[Error] Atributo {atributo} incorrecto {type(valor)}")
                     self.error = True
 
     def ejecutar(self) -> bool:

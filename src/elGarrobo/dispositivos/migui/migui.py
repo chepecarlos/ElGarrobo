@@ -361,6 +361,8 @@ class miGui(dispositivo):
                 with ui.row().classes("items-start no-wrap"):
                     with ui.column().classes("w-64"):
                         self.editorTitulo = ui.input("Título", on_change=self.actualizarVistaPrevia).classes("w-full").props("clearable").mark("editor-titulo")
+                        self.editorTituloMQTT = ui.input("Tópico MQTT del título", on_change=self.actualizarVistaPrevia).classes("w-full").props("clearable").mark("editor-titulo-mqtt")
+                        self.editorTituloMQTT.props["hint"] = "El valor que llega reemplaza {} en el título, ej. {:.0f}%"
                         self.editorFondo = ui.color_input("Fondo", preview=True, on_change=self.actualizarVistaPrevia).classes("w-full").mark("editor-fondo")
                     self.vistaPrevia = ui.image().classes("w-24 h-24 rounded").mark("vistaPrevia")
                 ui.button("Listo", on_click=self.dialogoBoton.close).mark("botonListoBoton")
@@ -599,7 +601,7 @@ class miGui(dispositivo):
 
     def estadoFormulario(self) -> tuple:
         """Foto de los valores del formulario, para saber si hay cambios sin guardar"""
-        editores = [*self.editoresData.values(), self.editorTitulo, self.editorFondo, self.editorAcción, *(self.opcionesEditar or {}).values()]
+        editores = [*self.editoresData.values(), self.editorTitulo, self.editorTituloMQTT, self.editorFondo, self.editorAcción, *(self.opcionesEditar or {}).values()]
         return tuple(str(editor.value) for editor in editores)
 
     def recordarFormulario(self) -> None:
@@ -676,9 +678,13 @@ class miGui(dispositivo):
         self.vistaPrevia.set_source(imagen)
 
     def aplicarApariencia(self, acción: dataAccion) -> None:
-        """Pasa a la acción el título y fondo del editor del botón"""
+        """Pasa a la acción el título, tópico MQTT del título y fondo del editor del botón"""
         acción.titulo = self.editorTitulo.value or None
         acción.fondo = self.editorFondo.value or None
+        if self.editorTituloMQTT.value:
+            acción.tituloOpciones["mqtt"] = self.editorTituloMQTT.value
+        else:
+            acción.tituloOpciones.pop("mqtt", None)
 
     def limpiarFormulario(self):
         """Limpia el formulario de acciones"""
@@ -687,6 +693,7 @@ class miGui(dispositivo):
         for editor in self.editoresData.values():
             editor.value = ""
         self.editorTitulo.value = ""
+        self.editorTituloMQTT.value = ""
         self.editorFondo.value = ""
         self.editorAcción.value = ""
         self.editorOpción.value = ""
@@ -807,6 +814,7 @@ class miGui(dispositivo):
         for atributo, editor in self.editoresData.items():
             editor.value = accion.get(atributo)
         self.editorTitulo.value = accion.titulo or ""
+        self.editorTituloMQTT.value = accion.tituloOpciones.get("mqtt") or ""
         self.editorFondo.value = accion.fondo or ""
 
         # Sin esto mostrarOpciones pasaría los valores de la acción editada antes

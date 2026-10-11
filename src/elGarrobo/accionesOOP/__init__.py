@@ -31,6 +31,7 @@
 - Sube un folder en los dispositivos: [accionRegresarFolder](./accionesOOP/accionRegresarFolder)
 - Cierra el programa: [accionSalir](./accionesOOP/accionSalir)
 - Reinicia el proceso: [accionReiniciarApp](./accionesOOP/accionReiniciarApp)
+- No hace nada (botón solo para mostrar texto): [accionNada](./accionesOOP/accionNada)
 
 ### Acciones en StreamDeck
 - Anterior pagina de StreamDeck: [accionAnteriorPagina](./accionesOOP/accionAnteriorPagina)
@@ -70,6 +71,7 @@ from .accionPresionar import accionPresionar
 from .accionPulse import accionMute, accionSalvarPulse, accionVolumen
 from .accionRecargarFolder import accionRecargarFolder
 from .accionRegresarFolder import accionRegresarFolder
+from .accionNada import accionNada
 from .accionReiniciarApp import accionReiniciarApp
 from .accionSalir import accionSalir
 from .accionSonidos import accionPararReproducciones, accionReproducir
@@ -103,6 +105,7 @@ def cargarClasesAcciones() -> dict[str, type["accion"]]:
         "reiniciar_data": accionRecargarFolder,
         "regresar_folder": accionRegresarFolder,
         "reiniciar_app": accionReiniciarApp,
+        "nada": accionNada,
         "salir": accionSalir,
         "teclas": accionTeclas,
         "raton": accionEmularRaton,

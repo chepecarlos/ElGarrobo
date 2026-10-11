@@ -451,6 +451,24 @@ class TestEditorApariencia:
         assert gui.editorFondo.value == "#2b7a10"
 
 
+    async def test_editor_boton_guarda_topico_mqtt_del_titulo(self, user: User, gui: miGui, deck: dispositivoFalso):
+        deck.listaAcciones[0].tituloOpciones = {"color": "blue"}
+        await user.open("/")
+        user.find(marker="editar-deck-1").click()
+        user.find(marker="botonEditarBoton").click()
+        user.find(marker="editor-titulo-mqtt").type("estado/progreso")
+        user.find(marker="botonListoBoton").click()
+        user.find(marker="botonAgregar").click()
+        assert deck.listaAcciones[0].tituloOpciones == {"color": "blue", "mqtt": "estado/progreso"}
+
+        user.find(marker="editar-deck-1").click()
+        assert gui.editorTituloMQTT.value == "estado/progreso"
+        user.find(marker="botonEditarBoton").click()
+        user.find(marker="editor-titulo-mqtt").clear()
+        user.find(marker="botonListoBoton").click()
+        user.find(marker="botonAgregar").click()
+        assert deck.listaAcciones[0].tituloOpciones == {"color": "blue"}, "vacío quita el tópico sin tocar las otras opciones"
+
     async def test_vista_previa_dibuja_fondo(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
         user.find(marker="editar-deck-1").click()
