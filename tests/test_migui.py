@@ -490,6 +490,17 @@ class TestEditorApariencia:
         assert gui.editorFondo.value == "#2b7a10"
 
 
+    async def test_editor_sin_apariencia_usa_nombre_como_titulo(self, user: User, gui: miGui, deck: dispositivoFalso):
+        await user.open("/")
+        user.find(marker="editar-deck-1").click()
+        user.find(marker="botonEditarBoton").click()
+        assert gui.editorTitulo.value == deck.listaAcciones[0].nombre
+
+        user.find(marker="editor-titulo").clear().type("Hola")
+        user.find(marker="botonListoBoton").click()
+        user.find(marker="botonEditarBoton").click()
+        assert gui.editorTitulo.value == "Hola", "con apariencia no se reemplaza el título"
+
     async def test_editor_boton_guarda_topico_mqtt_del_titulo(self, user: User, gui: miGui, deck: dispositivoFalso):
         deck.listaAcciones[0].tituloOpciones = {"color": "blue"}
         await user.open("/")

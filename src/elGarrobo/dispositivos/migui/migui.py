@@ -676,6 +676,9 @@ class miGui(dispositivo):
         return None
 
     def abrirEditorApariencia(self) -> None:
+        # Sin apariencia todavía: el nombre sirve de título para configurarlo más rápido
+        if not (self.editorTitulo.value or self.editorTituloMQTT.value or self.editorFondo.value):
+            self.editorTitulo.value = self.editoresData["nombre"].value or ""
         self.actualizarVistaPrevia()
         self.dialogoBoton.open()
 
