@@ -1130,7 +1130,8 @@ class miGui(dispositivo):
                         ui.label(f"{nombre} no tiene acciones en este folder")
                         return
 
-                    with ui.element("div").classes(f"w-full {self.claseNavegación(dispositivo)}"):
+                    # container-type: las teclas del StreamDeck se miden con cqw contra este ancho, no el de la ventana
+                    with ui.element("div").classes(f"w-full {self.claseNavegación(dispositivo)}").style("container-type: inline-size"):
                         if cuadricula and (usar or nombre not in self.dispositivosEnLista):
                             self.dibujarCuadricula(acciones, dispositivo)
                         elif usar:
@@ -1227,8 +1228,11 @@ class miGui(dispositivo):
             unidad = self.unidadTecla
             dibujo = dispositivo.dibujo()
             ancho, alto = self.medidaDistribucion(distribucion)
-            with ui.element("div").classes(f"mx-auto {'carcasa box-content' if usar else 'm-2'}"):
-                with ui.element("div").classes("relative").style(f"width: {ancho * unidad}px; height: {alto * unidad}px"):
+            # El teclado crece hasta llenar el ancho y alto del área (sin pasar de unidad px por tecla); posiciones en % del teclado
+            relleno = "3rem" if usar else "1rem"
+            medidaTeclado = f"width: min(100% - {relleno}, {ancho * unidad}px, (95vh - 220px) * {ancho / alto:.4f})"
+            with ui.element("div").classes(f"mx-auto {'carcasa box-content' if usar else 'm-2'}").style(medidaTeclado):
+                with ui.element("div").classes("relative w-full").style(f"aspect-ratio: {ancho} / {alto}"):
                     for teclaFisica in distribucion:
                         tecla = teclaFisica["key"]
                         acción = accionesPorTecla.get(tecla)
@@ -1251,7 +1255,8 @@ class miGui(dispositivo):
                             boton.props("dense no-caps").classes("text-xs leading-tight")
                         boton.classes("absolute overflow-hidden rounded tecla-viva")
                         boton.set_enabled(not (usar and acción is None))
-                        boton.style(f"left: {x * unidad}px; top: {y * unidad}px; width: {tamaño[0]}px; height: {tamaño[1]}px")
+                        w, h = teclaFisica.get("w", 1), teclaFisica.get("h", 1)
+                        boton.style(f"left: {x / ancho:.4%}; top: {y / alto:.4%}; width: calc({w / ancho:.4%} - 4px); height: calc({h / alto:.4%} - 4px); min-width: 0; min-height: 0")
                         boton.tooltip(f"{etiqueta} ({tecla})" + (f": {acción.get('nombre')}" if acción else ""))
                         marcar(boton, tecla)
             # Acciones en teclas que no están dibujadas (capa Fn, teclas de otro modelo) para que no queden escondidas
@@ -1269,7 +1274,19 @@ class miGui(dispositivo):
         if not grupos:
             return
 
-        with ui.row().classes(f"items-start gap-8 {'carcasa mx-auto max-sm:p-3' if usar else 'p-2'}"):
+        # La tecla se ajusta para que todos los grupos quepan lado a lado en el ancho y el alto del área (ej. celular)
+        # ponytail: los rem de separación son aproximados (padding, gaps, etiquetas); ajustar si sobra o falta espacio
+        columnas = sum(grupo.columnas for grupo in grupos)
+        filas = max(grupo.filas for grupo in grupos)
+        separación = 0.75 if usar else 0.5
+        extraAncho = (4 if usar else 1) + 2 * (len(grupos) - 1) + separación * (columnas - len(grupos))
+        extraAlto = (3 if usar else 1) + (1.5 if len(grupos) > 1 else 0)
+        porFila = separación + (0 if usar else 1.5)
+        altoLibre = f"95vh - {136 if usar else 176}px - {extraAlto}rem"
+        lado = f"min((100cqw - {extraAncho}rem) / {columnas}, ({altoLibre}) / {filas} - {porFila}rem)"
+        medidaTecla = f"width: clamp(3rem, {lado}, {'9rem' if usar else '8rem'}); height: auto; aspect-ratio: 1"
+
+        with ui.row().classes(f"items-start gap-8 no-wrap {'carcasa w-fit mx-auto max-sm:p-3' if usar else 'p-2 justify-center'}"):
             for grupo in grupos:
                 dibujante = grupo.dibujante
                 dibujo = dibujante.dibujo()
@@ -1277,8 +1294,6 @@ class miGui(dispositivo):
                 # El aparato ya está rotado frente al usuario, el ícono se muestra derecho
                 rotarAparato = getattr(dibujante, "rotar", 0)
 
-                # La tecla se achica con la pantalla para que el aparato entero quepa (ej. celular); en Editar hasta 6rem
-                medidaTecla = f"width: clamp(3rem, calc((100vw - 9rem) / {grupo.columnas}), {'7rem' if usar else '6rem'}); height: auto; aspect-ratio: 1"
                 with ui.column().classes("items-center"):
                     if len(grupos) > 1:
                         ui.label(grupo.nombre).classes("font-bold")
@@ -1311,8 +1326,8 @@ class miGui(dispositivo):
                                     etiqueta = f"{tecla}: {acción.get('nombre')}" if acción is not None else str(tecla)
                                     ui.label(etiqueta).classes("text-xs truncate text-center").style(medidaTecla.split(";")[0]).tooltip(etiqueta)
 
-    unidadTecla = 56
-    "Pixeles de una tecla de 1x1 en la distribución del teclado"
+    unidadTecla = 112
+    "Pixeles de una tecla de 1x1 en la distribución del teclado: resolución del dibujo y tamaño máximo en pantalla"
 
     @classmethod
     def tamañoTecla(cls, teclaFisica: dict) -> tuple[int, int]:
