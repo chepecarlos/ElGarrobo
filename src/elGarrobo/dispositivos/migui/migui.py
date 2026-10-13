@@ -1,6 +1,7 @@
 import copy
 import logging
 import threading
+from pathlib import Path
 
 import yaml
 from nicegui import app, ui
@@ -34,7 +35,16 @@ CSS_BOTONERA = """
 .tecla-viva { touch-action: none; user-select: none; -webkit-touch-callout: none; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), filter 90ms cubic-bezier(0.16, 1, 0.3, 1); }
 .tecla-viva:active { transform: scale(0.94); filter: brightness(1.35); }
 .tecla-viva:focus-visible, .opcion-distribucion:focus-visible { outline: 2px solid var(--color-foco); outline-offset: 3px; }
-@media (prefers-reduced-motion: reduce) { .tecla-viva { transition: none; } }
+/* Navegar: la página entra desde el lado hacia donde se fue (adentro/siguiente → derecha, arriba/anterior → izquierda) */
+@keyframes navega-entra { from { opacity: 0.3; transform: translateX(16px); } }
+@keyframes navega-sale { from { opacity: 0.3; transform: translateX(-16px); } }
+@keyframes navega-funde { from { opacity: 0.3; } }
+.navega-entra { animation: navega-entra 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+.navega-sale { animation: navega-sale 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+@media (prefers-reduced-motion: reduce) {
+    .tecla-viva { transition: none; }
+    .navega-entra, .navega-sale { animation: navega-funde 160ms ease-out; }
+}
 /* Celular y tablet: el splitter deja el formulario en 20% del ancho, se apila debajo del dispositivo */
 @media (max-width: 1023px) {
     .pagina-acciones.q-splitter { flex-direction: column; }
@@ -135,6 +145,8 @@ class miGui(dispositivo):
         self.acciónDuplicar: dict[str, dataAccion | None] = {}
         "dispositivo → acción a copiar en modo duplicar; guarda la acción y no la tecla para poder pegarla en otra página o folder"
         self.teclasPresionadas: dict[int, dataAccion] = {}
+        self.últimaVista: dict[str, tuple[Path, int]] = {}
+        "dispositivo → (folder, página) dibujados la última vez, para saber hacia dónde se navegó"
         "id → acción presionada en modo Usar, para mandar soltar una sola vez"
         "Dispositivos en modo intercambiar → primera tecla seleccionada (None si aún no hay)"
         self.modoUsar: bool = False
@@ -457,6 +469,10 @@ class miGui(dispositivo):
         if self.ultimaLabel is not None:
             self.ultimaLabel.text = nombre
             self.ultimaFila.visible = True
+            # Destello sin movimiento (vale también con reduced-motion): confirma que se ejecutó aunque el nombre no cambie
+            ui.run_javascript(
+                f"getHtmlElement({self.ultimaFila.id})?.animate([{{backgroundColor: 'rgba(94, 234, 212, 0.35)'}}, {{backgroundColor: 'transparent'}}], {{duration: 600, easing: 'ease-out'}})"
+            )
 
     def mostrarOpciones(self):
         """Muestra las opciones de la acción seleccionada"""
@@ -941,7 +957,7 @@ class miGui(dispositivo):
             if conModo:
                 with ui.row().classes("items-center gap-6 max-sm:hidden"):
                     self.folderLabel = ui.label("").classes(f"text-{self.colorClaro}").mark("cabecera-folder")
-                    with ui.row().classes("items-center gap-1") as self.ultimaFila:
+                    with ui.row().classes("items-center gap-1 rounded px-2") as self.ultimaFila:
                         ui.icon("play_arrow", color=self.colorClaro)
                         self.ultimaLabel = ui.label("").mark("ultimaAcción")
                     self.ultimaFila.visible = False
@@ -1083,17 +1099,32 @@ class miGui(dispositivo):
                         ui.label(f"{nombre} no tiene acciones en este folder")
                         return
 
-                    if cuadricula and (usar or nombre not in self.dispositivosEnLista):
-                        self.dibujarCuadricula(acciones, dispositivo)
-                    elif usar:
-                        self.dibujarBotonera(acciones, dispositivo)
-                    else:
-                        self.dibujarAcciones(acciones, dispositivo)
+                    with ui.element("div").classes(f"w-full {self.claseNavegación(dispositivo)}"):
+                        if cuadricula and (usar or nombre not in self.dispositivosEnLista):
+                            self.dibujarCuadricula(acciones, dispositivo)
+                        elif usar:
+                            self.dibujarBotonera(acciones, dispositivo)
+                        else:
+                            self.dibujarAcciones(acciones, dispositivo)
 
             self.actualizarCabecera()
 
         if hasattr(dispositivo, "actualizarIconos"):
             dispositivo.actualizarIconos()
+
+    def claseNavegación(self, dispositivo: dispositivo) -> str:
+        """Clase CSS de entrada si cambió el folder o la página desde el último dibujo; editar o cambiar de modo no anima"""
+        página = dispositivo.paginaActual() if hasattr(dispositivo, "paginaActual") else 1
+        actual = (Path(str(dispositivo.folderActual or "").strip("/")), página)
+        anterior = self.últimaVista.get(dispositivo.nombre)
+        self.últimaVista[dispositivo.nombre] = actual
+        if anterior is None or anterior == actual:
+            return ""
+        if actual[0] == anterior[0]:
+            regresa = página < anterior[1]
+        else:
+            regresa = len(actual[0].parts) < len(anterior[0].parts)
+        return "navega-sale" if regresa else "navega-entra"
 
     def cambiarVista(self, dispositivo: dispositivo, enLista: bool) -> None:
         if enLista:

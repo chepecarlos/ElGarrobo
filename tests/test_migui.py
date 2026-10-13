@@ -133,6 +133,26 @@ class TestOrdenarAcciones:
         assert self.lista[0]["key"] == 2
 
 
+class TestClaseNavegacion:
+    def test_entra_y_sale_de_folder(self, deck: dispositivoFalso):
+        gui = miGui({"nombre": "gui"})
+        assert gui.claseNavegación(deck) == ""
+        assert gui.claseNavegación(deck) == "", "redibujar el mismo folder no anima"
+        deck.folderActual = "obs/escenas"
+        assert gui.claseNavegación(deck) == "navega-entra"
+        deck.folderActual = "/"
+        assert gui.claseNavegación(deck) == "navega-sale"
+
+    def test_pagina_siguiente_y_anterior(self, deck: dispositivoFalso):
+        gui = miGui({"nombre": "gui"})
+        deck.paginaActual = lambda: 1
+        gui.claseNavegación(deck)
+        deck.paginaActual = lambda: 2
+        assert gui.claseNavegación(deck) == "navega-entra"
+        deck.paginaActual = lambda: 1
+        assert gui.claseNavegación(deck) == "navega-sale"
+
+
 class TestPaginaAcciones:
     async def test_muestra_acciones_y_cabecera(self, user: User, gui: miGui):
         await user.open("/")
