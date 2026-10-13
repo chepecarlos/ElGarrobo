@@ -276,8 +276,6 @@ class TestPaginaAcciones:
         assert gui.ejecutarAcción.call_args_list == [((acción,),), ((acción, False),)], "presiona y suelta"
 
         user.find(marker="botonBorrar").click()
-        assert acción in deck.listaAcciones, "borrar pide confirmación"
-        clickEnDialogoAbierto(user, "Borrar")
         assert acción not in deck.listaAcciones and len(deck.listaAcciones) == cantidad - 1
         assert gui.accionEditar is None and not gui.botonBorrar.visible
 
@@ -309,11 +307,32 @@ class TestPaginaAcciones:
     async def test_borrar_accion(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
         user.find(marker="borrar-deck-2").click()
-        assert teclas(deck) == [1, 2] and deck.vecesSalvado == 0, "no borra sin confirmar"
-        clickEnDialogoAbierto(user, "Borrar")
         assert teclas(deck) == [1]
         assert deck.vecesSalvado == 1
         await user.should_not_see(marker="editar-deck-2")
+
+    async def test_deshacer_borrar(self, user: User, gui: miGui, deck: dispositivoFalso):
+        await user.open("/")
+        primera = deck.listaAcciones[0]
+        user.find(marker="borrar-deck-1").click()
+        assert teclas(deck) == [2]
+        with user:
+            gui.deshacerBorrar(gui.contadorBorrados)
+        assert deck.listaAcciones[0] is primera, "vuelve a su posición"
+        assert deck.vecesSalvado == 2
+        await user.should_see(marker="editar-deck-1")
+        with user:
+            gui.deshacerBorrar(gui.contadorBorrados)
+        assert teclas(deck) == [1, 2], "deshacer dos veces no duplica"
+
+    async def test_deshacer_borrar_en_otro_folder(self, user: User, gui: miGui, deck: dispositivoFalso):
+        await user.open("/")
+        user.find(marker="borrar-deck-2").click()
+        deck.folderActual = "/otro"
+        with user:
+            gui.deshacerBorrar(gui.contadorBorrados)
+        assert teclas(deck) == [1] and deck.vecesSalvado == 1
+        await user.should_see("No se pudo deshacer")
 
     async def test_ejecutar_accion(self, user: User, gui: miGui, deck: dispositivoFalso):
         gui.ejecutarAcción = MagicMock()

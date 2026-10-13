@@ -157,6 +157,9 @@ class miGui(dispositivo):
         "Valores del formulario al cargarlo, para avisar antes de descartar cambios"
         self.funcionPregunta = None
         self.contenedorFormulario: ui.column = None
+        self.borrados: dict[int, tuple] = {}
+        "id del aviso → (acción, dispositivo, folder, posición) que todavía se puede deshacer"
+        self.contadorBorrados: int = 0
 
         self.listaDispositivos = list()
         # self.tipo = "GUI"
@@ -177,6 +180,7 @@ class miGui(dispositivo):
             # Cambiar de ventana con una tecla presionada no manda pointerup: se suelta todo al perder el foco
             ui.add_body_html("<script>window.addEventListener('blur', () => emitEvent('ventanaSinFoco'))</script>")
             ui.on("ventanaSinFoco", self.soltarTodas)
+            ui.on("deshacerBorrar", lambda e: self.deshacerBorrar(e.args))
 
             # Límite inferior 0: en modo Usar el formulario se oculta y el aparato ocupa todo el ancho
             with ui.splitter(value=20, limits=(0, 50)) as self.splitter:
@@ -768,19 +772,46 @@ class miGui(dispositivo):
         self.actualizarPestaña(dispositivo)
 
     def borrarAcciónEditada(self) -> None:
-        """Pregunta y borra la acción que está en el editor, y lo limpia"""
-        self.preguntarBorrar(self.accionEditar, self.dispositivoEditar, antes=self.limpiarFormulario)
+        """Borra la acción que está en el editor y lo limpia"""
+        self.borrarConDeshacer(self.accionEditar, self.dispositivoEditar, antes=self.limpiarFormulario)
 
-    def preguntarBorrar(self, acción: dataAccion, dispositivo: dispositivo, antes=None) -> None:
-        """Borrar escribe el archivo del usuario y la GUI no puede deshacerlo: siempre se confirma"""
+    def borrarConDeshacer(self, acción: dataAccion, dispositivo: dispositivo, antes=None) -> None:
+        """Borra sin preguntar y muestra un aviso con Deshacer mientras dura"""
+        if antes is not None:
+            antes()
+        posición = dispositivo.listaAcciones.index(acción)
+        self.contadorBorrados += 1
+        idBorrado = self.contadorBorrados
+        self.borrados[idBorrado] = (acción, dispositivo, dispositivo.folderActual, posición)
+        ui.notification(
+            f"{acción.get('nombre')} borrada de {dispositivo.nombre}",
+            timeout=10,
+            close_button="Cerrar",
+            on_dismiss=lambda: self.borrados.pop(idBorrado, None),
+            actions=[{"label": "Deshacer", "color": "white", ":handler": f"() => emitEvent('deshacerBorrar', {idBorrado})"}],
+        )
+        # Después del aviso: borrar redibuja la lista y elimina el botón desde el que se llamó
+        self.borrarAcción(acción, dispositivo)
 
-        def borrar():
-            if antes is not None:
-                antes()
-            self.borrarAcción(acción, dispositivo)
-            ui.notify(f"{acción.get('nombre')} borrada de {dispositivo.nombre}")
-
-        self.preguntar(f"¿Borrar '{acción.get('nombre')}' (tecla {acción.get('key')}) de {dispositivo.nombre}? Se quita del archivo de acciones.", "Borrar", borrar)
+    def deshacerBorrar(self, idBorrado: int) -> None:
+        """Vuelve a poner la acción borrada en su lugar y guarda el archivo"""
+        borrado = self.borrados.pop(idBorrado, None)
+        if borrado is None:
+            return
+        acción, dispositivo, folder, posición = borrado
+        nombre = acción.get("nombre")
+        # ponytail: listaAcciones es la del folder abierto; si el dispositivo navegó no se puede restaurar sin reabrir el otro archivo
+        if dispositivo.folderActual != folder:
+            ui.notify(f"No se pudo deshacer: {dispositivo.nombre} ya no está en el folder {folder}", type="warning")
+            return
+        repetida = self.teclaRepetida(dispositivo.listaAcciones, acción.get("key"), None)
+        if repetida is not None:
+            ui.notify(f"No se pudo deshacer: la tecla {acción.get('key')} ya la usa '{repetida.get('nombre')}'", type="warning")
+            return
+        dispositivo.listaAcciones.insert(posición, acción)
+        dispositivo.salvarAcciones()
+        self.actualizarPestaña(dispositivo)
+        ui.notify(f"{nombre} restaurada en {dispositivo.nombre}", type="positive")
 
     def crearPestañas(self) -> None:
         """Crea las pestañas de los dispositivos"""
@@ -908,7 +939,7 @@ class miGui(dispositivo):
                         ui.label(clase.descripcion).classes("text-caption")
 
     def crearDialogoConfirmacion(self, mensaje: str, textoBoton: str, accionConfirmada) -> ui.dialog:
-        """Crea (sin abrir) un dialogo de confirmación para una acción crítica.
+        """Crea (sin abrir) un diálogo de confirmación para una acción crítica.
 
         Se crea una sola vez al armar la página: si se crea recién al hacer
         click en el menú, el diálogo no se pinta hasta el siguiente refresco
@@ -1357,7 +1388,6 @@ class miGui(dispositivo):
             dispositivo.listaAcciones.append(copia)
             dispositivo.listaAcciones.sort(key=self.ordenTecla)
             dispositivo.salvarAcciones()
-            dispositivo.actualizar()
             ui.notify(f"{copia.nombre or 'Acción'} duplicada en la tecla {tecla}")
         self.actualizarPestaña(dispositivo)
 
@@ -1375,7 +1405,6 @@ class miGui(dispositivo):
             if acciónA is not None or acciónB is not None:
                 dispositivo.listaAcciones.sort(key=self.ordenTecla)
                 dispositivo.salvarAcciones()
-                dispositivo.actualizar()
         self.actualizarPestaña(dispositivo)
 
     def abrirPropiedadesFolder(self, dispositivo: dispositivo) -> None:
@@ -1490,7 +1519,7 @@ class miGui(dispositivo):
                     with ui.button_group().props("rounded"):
                         miGui.nombrar(ui.button(icon="play_arrow", color=self.colorBotones, on_click=lambda a=acciónActual: self.probarAcción(a)).mark(f"ejecutar-{marca}"), f"Probar {nombreAcción}")
                         miGui.nombrar(ui.button(icon="edit", color=self.colorBotones, on_click=lambda a=acciónActual: self.siNoHayCambios(lambda: self.seleccionarAcción(a, dispositivo))).mark(f"editar-{marca}"), f"Editar {nombreAcción}")
-                    miGui.nombrar(ui.button(icon="delete", color=self.colorPeligro, on_click=lambda a=acciónActual, d=dispositivo: self.preguntarBorrar(a, d)).props("flat round").mark(f"borrar-{marca}"), f"Borrar {nombreAcción}")
+                    miGui.nombrar(ui.button(icon="delete", color=self.colorPeligro, on_click=lambda a=acciónActual, d=dispositivo: self.borrarConDeshacer(a, d)).props("flat round").mark(f"borrar-{marca}"), f"Borrar {nombreAcción}")
 
     def probarAcción(self, acción: dataAccion) -> None:
         """Botón ▶: presiona y suelta seguido, para que acciones como Presiona no queden a medias"""
