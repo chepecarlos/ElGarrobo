@@ -227,7 +227,7 @@ class TestPaginaAcciones:
     async def test_editar_llena_formulario(self, user: User, gui: miGui):
         await user.open("/")
         user.find(marker="editar-deck-1").click()
-        assert gui.botonAgregar.icon == "edit"
+        assert gui.botonAgregar.icon == "save" and gui.tooltipAgregar.text == "Guardar cambios"
         assert gui.editoresData["nombre"].value == "Uno"
         assert gui.editoresData["key"].value == 1
         assert gui.editorAcción.value == "Escribir texto"
@@ -262,7 +262,7 @@ class TestPaginaAcciones:
         assert deck.listaAcciones[0]["nombre"] == "Uno editado"
         assert deck.listaAcciones[0]["opciones"] == {"texto": "chao"}
         assert deck.vecesSalvado == 1
-        assert gui.botonAgregar.icon == "add"
+        assert gui.botonAgregar.icon == "add" and gui.tooltipAgregar.text == "Agregar acción"
 
     async def test_botones_al_editar(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
@@ -301,7 +301,7 @@ class TestPaginaAcciones:
         await user.open("/")
         user.find(marker="editar-deck-1").click()
         user.find(marker="botonLimpiar").click()
-        assert gui.botonAgregar.icon == "add"
+        assert gui.botonAgregar.icon == "add" and gui.tooltipAgregar.text == "Agregar acción"
         assert gui.accionEditar is None
         assert gui.editoresData["nombre"].value == ""
 

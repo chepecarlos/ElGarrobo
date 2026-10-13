@@ -288,7 +288,7 @@ class miGui(dispositivo):
                         self.avisarError(self.editoresData["key"], f"En {dispositivoDestino.nombre} la tecla es un número{ejemplo}")
                         return
 
-            editando = self.botonAgregar.icon == "edit"
+            editando = self.accionEditar is not None
             repetida = self.teclaRepetida(dispositivoDestino.listaAcciones, tecla, self.accionEditar if editando else None)
             if repetida is not None:
                 self.avisarError(self.editoresData["key"], f"La tecla {tecla} ya la usa '{repetida.get('nombre')}', elige otra")
@@ -403,16 +403,27 @@ class miGui(dispositivo):
             self.editorOpción = ui.textarea(label="Opciones (solo lectura, se conservan al guardar)").classes("w-full").props("readonly").mark("editorOpción")
             self.editorOpción.visible = False
 
-        with ui.button_group().props("rounded"):
-            self.botonAgregar = ui.button(icon="add", color=self.colorOscuro, on_click=agregarAcción).mark("botonAgregar")
-            miGui.nombrar(self.botonAgregar, "Guardar acción")
-            # Solo se ven al editar una acción guardada
-            self.botonEjecutar = ui.button(icon="play_arrow", color=self.colorOscuro, on_click=self.ejecutarAcciónEditada).mark("botonEjecutar")
+        with ui.row().classes("items-center gap-2"):
+            # Ícono + (agregar) o disquete (guardar cambios); el tooltip dice cuál
+            self.botonAgregar = ui.button(icon="add", color=self.colorOscuro, on_click=agregarAcción).props("rounded").mark("botonAgregar")
+            with self.botonAgregar:
+                self.tooltipAgregar = ui.tooltip()
+            self.mostrarBotonGuardar(False)
+            # Sueltos y no en button_group: con Ejecutar y Borrar ocultos el grupo deja Limpiar sin esquinas redondeadas
+            # Ejecutar y Borrar solo se ven al editar una acción guardada
+            self.botonEjecutar = ui.button(icon="play_arrow", color=self.colorOscuro, on_click=self.ejecutarAcciónEditada).props("rounded").mark("botonEjecutar")
             miGui.nombrar(self.botonEjecutar, "Ejecutar acción guardada")
-            miGui.nombrar(ui.button(icon="clear_all", color=self.colorOscuro, on_click=lambda: self.siNoHayCambios(self.limpiarFormulario)).mark("botonLimpiar"), "Limpiar formulario")
-            self.botonBorrar = ui.button(icon="delete", color=self.colorPeligro, on_click=self.borrarAcciónEditada).mark("botonBorrar")
+            miGui.nombrar(ui.button(icon="clear_all", color=self.colorOscuro, on_click=lambda: self.siNoHayCambios(self.limpiarFormulario)).props("rounded").mark("botonLimpiar"), "Limpiar formulario")
+            self.botonBorrar = ui.button(icon="delete", color=self.colorPeligro, on_click=self.borrarAcciónEditada).props("rounded").mark("botonBorrar")
             miGui.nombrar(self.botonBorrar, "Borrar acción")
             self.botonEjecutar.visible = self.botonBorrar.visible = False
+
+    def mostrarBotonGuardar(self, editando: bool) -> None:
+        """Agregar para una acción nueva, Guardar cambios al editar una guardada"""
+        texto = "Guardar cambios" if editando else "Agregar acción"
+        self.botonAgregar.icon = "save" if editando else "add"
+        self.botonAgregar.props["aria-label"] = texto
+        self.tooltipAgregar.text = texto
 
     def actualizarCabecera(self) -> None:
         """Muestra información del dispositivo rutas de la interfaz web"""
@@ -721,7 +732,7 @@ class miGui(dispositivo):
 
     def limpiarFormulario(self):
         """Limpia el formulario de acciones"""
-        self.botonAgregar.icon = "add"
+        self.mostrarBotonGuardar(False)
         self.botonEjecutar.visible = self.botonBorrar.visible = False
         for editor in self.editoresData.values():
             editor.value = ""
@@ -869,7 +880,7 @@ class miGui(dispositivo):
         self.accionEditar = accion
         self.limpiarErrores()
         self.mostrarFormularioEnCelular()
-        self.botonAgregar.icon = "edit"
+        self.mostrarBotonGuardar(True)
         self.botonEjecutar.visible = self.botonBorrar.visible = True
         for atributo, editor in self.editoresData.items():
             editor.value = accion.get(atributo)
