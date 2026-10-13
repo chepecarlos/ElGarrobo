@@ -39,7 +39,6 @@ Tiene éxito cuando alguien conecta sus dispositivos y deja macros funcionando d
 - Las propiedades de cada acción salen de `listaPropiedades` (`propiedadAccion`: tipo, obligatoria y `multilinea`). Los formularios del editor se generan a partir de ellas.
 - La interfaz y la documentación están en español.
 - Pendiente: editar los pasos de las macros en la GUI (hoy se muestran en YAML de solo lectura).
-- Pendiente: la pantalla táctil y las perillas del StreamDeck Plus en la GUI.
 - Pendiente: más campos de apariencia en el editor (imagen, color del título, rotación, tamaño de fuente).
 - Pendiente: la vista previa con deck combinado usa siempre el primer StreamDeck (ver `mejoras.md`).
 

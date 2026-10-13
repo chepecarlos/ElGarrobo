@@ -301,10 +301,13 @@ class MiStreamDeck(dispositivo):
     def __str__(self) -> str:
         return f"MiStreamDeck(id={self.id}, nombre={self.nombre}, serial={self.dispositivo}, layout={self.layout})"
 
+    layoutDefecto: tuple[int, int] = (3, 5)
+    "Filas y columnas que se dibujan en la GUI mientras no está conectado"
+
     def gruposBotones(self) -> list[grupoBotones]:
         """Teclas como se ven con el StreamDeck rotado: un 3x5 con rotar ±90 se ve 5x3"""
-        # ponytail: sin conectar no se sabe el layout, se asume StreamDeck Original 3x5
-        filas, columnas = self.layout or (3, 5)
+        # ponytail: sin conectar no se sabe el layout, se asume el del modelo (Original 3x5, Plus 2x4)
+        filas, columnas = self.layout or self.layoutDefecto
         if (self.rotar // 90) % 2:
             filas, columnas = columnas, filas
         return [grupoBotones(self.nombre, filas, columnas, self.baseTeclas + self.desfaseTeclas, self)]

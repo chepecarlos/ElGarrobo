@@ -12,7 +12,8 @@
 
 - [ ] **Numeración estable**: `baseTeclas` se calcula al conectar con los botones de los StreamDeck conectados. Si uno está desconectado, el otro empieza en 1 y ejecuta acciones ajenas (y la cuadrícula de la GUI se solapa). Reservar siempre los botones de cada StreamDeck (ej. 15).
 - [ ] **Layout sin conectar**: un StreamDeck desconectado se asume 3x5; podría guardarse el layout en `deck_combinado.md`.
-- [ ] **StreamDeck Plus en la GUI**: la cuadrícula muestra las 8 teclas, falta la pantalla táctil y las perillas.
+- [x] **StreamDeck Plus en la GUI**: pantalla táctil (zonas `touchscreen_N` y deslizar) y perillas (presionar y girar) debajo de las 8 teclas.
+- [ ] **Toque largo en la pantalla del Plus**: `TouchscreenEventType.LONG` solo hace `print`, no busca acción.
 
 ## GUI
 

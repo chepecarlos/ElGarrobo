@@ -1,4 +1,5 @@
 import io
+import re
 
 from PIL import Image
 from PIL.Image import Image as ImageImage
@@ -15,6 +16,12 @@ class MiStreamDeckPlus(MiStreamDeck):
     modulo = "streamdeckplus"
     tipo = "streamdeckplus"
     compatibles = ["Stream Deck +"]
+
+    layoutDefecto = (2, 4)
+    cantidadDialDefecto = 4
+    "Perillas que se dibujan en la GUI mientras no está conectado"
+    patronControles = re.compile(r"(dial(_derecho|_izquierdo)?|touchscreen|deslizar_(izquierda|derecha))_\d+")
+    "Claves de las perillas y la pantalla táctil (dial_1, dial_derecho_1, touchscreen_1, deslizar_izquierda_1...)"
 
     baseDial: int = 0
     desfaseDial: int = 0

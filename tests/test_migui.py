@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from elGarrobo.accionesOOP import cargarClasesAcciones
 from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
+from elGarrobo.dispositivos.mideck.mi_deck_combinado import MiDeckCombinado
 from elGarrobo.dispositivos.mipedal.mi_pedal import MiPedal
 from elGarrobo.dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro, folderDistribuciones
 from elGarrobo.dispositivos.migui import migui as moduloMiGui
@@ -705,6 +706,76 @@ class TestModoUsar:
         uno = pedal.listaAcciones[0]
         assert guiPedal.ejecutarAcción.call_args_list == [((uno,),), ((uno, False),)], "una vez presionar y una vez soltar"
 
+
+
+@pytest.fixture
+def plus() -> MiDeckCombinado:
+    plus = MiDeckCombinado({"nombre": "plus", "streamDecksPlus": [{"id": 0, "nombre": "Plus"}]})
+    plus._listaAcciones = plus.convertirAcciones(
+        [
+            {"nombre": "Uno", "key": 1, "accion": "escribir", "opciones": {"texto": "hola"}},
+            {"nombre": "Mute", "key": "dial_1", "accion": "escribir", "opciones": {"texto": "m"}},
+            {"nombre": "Pantalla", "key": "touchscreen_1", "accion": "escribir", "opciones": {"texto": "t"}},
+        ]
+    )
+    plus.accionesCargadas()
+    plus.listaDeck[0].baseTeclas = 1  # la asigna conectar()
+    plus.salvarAcciones = lambda: None
+    return plus
+
+
+@pytest.fixture
+def guiPlus(user: User, plus: MiDeckCombinado) -> miGui:
+    gui = miGui({"nombre": "gui"})
+    gui.listaClasesAcciones = cargarClasesAcciones()
+    gui.listaDispositivos = [plus]
+    return gui
+
+
+class TestStreamDeckPlus:
+    async def test_dibuja_teclas_pantalla_y_perillas(self, user: User, guiPlus: miGui):
+        await user.open("/")
+        await user.should_see(marker="tecla-plus-8")
+        await user.should_not_see(marker="tecla-plus-9"), "desconectado se dibuja 2x4"
+        await user.should_see(marker="tecla-plus-touchscreen_1")
+        await user.should_see(marker="tecla-plus-touchscreen_2"), "en Editar hay una zona vacía para agregar"
+        await user.should_see(marker="tecla-plus-deslizar_derecha_1")
+        await user.should_see(marker="tecla-plus-dial_4")
+        await user.should_see(marker="tecla-plus-dial_izquierdo_1")
+        await user.should_not_see(marker="tecla-plus-dial_5")
+
+    async def test_click_edita_y_prepara_controles(self, user: User, guiPlus: miGui, plus: MiDeckCombinado):
+        await user.open("/")
+        user.find(marker="tecla-plus-dial_1").click()
+        assert guiPlus.editoresData["nombre"].value == "Mute"
+        user.find(marker="botonLimpiar").click()
+        user.find(marker="tecla-plus-dial_derecho_2").click()
+        assert guiPlus.editoresData["key"].value == "dial_derecho_2"
+
+    async def test_guardar_control_del_plus(self, user: User, guiPlus: miGui, plus: MiDeckCombinado):
+        await user.open("/")
+        user.find(marker="tecla-plus-touchscreen_2").click()
+        await llenarFormulario(user, nombre="Zona dos", acción="Escribir texto", Texto="dos")
+        user.find(marker="botonAgregar").click()
+        assert any(a.key == "touchscreen_2" and a.nombre == "Zona dos" for a in plus.listaAcciones)
+
+    async def test_tecla_invalida_en_plus(self, user: User, guiPlus: miGui, plus: MiDeckCombinado):
+        await user.open("/")
+        seleccionarPestaña(user, guiPlus, "plus")
+        await llenarFormulario(user, nombre="Mal", tecla="dial", acción="Escribir texto", Texto="x")
+        user.find(marker="botonAgregar").click()
+        await user.should_see("o un control del Plus")
+        assert len(plus.listaAcciones) == 3
+
+    async def test_usar_ejecuta_perilla(self, user: User, guiPlus: miGui, plus: MiDeckCombinado):
+        guiPlus.ejecutarAcción = MagicMock()
+        await user.open("/")
+        with user:
+            guiPlus.cambiarModo(True)
+        await user.should_not_see(marker="tecla-plus-touchscreen_2"), "en Usar no hay zona para agregar"
+        user.find(marker="tecla-plus-dial_1").trigger("pointerdown")
+        guiPlus.ejecutarAcción.assert_called_once_with(plus.listaAcciones[1])
+        assert not next(iter(user.find(marker="tecla-plus-dial_2").elements)).enabled, "perilla sin acción apagada"
 
 
 @pytest.fixture

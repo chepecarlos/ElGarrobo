@@ -10,6 +10,7 @@ from elGarrobo.accionesOOP import accion
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
+from elGarrobo.dispositivos.mideck.mi_streamdeck_plus import MiStreamDeckPlus
 from elGarrobo.miLibrerias import ConfigurarLogging, SalvarValor, leerData
 
 # librería https://nicegui.io/
@@ -276,11 +277,16 @@ class miGui(dispositivo):
                 return
 
             if dispositivoDestino.tipo in ["streamdeck", "streamdeckplus", "deck_combinado", "pedal"]:
+                aparatos = getattr(dispositivoDestino, "listaDeck", [dispositivoDestino])
+                conPlus = any(isinstance(aparato, MiStreamDeckPlus) for aparato in aparatos)
                 try:
                     tecla = valores["key"] = int(tecla)
                 except ValueError:
-                    self.avisarError(self.editoresData["key"], f"En {dispositivoDestino.nombre} la tecla es un número")
-                    return
+                    # Perillas y pantalla táctil del StreamDeck Plus: dial_1, touchscreen_1...
+                    if not (conPlus and MiStreamDeckPlus.patronControles.fullmatch(str(tecla))):
+                        ejemplo = " o un control del Plus (dial_1, dial_derecho_1, touchscreen_1, deslizar_izquierda_1)" if conPlus else ""
+                        self.avisarError(self.editoresData["key"], f"En {dispositivoDestino.nombre} la tecla es un número{ejemplo}")
+                        return
 
             editando = self.botonAgregar.icon == "edit"
             repetida = self.teclaRepetida(dispositivoDestino.listaAcciones, tecla, self.accionEditar if editando else None)
@@ -1328,6 +1334,87 @@ class miGui(dispositivo):
                                 if not usar:
                                     etiqueta = f"{tecla}: {acción.get('nombre')}" if acción is not None else str(tecla)
                                     ui.label(etiqueta).classes("text-xs truncate text-center").style(medidaTecla.split(";")[0]).tooltip(etiqueta)
+                    if isinstance(dibujante, MiStreamDeckPlus):
+                        self.dibujarControlesPlus(dibujante, accionesPorTecla, alClick, marcar)
+
+    def dibujarControlesPlus(self, plus, accionesPorTecla: dict, alClick, marcar) -> None:
+        """Pantalla táctil y perillas del StreamDeck Plus, debajo de sus teclas y del mismo ancho
+
+        La pantalla se divide en tantas zonas como acciones touchscreen_N haya, igual que el aparato;
+        en Editar se agrega una zona vacía al final para crear la siguiente.
+        """
+        usar = self.modoUsar
+        nombre = plus.nombre
+
+        def control(tecla: str, descripción: str, icono: str | None = None, texto: str | None = None) -> ui.button:
+            acción = accionesPorTecla.get(tecla)
+            boton = ui.button(texto, icon=icono, color=self.colorTecla if acción else self.colorTeclaVacia, on_click=alClick(tecla, acción))
+            boton.props("dense no-caps").classes("tecla-viva")
+            # Sin acción en Usar se ve apagado: ese control del aparato no hace nada
+            boton.set_enabled(not (usar and acción is None))
+            nombreAcción = acción.get("nombre") if acción else "sin acción"
+            boton.props["aria-label"] = f"{descripción}: {nombreAcción}"
+            boton.tooltip(f"{descripción} ({tecla}): {nombreAcción}")
+            marcar(boton, tecla)
+            return boton
+
+        zonas = sorted(
+            (tecla for tecla in accionesPorTecla if tecla.startswith("touchscreen_") and tecla.removeprefix("touchscreen_").isdigit()),
+            key=lambda tecla: int(tecla.removeprefix("touchscreen_")),
+        )
+        if not usar:
+            siguiente = int(zonas[-1].removeprefix("touchscreen_")) + 1 if zonas else 1
+            zonas.append(f"touchscreen_{siguiente}")
+        dibujo = plus.dibujo()
+        tamañoZona = (plus.anchoBarra // max(len(zonas), 1), plus.altoBarra)
+
+        # width 0 + min-width 100%: toma el ancho de las teclas sin ensancharlas (las imágenes no empujan la columna)
+        with ui.column().classes("gap-1 mt-2").style("width: 0; min-width: 100%").mark(f"pantallaTactil-{nombre}"):
+            if not usar:
+                ui.label("Pantalla táctil").classes("text-xs")
+            with ui.row().classes("w-full no-wrap gap-1"):
+                if not zonas:
+                    # Usar sin acciones: el aparato deja la pantalla negra
+                    ui.element("div").classes(f"w-full rounded bg-{self.colorTeclaApagada}").style(f"aspect-ratio: {plus.anchoBarra} / {plus.altoBarra}")
+                for posición, tecla in enumerate(zonas, start=1):
+                    acción = accionesPorTecla.get(tecla)
+                    with ui.column().classes("flex-1 min-w-0 gap-1"):
+                        imagen = None
+                        if acción is not None:
+                            try:
+                                imagen = dibujo.dibujar(acción, tamañoZona, conGif=True)
+                            except Exception as error:
+                                logger.warning(f"Vista previa[Error] {nombre}[{tecla}] {error}")
+                        if imagen is not None:
+                            boton = ui.button(on_click=alClick(tecla, acción)).props("flat padding=0").classes("w-full rounded tecla-viva")
+                            with boton:
+                                ui.image(imagen).classes("w-full h-full rounded")
+                            boton.props["aria-label"] = f"Zona {posición} de la pantalla: {acción.get('nombre')}"
+                            boton.tooltip(f"Zona {posición} ({tecla}): {acción.get('nombre')}")
+                            marcar(boton, tecla)
+                        else:
+                            boton = control(tecla, f"Zona {posición} de la pantalla", icono=None if acción else "add", texto=acción.get("nombre") if acción else None)
+                            boton.classes("w-full")
+                        boton.style(f"aspect-ratio: {tamañoZona[0]} / {tamañoZona[1]}; min-height: 0")
+                        # El aparato busca el deslizar por la posición de la zona, no por el número de touchscreen_N
+                        with ui.row().classes("w-full no-wrap gap-1 justify-between"):
+                            control(f"deslizar_izquierda_{posición}", f"Deslizar a la izquierda en la zona {posición}", icono="west").props("flat size=sm")
+                            control(f"deslizar_derecha_{posición}", f"Deslizar a la derecha en la zona {posición}", icono="east").props("flat size=sm")
+
+            if not usar:
+                ui.label("Perillas").classes("text-xs mt-2")
+            # En celular las cuatro perillas no caben en el ancho de las teclas: pasan a dos filas
+            with ui.row().classes("w-full justify-around gap-x-1 gap-y-2 mt-1").mark(f"perillas-{nombre}"):
+                for dial in range(1, (plus.cantidadDial or plus.cantidadDialDefecto) + 1):
+                    with ui.column().classes("items-center gap-1 min-w-0"):
+                        with ui.row().classes("items-center no-wrap gap-0"):
+                            control(f"dial_izquierdo_{dial}", f"Girar a la izquierda la perilla {dial}", icono="rotate_left").props("flat round dense")
+                            control(f"dial_{dial}", f"Presionar la perilla {dial}", icono="radio_button_checked").props("round")
+                            control(f"dial_derecho_{dial}", f"Girar a la derecha la perilla {dial}", icono="rotate_right").props("flat round dense")
+                        if not usar:
+                            presionar = accionesPorTecla.get(f"dial_{dial}")
+                            etiqueta = f"{dial}: {presionar.get('nombre')}" if presionar else str(dial)
+                            ui.label(etiqueta).classes("text-xs truncate text-center max-w-full").tooltip(etiqueta)
 
     unidadTecla = 112
     "Pixeles de una tecla de 1x1 en la distribución del teclado: resolución del dibujo y tamaño máximo en pantalla"
