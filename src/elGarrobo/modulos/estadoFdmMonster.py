@@ -157,6 +157,17 @@ class estadoFdmMonster(modulo):
                     resultado[f"{sensor}/{tipo}"] = f"{float(datos[tipo]):.1f}"
         return resultado
 
+    def _obtener_json(self, sesion: requests.Session, url: str) -> Any:
+        """GET que tolera body vacío (FDM Monster responde 200 sin contenido si no hay estado)."""
+        respuesta = sesion.get(url, timeout=10)
+        respuesta.raise_for_status()
+        if not respuesta.content.strip():
+            return {}
+        try:
+            return respuesta.json()
+        except ValueError:
+            raise ValueError(f"Respuesta no JSON de {url} [{respuesta.status_code}]: {respuesta.text[:100]!r}")
+
     def _publicar(self, topic: str, sub_topic: str, mensaje: str) -> None:
         topic_completo = f"estado_fdm_monster/{topic}/{sub_topic}"
         accionEnviar = accionMQTT()
@@ -165,25 +176,22 @@ class estadoFdmMonster(modulo):
 
     def _consultar_impresoras(self, sesion: requests.Session, api: str) -> int:
         """Publica el estado de cada impresora habilitada, devuelve cuántas respondieron."""
-        respuesta = sesion.get(f"{api}/printer/", timeout=10)
-        respuesta.raise_for_status()
+        impresoras = self._obtener_json(sesion, f"{api}/printer/") or []
 
         consultadas = 0
         cola_total = 0
-        for impresora in respuesta.json():
+        for impresora in impresoras:
             if not impresora.get("enabled"):
                 continue
             nombre = str(impresora.get("name", impresora.get("id")))
 
-            cola = sesion.get(f"{api}/print-queue/{impresora['id']}", timeout=10)
-            cola.raise_for_status()
-            cola_impresora = int(cola.json().get("count") or 0)
+            cola = self._obtener_json(sesion, f"{api}/print-queue/{impresora['id']}")
+            cola_impresora = int(cola.get("count") or 0)
             cola_total += cola_impresora
             self._publicar(nombre, "cola", str(cola_impresora))
 
-            socket = sesion.get(f"{api}/printer/{impresora['id']}/socket", timeout=10)
-            socket.raise_for_status()
-            current = socket.json().get("current") or {}
+            socket = self._obtener_json(sesion, f"{api}/printer/{impresora['id']}/socket")
+            current = socket.get("current") or {}
             payload = current.get("payload") if isinstance(current.get("payload"), dict) else None
             if payload is None:
                 logger.debug(f"EstadoFdmMonster[{nombre}] - Sin estado disponible")
