@@ -6,7 +6,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from elGarrobo.accionesOOP import accion, accionDelay, cargarClasesAcciones
+from elGarrobo.accionesOOP import accion, accionDelay, accionMacro, cargarClasesAcciones
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.accionesOOP.herramientas.valoresAccion import valoresAcciones
 
@@ -146,3 +146,15 @@ class TestAccionDelay:
         delay = accionDelay()
         delay.configurar({})
         assert delay.ejecutar() is False
+
+
+class TestAccionMacro:
+    def test_opciones_en_lista_van_a_acciones(self):
+        pasos = [{"accion": "delay", "opciones": {"tiempo": 1}}]
+        macro = accionMacro()
+        macro.configurar(pasos)
+        recibido = MagicMock()
+        with patch.object(accionMacro, "funcionExterna", recibido):
+            assert macro.ejecutar() is True
+        assert recibido.call_args.args[0][0].valor == pasos
+

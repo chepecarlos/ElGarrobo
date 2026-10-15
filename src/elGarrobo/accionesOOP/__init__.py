@@ -22,6 +22,7 @@
 - Escribir archivo[accionEscribirArchivo](./accionesOOP/accionArchivo)
 - Lee un valor de un archivo[accionLeerValor](./accionesOOP/accionArchivo)
 - Muestra una lista de tareas emergente: [accionListaCheckBox](./accionesOOP/accionListaCheckBox)
+- Ejecuta una lista de acciones una tras otra: [accionMacro](./accionesOOP/accionMacro)
 
 ### Acciones de ElGarrobo
 - Abri interface web: [accionAbrirGUI](./accionesOOP/accionAbrirGUI)
@@ -63,6 +64,7 @@ from .accionesOctoprint.accionCancelarOctoprint import accionCancelarOctoprint
 from .accionesOctoprint.accionReimprimirOctoprint import accionReimprimirOctoprint
 from .accionFolder import accionFolder
 from .accionListaCheckBox import accionListaCheckBox
+from .accionMacro import accionMacro
 from .accionMQTT import accionMQTT
 from .accionNavegador import accionNavegador
 from .accionNotificacion import accionNotificacion
@@ -116,6 +118,7 @@ def cargarClasesAcciones() -> dict[str, type["accion"]]:
         "reproduccion": accionReproducir,
         "detener_reproduccion": accionPararReproducciones,
         "presionar": accionPresionar,
+        "macro": accionMacro,
         "escribir_archivo": accionEscribirArchivo,
         "leer_valor": accionLeerValor,
         "lista_checkbox": accionListaCheckBox,

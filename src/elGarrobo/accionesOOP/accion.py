@@ -36,6 +36,8 @@ class accion:
     "Error de ejecución de la acción"
     fuerza: int = 1
     "Multiplicador de la fuerza de la acción"
+    atributoLista: Optional[str] = None
+    "Si las opciones en el .md son una lista (ej. pasos de una macro), atributo donde se guardan"
 
     def __init__(self, nombre: str, comando: str, descripcion: str) -> None:
         """Inicializa la información de la acción hijo
@@ -62,6 +64,9 @@ class accion:
 
         if lista is None:
             return
+
+        if isinstance(lista, list) and self.atributoLista:
+            lista = {self.atributoLista: lista}
 
         if isinstance(lista, dict):
             for atributo in lista:

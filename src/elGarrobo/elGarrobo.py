@@ -11,6 +11,7 @@ from .accionesOOP import (
     accionActualizarPagina,
     accionAnteriorPagina,
     accionEntrarFolder,
+    accionMacro,
     accionPresionar,
     accionRecargarFolder,
     accionRegresarFolder,
@@ -235,13 +236,12 @@ class elGarrobo(object):
         accionRegresarFolder.funcionExterna = self.regresar_Folder
         accionRecargarFolder.funcionExterna = self.Reiniciar
         accionPresionar.funcionExterna = self.accionesPresionar
+        accionMacro.funcionExterna = self.AccionesMacros
         accionSalvarPulse.funcionExterna = self.SolisitarDibujar
 
         ListaAcciones = CargarAcciones()
         listaClasesAcciones = cargarClasesAcciones()
 
-        # Acciones Macro
-        ListaAcciones["macro"] = self.AccionesMacros
         ListaAcciones["alias"] = self.AccionesAlias
         ListaAcciones["random"] = self.AccionRandom
 
@@ -490,13 +490,11 @@ class elGarrobo(object):
 
         return None
 
-    def AccionesMacros(self, ListaComando):
+    def AccionesMacros(self, opciones: list[valoresAcciones]):
         """
         Ejecuta acciones una por una de una lista y si existe data la pasa a la siguiente acción
-
-        ListaComandos -> list
-            Acciones a realizar
         """
+        ListaComando: list = self.obtenerValor(opciones, "acciones")
         cajon = {}
         for numero, comando in enumerate(ListaComando):
 

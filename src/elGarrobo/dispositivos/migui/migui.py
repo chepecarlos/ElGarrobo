@@ -302,7 +302,7 @@ class miGui(dispositivo):
 
                 if self.opcionesEditar is not None:
                     try:
-                        self.accionEditar["opciones"] = obtenerPropiedades(acción)
+                        self.accionEditar["opciones"] = self.leerOpciones(self.opcionesEditar, acción)
                     except Exception as e:
                         return
 
@@ -313,7 +313,7 @@ class miGui(dispositivo):
 
                 if self.opcionesEditar is not None:
                     try:
-                        acciónNueva["opciones"] = obtenerPropiedades(acción)
+                        acciónNueva["opciones"] = self.leerOpciones(self.opcionesEditar, acción)
                     except Exception as e:
                         return
 
@@ -330,27 +330,21 @@ class miGui(dispositivo):
             self.limpiarFormulario()
             self.ofrecerCrearFolder(guardada, dispositivoDestino)
 
-        def obtenerPropiedades(acciónSeleccionada: str) -> dict:
-            """Opciones con el tipo de cada propiedad; marca el campo y lanza ValueError si alguno no es válido"""
-            opciones = dict()
-            for editor in self.opcionesEditar.values():
-                propiedad: propiedadAccion = editor.propiedad
-                try:
-                    valor = self.leerValor(editor)
-                    if valor is None and propiedad.obligatorio:
-                        raise ValueError(f"Falta {propiedad.nombre}")
-                except ValueError as error:
-                    self.avisarError(editor, str(error))
-                    raise
-                if valor is not None:
-                    opciones[propiedad.atributo] = valor
-            return opciones
-
         with ui.dialog() as self.dialogoPregunta, ui.card():
             self.textoPregunta = ui.label("")
             with ui.row():
                 ui.button("Cancelar", on_click=self.dialogoPregunta.close).props("flat")
                 self.botonPregunta = ui.button("", color=self.colorPeligro, on_click=self.confirmarPregunta).props("flat").mark("botonConfirmarPregunta")
+
+        # Pasos de una macro como bloques; se llena al abrir con los pasos del editor YAML
+        with ui.dialog() as self.dialogoPasos, ui.card().classes("w-full max-w-2xl"):
+            ui.label("Pasos de la macro").classes("text-lg")
+            self.listaPasos = ui.column().classes("w-full gap-1")
+            self.formularioPaso = ui.column().classes("w-full")
+            with ui.row():
+                ui.button("Agregar paso", icon="add", color=self.colorOscuro, on_click=lambda: self.editarPaso(None)).mark("botonAgregarPaso")
+                ui.button("Cancelar", on_click=self.dialogoPasos.close).props("flat")
+                ui.button("Listo", icon="check", color=self.colorOscuro, on_click=self.terminarPasos).mark("botonListoPasos")
 
         self.tituloFormulario = ui.label("").classes(f"text-{self.colorClaro} font-bold px-2").mark("tituloFormulario")
         with ui.scroll_area().classes("w-full").style("height: 75vh"):
@@ -527,9 +521,163 @@ class miGui(dispositivo):
                     if valorAnterior and tipoAnterior == editor.tipoEditor:
                         editor.value = valorAnterior
                     self.opcionesEditar[nombre] = editor
+                    if propiedad.atributo == acciónTmp.atributoLista:
+                        ui.button("Editar pasos", icon="view_list", color=self.colorOscuro, on_click=lambda e=editor: self.abrirPasos(e)).classes("w-full").mark("botonEditarPasos")
             return
 
         logger.warning(f"No hay opciones para: {accionSeleccionada}")
+
+    def leerOpciones(self, editores: dict[str, ui.element], comandoAcción: str) -> dict | list:
+        """Opciones con el tipo de cada propiedad; marca el campo y lanza ValueError si alguno no es válido"""
+        opciones = dict()
+        for editor in editores.values():
+            propiedad: propiedadAccion = editor.propiedad
+            try:
+                valor = self.leerValor(editor)
+                if valor is None and propiedad.obligatorio:
+                    raise ValueError(f"Falta {propiedad.nombre}")
+            except ValueError as error:
+                self.avisarError(editor, str(error))
+                raise
+            if valor is not None:
+                opciones[propiedad.atributo] = valor
+        # Acciones como macro guardan sus opciones en el .md como lista
+        atributoLista = getattr(self.obtenerAcciónOop(comandoAcción), "atributoLista", None)
+        if atributoLista:
+            return opciones.get(atributoLista, [])
+        return opciones
+
+    def cargarOpciones(self, editores: dict[str, ui.element], claseAcción: type[accion], opciones: dict | list) -> None:
+        """Pone en los editores las opciones guardadas en el .md"""
+        objetoClase = claseAcción()
+        if isinstance(opciones, list) and objetoClase.atributoLista:
+            opciones = {objetoClase.atributoLista: opciones}
+        if isinstance(opciones, dict):
+            for propiedad in objetoClase.listaPropiedades:
+                if propiedad.atributo in opciones:
+                    self.ponerValor(editores.get(propiedad.nombre), opciones[propiedad.atributo])
+
+    def abrirPasos(self, editor: ui.element) -> None:
+        """Abre los pasos del editor YAML de la macro como bloques"""
+        try:
+            pasos = self.leerValor(editor) or []
+        except ValueError as error:
+            self.avisarError(editor, str(error))
+            return
+        self.editorPasos = editor
+        self.pasosMacro: list[dict] = copy.deepcopy(pasos)
+        self.cerrarPaso()
+        self.dibujarPasos()
+        self.dialogoPasos.open()
+
+    def terminarPasos(self) -> None:
+        """Devuelve los pasos al editor YAML; se guardan en el .md con el resto del formulario"""
+        self.ponerValor(self.editorPasos, self.pasosMacro)
+        self.dialogoPasos.close()
+
+    def dibujarPasos(self) -> None:
+        """Un bloque por paso con su acción, un resumen de sus opciones y botones para ordenar, editar y borrar"""
+        self.listaPasos.clear()
+        with self.listaPasos:
+            if not self.pasosMacro:
+                ui.label("Sin pasos, agrega uno").classes("text-xs")
+            for i, paso in enumerate(self.pasosMacro):
+                comando = paso.get("accion")
+                claseAcción = self.obtenerAcciónOop(comando)
+                opciones = paso.get("opciones")
+                resumen = yaml.safe_dump(opciones, allow_unicode=True, default_flow_style=True, width=1000).strip() if opciones else ""
+                with ui.card().classes("w-full p-2").mark(f"paso-{i}"):
+                    with ui.row().classes("w-full items-center no-wrap gap-2"):
+                        ui.label(f"{i + 1}.").classes("font-bold")
+                        with ui.column().classes("gap-0 grow min-w-0"):
+                            ui.label(claseAcción().nombre if claseAcción else comando)
+                            ui.label(resumen).classes("text-xs truncate w-full").tooltip(resumen)
+                        with ui.button_group().props("flat"):
+                            miGui.nombrar(ui.button(icon="arrow_upward", on_click=lambda i=i: self.moverPaso(i, -1)).props(f"flat {'disable' if i == 0 else ''}").mark(f"subirPaso-{i}"), "Subir paso")
+                            miGui.nombrar(ui.button(icon="arrow_downward", on_click=lambda i=i: self.moverPaso(i, 1)).props(f"flat {'disable' if i == len(self.pasosMacro) - 1 else ''}").mark(f"bajarPaso-{i}"), "Bajar paso")
+                            miGui.nombrar(ui.button(icon="edit", on_click=lambda i=i: self.editarPaso(i)).props("flat").mark(f"editarPaso-{i}"), "Editar paso")
+                            miGui.nombrar(ui.button(icon="delete", color=self.colorPeligro, on_click=lambda i=i: self.borrarPaso(i)).props("flat").mark(f"borrarPaso-{i}"), "Borrar paso")
+
+    def moverPaso(self, i: int, cambio: int) -> None:
+        pasos = self.pasosMacro
+        pasos[i], pasos[i + cambio] = pasos[i + cambio], pasos[i]
+        self.cerrarPaso()
+        self.dibujarPasos()
+
+    def borrarPaso(self, i: int) -> None:
+        self.pasosMacro.pop(i)
+        self.cerrarPaso()
+        self.dibujarPasos()
+
+    def cerrarPaso(self) -> None:
+        self.formularioPaso.clear()
+        self.pasoEditando: int | None = None
+
+    def editarPaso(self, i: int | None) -> None:
+        """Formulario de un paso (None para uno nuevo): acción y sus opciones con los mismos editores del formulario"""
+        self.cerrarPaso()
+        self.pasoEditando = i
+        paso = self.pasosMacro[i] if i is not None else {}
+        comando = paso.get("accion")
+        claseAcción = self.obtenerAcciónOop(comando)
+        opciones = self.listaNombreAcciones + ([comando] if comando and claseAcción is None else [])
+        with self.formularioPaso:
+            ui.separator()
+            ui.label(f"Paso {i + 1}" if i is not None else "Paso nuevo").classes("font-bold")
+            # add-unique: se puede escribir el comando de una acción sin clase OOP (ej. obs_escena)
+            self.editorAcciónPaso = (
+                ui.select(opciones, with_input=True, new_value_mode="add-unique", label="Acción", value=claseAcción().nombre if claseAcción else comando, on_change=lambda: self.mostrarOpcionesPaso(None))
+                .classes("w-full")
+                .mark("editorAcciónPaso")
+            )
+            self.propiedadesPaso = ui.column().classes("w-full")
+            with ui.row():
+                ui.button("Guardar paso", icon="check", color=self.colorOscuro, on_click=self.guardarPaso).mark("botonGuardarPaso")
+                ui.button("Cancelar", on_click=self.cerrarPaso).props("flat")
+        self.mostrarOpcionesPaso(paso.get("opciones"))
+
+    def comandoPaso(self) -> str | None:
+        valor = self.editorAcciónPaso.value
+        return self.comandoAcción(valor) or valor
+
+    def mostrarOpcionesPaso(self, opciones: dict | list | None) -> None:
+        """Editores de las opciones del paso; las acciones sin clase OOP se editan en YAML"""
+        claseAcción = self.obtenerAcciónOop(self.comandoPaso())
+        self.propiedadesPaso.clear()
+        with self.propiedadesPaso:
+            if claseAcción is None:
+                propiedad = propiedadAccion("Opciones", "opciones", tipo=[dict, list])
+                self.opcionesPaso = {propiedad.nombre: self.crearEditor(propiedad, "opción-paso-Opciones")}
+                self.ponerValor(self.opcionesPaso[propiedad.nombre], opciones)
+                return
+            self.opcionesPaso = {propiedad.nombre: self.crearEditor(propiedad, f"opción-paso-{propiedad.nombre}") for propiedad in claseAcción().listaPropiedades}
+        if opciones:
+            self.cargarOpciones(self.opcionesPaso, claseAcción, opciones)
+
+    def guardarPaso(self) -> None:
+        comando = self.comandoPaso()
+        if not comando:
+            self.avisarError(self.editorAcciónPaso, "Falta elegir la acción")
+            return
+        try:
+            opciones = self.leerOpciones(self.opcionesPaso, comando)
+        except ValueError:
+            return
+        if self.obtenerAcciónOop(comando) is None and isinstance(opciones, dict):
+            # Sin clase OOP: el único editor es el YAML de mostrarOpcionesPaso
+            opciones = opciones.get("opciones")
+        # Se copian las claves extra del paso (ej. macro_opciones)
+        paso = dict(self.pasosMacro[self.pasoEditando]) if self.pasoEditando is not None else {}
+        paso["accion"] = comando
+        paso.pop("opciones", None)
+        if opciones:
+            paso["opciones"] = opciones
+        if self.pasoEditando is None:
+            self.pasosMacro.append(paso)
+        else:
+            self.pasosMacro[self.pasoEditando] = paso
+        self.cerrarPaso()
+        self.dibujarPasos()
 
     @staticmethod
     def tipoEditor(propiedad: propiedadAccion) -> str:
@@ -904,16 +1052,8 @@ class miGui(dispositivo):
 
         if opcionesActuales:
 
-            claseAcción = self.listaClasesAcciones.get(self.accionEditar.get("accion"))
             if claseAcción is not None:
-
-                objetoClase = claseAcción()
-                listaPropiedades = objetoClase.listaPropiedades
-                if isinstance(opcionesActuales, dict):
-                    for propiedadAccion in opcionesActuales.keys():
-                        for propiedad in listaPropiedades:
-                            if propiedad.atributo == propiedadAccion:
-                                self.ponerValor(self.opcionesEditar.get(propiedad.nombre), opcionesActuales.get(propiedadAccion))
+                self.cargarOpciones(self.opcionesEditar, claseAcción, opcionesActuales)
             else:
                 # Sin editor para estas opciones (ej. pasos de una macro): se muestran y se guardan sin cambios
                 self.editorOpción.visible = True
