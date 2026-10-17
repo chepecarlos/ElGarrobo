@@ -3,6 +3,8 @@
 Lo usan el StreamDeck para mandar la imagen a la tecla y la GUI para la vista previa.
 """
 
+import base64
+import io
 import os
 import re
 from functools import cache
@@ -10,12 +12,15 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageSequence
 from PIL.Image import Image as ImageImage
 
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor, leerData
 
 logger = ConfigurarLogging(__name__)
+
+_cacheAnimados: dict[tuple, str | None] = {}
+"WebP animados ya generados por dibujarAnimado"
 
 
 @cache
@@ -80,6 +85,65 @@ class dibujoBoton:
         if imagen is None:
             return None
         return imagen.rotate(rotar - compensarRotar, resample=Image.BICUBIC, expand=False)
+
+    def dibujarAnimado(self, accion, tamaño: tuple[int, int], compensarRotar: int = 0, fps: int | None = None) -> str | None:
+        """Botón con gif animado como data URI WebP para la vista previa de la GUI
+
+        Args:
+            accion: Datos de la acción del botón
+            tamaño: ancho y alto del botón en pixeles
+            compensarRotar: igual que en dibujar
+            fps: fotogramas por segundo del aparato (el StreamDeck ignora los tiempos del gif); sin fps usa los del gif
+
+        Returns:
+            str | None: data URI del WebP animado, None si la imagen no es gif o no existe
+        """
+        ruta = self.buscarDireccionImagen(accion)
+        if not ruta or not ruta.endswith(".gif"):
+            return None
+        rutaGif = self.calcularRutaImagen(ruta)
+        if not os.path.exists(rutaGif):
+            return None
+        rotar = self.rotar - compensarRotar
+        with Image.open(rutaGif) as gif:
+            # El primer cuadro ya dibujado resume título, fondo, fuente y rotación;
+            # con el archivo (ruta y fecha) define los demás cuadros, así no hay que listar cada opción en la clave
+            primero = self.dibujarCuadroGif(accion, gif, tamaño, rotar)
+            clave = (rutaGif, os.path.getmtime(rutaGif), fps, primero.size, primero.tobytes())
+            if clave in _cacheAnimados:
+                return _cacheAnimados[clave]
+            duración = 1000 // fps if fps else gif.info.get("duration", 100)
+            cuadros = [self.dibujarCuadroGif(accion, c, tamaño, rotar) for c in ImageSequence.Iterator(gif)]
+        buffer = io.BytesIO()
+        cuadros[0].save(buffer, "WEBP", save_all=True, append_images=cuadros[1:], duration=duración, loop=0)
+        animado = "data:image/webp;base64," + base64.b64encode(buffer.getvalue()).decode()
+        # ponytail: se vacía entero al llenarse; LRU si se nota que regenera seguido
+        if len(_cacheAnimados) >= 256:
+            _cacheAnimados.clear()
+        _cacheAnimados[clave] = animado
+        return animado
+
+    def dibujarCuadroGif(self, accion, cuadro: ImageImage, tamaño: tuple[int, int], rotar: int | None = None) -> ImageImage:
+        """Un cuadro de gif como lo muestra el StreamDeck: escalado a todo el botón y centrado, con el título encima.
+
+        Lo usan el StreamDeck y la vista previa de la GUI para que el gif se vea igual en los dos.
+        A diferencia de dibujar, el fondo solo sale de la acción (no del folder) y no deja espacio abajo para el título.
+
+        Args:
+            accion: Datos de la acción del botón
+            cuadro: cuadro del gif
+            tamaño: ancho y alto del botón en pixeles
+            rotar: grados a rotar, por defecto los del dispositivo
+        """
+        colorFondo = (accion.get("imagen_opciones") or {}).get("fondo") or "black"
+        imagen = Image.new("RGB", tuple(tamaño), colorFondo)
+        icono = cuadro.convert("RGBA")
+        icono.thumbnail(imagen.size, Image.LANCZOS)
+        imagen.paste(icono, ((imagen.width - icono.width) // 2, (imagen.height - icono.height) // 2), icono)
+        titulo = self.buscarTitulo(accion)
+        if titulo:
+            self.ponerTexto(imagen, titulo, accion, True)
+        return imagen.rotate(self.rotar if rotar is None else rotar, resample=Image.BICUBIC, expand=False)
 
     def obtenerPropiedad(self, accion, key: str, default=None) -> Any:
         """Busca una propiedad anidada con "/" (ej: "titulo_opciones/color"), primero en la acción y luego en el folder"""
@@ -436,6 +500,18 @@ if __name__ == "__main__":
         Image.new("RGB", (10, 10), "white").save(Path(carpeta) / "a.gif")
         assert dibujo.dibujar(dataAccion(imagen="a.gif"), (72, 72)) is None
         assert dibujo.dibujar(dataAccion(imagen="a.gif"), (72, 72), conGif=True) is not None
+        # como en el StreamDeck: el gif se escala a todo el botón centrado y el fondo del folder no aplica
+        cuadroGif = dibujo.dibujarCuadroGif(dataAccion(imagen="a.gif"), Image.new("RGB", (200, 100), "white"), (72, 72))
+        assert cuadroGif.getpixel((1, 1)) == (0, 0, 0) and cuadroGif.getpixel((1, 36)) == (255, 255, 255)
+        assert dibujo.dibujarAnimado(dataAccion(imagen="no-existe.gif"), (72, 72)) is None
+        rojo, azul = Image.new("RGB", (10, 10), "red"), Image.new("RGB", (10, 10), "blue")
+        rojo.save(Path(carpeta) / "b.gif", save_all=True, append_images=[azul], duration=50, loop=0)
+        animado = dibujo.dibujarAnimado(dataAccion(imagen="b.gif", titulo="Hola"), (72, 72), fps=20)
+        with Image.open(io.BytesIO(base64.b64decode(animado.split(",", 1)[1]))) as webp:
+            assert webp.n_frames == 2 and webp.size == (72, 72)
+        # la segunda vez sale del caché; cambiar el título genera otro
+        assert dibujo.dibujarAnimado(dataAccion(imagen="b.gif", titulo="Hola"), (72, 72), fps=20) is animado
+        assert dibujo.dibujarAnimado(dataAccion(imagen="b.gif", titulo="Chao"), (72, 72), fps=20) != animado
 
         # el título cabe a lo ancho contando el borde, salvo que el usuario pida un mínimo mayor
         _, _, ancho = dibujo.calcularTamañoFuente(Image.new("RGB", (72, 72)), "Sequencer", 6, 1, minimo=None)

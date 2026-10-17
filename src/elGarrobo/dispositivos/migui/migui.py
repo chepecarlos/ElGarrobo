@@ -865,7 +865,9 @@ class miGui(dispositivo):
         teclaFisica = next((t for t in dispositivoActual.distribucionTeclas() or [] if t["key"] == tecla), None)
         tamaño = self.tamañoTecla(teclaFisica) if teclaFisica else dispositivoActual.tamañoBoton()
         try:
-            imagen = dispositivoActual.dibujo().dibujar(acción, tamaño, conGif=True)
+            dibujo = dispositivoActual.dibujo()
+            fps = getattr(dispositivoActual, "fps", None)
+            imagen = dibujo.dibujarAnimado(acción, tamaño, fps=fps) or dibujo.dibujar(acción, tamaño, conGif=True)
         except Exception as error:
             # Ej: color a medio escribir, se deja la vista previa anterior
             logger.debug(f"Vista previa[Error] {error}")
@@ -1467,7 +1469,7 @@ class miGui(dispositivo):
                         imagen = None
                         if acción is not None:
                             try:
-                                imagen = dibujo.dibujar(acción, tamaño, conGif=True)
+                                imagen = dibujo.dibujarAnimado(acción, tamaño) or dibujo.dibujar(acción, tamaño, conGif=True)
                             except Exception as error:
                                 logger.warning(f"Vista previa[Error] {nombre}[{tecla}] {error}")
                         if imagen is not None:
@@ -1529,7 +1531,9 @@ class miGui(dispositivo):
                             imagen = None
                             if acción is not None:
                                 try:
-                                    imagen = dibujo.dibujar(acción, tamaño, conGif=True, compensarRotar=rotarAparato)
+                                    imagen = dibujo.dibujarAnimado(
+                                        acción, tamaño, compensarRotar=rotarAparato, fps=getattr(dibujante, "fps", None)
+                                    ) or dibujo.dibujar(acción, tamaño, conGif=True, compensarRotar=rotarAparato)
                                 except Exception as error:
                                     logger.warning(f"Vista previa[Error] {nombre}[{tecla}] {error}")
 
@@ -1598,7 +1602,7 @@ class miGui(dispositivo):
                         imagen = None
                         if acción is not None:
                             try:
-                                imagen = dibujo.dibujar(acción, tamañoZona, conGif=True)
+                                imagen = dibujo.dibujar(acción, tamañoZona, conGif=True)  # el touchscreen del Plus no anima gifs
                             except Exception as error:
                                 logger.warning(f"Vista previa[Error] {nombre}[{tecla}] {error}")
                         if imagen is not None:

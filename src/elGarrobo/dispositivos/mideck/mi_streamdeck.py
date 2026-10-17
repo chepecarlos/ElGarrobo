@@ -21,7 +21,7 @@ from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor, SalvarArchivo
 logger = ConfigurarLogging(__name__)
 
 
-# TODO: si re recarga folder borrar _gitCache
+# TODO: si re recarga folder borrar _gifCache
 class MiStreamDeck(dispositivo):
 
     modulo = "streamdeck"
@@ -58,7 +58,7 @@ class MiStreamDeck(dispositivo):
     fps: int = 60
     "fotogramas por segundo para gif"
 
-    _gitCache: dict[tuple[str, str, str], itertools.cycle] = {}
+    _gifCache: dict[tuple[str, str, str], itertools.cycle] = {}
     "Caché para Gifs: clave(rutaGif, colorFondo, titulo)"
 
     _mapaTeclasCache: tuple[list[int], dict[int, int]] = None
@@ -82,7 +82,7 @@ class MiStreamDeck(dispositivo):
         self._mapaTeclasCache = None
         self.ultimoDibujo = None
         self.tiempoDibujar: float = 0.4
-        self._gitCache = {}
+        self._gifCache = {}
         # self.archivoImagen = None
 
     def conectar(self) -> bool:
@@ -348,7 +348,7 @@ class MiStreamDeck(dispositivo):
         SalvarArchivo(archivoTituloMQTT, {})
 
     def crearGif(self, indice: int, accionActual: dict) -> itertools.cycle:
-        """Preparar el git para usar con StreamDeck
+        """Preparar el gif para usar con StreamDeck
 
         Args:
             indice (int): id del botón
@@ -378,24 +378,20 @@ class MiStreamDeck(dispositivo):
 
         claveCache = (str(rutaGif), str(colorFondo), str(titulo))
 
-        if claveCache in self._gitCache:
-            return self._gitCache[claveCache]
+        if claveCache in self._gifCache:
+            return self._gifCache[claveCache]
 
         cargarGif = Image.open(rutaGif)
         for frame in ImageSequence.Iterator(cargarGif):
-            frameActual = PILHelper.create_scaled_image(self.deck, frame, background=colorFondo)
-
-            if titulo:
-                dibujo.ponerTexto(frameActual, titulo, accionActual, (rutaGif, str))
-
-            frameActual = frameActual.rotate(self.rotar, resample=Image.BICUBIC, expand=False)
+            # Misma función que la vista previa de la GUI
+            frameActual = dibujo.dibujarCuadroGif(accionActual, frame, self.tamañoBoton(), self.rotar)
             imagenNativa = PILHelper.to_native_format(self.deck, frameActual)
 
             listaFrame.append(imagenNativa)
 
         listaFrame: itertools.cycle = itertools.cycle(listaFrame)
 
-        self._gitCache[claveCache] = listaFrame
+        self._gifCache[claveCache] = listaFrame
 
         return listaFrame
 
