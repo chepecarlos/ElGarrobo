@@ -16,6 +16,7 @@ class MiDeckCombinado(dispositivo):
     tipo = "deck_combinado"
     descripcion = "Elgato StreamDeck (incluye StreamDeck+)"
     archivoConfiguracion = "deck_combinado.md"
+    icono = "grid_view"
     "Archivo de configuración del dispositivo"
     listaDeck: list[Union[MiStreamDeck, MiStreamDeckPlus]] = list()
     "Lista de Dispositivos StreamDeck a combinar"

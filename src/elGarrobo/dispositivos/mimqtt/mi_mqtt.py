@@ -16,6 +16,7 @@ class MiMQTT(dispositivo):
     tipo = "mqtt"
     descripcion = "Conexión con broker MQTT para dispositivos remotos"
     archivoConfiguracion = "mqtt.md"
+    icono = "hub"
 
     broker: str = ""
     "Direccion del broker MQTT"

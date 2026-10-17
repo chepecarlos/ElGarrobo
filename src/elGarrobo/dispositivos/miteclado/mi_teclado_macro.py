@@ -59,6 +59,7 @@ class MiTecladoMacro(dispositivo):
     tipo = "teclado"
     descripcion = "Teclado USB reprogramado como macro pad"
     archivoConfiguracion = "teclados.md"
+    icono = "keyboard"
 
     teclado: InputDevice | None = None
     "Objeto del teclado"

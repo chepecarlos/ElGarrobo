@@ -11,7 +11,7 @@ from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.mideck.mi_streamdeck_plus import MiStreamDeckPlus
-from elGarrobo.miLibrerias import ConfigurarLogging, SalvarValor, leerData
+from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerArchivo, SalvarArchivo, SalvarValor, leerData
 
 # librería https://nicegui.io/
 # estilo https://tailwindcss.com/
@@ -77,6 +77,7 @@ class miGui(dispositivo):
     tipo = "gui"
     descripcion = "Interfaz web/gráfica (GUI) de ElGarrobo"
     archivoConfiguracion = "gui.md"
+    icono = "web"
 
     listaDispositivos: list[dispositivo] = None
     "Lista de dispositivos conectados"
@@ -770,7 +771,9 @@ class miGui(dispositivo):
         """Marca (o limpia con None) el error en el campo; sin validation de nicegui hay que usar las props de Quasar"""
         if getattr(editor, "tipoEditor", None) == "bool" or isinstance(editor, ui.switch):
             return
-        editor.props["error"] = mensaje is not None
+        # None y no False al limpiar: con error=False Quasar reserva espacio para el mensaje y el campo crece.
+        # No quitar la prop, nicegui lee props["error"] al cambiar el valor y daría KeyError
+        editor.props["error"] = mensaje is not None or None
         editor.props["error-message"] = mensaje
         editor.update()
 
@@ -1097,6 +1100,68 @@ class miGui(dispositivo):
                     with ui.column().classes("gap-0"):
                         ui.label(clase.nombre).classes("font-bold")
                         ui.label(clase.descripcion).classes("text-caption")
+                # Los módulos también tienen archivoConfiguracion, pero no es una lista de aparatos
+                if issubclass(clase, dispositivo) and clase.archivoConfiguracion:
+                    self.mostrarAparatos(clase)
+
+    def mostrarAparatos(self, clase: type[dispositivo]) -> None:
+        """Lista los aparatos de un tipo (ej. teclados.md) con un desplegable para editar nombre y orden"""
+        archivo = clase.archivoConfiguracion
+        aparatos = ObtenerArchivo(archivo) or []
+
+        def guardar(data: dict, nombre: ui.input, orden: ui.number, internos: list, desplegable: ui.expansion) -> None:
+            nombreNuevo = (nombre.value or "").strip()
+            error = None
+            # elGarrobo busca dispositivos por nombre sin importar mayúsculas (ej. entrar_folder con 'dispositivo')
+            if any(otro is not data and str(otro.get("nombre")).lower() == nombreNuevo.lower() for otro in aparatos):
+                error = f"Ya existe {nombreNuevo}"
+            self.marcarError(nombre, "El nombre no puede quedar vacío" if not nombreNuevo else error)
+            vacíos = [editor for _, editor in internos if not (editor.value or "").strip()]
+            for _, editor in internos:
+                self.marcarError(editor, "Falta el nombre" if editor in vacíos else None)
+            if not nombreNuevo or error or vacíos:
+                return
+            data["nombre"] = nombreNuevo
+            data["ordenar"] = int(orden.value or 0)
+            for dataInterno, editor in internos:
+                dataInterno["nombre"] = editor.value.strip()
+            SalvarArchivo(archivo, aparatos)
+            desplegable.text = nombreNuevo
+            ui.notify(f"{nombreNuevo} guardado. Reinicia ElGarrobo para aplicarlo", type="positive")
+
+        with ui.column().classes("w-full pl-12 gap-1"):
+            if not aparatos:
+                ui.label(f"No hay aparatos en {archivo}").classes("text-caption")
+            for data in aparatos:
+                titulo, ruta = data.get("nombre", "Sin nombre"), data.get("dispositivo", "")
+                with ui.expansion(titulo, caption=ruta, icon=clase.icono) as desplegable:
+                    desplegable.classes(f"w-full border border-{self.colorOscuro} rounded")
+                    with ui.row().classes("items-start gap-4 p-2"):
+                        nombre = ui.input("Nombre", value=data.get("nombre", ""))
+                        orden = ui.number("Orden", value=data.get("ordenar", 0), precision=0).classes("w-24")
+                    # Aparatos dentro de otro, ej. los StreamDeck de deck_combinado.md (streamDecks / streamDecksPlus)
+                    internos = [
+                        interno
+                        for valor in data.values()
+                        if isinstance(valor, list)
+                        for interno in valor
+                        if isinstance(interno, dict) and "nombre" in interno
+                    ]
+                    editoresInternos = []
+                    if internos:
+                        ui.label("Aparatos internos").classes("text-caption px-2")
+                        with ui.row().classes("items-start gap-4 px-2"):
+                            for interno in internos:
+                                etiqueta = f"Nombre · {interno.get('dispositivo', '')}"
+                                editor = ui.input(etiqueta, value=interno["nombre"])
+                                editoresInternos.append((interno, editor))
+                    ui.button(
+                        "Guardar",
+                        icon="save",
+                        on_click=lambda d=data, n=nombre, o=orden, i=editoresInternos, e=desplegable: guardar(
+                            d, n, o, i, e
+                        ),
+                    ).classes("m-2")
 
     def crearDialogoConfirmacion(self, mensaje: str, textoBoton: str, accionConfirmada) -> ui.dialog:
         """Crea (sin abrir) un diálogo de confirmación para una acción crítica.

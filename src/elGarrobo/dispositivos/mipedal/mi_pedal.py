@@ -18,6 +18,7 @@ class MiPedal(dispositivo):
     compatibles = ["Stream Deck Pedal"]
 
     archivoConfiguracion = "pedal.md"
+    icono = "touch_app"
     deck: DeviceManager = None
     idDeck: int = -1
     cantidad: int = 3

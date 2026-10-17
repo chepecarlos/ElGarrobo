@@ -71,6 +71,8 @@ class dispositivo:
     descripcion: str = ""
     "Descripción del tipo de dispositivo"
     archivoConfiguracion: str = ""
+    icono: str = "devices"
+    "Icono de Material Icons para la interfaz"
     activado: bool = True
     "Si el dispositivo esta activo o no"
     recargar: bool = True
