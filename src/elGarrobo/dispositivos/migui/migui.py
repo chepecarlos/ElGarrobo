@@ -1819,6 +1819,9 @@ class miGui(dispositivo):
         for acciónActual in self.ordenarAcciones(listaAcciones, self.ordenCampo, self.ordenInverso):
             nombreAcción = acciónActual.get("nombre")
             teclaAcción = acciónActual.get("key")
+            if teclaAcción == "propiedad_folder":
+                # No es un botón, se edita con "Apariencia del folder"
+                continue
             acciónAcción = acciónActual.get("accion")
             tituloAcción = acciónActual.get("titulo")
 

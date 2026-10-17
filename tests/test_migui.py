@@ -163,6 +163,12 @@ class TestPaginaAcciones:
         await user.should_see("deck · /")
         await user.should_see(marker="editar-deck-1")
 
+    async def test_lista_no_muestra_propiedad_folder(self, user: User, gui: miGui, deck: dispositivoFalso):
+        deck.listaAcciones.append(dataAccion(key="propiedad_folder", imagenOpciones={"fondo": "#00ff00"}))
+        await user.open("/")
+        await user.should_see(marker="editar-deck-1")
+        await user.should_not_see(marker="editar-deck-propiedad_folder")
+
     async def test_agregar_accion(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
         await llenarFormulario(user, "Tres", "3", "Escribir texto", Texto="adios")
