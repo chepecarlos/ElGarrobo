@@ -160,7 +160,7 @@ class TestPaginaAcciones:
         await user.should_see("Uno")
         await user.should_see("Dos")
         await user.should_see("Escribir texto")
-        await user.should_see("deck · /")
+        assert user.find(marker="cabecera-folder").elements.pop().text == "/"
         await user.should_see(marker="editar-deck-1")
 
     async def test_lista_no_muestra_propiedad_folder(self, user: User, gui: miGui, deck: dispositivoFalso):
@@ -977,6 +977,60 @@ class TestPropiedadesFolder:
         imagen = next(e for e in boton.descendants() if isinstance(e, ui.image)).source
         assert imagen.getpixel((70, 70)) == (0, 255, 0)
 
+
+
+class TestCuadriculaFolder:
+    """Dispositivos sin botones físicos (MQTT, GUI) se dibujan con la cuadrícula de la propiedad_folder"""
+
+    async def test_sin_cuadricula_es_lista(self, user: User, gui: miGui, deck: dispositivoFalso):
+        assert deck.gruposBotones() is None
+        await user.open("/")
+        await user.should_see(marker="editar-deck-1")
+        await user.should_not_see(marker="vista-lista-deck")
+
+    async def test_teclas_numero_en_celdas_y_texto_aparte(self, user: User, gui: miGui, deck: dispositivoFalso):
+        deck.listaAcciones.append(dataAccion(key="propiedad_folder", extra={"cuadricula": {"columnas": 3, "filas": 2}}))
+        deck.listaAcciones.append(dataAccion(nombre="Luz", key="luz_on", accion="delay"))
+        assert deck.cuadriculaFolder() == (3, 2)
+        await user.open("/")
+        await user.should_see(marker="tecla-deck-1")
+        await user.should_see(marker="tecla-deck-6")
+        await user.should_see("Otras teclas")
+        await user.should_see(marker="tecla-deck-luz_on")
+
+    async def test_valores_invalidos_no_dibujan(self, deck: dispositivoFalso):
+        deck.listaAcciones.append(dataAccion(key="propiedad_folder", extra={"cuadricula": {"columnas": 0, "filas": "x"}}))
+        assert deck.gruposBotones() is None
+
+    async def test_guardar_desde_el_dialogo(self, user: User, gui: miGui, deck: dispositivoFalso):
+        await user.open("/")
+        user.find(marker="propiedadesFolder-deck").click()
+        assert gui.filaFolderCuadricula.visible
+        gui.editorFolderColumnas.value = 4
+        gui.editorFolderFilas.value = 2
+        user.find(marker="botonGuardarFolder").click()
+        assert deck.propiedadFolder.aDict() == {"key": "propiedad_folder", "cuadricula": {"columnas": 4, "filas": 2}}
+        await user.should_see(marker="tecla-deck-8")
+
+        user.find(marker="propiedadesFolder-deck").click()
+        gui.editorFolderColumnas.value = None
+        user.find(marker="botonGuardarFolder").click()
+        assert deck.propiedadFolder is None, "sin columnas o filas se quita la cuadrícula"
+
+    async def test_aparatos_fisicos_no_muestran_columnas(self, user: User, guiPedal: miGui):
+        await user.open("/")
+        user.find(marker="propiedadesFolder-pedal").click()
+        assert not guiPedal.filaFolderCuadricula.visible
+
+    async def test_cambiar_vista_con_iconos(self, user: User, gui: miGui, deck: dispositivoFalso):
+        deck.listaAcciones.append(dataAccion(key="propiedad_folder", extra={"cuadricula": {"columnas": 2, "filas": 1}}))
+        await user.open("/")
+        await user.should_see(marker="tecla-deck-1")
+        user.find(marker="vista-lista-deck").click()
+        await user.should_see(marker="editar-deck-1")
+        await user.should_not_see(marker="intercambiar-deck")
+        user.find(marker="vista-cuadricula-deck").click()
+        await user.should_see(marker="intercambiar-deck")
 
 
 class TestSubirFolder:

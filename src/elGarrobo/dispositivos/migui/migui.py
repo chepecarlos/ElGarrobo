@@ -53,6 +53,15 @@ CSS_BOTONERA = """
     .pagina-acciones > .q-splitter__before { order: 2; }
     .pagina-acciones > .q-splitter__separator { display: none; }
 }
+/* Escritorio: las pestañas de dispositivos van en la cabecera, en una grilla con los lados iguales para que
+   no se muevan cuando cambia el folder o la última acción; en pantallas angostas bajan a una segunda fila.
+   --alto-cabecera lo actualiza un ResizeObserver (paginaAcciones) para que los altos en vh no dependan de las filas */
+:root { --alto-cabecera: 48px; }
+.cabecera-grilla { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(0, max-content) minmax(0, 1fr); }
+@media (max-width: 1023px) {
+    .cabecera-grilla { grid-template-columns: auto minmax(0, 1fr); }
+    .cabecera-pestañas { order: 99; grid-column: 1 / -1; }
+}
 /* Dedo: el interruptor Usar/Editar llega a 44px */
 @media (pointer: coarse) { .modo-toggle .q-btn { min-height: 44px; } }
 /* Vista lista: cada fila es su propia grilla, la columna de botones es fija para que todas midan igual; en celular se ocultan Título y Acción */
@@ -182,6 +191,15 @@ class miGui(dispositivo):
             # Cambiar de ventana con una tecla presionada no manda pointerup: se suelta todo al perder el foco
             ui.add_body_html("<script>window.addEventListener('blur', () => emitEvent('ventanaSinFoco'))</script>")
             ui.on("ventanaSinFoco", self.soltarTodas)
+            # Con timer y no add_body_html: la cabecera todavía no existe cuando corre el html del body
+            ui.timer(
+                0,
+                lambda: ui.run_javascript(
+                    "new ResizeObserver(([e]) => document.documentElement.style.setProperty('--alto-cabecera', "
+                    "e.target.offsetHeight + 'px')).observe(document.querySelector('.q-header'))"
+                ),
+                once=True,
+            )
             ui.on("deshacerBorrar", lambda e: self.deshacerBorrar(e.args))
 
             # Límite inferior 0: en modo Usar el formulario se oculta y el aparato ocupa todo el ancho
@@ -192,7 +210,8 @@ class miGui(dispositivo):
                         self.mostrarFormulario()
                 with self.splitter.after:
                     self.pestañas = ui.tabs(on_change=self.actualizarCabecera).props("outside-arrows mobile-arrows")
-                    self.pestañas.classes(f"w-full bg-{self.colorOscuro} text-white")
+                    # Se mueven a la cabecera en estructura()
+                    self.pestañas.classes("cabecera-pestañas text-white")
                     self.paneles = ui.tab_panels(self.pestañas)
                     self.paneles.classes("w-full")
                     self.crearPestañas()
@@ -359,6 +378,10 @@ class miGui(dispositivo):
                 ui.label("Valores por defecto de los botones de este folder").classes("text-xs")
                 self.editorFolderFondo = ui.color_input("Fondo", preview=True).classes("w-64").mark("editor-folder-fondo")
                 self.editorFolderTamaño = ui.number("Tamaño máximo del título", min=1, precision=0).classes("w-64").mark("editor-folder-tamanno")
+                # Solo dispositivos sin botones físicos (MQTT, GUI): se dibujan con esta cuadrícula
+                with ui.row().classes("w-64 no-wrap") as self.filaFolderCuadricula:
+                    self.editorFolderColumnas = ui.number("Columnas", min=1, precision=0).classes("flex-1").mark("editor-folder-columnas")
+                    self.editorFolderFilas = ui.number("Filas", min=1, precision=0).classes("flex-1").mark("editor-folder-filas")
                 ui.button("Guardar", on_click=self.guardarPropiedadesFolder).mark("botonGuardarFolder")
 
             # entrar_folder a un folder donde el dispositivo no tiene archivo de acciones
@@ -426,7 +449,11 @@ class miGui(dispositivo):
             return
         dispositivoActual = self.obtenerDispositivoSeleccionado()
         if dispositivoActual is not None:
-            self.folderLabel.text = f"{dispositivoActual.nombre} · {dispositivoActual.folderActual or '/'}"
+            # El dispositivo ya se ve en la pestaña; "/" es el inicio del perfil
+            folder = "/" + ("" if dispositivoActual.enFolderRaiz() else str(dispositivoActual.folderActual).strip("/"))
+            # title: el folder se recorta con … si no cabe en la cabecera
+            self.folderLabel.props["title"] = folder
+            self.folderLabel.text = folder
         self.actualizarTituloFormulario()
 
     def cambiarModo(self, usar: bool) -> None:
@@ -1209,38 +1236,45 @@ class miGui(dispositivo):
             conModo (bool): Página de acciones: muestra dispositivo/folder, última acción y el interruptor Usar/Editar
         """
         with ui.header(elevated=True) as cabecera:
-            cabecera.classes(f"bg-{self.colorOscuro} items-center justify-between")
-            cabecera.style("height: 5vh; padding: 1px")
+            cabecera.classes(f"bg-{self.colorOscuro} items-center justify-between gap-0")
+            cabecera.style("padding: 1px")
             ui.label("ElGarrobo").classes("text-h5 px-4 sm:px-8")
-            if conModo:
-                with ui.row().classes("items-center gap-6 max-sm:hidden"):
-                    self.folderLabel = ui.label("").classes(f"text-{self.colorClaro}").mark("cabecera-folder")
-                    with ui.row().classes("items-center gap-1 rounded px-2") as self.ultimaFila:
-                        ui.icon("play_arrow", color=self.colorClaro)
-                        self.ultimaLabel = ui.label("").mark("ultimaAcción")
-                    self.ultimaFila.visible = False
-            dialogoReiniciar = self.crearDialogoConfirmacion("¿Reiniciar ElGarrobo? Las teclas no responden mientras arranca.", "Reiniciar", self.reiniciar)
-            dialogoSalir = self.crearDialogoConfirmacion("¿Cerrar ElGarrobo? Las teclas y esta página dejan de funcionar hasta que lo vuelvas a abrir.", "Salir", self.salir)
-            with ui.dialog() as dialogoAcercaDe, ui.card():
-                ui.label("ElGarrobo").classes("text-h6")
-                ui.label("Creado por ChepeCarlos")
-                with ui.row():
-                    ui.link("YouTube", "https://www.youtube.com/@chepecarlo", new_tab=True).classes(f"text-{self.colorClaro}")
-                    ui.link("TikTok", "https://www.tiktok.com/@chepecarlo", new_tab=True).classes(f"text-{self.colorClaro}")
-                ui.button("Cerrar", on_click=dialogoAcercaDe.close).props("flat")
-            with ui.row().classes("items-center gap-2 no-wrap"):
+            if conModo and self.pestañas is not None:
+                cabecera.classes("cabecera-grilla")
+                self.pestañas.move(cabecera)
+            # Lado derecho en un solo bloque: en la grilla ocupa la tercera columna; el folder se recorta si no cabe
+            with ui.row().classes("items-center justify-end gap-6 no-wrap min-w-0"):
                 if conModo:
-                    modo = ui.toggle({True: "Usar", False: "Editar"}, value=self.modoUsar, on_change=lambda e: self.cambiarModo(e.value))
-                    modo.classes("modo-toggle").props("rounded unelevated no-caps toggle-text-color=black text-color=white").props(f"toggle-color={self.colorSeleccion} color={self.colorInterruptor}").mark("modo")
-                with ui.button(icon="menu").props("flat color=white aria-label=Menú").classes("px-8"):
-                    with ui.menu():
-                        ui.menu_item("Acciones", on_click=lambda: ui.navigate.to("/")).mark("menu-Acciones")
-                        ui.menu_item("Módulos", on_click=lambda: ui.navigate.to("/modulos")).mark("menu-Módulos")
-                        ui.menu_item("Dispositivos", on_click=lambda: ui.navigate.to("/dispositivos")).mark("menu-Dispositivos")
-                        ui.menu_item("Acerca de", on_click=dialogoAcercaDe.open).mark("menu-AcercaDe")
-                        ui.separator()
-                        ui.menu_item("Reiniciar", on_click=dialogoReiniciar.open).mark("menu-Reiniciar")
-                        ui.menu_item("Salir", on_click=dialogoSalir.open).mark("menu-Salir")
+                    with ui.row().classes("items-center gap-6 no-wrap min-w-0 max-sm:hidden"):
+                        with ui.row().classes("items-center gap-1 no-wrap min-w-0"):
+                            ui.icon("folder", color=self.colorClaro)
+                            self.folderLabel = ui.label("").classes(f"text-{self.colorClaro} truncate").mark("cabecera-folder")
+                        with ui.row().classes("items-center gap-1 rounded px-2 no-wrap min-w-0") as self.ultimaFila:
+                            ui.icon("play_arrow", color=self.colorClaro)
+                            self.ultimaLabel = ui.label("").classes("truncate").mark("ultimaAcción")
+                        self.ultimaFila.visible = False
+                dialogoReiniciar = self.crearDialogoConfirmacion("¿Reiniciar ElGarrobo? Las teclas no responden mientras arranca.", "Reiniciar", self.reiniciar)
+                dialogoSalir = self.crearDialogoConfirmacion("¿Cerrar ElGarrobo? Las teclas y esta página dejan de funcionar hasta que lo vuelvas a abrir.", "Salir", self.salir)
+                with ui.dialog() as dialogoAcercaDe, ui.card():
+                    ui.label("ElGarrobo").classes("text-h6")
+                    ui.label("Creado por ChepeCarlos")
+                    with ui.row():
+                        ui.link("YouTube", "https://www.youtube.com/@chepecarlo", new_tab=True).classes(f"text-{self.colorClaro}")
+                        ui.link("TikTok", "https://www.tiktok.com/@chepecarlo", new_tab=True).classes(f"text-{self.colorClaro}")
+                    ui.button("Cerrar", on_click=dialogoAcercaDe.close).props("flat")
+                with ui.row().classes("items-center gap-2 no-wrap"):
+                    if conModo:
+                        modo = ui.toggle({True: "Usar", False: "Editar"}, value=self.modoUsar, on_change=lambda e: self.cambiarModo(e.value))
+                        modo.classes("modo-toggle").props("rounded unelevated no-caps toggle-text-color=black text-color=white").props(f"toggle-color={self.colorSeleccion} color={self.colorInterruptor}").mark("modo")
+                    with ui.button(icon="menu").props("flat color=white aria-label=Menú").classes("px-8"):
+                        with ui.menu():
+                            ui.menu_item("Acciones", on_click=lambda: ui.navigate.to("/")).mark("menu-Acciones")
+                            ui.menu_item("Módulos", on_click=lambda: ui.navigate.to("/modulos")).mark("menu-Módulos")
+                            ui.menu_item("Dispositivos", on_click=lambda: ui.navigate.to("/dispositivos")).mark("menu-Dispositivos")
+                            ui.menu_item("Acerca de", on_click=dialogoAcercaDe.open).mark("menu-AcercaDe")
+                            ui.separator()
+                            ui.menu_item("Reiniciar", on_click=dialogoReiniciar.open).mark("menu-Reiniciar")
+                            ui.menu_item("Salir", on_click=dialogoSalir.open).mark("menu-Salir")
 
 
     def seConectaGUI(self, client=None):
@@ -1338,20 +1372,12 @@ class miGui(dispositivo):
                 acciones = dispositivo.listaAcciones
                 cuadricula = dispositivo.gruposBotones() is not None or dispositivo.distribucionTeclas() is not None
                 usar = self.modoUsar
-                if not cuadricula and hasattr(dispositivo, "cambiarDistribucion") and not usar:
-                    # Teclado sin distribución: único camino para elegir una
-                    self.botonDistribucion(dispositivo)
-                if cuadricula and not usar:
-                    ui.toggle(
-                        {False: "Cuadrícula", True: "Lista"},
-                        value=nombre in self.dispositivosEnLista,
-                        on_change=lambda e, d=dispositivo: self.cambiarVista(d, e.value),
-                    ).props(f"toggle-color={self.colorSeleccion} toggle-text-color=black").mark(f"vista-{nombre}")
+                self.barraHerramientas(dispositivo, cuadricula)
 
                 with ui.scroll_area() as areaScroll:
                     areaScroll.classes("w-full" if usar else f"w-full border-2 border-{self.colorBorde}")
-                    # Alto disponible: 100vh - cabecera (5vh) - pestañas (48px) - padding del panel (32px) - interruptor (40px)
-                    areaScroll.style(f"height: calc(95vh - {120 if cuadricula and not usar else 80}px)")
+                    # Alto disponible: 100vh - cabecera con pestañas - padding de página y panel (64px) - borde (2px) - barra y su separación (52 + 16px)
+                    areaScroll.style("height: calc(100vh - var(--alto-cabecera) - 134px)")
 
                     if acciones is None:
                         ui.label(f"{nombre} no tiene acciones en este folder")
@@ -1406,29 +1432,10 @@ class miGui(dispositivo):
         usar = self.modoUsar
         # En Usar las teclas no llevan etiqueta: la vista previa es lo que muestra el aparato
 
-        with ui.row().classes("items-center p-2 w-full"):
-            subir = ui.button(icon="arrow_upward", color=self.colorBotones, on_click=lambda: self.subirFolder(dispositivo)).mark(f"subirFolder-{nombre}")
-            miGui.nombrar(subir, "Subir al folder anterior")
-            subir.set_enabled(not dispositivo.enFolderRaiz())
-            if hasattr(dispositivo, "siguientePagina") and grupos:
-                anterior = ui.button(icon="chevron_left", color=self.colorBotones, on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.anteriorPagina)).mark(f"paginaAnterior-{nombre}")
-                miGui.nombrar(anterior, "Página anterior").set_enabled(dispositivo.puedeAnteriorPagina())
-                ui.label(f"Página {dispositivo.paginaActual()}").mark(f"pagina-{nombre}")
-                siguiente = ui.button(icon="chevron_right", color=self.colorBotones, on_click=lambda: self.cambiarPagina(dispositivo, lambda: dispositivo.siguientePagina(not usar))).mark(f"paginaSiguiente-{nombre}")
-                miGui.nombrar(siguiente, "Página siguiente").set_enabled(dispositivo.puedeSiguientePagina(not usar))
-            intercambiando = nombre in self.teclaIntercambio
-            seleccionada = self.teclaIntercambio.get(nombre)
-            duplicando = nombre in self.acciónDuplicar
-            copiada = self.acciónDuplicar.get(nombre)
-            if not usar:
-                intercambiar = ui.button(icon="swap_horiz", color=self.colorActivo if intercambiando else self.colorBotones, on_click=lambda: self.cambiarModoIntercambio(dispositivo)).classes("ml-auto").mark(f"intercambiar-{nombre}")
-                miGui.nombrar(intercambiar, "Intercambiar teclas")
-                duplicar = ui.button(icon="content_copy", color=self.colorActivo if duplicando else self.colorBotones, on_click=lambda: self.cambiarModoDuplicar(dispositivo)).mark(f"duplicar-{nombre}")
-                miGui.nombrar(duplicar, "Duplicar acción")
-                apariencia = ui.button(icon="folder_special", color=self.colorBotones, on_click=lambda: self.abrirPropiedadesFolder(dispositivo)).mark(f"propiedadesFolder-{nombre}")
-                miGui.nombrar(apariencia, "Apariencia del folder")
-                if hasattr(dispositivo, "cambiarDistribucion"):
-                    self.botonDistribucion(dispositivo)
+        intercambiando = nombre in self.teclaIntercambio
+        seleccionada = self.teclaIntercambio.get(nombre)
+        duplicando = nombre in self.acciónDuplicar
+        copiada = self.acciónDuplicar.get(nombre)
 
         def alClick(tecla, acción):
             if usar:
@@ -1457,7 +1464,7 @@ class miGui(dispositivo):
             ancho, alto = self.medidaDistribucion(distribucion)
             # El teclado crece hasta llenar el ancho y alto del área (sin pasar de unidad px por tecla); posiciones en % del teclado
             relleno = "3rem" if usar else "1rem"
-            medidaTeclado = f"width: min(100% - {relleno}, {ancho * unidad}px, (95vh - 220px) * {ancho / alto:.4f})"
+            medidaTeclado = f"width: min(100% - {relleno}, {ancho * unidad}px, (100vh - var(--alto-cabecera) - 172px) * {ancho / alto:.4f})"
             with ui.element("div").classes(f"mx-auto {'carcasa box-content' if usar else 'm-2'}").style(medidaTeclado):
                 with ui.element("div").classes("relative w-full").style(f"aspect-ratio: {ancho} / {alto}"):
                     for teclaFisica in distribucion:
@@ -1487,16 +1494,7 @@ class miGui(dispositivo):
                         boton.tooltip(f"{etiqueta} ({tecla})" + (f": {acción.get('nombre')}" if acción else ""))
                         marcar(boton, tecla)
             # Acciones en teclas que no están dibujadas (capa Fn, teclas de otro modelo) para que no queden escondidas
-            dibujadas = {t["key"] for t in distribucion} | {"propiedad_folder"}
-            otras = [tecla for tecla in accionesPorTecla if tecla not in dibujadas]
-            if otras:
-                ui.label("Otras teclas").classes("font-bold px-2")
-                with ui.row().classes("gap-1 px-2"):
-                    for tecla in otras:
-                        acción = accionesPorTecla[tecla]
-                        boton = ui.button(acción.get("nombre"), color=self.colorTecla, on_click=alClick(tecla, acción)).props("dense no-caps")
-                        boton.classes("text-xs tecla-viva").tooltip(tecla)
-                        marcar(boton, tecla)
+            self.dibujarOtrasTeclas(accionesPorTecla, {t["key"] for t in distribucion}, alClick, marcar)
 
         if not grupos:
             return
@@ -1509,7 +1507,7 @@ class miGui(dispositivo):
         extraAncho = (4 if usar else 1) + 2 * (len(grupos) - 1) + separación * (columnas - len(grupos))
         extraAlto = (3 if usar else 1) + (1.5 if len(grupos) > 1 else 0)
         porFila = separación + (0 if usar else 1.5)
-        altoLibre = f"95vh - {136 if usar else 176}px - {extraAlto}rem"
+        altoLibre = f"100vh - var(--alto-cabecera) - 88px - {extraAlto}rem"
         lado = f"min((100cqw - {extraAncho}rem) / {columnas}, ({altoLibre}) / {filas} - {porFila}rem)"
         medidaTecla = f"width: clamp(3rem, {lado}, {'9rem' if usar else '8rem'}); height: auto; aspect-ratio: 1"
 
@@ -1556,6 +1554,65 @@ class miGui(dispositivo):
                                     ui.label(etiqueta).classes("text-xs truncate text-center").style(medidaTecla.split(";")[0]).tooltip(etiqueta)
                     if isinstance(dibujante, MiStreamDeckPlus):
                         self.dibujarControlesPlus(dibujante, accionesPorTecla, alClick, marcar)
+        if miGui.usaCuadriculaFolder(dispositivo):
+            # Teclas de texto (MQTT) o fuera de la cuadrícula del folder
+            celdas = sum(grupo.filas * grupo.columnas for grupo in grupos)
+            self.dibujarOtrasTeclas(accionesPorTecla, {str(tecla) for tecla in range(1, celdas + 1)}, alClick, marcar)
+
+    def dibujarOtrasTeclas(self, accionesPorTecla: dict, dibujadas: set[str], alClick, marcar) -> None:
+        """Fila con las acciones cuyas teclas no se dibujaron, para que no queden escondidas"""
+        otras = [tecla for tecla in accionesPorTecla if tecla not in dibujadas | {"propiedad_folder"}]
+        if not otras:
+            return
+        ui.label("Otras teclas").classes("font-bold px-2")
+        with ui.row().classes("gap-1 px-2"):
+            for tecla in otras:
+                acción = accionesPorTecla[tecla]
+                boton = ui.button(acción.get("nombre"), color=self.colorTecla, on_click=alClick(tecla, acción)).props("dense no-caps")
+                boton.classes("text-xs tecla-viva").tooltip(tecla)
+                marcar(boton, tecla)
+
+    @staticmethod
+    def usaCuadriculaFolder(aparato: dispositivo) -> bool:
+        """Dispositivos sin botones físicos (MQTT, GUI): su cuadrícula sale de la propiedad_folder"""
+        # Los teclados no: eligen una distribución
+        return type(aparato).gruposBotones is dispositivo.gruposBotones and not hasattr(aparato, "cambiarDistribucion")
+
+    def barraHerramientas(self, dispositivo: dispositivo, cuadricula: bool) -> None:
+        """Fila sobre el área del dispositivo: subir folder, páginas, herramientas de edición y la vista Cuadrícula/Lista"""
+        nombre = dispositivo.nombre
+        usar = self.modoUsar
+        enLista = cuadricula and nombre in self.dispositivosEnLista
+        with ui.row().classes("items-center p-2 w-full gap-2"):
+            subir = ui.button(icon="arrow_upward", color=self.colorBotones, on_click=lambda: self.subirFolder(dispositivo)).mark(f"subirFolder-{nombre}")
+            miGui.nombrar(subir, "Subir al folder anterior")
+            subir.set_enabled(not dispositivo.enFolderRaiz())
+            if hasattr(dispositivo, "siguientePagina") and cuadricula and not enLista:
+                anterior = ui.button(icon="chevron_left", color=self.colorBotones, on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.anteriorPagina)).mark(f"paginaAnterior-{nombre}")
+                miGui.nombrar(anterior, "Página anterior").set_enabled(dispositivo.puedeAnteriorPagina())
+                ui.label(f"Página {dispositivo.paginaActual()}").mark(f"pagina-{nombre}")
+                siguiente = ui.button(icon="chevron_right", color=self.colorBotones, on_click=lambda: self.cambiarPagina(dispositivo, lambda: dispositivo.siguientePagina(not usar))).mark(f"paginaSiguiente-{nombre}")
+                miGui.nombrar(siguiente, "Página siguiente").set_enabled(dispositivo.puedeSiguientePagina(not usar))
+            if usar:
+                return
+            ui.space()
+            if cuadricula and not enLista:
+                intercambiar = ui.button(icon="swap_horiz", color=self.colorActivo if nombre in self.teclaIntercambio else self.colorBotones, on_click=lambda: self.cambiarModoIntercambio(dispositivo)).mark(f"intercambiar-{nombre}")
+                miGui.nombrar(intercambiar, "Intercambiar teclas")
+                duplicar = ui.button(icon="content_copy", color=self.colorActivo if nombre in self.acciónDuplicar else self.colorBotones, on_click=lambda: self.cambiarModoDuplicar(dispositivo)).mark(f"duplicar-{nombre}")
+                miGui.nombrar(duplicar, "Duplicar acción")
+            apariencia = ui.button(icon="folder_special", color=self.colorBotones, on_click=lambda: self.abrirPropiedadesFolder(dispositivo)).mark(f"propiedadesFolder-{nombre}")
+            miGui.nombrar(apariencia, "Apariencia del folder")
+            if hasattr(dispositivo, "cambiarDistribucion"):
+                self.botonDistribucion(dispositivo)
+            if cuadricula:
+                with ui.button_group().props("unelevated rounded"):
+                    for lista, icono, texto in ((False, "grid_view", "Vista cuadrícula"), (True, "view_list", "Vista lista")):
+                        activo = lista == enLista
+                        vista = ui.button(icon=icono, on_click=lambda lista=lista: self.cambiarVista(dispositivo, lista))
+                        vista.props(f"color={self.colorSeleccion if activo else self.colorInterruptor} text-color={'black' if activo else 'white'}")
+                        vista.props["aria-pressed"] = activo
+                        miGui.nombrar(vista, texto).mark(f"vista-{'lista' if lista else 'cuadricula'}-{nombre}")
 
     def dibujarControlesPlus(self, plus, accionesPorTecla: dict, alClick, marcar) -> None:
         """Pantalla táctil y perillas del StreamDeck Plus, debajo de sus teclas y del mismo ancho
@@ -1738,6 +1795,10 @@ class miGui(dispositivo):
         propiedad = dispositivo.propiedadFolder
         self.editorFolderFondo.value = (propiedad.fondo if propiedad else None) or ""
         self.editorFolderTamaño.value = (propiedad.tituloOpciones.get("tamanno_maximo") if propiedad else None)
+        self.filaFolderCuadricula.visible = miGui.usaCuadriculaFolder(dispositivo)
+        columnas, filas = dispositivo.cuadriculaFolder() or (None, None)
+        self.editorFolderColumnas.value = columnas
+        self.editorFolderFilas.value = filas
         self.dialogoFolder.open()
 
     def guardarPropiedadesFolder(self) -> None:
@@ -1754,6 +1815,12 @@ class miGui(dispositivo):
             propiedad.tituloOpciones["tamanno_maximo"] = int(tamaño)
         else:
             propiedad.tituloOpciones.pop("tamanno_maximo", None)
+        if self.filaFolderCuadricula.visible:
+            columnas, filas = self.editorFolderColumnas.value, self.editorFolderFilas.value
+            if columnas and filas:
+                propiedad.extra["cuadricula"] = {"columnas": int(columnas), "filas": int(filas)}
+            else:
+                propiedad.extra.pop("cuadricula", None)
 
         if propiedad.aDict() == {"key": "propiedad_folder"}:
             dispositivo.listaAcciones.remove(propiedad)

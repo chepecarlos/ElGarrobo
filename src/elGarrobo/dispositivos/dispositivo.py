@@ -222,7 +222,23 @@ class dispositivo:
         )
 
     def gruposBotones(self) -> list["grupoBotones"] | None:
-        """Botones físicos de la página actual para dibujar el dispositivo en la GUI; None muestra la tabla"""
+        """Botones físicos de la página actual para dibujar el dispositivo en la GUI; None muestra la tabla.
+
+        Sin botones físicos (MQTT, GUI) usa la cuadrícula de la propiedad_folder,
+        con las teclas 1, 2, 3… en orden de lectura
+        """
+        cuadricula = self.cuadriculaFolder()
+        if cuadricula is None:
+            return None
+        columnas, filas = cuadricula
+        return [grupoBotones(self.nombre, filas, columnas, 1, self)]
+
+    def cuadriculaFolder(self) -> tuple[int, int] | None:
+        """(columnas, filas) de 'cuadricula' en la propiedad_folder del folder actual; None si no hay o no es válida"""
+        cuadricula = (self.propiedadFolder or {}).get("cuadricula") or {}
+        columnas, filas = cuadricula.get("columnas"), cuadricula.get("filas")
+        if isinstance(columnas, int) and isinstance(filas, int) and columnas > 0 and filas > 0:
+            return columnas, filas
         return None
 
     def distribucionTeclas(self) -> list[dict] | None:

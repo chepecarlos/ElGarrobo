@@ -23,7 +23,7 @@
 - [ ] **Deshacer más allá de borrar**: borrar ya tiene Deshacer en el aviso; editar, intercambiar y duplicar todavía no.
 - [ ] **Atajos de teclado y edición en lote**: no hay atajos (guardar, limpiar, cambiar modo) ni forma de mover o borrar varias acciones a la vez.
 - [ ] **Accesibilidad**: ordenar la lista solo con el mouse; mucho texto en `text-xs`; revisar contraste de los enlaces del pie (Youtube/TikTok sobre teal oscuro).
-- [ ] **Alturas fijas en `vh`**: la cabecera (5vh) y el área de acciones (75vh / `calc(95vh - ...)`) quedan mal en ventanas bajas.
+- [ ] **Alturas fijas en `vh`**: la cabecera ya se mide sola (`--alto-cabecera`), pero el formulario (75vh) y las restas en px del área de acciones siguen siendo aproximadas.
 
 ## Código
 
