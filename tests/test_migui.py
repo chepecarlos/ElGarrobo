@@ -1,6 +1,8 @@
 """Tests de la interfaz web (miGui) con el usuario simulado de nicegui, sin navegador"""
 
 import asyncio
+import base64
+import io
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock
@@ -35,6 +37,26 @@ class dispositivoFalso(dispositivo):
 
     def salvarAcciones(self):
         self.vecesSalvado += 1
+
+
+def imagenVista(url: str) -> Image.Image:
+    """Imagen que sirve /vista/{hash} para una tecla de la cuadrícula"""
+    contenido, _ = moduloMiGui._vistas[url.removeprefix("/vista/")]
+    return Image.open(io.BytesIO(contenido))
+
+
+def test_url_vista_por_contenido():
+    roja = Image.new("RGB", (8, 8), "red")
+    url = moduloMiGui.urlVista(roja)
+    assert url == moduloMiGui.urlVista(roja.copy()), "misma imagen, misma URL: el navegador la reusa"
+    assert url != moduloMiGui.urlVista(Image.new("RGB", (8, 8), "blue"))
+    respuesta = moduloMiGui.servirVista(url.removeprefix("/vista/"))
+    assert respuesta.media_type == "image/png" and "immutable" in respuesta.headers["cache-control"]
+    assert imagenVista(url).convert("RGB").getpixel((1, 1)) == (255, 0, 0)
+    assert moduloMiGui.servirVista("no-existe").status_code == 404
+    # los gifs llegan como data URI WebP y se sirven con su tipo
+    webp = moduloMiGui.urlVista("data:image/webp;base64," + base64.b64encode(b"RIFF").decode())
+    assert moduloMiGui.servirVista(webp.removeprefix("/vista/")).media_type == "image/webp"
 
 
 def accionesIniciales() -> list[dict]:
@@ -256,6 +278,17 @@ class TestPaginaAcciones:
         user.find(marker="editar-deck-1").click()
         user.find(marker="editar-deck-3").click()
         assert gui.opcionesEditar["Texto"].value in ("", None)
+
+    async def test_opcion_invalida_no_cambia_la_accion(self, user: User, gui: miGui, deck: dispositivoFalso):
+        await user.open("/")
+        user.find(marker="editar-deck-1").click()
+        await llenarFormulario(user, nombre="Uno editado")
+        user.find(marker="opción-Texto").clear()
+        user.find(marker="botonAgregar").click()
+
+        await user.should_see("Falta Texto")
+        assert deck.listaAcciones[0]["nombre"] == "Uno", "si otro guardado escribe el .md no debe llevar la edición a medias"
+        assert deck.vecesSalvado == 0
 
     async def test_editar_misma_tecla(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
@@ -649,6 +682,26 @@ class TestCuadricula:
         user.find(marker="tecla-pedal-2").click()
         assert guiPedal.editoresData["nombre"].value == "Uno", "fuera del modo vuelve a editar"
 
+    async def test_modos_marcan_sin_redibujar(self, user: User, guiPedal: miGui, pedal: MiPedal):
+        await user.open("/")
+        tecla = lambda n: next(iter(user.find(marker=f"tecla-pedal-{n}").elements))
+        uno = tecla(1)
+        anillo = f"ring-{guiPedal.colorActivo}"
+        intercambiar = next(iter(user.find(marker="intercambiar-pedal").elements))
+
+        user.find(marker="intercambiar-pedal").click()
+        assert f"bg-{guiPedal.colorActivo}" in intercambiar.classes and intercambiar.props["aria-pressed"] == "true"
+        user.find(marker="tecla-pedal-1").click()
+        assert tecla(1) is uno and anillo in uno.classes, "activar el modo y elegir solo marcan, no redibujan"
+
+        user.find(marker="duplicar-pedal").click()
+        assert anillo not in uno.classes and f"bg-{guiPedal.colorBotones}" in intercambiar.classes
+        user.find(marker="tecla-pedal-1").click()
+        assert tecla(1) is uno and anillo in uno.classes
+
+        user.find(marker="tecla-pedal-2").click()
+        assert tecla(1) is not uno, "pegar cambia las teclas y redibuja"
+
 
 class TestModoUsar:
     @pytest.fixture(autouse=True)
@@ -822,6 +875,7 @@ class TestDistribucionTeclado:
         await user.open("/")
         espacio = next(t for t in teclado.distribucionTeclas() if t["key"] == "KEY_SPACE")
         imagen = user.find(marker="tecla-teclado-KEY_SPACE").elements.pop().default_slot.children[0].source
+        imagen = imagenVista(imagen)
         assert imagen.size == miGui.tamañoTecla(espacio) and imagen.width > imagen.height, "la barra espaciadora se dibuja ancha"
         user.find(marker="tecla-teclado-KEY_SPACE").click()
         guiTeclado.abrirEditorApariencia()
@@ -975,7 +1029,7 @@ class TestPropiedadesFolder:
         await user.open("/")
         boton = next(iter(user.find(marker="tecla-pedal-1").elements))
         imagen = next(e for e in boton.descendants() if isinstance(e, ui.image)).source
-        assert imagen.getpixel((70, 70)) == (0, 255, 0)
+        assert imagenVista(imagen).convert("RGB").getpixel((70, 70)) == (0, 255, 0)
 
 
 

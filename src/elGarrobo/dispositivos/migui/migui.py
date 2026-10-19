@@ -1,9 +1,13 @@
+import base64
 import copy
+import hashlib
+import io
 import logging
 import threading
 from pathlib import Path
 
 import yaml
+from fastapi import Response
 from nicegui import app, ui
 
 from elGarrobo.accionesOOP import accion
@@ -23,9 +27,52 @@ logger = ConfigurarLogging(__name__, logging.INFO)
 ARCHIVO_PREFERENCIAS = "gui_preferencias"
 "Archivo de config con preferencias de la GUI (ej. el último modo Usar/Editar)"
 
+COLORES_QUASAR = {"primary": "#00786f", "negative": "#dc2626", "positive": "#15803d"}
+"Colores de Quasar con texto blanco encima ≥4.5:1 (los de NiceGUI daban 3.1, 2.6 y 2.5); primary es teal-700 como colorBotones"
+
+_vistas: dict[str, tuple[bytes, str]] = {}
+"hash → (contenido, tipo) de las vistas previas de las teclas, las sirve /vista/{hash}"
+_candadoVistas = threading.Lock()
+"Los dispositivos redibujan la GUI desde sus hilos"
+MAXIMO_VISTAS = 1024
+
+
+def urlVista(imagen) -> str:
+    """URL de la vista previa (imagen PIL o data URI de dibujarAnimado) con el hash de su contenido.
+
+    El navegador la guarda en caché: al redibujar una pestaña solo viaja la ruta y no la imagen en base64
+    """
+    if isinstance(imagen, str):
+        tipo, datos = imagen.removeprefix("data:").split(";base64,", 1)
+        contenido = base64.b64decode(datos)
+    else:
+        buffer = io.BytesIO()
+        imagen.save(buffer, "PNG")
+        contenido, tipo = buffer.getvalue(), "image/png"
+    nombre = hashlib.sha1(contenido).hexdigest()
+    with _candadoVistas:
+        _vistas.pop(nombre, None)
+        _vistas[nombre] = (contenido, tipo)
+        # ponytail: se borra la más vieja; una pestaña abierta mucho tiempo que no la tenga en caché la vería rota hasta redibujar
+        if len(_vistas) > MAXIMO_VISTAS:
+            del _vistas[next(iter(_vistas))]
+    return f"/vista/{nombre}"
+
+
+def servirVista(nombre: str) -> Response:
+    vista = _vistas.get(nombre)
+    if vista is None:
+        return Response(status_code=404)
+    # El nombre es el hash del contenido: nunca cambia, el navegador no vuelve a pedirla
+    return Response(vista[0], media_type=vista[1], headers={"Cache-Control": "public, max-age=31536000, immutable"})
+
 CSS_BOTONERA = """
-/* Únicos colores fijos del CSS: el fondo de la carcasa y el foco (teal-300, mismo que colorClaro) */
-:root { --color-carcasa: #0b1716; --color-foco: #5eead4; }
+/* Únicos colores fijos del CSS: el fondo de la carcasa, el foco (teal-300, mismo que colorClaro) y el texto de error */
+:root { --color-carcasa: #0b1716; --color-foco: #5eead4; --color-error-texto: #f87171; }
+/* primary y negative (ver COLORES_QUASAR) son fondos con texto blanco; como texto sobre el fondo oscuro no llegan a 4.5:1.
+   En campos, menús y botones planos se usa el teal claro y un rojo claro para la etiqueta, la opción elegida y los errores */
+.q-field, .q-menu, .q-btn--flat { --q-primary: var(--color-foco); }
+.q-field { --q-negative: var(--color-error-texto); }
 .modo-usar > .q-splitter__separator { display: none; }
 .carcasa {
     background: var(--color-carcasa);
@@ -35,7 +82,13 @@ CSS_BOTONERA = """
 }
 .tecla-viva { touch-action: none; user-select: none; -webkit-touch-callout: none; transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), filter 90ms cubic-bezier(0.16, 1, 0.3, 1); }
 .tecla-viva:active { transform: scale(0.94); filter: brightness(1.35); }
-.tecla-viva:focus-visible, .opcion-distribucion:focus-visible { outline: 2px solid var(--color-foco); outline-offset: 3px; }
+/* Foco con teclado visible en todo lo que se presiona: el tinte de Quasar casi no se ve sobre los botones teal.
+   Quasar pone .no-outline { outline: 0 !important } en q-btn y q-toggle (las teclas también son q-btn) dentro de la capa
+   quasar_importants; con !important gana la capa declarada antes, por eso esta va en base y no suelta */
+@layer base {
+    .tecla-viva:focus-visible, .opcion-distribucion:focus-visible, .q-btn:focus-visible, .q-toggle:focus-visible, .q-item:focus-visible { outline: 2px solid var(--color-foco) !important; outline-offset: 3px; }
+}
+.q-tab:focus-visible { outline: 2px solid var(--color-foco); outline-offset: -2px; }
 /* Navegar: la página entra desde el lado hacia donde se fue (adentro/siguiente → derecha, arriba/anterior → izquierda) */
 @keyframes navega-entra { from { opacity: 0.3; transform: translateX(16px); } }
 @keyframes navega-sale { from { opacity: 0.3; transform: translateX(-16px); } }
@@ -62,8 +115,11 @@ CSS_BOTONERA = """
     .cabecera-grilla { grid-template-columns: auto minmax(0, 1fr); }
     .cabecera-pestañas { order: 99; grid-column: 1 / -1; }
 }
-/* Dedo: el interruptor Usar/Editar llega a 44px */
-@media (pointer: coarse) { .modo-toggle .q-btn { min-height: 44px; } }
+/* Dedo: botones e interruptores llegan a 44px; las teclas no, miden lo que mide la tecla del aparato */
+@media (pointer: coarse) {
+    .q-btn:not(.tecla-viva), .q-toggle { min-height: 44px; }
+    .q-btn--round:not(.tecla-viva) { min-width: 44px; }
+}
 /* Vista lista: cada fila es su propia grilla, la columna de botones es fija para que todas midan igual; en celular se ocultan Título y Acción */
 .fila-acciones { width: 100%; display: grid; grid-template-columns: minmax(6rem, 2fr) minmax(5rem, 1.5fr) minmax(3.5rem, 1fr) minmax(6rem, 1.5fr) 10.25rem; gap: 0.5rem; align-items: center; }
 .fila-acciones > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -78,7 +134,7 @@ CSS_BOTONERA = """
 
 class miGui(dispositivo):
     """
-    Interface Web del ElGarrobo
+    Interfaz web de ElGarrobo
     """
 
     nombre = "Interfaz Gráfica"
@@ -121,7 +177,7 @@ class miGui(dispositivo):
     "Fondo de la opción no elegida del interruptor Usar/Editar sobre la cabecera"
 
     puerto: int = 8080
-    "puerto de la interface web"
+    "puerto de la interfaz web"
 
     folderLabel: ui.label = None
     "Etiqueta con el dispositivo y folder actual"
@@ -148,18 +204,22 @@ class miGui(dispositivo):
         self.editoresData: dict = {}
         self.ordenCampo: str = "key"
         self.dispositivosEnLista: set[str] = set()
+        "Dispositivos con distribución física que el usuario cambió a vista de lista"
         self.dispositivoFolder = None
         "Dispositivo cuyas propiedades del folder se están editando"
-        "Dispositivos con distribución física que el usuario cambió a vista de lista"
         self.ordenInverso: bool = False
         self.teclaIntercambio: dict = {}
+        "Dispositivos en modo intercambiar → primera tecla seleccionada (None si aún no hay)"
         self.acciónDuplicar: dict[str, dataAccion | None] = {}
         "dispositivo → acción a copiar en modo duplicar; guarda la acción y no la tecla para poder pegarla en otra página o folder"
         self.teclasPresionadas: dict[int, dataAccion] = {}
+        "id → acción presionada en modo Usar, para mandar soltar una sola vez"
+        self.teclasDibujadas: dict[str, dict[str, tuple[ui.element, dataAccion | None]]] = {}
+        "dispositivo → tecla → (botón, acción) de la cuadrícula en Editar, para marcar la selección sin redibujar"
+        self.herramientasModo: dict[str, dict[str, ui.button]] = {}
+        "dispositivo → botones Intercambiar y Duplicar de la barra, para pintarlos sin redibujar"
         self.últimaVista: dict[str, tuple[Path, int]] = {}
         "dispositivo → (folder, página) dibujados la última vez, para saber hacia dónde se navegó"
-        "id → acción presionada en modo Usar, para mandar soltar una sola vez"
-        "Dispositivos en modo intercambiar → primera tecla seleccionada (None si aún no hay)"
         self.modoUsar: bool = False
         "Modo Usar: click en una tecla la ejecuta; modo Editar: la abre en el formulario"
         self.splitter: ui.splitter = None
@@ -173,13 +233,8 @@ class miGui(dispositivo):
         self.contadorBorrados: int = 0
 
         self.listaDispositivos = list()
-        # self.tipo = "GUI"
 
-        # def conectar(self):
-
-        #     super().__init__()
-
-        # def conectar(self) -> None:
+        app.get("/vista/{nombre}")(servirVista)
 
         @ui.page("/")
         def paginaAcciones() -> None:
@@ -187,7 +242,6 @@ class miGui(dispositivo):
             from elGarrobo.accionesOOP.accionListaCheckBox import accionListaCheckBox
 
             accionListaCheckBox.registrarCliente(ui.context.client)
-            ui.add_css(CSS_BOTONERA)
             # Cambiar de ventana con una tecla presionada no manda pointerup: se suelta todo al perder el foco
             ui.add_body_html("<script>window.addEventListener('blur', () => emitEvent('ventanaSinFoco'))</script>")
             ui.on("ventanaSinFoco", self.soltarTodas)
@@ -314,28 +368,29 @@ class miGui(dispositivo):
                 self.avisarError(self.editoresData["key"], f"La tecla {tecla} ya la usa '{repetida.get('nombre')}', elige otra")
                 return
 
+            # Antes de tocar la acción: si una opción no es válida la guardada queda igual, no a medias
+            # (otro salvarAcciones del dispositivo escribiría el cambio parcial al .md)
+            opciones = None
+            if self.opcionesEditar is not None:
+                try:
+                    opciones = self.leerOpciones(self.opcionesEditar, acción)
+                except ValueError:
+                    return
+
             if editando:
                 for atributo, valor in valores.items():
                     self.accionEditar[atributo] = valor
                 self.accionEditar["accion"] = acción
                 self.aplicarApariencia(self.accionEditar)
-
-                if self.opcionesEditar is not None:
-                    try:
-                        self.accionEditar["opciones"] = self.leerOpciones(self.opcionesEditar, acción)
-                    except Exception as e:
-                        return
+                if opciones is not None:
+                    self.accionEditar["opciones"] = opciones
 
                 ui.notify(f"{nombre} guardada en {dispositivoDestino.nombre}, tecla {tecla}", type="positive")
                 logger.info(f"Editar acción {nombre} a {nombreDispositivo}")
             else:
                 acciónNueva: dict[str:any] = {**valores, "accion": acción}
-
-                if self.opcionesEditar is not None:
-                    try:
-                        acciónNueva["opciones"] = self.leerOpciones(self.opcionesEditar, acción)
-                    except Exception as e:
-                        return
+                if opciones is not None:
+                    acciónNueva["opciones"] = opciones
 
                 acciónNueva = dataAccion.desdeDict(acciónNueva)
                 self.aplicarApariencia(acciónNueva)
@@ -354,11 +409,11 @@ class miGui(dispositivo):
             self.textoPregunta = ui.label("")
             with ui.row():
                 ui.button("Cancelar", on_click=self.dialogoPregunta.close).props("flat")
-                self.botonPregunta = ui.button("", color=self.colorPeligro, on_click=self.confirmarPregunta).props("flat").mark("botonConfirmarPregunta")
+                self.botonPregunta = ui.button("", color=self.colorPeligro, on_click=self.confirmarPregunta).props("unelevated").mark("botonConfirmarPregunta")
 
         # Pasos de una macro como bloques; se llena al abrir con los pasos del editor YAML
         with ui.dialog() as self.dialogoPasos, ui.card().classes("w-full max-w-2xl"):
-            ui.label("Pasos de la macro").classes("text-lg")
+            miGui.encabezado(ui.label("Pasos de la macro").classes("text-lg"), 2)
             self.listaPasos = ui.column().classes("w-full gap-1")
             self.formularioPaso = ui.column().classes("w-full")
             with ui.row():
@@ -374,7 +429,7 @@ class miGui(dispositivo):
 
             # Propiedades del folder: valores por defecto de los botones del folder actual
             with ui.dialog() as self.dialogoFolder, ui.card():
-                ui.label("Apariencia del folder").classes("text-lg")
+                miGui.encabezado(ui.label("Apariencia del folder").classes("text-lg"), 2)
                 ui.label("Valores por defecto de los botones de este folder").classes("text-xs")
                 self.editorFolderFondo = ui.color_input("Fondo", preview=True).classes("w-64").mark("editor-folder-fondo")
                 self.editorFolderTamaño = ui.number("Tamaño máximo del título", min=1, precision=0).classes("w-64").mark("editor-folder-tamanno")
@@ -382,7 +437,7 @@ class miGui(dispositivo):
                 with ui.row().classes("w-64 no-wrap") as self.filaFolderCuadricula:
                     self.editorFolderColumnas = ui.number("Columnas", min=1, precision=0).classes("flex-1").mark("editor-folder-columnas")
                     self.editorFolderFilas = ui.number("Filas", min=1, precision=0).classes("flex-1").mark("editor-folder-filas")
-                ui.button("Guardar", on_click=self.guardarPropiedadesFolder).mark("botonGuardarFolder")
+                ui.button("Guardar", color=self.colorOscuro, on_click=self.guardarPropiedadesFolder).mark("botonGuardarFolder")
 
             # entrar_folder a un folder donde el dispositivo no tiene archivo de acciones
             with ui.dialog() as self.dialogoCrearFolder, ui.card():
@@ -397,15 +452,15 @@ class miGui(dispositivo):
 
             # Apariencia del botón en un diálogo aparte para no llenar el formulario
             with ui.dialog() as self.dialogoBoton, ui.card():
-                ui.label("Apariencia del botón").classes("text-lg")
-                with ui.row().classes("items-start no-wrap"):
+                miGui.encabezado(ui.label("Apariencia del botón").classes("text-lg"), 2)
+                with ui.row().classes("items-start"):
                     with ui.column().classes("w-64"):
                         self.editorTitulo = ui.input("Título", on_change=self.actualizarVistaPrevia).classes("w-full").props("clearable").mark("editor-titulo")
                         self.editorTituloMQTT = ui.input("Tópico MQTT del título", on_change=self.actualizarVistaPrevia).classes("w-full").props("clearable").mark("editor-titulo-mqtt")
                         self.editorTituloMQTT.props["hint"] = "El valor que llega reemplaza {} en el título, ej. {:.0f}%"
                         self.editorFondo = ui.color_input("Fondo", preview=True, on_change=self.actualizarVistaPrevia).classes("w-full").mark("editor-fondo")
                     self.vistaPrevia = ui.image().classes("w-24 h-24 rounded").props("fit=contain").mark("vistaPrevia")
-                ui.button("Listo", on_click=self.dialogoBoton.close).mark("botonListoBoton")
+                ui.button("Listo", color=self.colorOscuro, on_click=self.dialogoBoton.close).mark("botonListoBoton")
             ui.button("Editar apariencia", icon="palette", color=self.colorOscuro, on_click=self.abrirEditorApariencia).classes("w-full").mark("botonEditarBoton")
 
             self.listaNombreAcciones: list[str] = list()
@@ -794,6 +849,11 @@ class miGui(dispositivo):
         return elemento.tooltip(texto)
 
     @staticmethod
+    def encabezado(etiqueta: ui.label, nivel: int) -> ui.label:
+        """Título que un lector de pantalla reconoce como encabezado (ui.label es un div)"""
+        return etiqueta.props(f"role=heading aria-level={nivel}")
+
+    @staticmethod
     def marcarError(editor: ui.element, mensaje: str | None) -> None:
         """Marca (o limpia con None) el error en el campo; sin validation de nicegui hay que usar las props de Quasar"""
         if getattr(editor, "tipoEditor", None) == "bool" or isinstance(editor, ui.switch):
@@ -1118,7 +1178,7 @@ class miGui(dispositivo):
             SalvarValor(archivo, clave, valor)
             ui.notify(f"{nombre} {'activado' if valor else 'desactivado'}. Reinicia ElGarrobo para aplicarlo")
 
-        ui.label(titulo).classes("text-h5 p-4")
+        miGui.encabezado(ui.label(titulo).classes("text-h5 p-4"), 2)
         ui.label("Los cambios se aplican al reiniciar ElGarrobo (menú → Reiniciar)").classes(f"text-caption px-4 text-{self.colorClaro}")
         with ui.column().classes("p-4 gap-2 w-full"):
             for clase in listaClases:
@@ -1187,6 +1247,7 @@ class miGui(dispositivo):
                     ui.button(
                         "Guardar",
                         icon="save",
+                        color=self.colorOscuro,
                         on_click=lambda d=data, n=nombre, o=orden, i=editoresInternos, e=desplegable: guardar(
                             d, n, o, i, e
                         ),
@@ -1208,7 +1269,7 @@ class miGui(dispositivo):
                     dialogo.close()
                     accionConfirmada()
 
-                ui.button(textoBoton, color=self.colorPeligro, on_click=confirmar).props("flat")
+                ui.button(textoBoton, color=self.colorPeligro, on_click=confirmar).props("unelevated")
         return dialogo
 
     def ejecutarAccionSistema(self, comando: str) -> None:
@@ -1235,10 +1296,12 @@ class miGui(dispositivo):
         Args:
             conModo (bool): Página de acciones: muestra dispositivo/folder, última acción y el interruptor Usar/Editar
         """
+        ui.add_css(CSS_BOTONERA)
+        ui.colors(**COLORES_QUASAR)
         with ui.header(elevated=True) as cabecera:
             cabecera.classes(f"bg-{self.colorOscuro} items-center justify-between gap-0")
             cabecera.style("padding: 1px")
-            ui.label("ElGarrobo").classes("text-h5 px-4 sm:px-8")
+            miGui.encabezado(ui.label("ElGarrobo").classes("text-h5 px-4 sm:px-8"), 1)
             if conModo and self.pestañas is not None:
                 cabecera.classes("cabecera-grilla")
                 self.pestañas.move(cabecera)
@@ -1279,7 +1342,7 @@ class miGui(dispositivo):
 
     def seConectaGUI(self, client=None):
         """
-        Inicia la interface web.
+        Inicia la interfaz web.
         """
         from elGarrobo.accionesOOP.accionListaCheckBox import accionListaCheckBox
 
@@ -1289,9 +1352,9 @@ class miGui(dispositivo):
         else:
             logger.info("Conectando NiceGUI")
 
-    def seDesconectoGUI(self, client=None):
+    def seDesconectaGUI(self, client=None):
         """
-        Desconecta la interface web.
+        Desconecta la interfaz web.
         """
         if client is not None:
             logger.info(f"Desconectando NiceGUI - cliente {client.id}")
@@ -1306,7 +1369,7 @@ class miGui(dispositivo):
         self.modoUsar = bool((leerData(ARCHIVO_PREFERENCIAS) or {}).get("modo_usar", False))
 
         app.on_connect(self.seConectaGUI)
-        app.on_disconnect(self.seDesconectoGUI)
+        app.on_disconnect(self.seDesconectaGUI)
 
         self.HiloGui = threading.Thread(name="Gui-" + self.nombre, target=self.funciónHilo)
         self.HiloGui.start()
@@ -1353,10 +1416,6 @@ class miGui(dispositivo):
             dispositivo (dispositivo): dispositivo a actualizar la pestaña
         """
         nombre = dispositivo.nombre
-        tipo = dispositivo.tipo
-        input = dispositivo.dispositivo
-        folder = dispositivo.folderActual
-        # clase = dispositivo.clase
 
         if self.paneles is None:
             logger.warning("No hay paneles")
@@ -1368,6 +1427,9 @@ class miGui(dispositivo):
 
         with self.paneles:
             dispositivo.panel.clear()
+            # Las teclas y herramientas viejas ya no existen; dibujarCuadricula y barraHerramientas las vuelven a guardar
+            self.teclasDibujadas.pop(nombre, None)
+            self.herramientasModo.pop(nombre, None)
             with dispositivo.panel:
                 acciones = dispositivo.listaAcciones
                 cuadricula = dispositivo.gruposBotones() is not None or dispositivo.distribucionTeclas() is not None
@@ -1432,29 +1494,22 @@ class miGui(dispositivo):
         usar = self.modoUsar
         # En Usar las teclas no llevan etiqueta: la vista previa es lo que muestra el aparato
 
-        intercambiando = nombre in self.teclaIntercambio
-        seleccionada = self.teclaIntercambio.get(nombre)
-        duplicando = nombre in self.acciónDuplicar
-        copiada = self.acciónDuplicar.get(nombre)
+        teclasDibujadas = self.teclasDibujadas[nombre] = {}
 
         def alClick(tecla, acción):
             if usar:
                 # En Usar ejecutan los eventos de conectarTecla; la tecla vacía no hace nada
                 return None
-            if intercambiando:
-                return lambda: self.seleccionarIntercambio(dispositivo, tecla)
-            if duplicando:
-                return lambda: self.seleccionarDuplicar(dispositivo, tecla, acción)
-            if acción is not None:
-                return lambda: self.siNoHayCambios(lambda: self.seleccionarAcción(acción, dispositivo))
-            return lambda: self.siNoHayCambios(lambda: self.nuevaAcciónTecla(dispositivo, tecla))
+            # El modo (intercambiar, duplicar o editar) se mira al hacer click: cambiarlo no redibuja las teclas
+            return lambda: self.clickTecla(dispositivo, tecla, acción)
 
         def marcar(boton, tecla) -> None:
             acción = accionesPorTecla.get(str(tecla))
             if usar and acción is not None:
                 self.conectarTecla(boton, acción, dispositivo)
-            if (intercambiando and tecla == seleccionada) or (duplicando and acción is not None and acción is copiada):
-                boton.classes(f"ring-4 ring-{self.colorActivo}")
+            if not usar:
+                teclasDibujadas[str(tecla)] = (boton, acción)
+                self.marcarTecla(dispositivo, tecla, boton, acción)
             boton.mark(f"tecla-{nombre}-{tecla}")
 
         if distribucion:
@@ -1483,7 +1538,7 @@ class miGui(dispositivo):
                             boton = ui.button(on_click=alClick(tecla, acción)).props("flat padding=0")
                             boton.props["aria-label"] = acción.get("nombre") or tecla
                             with boton:
-                                ui.image(imagen).classes("w-full h-full rounded")
+                                ui.image(urlVista(imagen)).classes("w-full h-full rounded")
                         else:
                             boton = ui.button(acción.get("nombre") if acción else etiqueta, color=self.colorTecla if acción else self.colorTeclaVacia, on_click=alClick(tecla, acción))
                             boton.props("dense no-caps").classes("text-xs leading-tight")
@@ -1541,7 +1596,7 @@ class miGui(dispositivo):
                                     boton = ui.button(on_click=alClick(tecla, acción)).props("flat padding=0").classes("rounded tecla-viva").style(medidaTecla)
                                     boton.props["aria-label"] = acción.get("nombre") or str(tecla)
                                     with boton:
-                                        ui.image(imagen).classes("w-full h-full rounded")
+                                        ui.image(urlVista(imagen)).classes("w-full h-full rounded")
                                     boton.tooltip(acción.get("nombre") or str(tecla))
                                 elif usar:
                                     boton = ui.element("div").classes(f"rounded bg-{self.colorTeclaApagada}").style(medidaTecla)
@@ -1597,10 +1652,12 @@ class miGui(dispositivo):
                 return
             ui.space()
             if cuadricula and not enLista:
-                intercambiar = ui.button(icon="swap_horiz", color=self.colorActivo if nombre in self.teclaIntercambio else self.colorBotones, on_click=lambda: self.cambiarModoIntercambio(dispositivo)).mark(f"intercambiar-{nombre}")
+                intercambiar = ui.button(icon="swap_horiz", color=self.colorBotones, on_click=lambda: self.cambiarModoIntercambio(dispositivo)).mark(f"intercambiar-{nombre}")
                 miGui.nombrar(intercambiar, "Intercambiar teclas")
-                duplicar = ui.button(icon="content_copy", color=self.colorActivo if nombre in self.acciónDuplicar else self.colorBotones, on_click=lambda: self.cambiarModoDuplicar(dispositivo)).mark(f"duplicar-{nombre}")
+                duplicar = ui.button(icon="content_copy", color=self.colorBotones, on_click=lambda: self.cambiarModoDuplicar(dispositivo)).mark(f"duplicar-{nombre}")
                 miGui.nombrar(duplicar, "Duplicar acción")
+                self.herramientasModo[nombre] = {"intercambiar": intercambiar, "duplicar": duplicar}
+                self.pintarHerramientas(dispositivo)
             apariencia = ui.button(icon="folder_special", color=self.colorBotones, on_click=lambda: self.abrirPropiedadesFolder(dispositivo)).mark(f"propiedadesFolder-{nombre}")
             miGui.nombrar(apariencia, "Apariencia del folder")
             if hasattr(dispositivo, "cambiarDistribucion"):
@@ -1665,7 +1722,7 @@ class miGui(dispositivo):
                         if imagen is not None:
                             boton = ui.button(on_click=alClick(tecla, acción)).props("flat padding=0").classes("w-full rounded tecla-viva")
                             with boton:
-                                ui.image(imagen).classes("w-full h-full rounded")
+                                ui.image(urlVista(imagen)).classes("w-full h-full rounded")
                             boton.props["aria-label"] = f"Zona {posición} de la pantalla: {acción.get('nombre')}"
                             boton.tooltip(f"Zona {posición} ({tecla}): {acción.get('nombre')}")
                             marcar(boton, tecla)
@@ -1725,7 +1782,7 @@ class miGui(dispositivo):
         unidad = 10
         self.listaDistribuciones.clear()
         with self.listaDistribuciones:
-            ui.label(f"Distribución de {dispositivo.nombre}").classes("text-lg")
+            miGui.encabezado(ui.label(f"Distribución de {dispositivo.nombre}").classes("text-lg"), 2)
             ui.label(f"Agrega las tuyas (JSON de keyboard-layout-editor.com) en {folderDistribucionesUsuario()}").classes("text-xs")
             for nombreDistribucion in [None, *distribucionesDisponibles()]:
                 actual = nombreDistribucion == dispositivo.distribucion
@@ -1749,14 +1806,51 @@ class miGui(dispositivo):
         self.acciónDuplicar.pop(dispositivo.nombre, None)
         if self.teclaIntercambio.pop(dispositivo.nombre, False) is False:
             self.teclaIntercambio[dispositivo.nombre] = None
-        self.actualizarPestaña(dispositivo)
+        self.marcarSelección(dispositivo)
 
     def cambiarModoDuplicar(self, dispositivo: dispositivo) -> None:
         """Activa o desactiva el modo duplicar acción en la cuadrícula del dispositivo"""
         self.teclaIntercambio.pop(dispositivo.nombre, None)
         if self.acciónDuplicar.pop(dispositivo.nombre, False) is False:
             self.acciónDuplicar[dispositivo.nombre] = None
-        self.actualizarPestaña(dispositivo)
+        self.marcarSelección(dispositivo)
+
+    def clickTecla(self, dispositivo: dispositivo, tecla, acción: dataAccion | None) -> None:
+        """Click en una tecla en Editar según el modo actual del dispositivo"""
+        nombre = dispositivo.nombre
+        if nombre in self.teclaIntercambio:
+            self.seleccionarIntercambio(dispositivo, tecla)
+        elif nombre in self.acciónDuplicar:
+            self.seleccionarDuplicar(dispositivo, tecla, acción)
+        elif acción is not None:
+            self.siNoHayCambios(lambda: self.seleccionarAcción(acción, dispositivo))
+        else:
+            self.siNoHayCambios(lambda: self.nuevaAcciónTecla(dispositivo, tecla))
+
+    def marcarTecla(self, dispositivo: dispositivo, tecla, boton: ui.element, acción: dataAccion | None) -> None:
+        """Anillo en la tecla elegida para intercambiar o en la acción elegida para duplicar"""
+        nombre = dispositivo.nombre
+        elegida = (nombre in self.teclaIntercambio and str(tecla) == str(self.teclaIntercambio[nombre])) or (
+            acción is not None and acción is self.acciónDuplicar.get(nombre)
+        )
+        anillo = f"ring-4 ring-{self.colorActivo}"
+        boton.classes(add=anillo) if elegida else boton.classes(remove=anillo)
+
+    def pintarHerramientas(self, dispositivo: dispositivo) -> None:
+        """Intercambiar y Duplicar se pintan del color activo mientras su modo está encendido"""
+        botones = self.herramientasModo.get(dispositivo.nombre, {})
+        for modo, activo in (("intercambiar", self.teclaIntercambio), ("duplicar", self.acciónDuplicar)):
+            if modo in botones:
+                encendido = dispositivo.nombre in activo
+                color = self.colorActivo if encendido else self.colorBotones
+                botones[modo].classes(remove=f"bg-{self.colorActivo} bg-{self.colorBotones}", add=f"bg-{color}")
+                botones[modo].props(f"aria-pressed={str(encendido).lower()}")
+
+    def marcarSelección(self, dispositivo: dispositivo) -> None:
+        """Actualiza los anillos de las teclas y los botones de modo sin redibujar la pestaña"""
+        for tecla, (boton, acción) in self.teclasDibujadas.get(dispositivo.nombre, {}).items():
+            self.marcarTecla(dispositivo, tecla, boton, acción)
+        self.pintarHerramientas(dispositivo)
 
     def seleccionarDuplicar(self, dispositivo: dispositivo, tecla, acción: dataAccion | None) -> None:
         """Primer click elige la acción a copiar, click en una tecla vacía pega la copia; click en otra acción la elige"""
@@ -1771,7 +1865,9 @@ class miGui(dispositivo):
             dispositivo.listaAcciones.sort(key=self.ordenTecla)
             dispositivo.salvarAcciones()
             ui.notify(f"{copia.nombre or 'Acción'} duplicada en la tecla {tecla}")
-        self.actualizarPestaña(dispositivo)
+            self.actualizarPestaña(dispositivo)
+            return
+        self.marcarSelección(dispositivo)
 
     def seleccionarIntercambio(self, dispositivo: dispositivo, tecla: int) -> None:
         """Primer click marca la tecla, el segundo intercambia ambas; si una está vacía la acción se mueve ahí"""
@@ -1787,7 +1883,9 @@ class miGui(dispositivo):
             if acciónA is not None or acciónB is not None:
                 dispositivo.listaAcciones.sort(key=self.ordenTecla)
                 dispositivo.salvarAcciones()
-        self.actualizarPestaña(dispositivo)
+                self.actualizarPestaña(dispositivo)
+                return
+        self.marcarSelección(dispositivo)
 
     def abrirPropiedadesFolder(self, dispositivo: dispositivo) -> None:
         """Carga en el diálogo la propiedad_folder del folder actual del dispositivo"""

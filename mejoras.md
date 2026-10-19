@@ -22,8 +22,23 @@
 - [ ] **Selector de acciones agrupado**: más de 37 acciones en una lista plana; agrupar por categoría (OBS, teclado, sonido, MQTT, folders...).
 - [ ] **Deshacer más allá de borrar**: borrar ya tiene Deshacer en el aviso; editar, intercambiar y duplicar todavía no.
 - [ ] **Atajos de teclado y edición en lote**: no hay atajos (guardar, limpiar, cambiar modo) ni forma de mover o borrar varias acciones a la vez.
-- [ ] **Accesibilidad**: ordenar la lista solo con el mouse; mucho texto en `text-xs`; revisar contraste de los enlaces del pie (Youtube/TikTok sobre teal oscuro).
 - [ ] **Alturas fijas en `vh`**: la cabecera ya se mide sola (`--alto-cabecera`), pero el formulario (75vh) y las restas en px del área de acciones siguen siendo aproximadas.
+
+### Auditoría técnica (2026-10-17, `/impeccable audit`: 11/20)
+
+- [ ] **[P0] Varios clientes se pisan**: los widgets viven en `self` (`editoresData`, `pestañas`, `paneles`, `dispositivo.panel`), así que con dos pestañas abiertas (ej. celular + escritorio) el clic en una llena el formulario de la otra, la primera deja de redibujarse y Usar/Editar es global. Guardar el estado por cliente (objeto de vista creado en cada `@ui.page`) y que el dispositivo avise a todas las vistas.
+- [ ] **[P0] GUI abierta a la red sin contraseña**: `ui.run` sin `host` escucha en `0.0.0.0` y `accionOS` corre `shell=True`; cualquiera en la red puede ejecutar comandos. `host="127.0.0.1"` por defecto y abrir a la red solo con opción en `gui.md` + token.
+- [x] **[P1] Edición inválida deja la acción a medias** (`agregarAcción`): copia nombre/tecla/acción/apariencia a `accionEditar` antes de validar las opciones; si fallan, el objeto en `listaAcciones` ya cambió y el próximo `salvarAcciones()` lo escribe al `.md`. Validar con `leerOpciones` antes de tocar nada y cambiar `except Exception` por `except ValueError`.
+- [x] **[P1] Contraste de colores por defecto de Quasar**: nunca se llama `ui.colors()`. Botones planos `negative` (Salir, Reiniciar, Descartar, borrar paso) dan 2.63:1; blanco sobre `primary` azul (Listo, Guardar) da 3.06:1; el foco de los campos subraya en azul fuera de la paleta. Hecho: `COLORES_QUASAR` (primary teal-700, negative `#dc2626`, positive `#15803d`); en campos, menús y botones planos `--q-primary` es el teal claro y los errores un rojo claro; las confirmaciones destructivas son botones rellenos.
+- [ ] **[P1] Teclado en celular**: en modo Usar a 390px las 87 teclas miden 9.5px y las etiquetas se enciman. Scroll horizontal con tamaño mínimo o caer a `dibujarBotonera` con las teclas que tienen acción.
+- [x] **[P2] Botones táctiles de 36px**: barra de herramientas, `+`, limpiar y menú; `pointer: coarse` solo agrandaba el interruptor Usar/Editar. Hecho: 44px para todo `q-btn` (menos las teclas) y `q-toggle` con `pointer: coarse`.
+- [x] **[P2] Diálogo "Apariencia del botón" a 390px**: la fila `no-wrap` (`w-64` + `w-24`) mide 400px en una tarjeta de 342px y corta la vista previa.
+- [x] **[P2] Sin encabezados `h1`–`h6`**: "ElGarrobo", "Módulos" y los títulos de diálogos son `div`. Hecho: `miGui.encabezado` agrega `role=heading` y `aria-level`.
+- [x] **[P2] Foco poco visible en botones Quasar** (solo el tinte de `q-focus-helper`); el `outline` de `.tecla-viva` tampoco se veía: Quasar pone `.no-outline { outline: 0 !important }` en la capa `quasar_importants`. Hecho: la regla de foco va en `@layer base` con `!important`.
+- [x] **[P2] Redibujo completo**: íconos escalados y fuentes en caché (`iconoEscalado`, `cargarFuente` en `dibujoBoton.py`) y vistas previas servidas por URL con hash (`/vista/{hash}`, caché `immutable`). Con las 46 teclas de `streamdeck.md`: redibujar el Deck pasó de ~400 a ~115 ms en el servidor y de ~553 a ~64 KB por websocket. Queda: el panel se reconstruye entero (~64 KB de DOM); `actualizarAcciones` → `mostrarPestañas()` solo lo llama `CargarAcciones`, que es código muerto.
+- [ ] **[P2] `claseAccion()` en caliente**: `comandoAcción` y `mostrarOpciones` instancian todas las clases de acción en cada llamada; hacer un dict nombre → comando una vez.
+- [x] **[P3]** Docstrings de atributos desplazados en `__init__`; `input`, `tipo` y `folder` sin usar en `actualizarPestaña`; ortografía "Interface" → "Interfaz" y `seDesconectoGUI` → `seDesconectaGUI`.
+- [ ] **[P3]** Destello de la última acción con `rgba(94, 234, 212, 0.35)` fijo (duplica `--color-foco`).
 
 ## Código
 

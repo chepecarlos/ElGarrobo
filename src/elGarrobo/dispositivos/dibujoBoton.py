@@ -7,7 +7,7 @@ import base64
 import io
 import os
 import re
-from functools import cache
+from functools import cache, lru_cache
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -28,6 +28,25 @@ def fuenteConfig() -> str | None:
     """'fuente' de config.md del usuario, se lee una vez"""
     # ponytail: cacheada, si se cambia la fuente en config.md hay que reiniciar
     return (leerData("config") or {}).get("fuente")
+
+
+@lru_cache(maxsize=64)
+def cargarFuente(archivo: str | None, tamaño: int) -> ImageFont.FreeTypeFont:
+    """Fuente ya cargada: calcularTamañoFuente prueba varios tamaños por botón y leer el archivo cada vez era lo lento"""
+    if archivo:
+        return ImageFont.truetype(archivo, size=tamaño)
+    return ImageFont.load_default(size=tamaño)
+
+
+@lru_cache(maxsize=256)
+def iconoEscalado(ruta: str, fecha: float, tamaño: tuple[int, int]) -> ImageImage:
+    """Imagen del disco en RGBA y reducida a tamaño; la fecha del archivo va en la clave para releerla si cambia.
+
+    No modificar la imagen devuelta: es la misma para todos los botones que la usan
+    """
+    icono = Image.open(ruta).convert("RGBA")
+    icono.thumbnail(tamaño, Image.LANCZOS)
+    return icono
 
 
 @dataclass
@@ -156,10 +175,7 @@ class dibujoBoton:
         return default
 
     def fuente(self, tamaño: int) -> ImageFont.FreeTypeFont:
-        archivo = self.archivoFuente or fuenteConfig()
-        if archivo:
-            return ImageFont.truetype(archivo, size=tamaño)
-        return ImageFont.load_default(size=tamaño)
+        return cargarFuente(self.archivoFuente or fuenteConfig(), tamaño)
 
     def obtenerImagen(self, imagen: ImageImage, accion, conGif: bool = False) -> ImageImage | None:
         imagenFondo = None
@@ -273,11 +289,8 @@ class dibujoBoton:
         DireccionIcono = self.calcularRutaImagen(NombreIcono)
 
         if os.path.exists(DireccionIcono):
-            Icono = Image.open(DireccionIcono).convert("RGBA")
-            if "titulo" in accion and not fondo:
-                Icono.thumbnail((Imagen.width, Imagen.height - 20), Image.LANCZOS)
-            else:
-                Icono.thumbnail((Imagen.width, Imagen.height), Image.LANCZOS)
+            alto = Imagen.height - 20 if "titulo" in accion and not fondo else Imagen.height
+            Icono = iconoEscalado(DireccionIcono, os.path.getmtime(DireccionIcono), (Imagen.width, alto))
         else:
             logger.warning(f"Deck[No Imagen] {NombreIcono} - {DireccionIcono}")
             Icono = Image.new(mode="RGBA", size=(256, 256), color=(153, 153, 255))
@@ -518,6 +531,13 @@ if __name__ == "__main__":
         assert ancho <= 72
         tamaño, _, _ = dibujo.calcularTamañoFuente(Image.new("RGB", (72, 72)), "texto muy largo", 6, 1, minimo=20)
         assert tamaño == 20
+        # el ícono escalado sale del caché, pero si el archivo cambia se vuelve a leer
+        rutaPng = Path(carpeta) / "c.png"
+        Image.new("RGB", (10, 10), "red").save(rutaPng)
+        assert dibujo.dibujar(dataAccion(imagen="c.png"), (72, 72)).getpixel((36, 5)) == (255, 0, 0)
+        Image.new("RGB", (10, 10), "blue").save(rutaPng)
+        os.utime(rutaPng, (0, os.path.getmtime(rutaPng) + 1))
+        assert dibujo.dibujar(dataAccion(imagen="c.png"), (72, 72)).getpixel((36, 5)) == (0, 0, 255)
         # sin título ni imagen se usa el nombre; con título o imagen no
         assert dibujo.dibujar(dataAccion(nombre="Casa OS"), (72, 72)).tobytes() != dibujo.dibujar(dataAccion(), (72, 72)).tobytes()
         assert dibujo.dibujar(dataAccion(nombre="A", titulo="B"), (72, 72)).tobytes() == dibujo.dibujar(dataAccion(nombre="X", titulo="B"), (72, 72)).tobytes()
