@@ -43,7 +43,10 @@ class MiStreamDeck(dispositivo):
     cantidadBotones: int = 0
     "Cantidad de botones en StreamDeck"
     deck: StreamDeck = None
-    idDeck: int = -1
+    apagando: bool = False
+    "desconectar() lo pide, no reconectar"
+    esperaReconectar: float = 3
+    "segundos entre intentos de reconexión"
     listaBotones: list[dict] = None
     "lista de información de botones"
 
@@ -86,60 +89,66 @@ class MiStreamDeck(dispositivo):
         # self.archivoImagen = None
 
     def conectar(self) -> bool:
-        listaStreamdecks = DeviceManager().enumerate()
-        listaIdUsados = dispositivo.listaIndexUsados
-
         logger.info(f"StreamDeck[Conectándose] - {self.nombre}[{self.dispositivo}]")
 
-        # TODO: Cambiar metodo para cargar StreanDeks
-        for idActual, deck in enumerate(listaStreamdecks):
+        # ponytail: se prueban todos los compatibles por serial; los que ya usa otro MiStreamDeck
+        # fallan al abrir (libusb los tiene reclamados) y se saltan
+        for deck in DeviceManager().enumerate():
 
             if deck.DECK_TYPE not in self.compatibles:
                 continue
 
-            idProbar = True
-            for idUsado in listaIdUsados:
-                if idActual == idUsado:
-                    idProbar = False
+            try:
+                deck.open()
+                if deck.get_serial_number() != self.dispositivo:
+                    deck.close()
+                    continue
+                # reset después del serial, si no borra las imágenes de otro StreamDeck del mismo modelo
+                deck.reset()
+                self.deck = deck
+                self.conectado = True
+                self.apagando = False
+                self.listaBotones = None
+                self.cantidadBotones = self.deck.key_count()
+                self.layout = self.deck.key_layout()
+                brillo: int = ObtenerValor("data/streamdeck.json", "brillo")
+                # Todo: brillo no es un int
+                self.deck.set_brightness(brillo)
+                self.deck.set_key_callback(self.actualizarBoton)
 
-            if idProbar:
-                try:
-                    self.deck = deck
-                    self.deck.open()
-                    self.deck.reset()
-                    if self.deck.get_serial_number() == self.dispositivo:
-                        self.conectado = True
-                        self.cantidadBotones = self.deck.key_count()
-                        self.layout = self.deck.key_layout()
-                        brillo: int = ObtenerValor("data/streamdeck.json", "brillo")
-                        # Todo: brillo no es un int
-                        self.deck.set_brightness(brillo)
-                        self.deck.set_key_callback(self.actualizarBoton)
-                        self.idDeck = idActual
-                        dispositivo.agregarIndexUsado(self.idDeck)
+                self.hiloGif = threading.Thread(target=self.animaciónGif, daemon=True)
+                self.hiloGif.start()
 
-                        self.hiloGif = threading.Thread(target=self.animaciónGif)
-                        self.hiloGif.start()
-
-                        logger.info(f"StreamDeck[Conectado] - {self.nombre}[{self.deck.get_serial_number()}]")
-
-                        return True
-                    else:
-                        self.deck.close()
-
-                except TransportError as error:
-                    self.conectado = False
-                    self.deck = None
-                    logger.exception(f"StreamDeck[Error] {self.nombre}[{self.dispositivo}]{error}")
-                    return False
-                except Exception as error:
-                    self.conectado = False
-                    self.deck = None
-                    logger.exception(f"StreamDeck[Error] {error}")
-                    return False
+                logger.info(f"StreamDeck[Conectado] - {self.nombre}[{self.dispositivo}]")
+                return True
+            except TransportError as error:
+                logger.debug(f"StreamDeck[Saltando] {self.nombre}: {error}")
+                if deck.is_open():
+                    deck.close()
+            except Exception as error:
+                logger.exception(f"StreamDeck[Error] {self.nombre}: {error}")
+                if deck.is_open():
+                    deck.close()
         logger.warning(f"StreamDeck[No encontró] - {self.nombre}")
         self.conectado = False
         return False
+
+    def reconectar(self) -> None:
+        """Espera a que vuelva el StreamDeck después de una desconexión USB y lo redibuja"""
+        logger.warning(f"StreamDeck[Desconectado] - {self.nombre}, intentando reconectar")
+        self.conectado = False
+        try:
+            self.deck.close()
+        except Exception:
+            pass
+
+        while not self.apagando:
+            time.sleep(self.esperaReconectar)
+            if self.apagando:
+                return
+            if self.conectar():
+                self.actualizarIconos()
+                return
 
     def _mapaTeclas(self) -> tuple[list[int], dict[int, int]]:
         """Mapea índices nativos del StreamDeck a índices lógicos según `rotar`.
@@ -294,6 +303,7 @@ class MiStreamDeck(dispositivo):
     def desconectar(self) -> None:
         if self.conectado:
             logger.info(f"Deck[Desconectando] - {self.nombre}")
+            self.apagando = True
             self.conectado = False
             self.deck.reset()
             self.deck.close()
@@ -411,7 +421,7 @@ class MiStreamDeck(dispositivo):
                                 continue
                             self.deck.set_key_image(i, next(frames))
                 except TransportError as err:
-                    logger.info(f"StreamDeck[Desconectado] - {self.nombre} durante animación: {err}")
+                    logger.info(f"StreamDeck[Error] - {self.nombre} durante animación: {err}")
                     break
 
             siguienteFrame += tiempoFrame
@@ -420,3 +430,6 @@ class MiStreamDeck(dispositivo):
 
             if tiempoEspera >= 0:
                 time.sleep(tiempoEspera)
+
+        if not self.apagando:
+            self.reconectar()

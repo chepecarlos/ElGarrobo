@@ -64,6 +64,7 @@ class MiStreamDeckPlus(MiStreamDeck):
             self.deck.set_dial_callback(self.actualizarEncoderRotatorio)
             self.deck.set_touchscreen_callback(self.actualizarTouchScreen)
             self.cantidadDial = self.deck.DIAL_COUNT
+            self.listaBotonesTouchscreenViejas = None
 
         return self.conectado
 
