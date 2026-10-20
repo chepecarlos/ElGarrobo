@@ -3,7 +3,6 @@ import sys
 from pathlib import Path
 from unittest.mock import MagicMock
 
-import yaml
 
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
@@ -15,39 +14,19 @@ def cargar_modulo_estado_pc():
 
 
 class TestEstadoPc:
-    def test_crea_archivo_configuracion_con_valor_por_defecto(self, tmp_path, monkeypatch):
+    def test_usa_valor_del_archivo_o_por_defecto(self):
         estado_pc_module = cargar_modulo_estado_pc()
-        monkeypatch.setattr(estado_pc_module, "ObtenerFolderConfig", lambda: tmp_path)
 
-        modulo = estado_pc_module.estadoPc({})
-        archivo_configuracion = tmp_path / "modulos" / "estado_pc.md"
+        assert estado_pc_module.estadoPc({}).nombrePC == "pc-default"
+        assert estado_pc_module.estadoPc({"nombre_pc": "pc-oficina"}).nombrePC == "pc-oficina"
 
-        assert archivo_configuracion.exists()
-        with archivo_configuracion.open() as archivo:
-            data = list(yaml.safe_load_all(archivo))[0]
-
-        assert data == {"nombre_pc": "pc-default"}
-        assert modulo.nombrePC == "pc-default"
-
-    def test_no_sobrescribe_archivo_existente(self, tmp_path, monkeypatch):
+    def test_propiedades_para_la_gui(self):
         estado_pc_module = cargar_modulo_estado_pc()
-        monkeypatch.setattr(estado_pc_module, "ObtenerFolderConfig", lambda: tmp_path)
-
-        archivo_configuracion = tmp_path / "modulos" / "estado_pc.md"
-        archivo_configuracion.parent.mkdir(parents=True, exist_ok=True)
-        archivo_configuracion.write_text("---\nnombre_pc: pc-oficina\n...\n", encoding="utf-8")
-
-        modulo = estado_pc_module.estadoPc({"nombre_pc": "pc-oficina"})
-
-        with archivo_configuracion.open() as archivo:
-            data = list(yaml.safe_load_all(archivo))[0]
-
-        assert data == {"nombre_pc": "pc-oficina"}
-        assert modulo.nombrePC == "pc-oficina"
+        propiedad = estado_pc_module.estadoPc.propiedades[0]
+        assert propiedad.atributo == "nombre_pc" and propiedad.defecto == estado_pc_module.estadoPc.nombrePC
 
     def test_ejecutar_solo_inicia_hilo_una_vez(self, tmp_path, monkeypatch):
         estado_pc_module = cargar_modulo_estado_pc()
-        monkeypatch.setattr(estado_pc_module, "ObtenerFolderConfig", lambda: tmp_path)
 
         hilos_creados = []
 
@@ -73,7 +52,6 @@ class TestEstadoPc:
 
     def test_monitorear_publica_cpu_y_ram(self, tmp_path, monkeypatch):
         estado_pc_module = cargar_modulo_estado_pc()
-        monkeypatch.setattr(estado_pc_module, "ObtenerFolderConfig", lambda: tmp_path)
 
         class MemoriaFalsa:
             percent = 66.7
@@ -106,7 +84,6 @@ class TestEstadoPc:
 
     def test_monitorear_registra_error_si_falla_cpu(self, tmp_path, monkeypatch):
         estado_pc_module = cargar_modulo_estado_pc()
-        monkeypatch.setattr(estado_pc_module, "ObtenerFolderConfig", lambda: tmp_path)
 
         monkeypatch.setattr(
             estado_pc_module.psutil,

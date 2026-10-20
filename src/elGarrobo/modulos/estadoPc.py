@@ -1,12 +1,12 @@
 import threading
 import time
-from pathlib import Path
 from typing import Optional
 
 import psutil
 
 from elGarrobo.accionesOOP.accionMQTT import accionMQTT
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, SalvarArchivo
+from elGarrobo.miLibrerias import ConfigurarLogging
+from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.modulos.modulo import modulo
 
 logger = ConfigurarLogging(__name__)
@@ -26,6 +26,17 @@ class estadoPc(modulo):
     "Nombre del PC"
     archivoConfiguracion = "modulos/estado_pc.md"
     """Archivo de configuración del módulo"""
+    propiedades = [
+        propiedadAccion(
+            nombre="Nombre del PC",
+            atributo="nombre_pc",
+            tipo=[str],
+            obligatorio=True,
+            descripcion="Se usa en los topics MQTT: estado_pc/<nombre>/cpu",
+            ejemplo="mi-pc",
+            defecto="pc-default",
+        )
+    ]
 
     hiloMonitoreo: Optional[threading.Thread]
     """Módulo para obtener el estado del PC y monitorear recursos en segundo plano"""
@@ -35,26 +46,12 @@ class estadoPc(modulo):
         self.activo = False
         self.hiloMonitoreo = None
         dataModulo = dataModulo or {}
-        self._crear_configuracion_por_defecto(dataModulo)
         self.nombrePC = dataModulo.get("nombre_pc", self.nombrePC)
 
         if self.nombrePC == "pc-default":
-            logger.warning(f"Estado[{self.nombrePC}] - No se especificó nombre del PC, " f"usando valor por defecto: {self.nombrePC}, " "edita el archivo de configuración para cambiarlo")
+            logger.warning(f"Estado[{self.nombrePC}] - No se especificó nombre del PC, " f"usando valor por defecto: {self.nombrePC}, " "cámbialo en la GUI en /modulos")
 
         logger.info(f"Estado[{self.nombrePC}] - Publicando estado de PC[{self.nombrePC}] por MQTT")
-
-    def _crear_configuracion_por_defecto(self, dataModulo: dict) -> None:
-        archivoConfiguracion = Path(ObtenerFolderConfig()) / self.archivoConfiguracion
-
-        if archivoConfiguracion.exists():
-            return
-
-        nombre_pc = dataModulo.get("nombre_pc", self.nombrePC)
-        dataDefecto = {"nombre_pc": nombre_pc}
-        SalvarArchivo(str(archivoConfiguracion), dataDefecto)
-        if "nombre_pc" not in dataModulo:
-            dataModulo.update(dataDefecto)
-        logger.info(f"Modulo[{self.nombre}] - Archivo de configuración creado en {archivoConfiguracion}")
 
     def ejecutar(self) -> None:
         """Obtiene el estado actual del PC"""

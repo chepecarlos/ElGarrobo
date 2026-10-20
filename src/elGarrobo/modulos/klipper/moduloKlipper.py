@@ -1,25 +1,16 @@
 import threading
 import time
-from pathlib import Path
 from typing import Any, Optional
 
 import requests
 
 from elGarrobo.modulos.klipper.accionesKlipper import accionCancelarKlipper, accionReimprimirKlipper
 from elGarrobo.accionesOOP.accionMQTT import accionMQTT
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, SalvarArchivo
-from elGarrobo.modulos.modulo import modulo
+from elGarrobo.miLibrerias import ConfigurarLogging
+from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
+from elGarrobo.modulos.modulo import modulo, propiedadesMonitoreo
 
 logger = ConfigurarLogging(__name__)
-
-_IMPRESORA_DEFECTO = {
-    "nombre": "impresora-1",
-    "topic": "impresora-1",
-    "url": "http://192.168.1.10:7125",
-    "intervalo_segundos": 30,
-    "intervalo_error_segundos": 120,
-    "limite_errores_log": 3,
-}
 
 _OBJETOS_QUERY = {"print_stats": "", "virtual_sdcard": "", "toolhead": "", "extruder": "", "heater_bed": ""}
 
@@ -32,21 +23,26 @@ class moduloKlipper(modulo):
     descripcion = "Módulo para obtener el estado de una impresora Klipper (Moonraker)"
 
     archivoConfiguracion = "modulos/estado_klipper.md"
-    """Archivo de configuración del módulo.
-
-    Formato esperado (lista de impresoras):
-        impresoras:
-          - nombre: ender3
-            topic: salon/ender3
-            url: http://192.168.1.10:7125
-            intervalo_segundos: 30
-          - nombre: voron
-            topic: oficina/voron
-            url: http://192.168.1.11:7125
-            intervalo_segundos: 30
-            intervalo_error_segundos: 120
-            limite_errores_log: 3
-    """
+    propiedades = [
+        propiedadAccion(
+            nombre="Impresoras",
+            atributo="impresoras",
+            tipo=[list],
+            descripcion="Impresoras a monitorear",
+            elementos=[
+                propiedadAccion(nombre="Nombre", atributo="nombre", tipo=[str], obligatorio=True, ejemplo="ender3"),
+                propiedadAccion(
+                    nombre="Topic",
+                    atributo="topic",
+                    tipo=[str],
+                    descripcion="Topic MQTT, si no se indica usa el nombre",
+                    ejemplo="salon/ender3",
+                ),
+                propiedadAccion(nombre="URL", atributo="url", tipo=[str], obligatorio=True, ejemplo="http://192.168.1.10:7125"),
+                *propiedadesMonitoreo(),
+            ],
+        )
+    ]
 
     def __init__(self, dataModulo: dict) -> None:
         super().__init__(dataModulo)
@@ -54,7 +50,6 @@ class moduloKlipper(modulo):
         self.hilos: list[threading.Thread] = []
 
         dataModulo = dataModulo or {}
-        self._crear_configuracion_por_defecto(dataModulo)
 
         impresoras_raw = dataModulo.get("impresoras")
         self.impresoras: list[dict] = impresoras_raw if isinstance(impresoras_raw, list) else []
@@ -63,16 +58,6 @@ class moduloKlipper(modulo):
             logger.warning(f"Modulo[{self.nombre}] - No hay impresoras configuradas en 'impresoras'")
         else:
             logger.info(f"Modulo[{self.nombre}] - {len(self.impresoras)} impresora(s) configuradas")
-
-    def _crear_configuracion_por_defecto(self, dataModulo: dict) -> None:
-        archivoConfiguracion = Path(ObtenerFolderConfig()) / self.archivoConfiguracion
-
-        if archivoConfiguracion.exists():
-            return
-
-        dataDefecto = {"impresoras": [dict(_IMPRESORA_DEFECTO)]}
-        SalvarArchivo(str(archivoConfiguracion), dataDefecto)
-        logger.info(f"Modulo[{self.nombre}] - Archivo de configuración creado en {archivoConfiguracion}")
 
     def ejecutar(self) -> None:
         """Inicia un hilo de monitoreo por cada impresora configurada."""

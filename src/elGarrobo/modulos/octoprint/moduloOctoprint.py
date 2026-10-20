@@ -1,26 +1,16 @@
 import threading
 import time
-from pathlib import Path
 from typing import Any, Optional
 
 import requests
 
 from elGarrobo.modulos.octoprint.accionesOctoprint import accionCancelarOctoprint, accionReimprimirOctoprint
 from elGarrobo.accionesOOP.accionMQTT import accionMQTT
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, SalvarArchivo
-from elGarrobo.modulos.modulo import modulo
+from elGarrobo.miLibrerias import ConfigurarLogging
+from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
+from elGarrobo.modulos.modulo import modulo, propiedadesMonitoreo
 
 logger = ConfigurarLogging(__name__)
-
-_IMPRESORA_DEFECTO = {
-    "nombre": "impresora-1",
-    "topic": "impresora-1",
-    "url": "http://octoprint.local",
-    "token": "",
-    "intervalo_segundos": 30,
-    "intervalo_error_segundos": 120,
-    "limite_errores_log": 3,
-}
 
 
 class moduloOctoprint(modulo):
@@ -31,23 +21,34 @@ class moduloOctoprint(modulo):
     descripcion = "Módulo para obtener el estado de Octoprint"
 
     archivoConfiguracion = "modulos/estado_octoprint.md"
-    """Archivo de configuración del módulo.
-
-    Formato esperado (lista de impresoras):
-        impresoras:
-          - nombre: ender3
-            topic: salon/ender3
-            url: http://192.168.1.10:5000
-            token: TU_API_KEY
-            intervalo_segundos: 30
-          - nombre: prusa
-            topic: oficina/prusa
-            url: http://192.168.1.11:5000
-            token: TU_API_KEY
-            intervalo_segundos: 30
-            intervalo_error_segundos: 120
-            limite_errores_log: 3
-    """
+    propiedades = [
+        propiedadAccion(
+            nombre="Impresoras",
+            atributo="impresoras",
+            tipo=[list],
+            descripcion="Impresoras a monitorear",
+            elementos=[
+                propiedadAccion(nombre="Nombre", atributo="nombre", tipo=[str], obligatorio=True, ejemplo="ender3"),
+                propiedadAccion(
+                    nombre="Topic",
+                    atributo="topic",
+                    tipo=[str],
+                    descripcion="Topic MQTT, si no se indica usa el nombre",
+                    ejemplo="salon/ender3",
+                ),
+                propiedadAccion(nombre="URL", atributo="url", tipo=[str], obligatorio=True, ejemplo="http://octoprint.local"),
+                propiedadAccion(
+                    nombre="Token",
+                    atributo="token",
+                    tipo=[str],
+                    obligatorio=True,
+                    descripcion="API key de Octoprint",
+                    ejemplo="1234567890abcdef",
+                ),
+                *propiedadesMonitoreo(),
+            ],
+        )
+    ]
 
     def __init__(self, dataModulo: dict) -> None:
         super().__init__(dataModulo)
@@ -55,7 +56,6 @@ class moduloOctoprint(modulo):
         self.hilos: list[threading.Thread] = []
 
         dataModulo = dataModulo or {}
-        self._crear_configuracion_por_defecto(dataModulo)
 
         impresoras_raw = dataModulo.get("impresoras")
         self.impresoras: list[dict] = impresoras_raw if isinstance(impresoras_raw, list) else []
@@ -64,16 +64,6 @@ class moduloOctoprint(modulo):
             logger.warning(f"Modulo[{self.nombre}] - No hay impresoras configuradas en 'impresoras'")
         else:
             logger.info(f"Modulo[{self.nombre}] - {len(self.impresoras)} impresora(s) configuradas")
-
-    def _crear_configuracion_por_defecto(self, dataModulo: dict) -> None:
-        archivoConfiguracion = Path(ObtenerFolderConfig()) / self.archivoConfiguracion
-
-        if archivoConfiguracion.exists():
-            return
-
-        dataDefecto = {"impresoras": [dict(_IMPRESORA_DEFECTO)]}
-        SalvarArchivo(str(archivoConfiguracion), dataDefecto)
-        logger.info(f"Modulo[{self.nombre}] - Archivo de configuración creado en {archivoConfiguracion}")
 
     def ejecutar(self) -> None:
         """Inicia un hilo de monitoreo por cada impresora configurada."""

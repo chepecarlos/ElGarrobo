@@ -1,25 +1,16 @@
 import threading
 import time
-from pathlib import Path
 from typing import Any, Optional
 
 import requests
 
 from elGarrobo.modulos.fdmMonster.accionesFdmMonster import accionImprimirColaFDM
 from elGarrobo.accionesOOP.accionMQTT import accionMQTT
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, SalvarArchivo
-from elGarrobo.modulos.modulo import modulo
+from elGarrobo.miLibrerias import ConfigurarLogging
+from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
+from elGarrobo.modulos.modulo import modulo, propiedadesMonitoreo
 
 logger = ConfigurarLogging(__name__)
-
-_CONFIGURACION_DEFECTO = {
-    "url": "http://192.168.1.10:4000",
-    "usuario": "admin",
-    "clave": "",
-    "intervalo_segundos": 30,
-    "intervalo_error_segundos": 120,
-    "limite_errores_log": 3,
-}
 
 
 class moduloFdmMonster(modulo):
@@ -30,19 +21,17 @@ class moduloFdmMonster(modulo):
     descripcion = "Módulo para obtener el estado de las impresoras de FDM Monster"
 
     archivoConfiguracion = "modulos/estado_fdm_monster.md"
-    """Archivo de configuración del módulo.
-
-    Formato esperado (un servidor FDM Monster, se monitorean todas sus impresoras habilitadas):
-        url: http://192.168.50.200:4000
-        usuario: admin
-        clave: 1234
-        intervalo_segundos: 30
-        intervalo_error_segundos: 120
-        limite_errores_log: 3
+    """Archivo de configuración del módulo, se monitorean todas las impresoras habilitadas del servidor.
 
     Publica en MQTT: estado_fdm_monster/<nombre impresora>/<dato>
     y el total de trabajos en cola en: estado_fdm_monster/total/cola
     """
+    propiedades = [
+        propiedadAccion(nombre="URL", atributo="url", tipo=[str], obligatorio=True, ejemplo="http://192.168.1.10:4000"),
+        propiedadAccion(nombre="Usuario", atributo="usuario", tipo=[str], obligatorio=True, ejemplo="admin"),
+        propiedadAccion(nombre="Clave", atributo="clave", tipo=[str], descripcion="Contraseña de FDM Monster"),
+        *propiedadesMonitoreo(),
+    ]
 
     def __init__(self, dataModulo: dict) -> None:
         super().__init__(dataModulo)
@@ -50,17 +39,7 @@ class moduloFdmMonster(modulo):
         self.hilo: Optional[threading.Thread] = None
 
         dataModulo = dataModulo or {}
-        self._crear_configuracion_por_defecto()
         self.config = dataModulo
-
-    def _crear_configuracion_por_defecto(self) -> None:
-        archivoConfiguracion = Path(ObtenerFolderConfig()) / self.archivoConfiguracion
-
-        if archivoConfiguracion.exists():
-            return
-
-        SalvarArchivo(str(archivoConfiguracion), dict(_CONFIGURACION_DEFECTO))
-        logger.info(f"Modulo[{self.nombre}] - Archivo de configuración creado en {archivoConfiguracion}")
 
     def ejecutar(self) -> None:
         """Inicia un hilo que monitorea todas las impresoras del servidor FDM Monster."""

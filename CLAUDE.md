@@ -70,7 +70,7 @@ Los dispositivos soportan navegación por folders jerárquicos; `cargarAccionesF
 
 Integraciones de fondo (OBS, estado PC, Octoprint, MQTT estado). Heredan de `modulo`. Se activan desde `modulos.md` en el config del usuario. `cargarModulos()` los descubre y `elGarrobo.cargarClasesModulos()` los instancia (aunque estén apagados, así que `__init__` no debe tener efectos; eso va en `ejecutar()`) y ejecuta si están habilitados.
 
-Un módulo agrega sus propias acciones con `acciones = [claseAccion, ...]`; `IniciarAcciones()` las registra solo si el módulo está activado y les asigna la instancia en el atributo de clase `modulo` (ej. `accionOBS` usa `self.modulo.cambiarEscena(...)` y revisa la conexión en `sePuedeEjecutar`). Los módulos con acciones viven en su carpeta: `modulos/<nombre>/modulo<Nombre>.py` (clase `modulo<Nombre>`) + `acciones<Nombre>.py`. Ej: `modulos/obs/moduloOBS.py`.
+Un módulo agrega sus propias acciones con `acciones = [claseAccion, ...]`; `IniciarAcciones()` las registra solo si el módulo está activado y les asigna la instancia en el atributo de clase `modulo` (ej. `accionOBS` usa `self.modulo.cambiarEscena(...)` y revisa la conexión en `sePuedeEjecutar`). Las opciones de su archivo de configuración se declaran en `propiedades = [propiedadAccion, ...]` (listas repetibles como impresoras con `tipo=[list]` y `elementos=[...]`); la GUI arma con ellas el formulario de /modulos, así no depende de que el archivo exista. Los módulos con acciones viven en su carpeta: `modulos/<nombre>/modulo<Nombre>.py` (clase `modulo<Nombre>`) + `acciones<Nombre>.py`. Ej: `modulos/obs/moduloOBS.py`.
 
 ### Configuración del usuario
 

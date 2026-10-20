@@ -512,6 +512,83 @@ class TestActivables:
         await user.should_see("activado. Reinicia ElGarrobo para aplicarlo")
 
 
+class TestConfiguracionModulos:
+    @pytest.fixture
+    def archivos(self, monkeypatch) -> dict:
+        """Archivos de configuración en memoria: lo que se guarda queda en el dict"""
+        archivos = {}
+        monkeypatch.setattr(moduloMiGui, "leerData", lambda _: {})
+        monkeypatch.setattr(moduloMiGui, "ObtenerArchivo", lambda archivo: archivos.get(archivo))
+        monkeypatch.setattr(moduloMiGui, "SalvarArchivo", lambda archivo, data: archivos.update({archivo: data}))
+        return archivos
+
+    @staticmethod
+    def elemento(user: User, marca: str) -> ui.element:
+        return next(iter(user.find(marker=marca).elements))
+
+    async def test_sin_archivo_muestra_valor_por_defecto(self, user: User, gui: miGui, archivos: dict):
+        await user.open("/modulos")
+
+        assert self.elemento(user, "config-estado_pc-nombre_pc").value == "pc-default"
+        assert self.elemento(user, "config-estado_fdm_monster-intervalo_segundos").value == 30
+        user.find(marker="config-estado_pc-nombre_pc").clear().type("ryuk")
+        user.find(marker="guardar-estado_pc").click()
+
+        await user.should_see("guardado. Reinicia ElGarrobo para aplicarlo")
+        assert archivos["modulos/estado_pc.md"] == {"nombre_pc": "ryuk"}
+
+    async def test_edita_agrega_y_quita_impresoras(self, user: User, gui: miGui, archivos: dict):
+        archivos["modulos/estado_octoprint.md"] = {
+            "impresoras": [{"nombre": "Ender", "url": "http://a", "token": "secreto", "intervalo_segundos": 30}],
+            "extra": "se conserva",
+        }
+        await user.open("/modulos")
+
+        assert self.elemento(user, "config-estado_octoprint-0-token").props.get("type") == "password"
+        user.find(marker="config-estado_octoprint-0-url").clear().type("http://b")
+        with user:
+            self.elemento(user, "config-estado_octoprint-0-intervalo_segundos").value = 60
+
+        user.find(marker="agregar-estado_octoprint-impresoras").click()
+        await user.should_see(marker="config-estado_octoprint-1-nombre")  # refresh se dibuja en el siguiente ciclo
+        assert self.elemento(user, "config-estado_octoprint-1-intervalo_segundos").value == 30, "nueva con defectos"
+        user.find(marker="config-estado_octoprint-1-nombre").type("Prusa")
+        user.find(marker="config-estado_octoprint-1-url").type("http://c")
+        user.find(marker="config-estado_octoprint-1-token").type("otro")
+        user.find(marker="guardar-estado_octoprint").click()
+
+        await user.should_see("guardado. Reinicia ElGarrobo para aplicarlo")
+        impresoras = archivos["modulos/estado_octoprint.md"]["impresoras"]
+        assert impresoras[0] == {"nombre": "Ender", "url": "http://b", "token": "secreto", "intervalo_segundos": 60}
+        assert type(impresoras[0]["intervalo_segundos"]) is int
+        assert impresoras[1]["nombre"] == "Prusa" and impresoras[1]["intervalo_error_segundos"] == 120
+        assert archivos["modulos/estado_octoprint.md"]["extra"] == "se conserva"
+
+        user.find(marker="quitar-estado_octoprint-0").click()
+        await user.should_not_see(marker="config-estado_octoprint-1-nombre")
+        user.find(marker="guardar-estado_octoprint").click()
+        assert [i["nombre"] for i in archivos["modulos/estado_octoprint.md"]["impresoras"]] == ["Prusa"]
+
+    async def test_obligatorio_vacio_no_guarda(self, user: User, gui: miGui, archivos: dict):
+        await user.open("/modulos")
+
+        user.find(marker="agregar-estado_klipper-impresoras").click()
+        await user.should_see(marker="config-estado_klipper-0-url")
+        user.find(marker="guardar-estado_klipper").click()
+
+        await user.should_see("Faltan valores obligatorios")
+        assert "modulos/estado_klipper.md" not in archivos
+        assert self.elemento(user, "config-estado_klipper-0-url").props["error-message"] == "Obligatorio"
+
+    async def test_campo_vacio_usa_defecto_del_modulo(self, user: User, gui: miGui, archivos: dict):
+        archivos["modulos/estado_klipper.md"] = {"impresoras": [{"nombre": "U1", "topic": "u1", "url": "http://k"}]}
+        await user.open("/modulos")
+
+        user.find(marker="config-estado_klipper-0-topic").clear()
+        user.find(marker="guardar-estado_klipper").click()
+
+        assert archivos["modulos/estado_klipper.md"]["impresoras"][0] == {"nombre": "U1", "url": "http://k"}
+
 class TestEditorApariencia:
     async def test_editor_boton_guarda_titulo_y_fondo(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")

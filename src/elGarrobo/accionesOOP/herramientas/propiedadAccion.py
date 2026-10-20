@@ -21,6 +21,8 @@ class propiedadAccion:
     defecto: Optional[Any] = None
     multilinea: bool = False
     "Solo para tipo str: si es True la GUI muestra un área de texto de varias líneas en vez de un input de una línea"
+    elementos: Optional[list[propiedadAccion]] = None
+    "Solo para tipo list: propiedades de cada elemento, la GUI permite agregar y quitar elementos (ej. impresoras)"
 
     def __post_init__(self) -> None:
         # Normalizar tipo a lista de tipos

@@ -1189,9 +1189,115 @@ class miGui(dispositivo):
                     with ui.column().classes("gap-0"):
                         ui.label(clase.nombre).classes("font-bold")
                         ui.label(clase.descripcion).classes("text-caption")
-                # Los módulos también tienen archivoConfiguracion, pero no es una lista de aparatos
+                # En dispositivos archivoConfiguracion es una lista de aparatos, en módulos un dict de opciones
                 if issubclass(clase, dispositivo) and clase.archivoConfiguracion:
                     self.mostrarAparatos(clase)
+                elif getattr(clase, "propiedades", None):
+                    self.mostrarConfiguracionModulo(clase)
+
+    def mostrarConfiguracionModulo(self, clase: type) -> None:
+        """Desplegable para editar la configuración de un módulo (ej. modulos/estado_octoprint.md)
+
+        El formulario sale de `clase.propiedades` y no del archivo: aparecen todas las opciones aunque el archivo
+        no exista o le falten, con su valor por defecto. Las propiedades con `elementos` (ej. impresoras) se pueden
+        agregar y quitar. Un campo vacío se quita del archivo para que el módulo use su valor por defecto, y las
+        claves del archivo que no están en las propiedades se guardan igual.
+        """
+        archivo = clase.archivoConfiguracion
+        data = ObtenerArchivo(archivo)
+        data = data if isinstance(data, dict) else {}
+        editores: list[tuple[propiedadAccion, ui.element]] = []
+        recienAgregado: list[dict] = []
+        "Elemento que se acaba de agregar, se muestra abierto"
+
+        def campo(contenedor: dict, propiedad: propiedadAccion, marca: str) -> None:
+            valor = contenedor.get(propiedad.atributo, propiedad.defecto)
+            if bool in propiedad.tipo:
+                editor = ui.switch(propiedad.nombre, value=bool(valor))
+            elif int in propiedad.tipo or float in propiedad.tipo:
+                valor = valor if isinstance(valor, (int, float)) else None
+                editor = ui.number(propiedad.nombre, value=valor, precision=0 if int in propiedad.tipo else None)
+            else:
+                secreto = propiedad.atributo in ("token", "clave", "password")
+                texto = "" if valor is None else str(valor)
+                editor = ui.input(
+                    propiedad.nombre,
+                    value=texto,
+                    placeholder=propiedad.ejemplo,
+                    password=secreto,
+                    password_toggle_button=secreto,
+                )
+            if propiedad.descripcion:
+                editor.tooltip(propiedad.descripcion)
+            editor.mark(f"config-{marca}-{propiedad.atributo}")
+
+            def actualizar(evento, contenedor=contenedor, propiedad=propiedad) -> None:
+                # Se guarda al escribir para que agregar o quitar elementos (refresh) no pierda lo editado
+                if evento.value in (None, ""):
+                    contenedor.pop(propiedad.atributo, None)
+                else:
+                    contenedor[propiedad.atributo] = int(evento.value) if int in propiedad.tipo else evento.value
+
+            editor.on_value_change(actualizar)
+            editores.append((propiedad, editor))
+
+        def campos(contenedor: dict, propiedades: list[propiedadAccion], marca: str) -> None:
+            with ui.row().classes("items-start gap-4 p-2"):
+                for propiedad in propiedades:
+                    if not propiedad.elementos:
+                        campo(contenedor, propiedad, marca)
+            for propiedad in propiedades:
+                if propiedad.elementos:
+                    lista(contenedor, propiedad, marca)
+
+        def lista(contenedor: dict, propiedad: propiedadAccion, marca: str) -> None:
+            elementos = contenedor.setdefault(propiedad.atributo, [])
+
+            def agregar() -> None:
+                nuevo = {p.atributo: p.defecto for p in propiedad.elementos if p.defecto is not None}
+                elementos.append(nuevo)
+                recienAgregado[:] = [nuevo]
+                formulario.refresh()
+
+            def quitar(número: int) -> None:
+                elementos.pop(número)
+                formulario.refresh()
+
+            ui.label(propiedad.nombre).classes("font-bold px-2")
+            for número, elemento in enumerate(elementos):
+                titulo = str(elemento.get("nombre") or f"{propiedad.nombre} {número + 1}")
+                abierto = any(elemento is otro for otro in recienAgregado)
+                with ui.expansion(titulo, icon="tune", value=abierto) as desplegable:
+                    desplegable.classes(f"w-full border border-{self.colorOscuro} rounded")
+                    campos(elemento, propiedad.elementos, f"{marca}-{número}")
+                    botonQuitar = ui.button(
+                        "Quitar", icon="delete", color="negative", on_click=lambda n=número: quitar(n)
+                    )
+                    botonQuitar.props("flat").classes("m-2").mark(f"quitar-{marca}-{número}")
+            botonAgregar = ui.button("Agregar", icon="add", color=self.colorOscuro, on_click=agregar)
+            botonAgregar.props("flat").classes("m-2").mark(f"agregar-{marca}-{propiedad.atributo}")
+
+        @ui.refreshable
+        def formulario() -> None:
+            editores.clear()
+            campos(data, clase.propiedades, clase.modulo)
+
+        def guardar() -> None:
+            faltan = [editor for propiedad, editor in editores if propiedad.obligatorio and editor.value in (None, "")]
+            for _, editor in editores:
+                self.marcarError(editor, "Obligatorio" if editor in faltan else None)
+            if faltan:
+                ui.notify("Faltan valores obligatorios", type="warning")
+                return
+            SalvarArchivo(archivo, data)
+            ui.notify(f"{clase.nombre} guardado. Reinicia ElGarrobo para aplicarlo", type="positive")
+
+        with ui.column().classes("w-full pl-12 gap-1"):
+            with ui.expansion("Configuración", caption=archivo, icon="settings") as desplegable:
+                desplegable.classes(f"w-full border border-{self.colorOscuro} rounded")
+                formulario()
+                guardarBoton = ui.button("Guardar", icon="save", color=self.colorOscuro, on_click=guardar)
+                guardarBoton.classes("m-2").mark(f"guardar-{clase.modulo}")
 
     def mostrarAparatos(self, clase: type[dispositivo]) -> None:
         """Lista los aparatos de un tipo (ej. teclados.md) con un desplegable para editar nombre y orden"""
