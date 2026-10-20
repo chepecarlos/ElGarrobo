@@ -31,6 +31,9 @@ X-GNOME-Autostart-Delay=5
     # Sin [Install]: no arranca solo, lo arranca la bandeja ya con la sesión gráfica lista
     servicio = f"""[Unit]
 Description=ElGarrobo - Macros para StreamDeck, teclados, MQTT y OBS
+# 3 fallos en 60s → queda en 'failed' y la bandeja avisa; con los valores por defecto y RestartSec=3 nunca se rinde
+StartLimitIntervalSec=60
+StartLimitBurst=3
 
 [Service]
 ExecStart={ejecutable}

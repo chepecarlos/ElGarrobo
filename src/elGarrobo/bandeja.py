@@ -14,15 +14,15 @@ import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("AyatanaAppIndicator3", "0.1")
 from gi.repository import AyatanaAppIndicator3 as AppIndicator
-from gi.repository import GLib, Gtk
+from gi.repository import Gio, GLib, Gtk
 
 SERVICIO = "elgarrobo"
 # ponytail: íconos genéricos del tema mientras se crea el logo propio
 ESTADOS = {
-    "activo": ("media-playback-start", "ElGarrobo activo"),
-    "iniciando": ("view-refresh", "ElGarrobo iniciando..."),
-    "detenido": ("media-playback-stop", "ElGarrobo detenido"),
-    "error": ("dialog-error", "ElGarrobo con error (revisa los logs)"),
+    "activo": ("media-playback-start", "activo"),
+    "iniciando": ("view-refresh", "iniciando..."),
+    "detenido": ("media-playback-stop", "detenido"),
+    "error": ("dialog-error", "con error (revisa los logs)"),
 }
 # Variables de la sesión gráfica que el servicio necesita (teclado simulado, notificaciones, navegador)
 VARIABLES_SESION = ["DISPLAY", "XAUTHORITY", "WAYLAND_DISPLAY", "DBUS_SESSION_BUS_ADDRESS", "XDG_CURRENT_DESKTOP"]
@@ -52,11 +52,15 @@ class bandeja(Gtk.Application):
         self.ejecutable = ejecutable
         self.indicador = None
         self.estado = None
+        self.version = ""
 
     def do_activate(self) -> None:
         if self.indicador:
             return
         self.hold()
+        verLogs = Gio.SimpleAction.new("logs", None)
+        verLogs.connect("activate", lambda *_: self.verLogs())
+        self.add_action(verLogs)
         self.indicador = AppIndicator.Indicator.new(
             "elgarrobo", ESTADOS["detenido"][0], AppIndicator.IndicatorCategory.APPLICATION_STATUS
         )
@@ -95,17 +99,47 @@ class bandeja(Gtk.Application):
     def actualizar(self) -> bool:
         estado = estadoServicio()
         if estado != self.estado:
+            if estado == "error":
+                self.avisarError()
+            if estado == "activo":
+                self.pedirVersion()
             self.estado = estado
-            icono, texto = ESTADOS[estado]
-            self.indicador.set_icon_full(icono, texto)
-            self.indicador.set_title(texto)
-            self.etiquetaEstado.set_label(texto)
+            self.mostrarEstado()
             activo = estado in ("activo", "iniciando")
             self.opcionGUI.set_sensitive(estado == "activo")
             self.opcionIniciar.set_sensitive(not activo)
             self.opcionReiniciar.set_sensitive(activo)
             self.opcionDetener.set_sensitive(activo)
         return True
+
+    def mostrarEstado(self) -> None:
+        icono, texto = ESTADOS[self.estado]
+        texto = " ".join(filter(None, ["ElGarrobo", self.version, texto]))
+        self.indicador.set_icon_full(icono, texto)
+        self.indicador.set_title(texto)
+        self.etiquetaEstado.set_label(texto)
+
+    def pedirVersion(self) -> None:
+        """`elgarrobo --version` tarda ~1s, se pide en segundo plano para no congelar el menú"""
+        try:
+            proceso = Gio.Subprocess.new(
+                [self.ejecutable, "--version"], Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE
+            )
+        except GLib.Error:
+            return
+        proceso.communicate_utf8_async(None, None, self.recibirVersion)
+
+    def recibirVersion(self, proceso: Gio.Subprocess, resultado: Gio.AsyncResult) -> None:
+        _, salida, _ = proceso.communicate_utf8_finish(resultado)
+        self.version = (salida or "").strip()
+        self.mostrarEstado()
+
+    def avisarError(self) -> None:
+        aviso = Gio.Notification.new("ElGarrobo se detuvo por un error")
+        aviso.set_body("Falló varias veces seguidas y no se volverá a iniciar solo")
+        aviso.set_priority(Gio.NotificationPriority.HIGH)
+        aviso.add_button("Ver logs", "app.logs")
+        self.send_notification("error", aviso)
 
     def iniciar(self) -> None:
         systemctl("import-environment", *VARIABLES_SESION)

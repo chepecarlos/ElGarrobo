@@ -40,6 +40,14 @@
 - [x] **[P3]** Docstrings de atributos desplazados en `__init__`; `input`, `tipo` y `folder` sin usar en `actualizarPestaña`; ortografía "Interface" → "Interfaz" y `seDesconectoGUI` → `seDesconectaGUI`.
 - [ ] **[P3]** Destello de la última acción con `rgba(94, 234, 212, 0.35)` fijo (duplica `--color-foco`).
 
+## Ícono en la barra de estado (`bandeja.py`)
+
+- [ ] **Último error en el menú**: en estado error, mostrar en la etiqueta la última línea de `journalctl --user -u elgarrobo -p err -n 1` para saber qué falló sin abrir la terminal.
+- [ ] **Abrir carpeta de configuración**: opción del menú que abra `ObtenerFolderConfig()` con `xdg-open` para editar los `.md` a mano. La bandeja no importa elGarrobo, así que la ruta tendría que venir del ejecutable (ej. un subcomando) o por argumento en el `.desktop`.
+- [ ] **Clic izquierdo abre la GUI**: con AppIndicator el clic izquierdo siempre abre el menú; `XApp.StatusIcon` lo permite pero solo existe en Mint/Cinnamon.
+- [ ] **Reiniciar en modo depuración (`-d`)**: hoy el `ExecStart` del servicio es fijo; habría que pasarlo por una variable de entorno (`systemctl --user set-environment`) o un drop-in.
+- [ ] **Logo propio**: reemplazar los íconos genéricos del tema (`input-keyboard` en el lanzador, `media-playback-*`/`dialog-error` por estado en `ESTADOS`).
+
 ## Código
 
 - [ ] **Interfaz tipo dict de `dataAccion`** (`get`, `[]`, `in`, `items`): quitarla cuando los dispositivos usen los campos directamente (marcada con `ponytail:` en `dataAccion.py`).
@@ -58,11 +66,13 @@ Ordenado de mayor a menor recorte.
 - [ ] **Dependencias sin usar en `requirements.txt`**: `pydub`, `importlib-resources`. Además `pyperclip` se importa en `acciones/emular_teclado.py` pero falta en `requirements.txt`.
 - [ ] **`modulo.obtenerValor`**: sin llamadas (los módulos leen dicts) y duplica `elGarrobo.obtenerValor`. Borrar.
 - [ ] **Flags `ModuloX` en `elGarrobo.py:140-163`**: se inicializan en `False` y se reasignan con `.get(..., False)`. Asignar una sola vez o leer `self.modulos`/`self.dispositivos` donde se usan. Revisar si `ModuloOBSNotificacion` y `ModuloMonitorESP` siguen haciendo falta.
+- [x] **`ejecutar_elGarrobo.sh`**: llama a `elgarrobo-cli`, que ya no existe en `pyproject.toml`; lo reemplazan el menú y `elgarrobo servicio instalar`. Borrar.
 - [ ] **`cargarDispositivos()` / `cargarModulos()`**: funciones que solo devuelven una lista literal; cambiar por constantes `DISPOSITIVOS = [...]` / `MODULOS = [...]`.
 
 ## Ortografía (requiere actualizar configs del usuario)
 
 - [ ] Claves de macro `solisita` / `solisita_cambiar` → `solicita` / `solicita_cambiar` (ver CLAUDE.md).
+- [ ] Métodos internos de `elGarrobo.py` (no requieren tocar configs): `SolisitarDibujar` → `SolicitarDibujar`, `SolisitarNotifiacacion` → `SolicitarNotificacion`.
 
 ## Configs del usuario (`~/dotfile/.config/elgarrobo/default/`)
 
