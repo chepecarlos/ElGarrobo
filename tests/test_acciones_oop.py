@@ -7,6 +7,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from elGarrobo.accionesOOP import accion, accionDelay, accionMacro, cargarClasesAcciones
+from elGarrobo.modulos import cargarModulos
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.accionesOOP.herramientas.valoresAccion import valoresAcciones
 
@@ -115,16 +116,26 @@ class TestAccionBase:
         assert "Prueba" in str(crearAccion())
 
 
+def todasLasAcciones() -> dict:
+    """Acciones globales más las que agregan los módulos"""
+    acciones = cargarClasesAcciones()
+    for claseModulo in cargarModulos():
+        for claseAccion in claseModulo.acciones:
+            assert claseAccion.comando not in acciones, f"{claseAccion.comando} repetido"
+            acciones[claseAccion.comando] = claseAccion
+    return acciones
+
+
 class TestCargarClasesAcciones:
     def test_comando_coincide_con_clave_y_se_instancia(self):
-        for comando, clase in cargarClasesAcciones().items():
+        for comando, clase in todasLasAcciones().items():
             instancia = clase()
             assert instancia.comando == comando, clase.__name__
             assert instancia.nombre and instancia.descripcion, clase.__name__
 
     def test_propiedades_con_tipos_validos_para_isinstance(self):
         """Un tipo como typing.Any hace que mismoTipo rechace siempre el valor"""
-        for comando, clase in cargarClasesAcciones().items():
+        for comando, clase in todasLasAcciones().items():
             for propiedad in clase().listaPropiedades:
                 for tipo in propiedad.tipo:
                     try:

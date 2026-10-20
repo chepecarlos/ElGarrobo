@@ -19,12 +19,17 @@ from elGarrobo.miLibrerias import (
     SalvarValor,
     leerData,
 )
+from elGarrobo.modulos.modulo import modulo
 
 logger = ConfigurarLogging(__name__)
 
 
-class MiOBS:
+class moduloOBS(modulo):
     """Concepción con OBS WebSocket."""
+
+    nombre = "OBS"
+    modulo = "obs"
+    descripcion = "Control de OBS por WebSocket"
 
     clienteConsultas: obs.ReqClient | None = None
     "Cliente para mandar información a OBS WebSocket"
@@ -59,7 +64,7 @@ class MiOBS:
     notificaciones: Callable[[str, Any], None] | None
     "Función para notificaciones a MQTT"
 
-    def __init__(self) -> None:
+    def __init__(self, dataModulo: dict | None = None) -> None:
         """Crea confección básica con OBS Websocket."""
         logger.info("OBS[Iniciando]")
         """Archivo de estado de OBS."""
@@ -71,7 +76,12 @@ class MiOBS:
         self.consultaCliente = False
         self.grabandoVertical = False
         self.tiempoInicioVertical: float | None = None
+        self.host = "localhost"
+        self.port = 4455
+        self.password = None
 
+    def ejecutar(self):
+        """Limpia el estado guardado al activar el módulo"""
         self.Reiniciar()
 
     def conectar(self, opciones: dict) -> bool:

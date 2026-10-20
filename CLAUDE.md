@@ -68,7 +68,9 @@ Los dispositivos soportan navegación por folders jerárquicos; `cargarAccionesF
 
 **3. Módulos** (`src/elGarrobo/modulos/`)
 
-Integraciones de fondo (OBS, estado PC, Octoprint, MQTT estado). Heredan de `modulo`. Se activan desde `modulos.md` en el config del usuario. `cargarModulos()` los descubre y `elGarrobo.cargarClasesModulos()` los instancia y ejecuta si están habilitados.
+Integraciones de fondo (OBS, estado PC, Octoprint, MQTT estado). Heredan de `modulo`. Se activan desde `modulos.md` en el config del usuario. `cargarModulos()` los descubre y `elGarrobo.cargarClasesModulos()` los instancia (aunque estén apagados, así que `__init__` no debe tener efectos; eso va en `ejecutar()`) y ejecuta si están habilitados.
+
+Un módulo agrega sus propias acciones con `acciones = [claseAccion, ...]`; `IniciarAcciones()` las registra solo si el módulo está activado. Los módulos con acciones viven en su carpeta: `modulos/<nombre>/modulo<Nombre>.py` (clase `modulo<Nombre>`) + `acciones<Nombre>.py`. Ej: `modulos/obs/moduloOBS.py`.
 
 ### Configuración del usuario
 

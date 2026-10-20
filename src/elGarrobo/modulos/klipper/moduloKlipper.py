@@ -5,6 +5,7 @@ from typing import Any, Optional
 
 import requests
 
+from elGarrobo.modulos.klipper.accionesKlipper import accionCancelarKlipper, accionReimprimirKlipper
 from elGarrobo.accionesOOP.accionMQTT import accionMQTT
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, SalvarArchivo
 from elGarrobo.modulos.modulo import modulo
@@ -23,10 +24,11 @@ _IMPRESORA_DEFECTO = {
 _OBJETOS_QUERY = {"print_stats": "", "virtual_sdcard": "", "toolhead": "", "extruder": "", "heater_bed": ""}
 
 
-class estadoKlipper(modulo):
+class moduloKlipper(modulo):
 
     nombre = "estadoKlipper"
     modulo = "estado_klipper"
+    acciones = [accionReimprimirKlipper, accionCancelarKlipper]
     descripcion = "Módulo para obtener el estado de una impresora Klipper (Moonraker)"
 
     archivoConfiguracion = "modulos/estado_klipper.md"

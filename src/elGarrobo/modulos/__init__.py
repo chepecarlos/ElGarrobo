@@ -1,16 +1,18 @@
 from .estadoPc import estadoPc
 from .modulo import modulo
-from .estadoOctoprint import estadoOctoprint
-from .estadoKlipper import estadoKlipper
-from .estadoFdmMonster import estadoFdmMonster
+from .octoprint import moduloOctoprint
+from .klipper import moduloKlipper
+from .fdmMonster import moduloFdmMonster
+from .obs import moduloOBS
 
 
 def cargarModulos() -> list[type["modulo"]]:
     """Función para cargar los módulos disponibles"""
     listaModulos: list[type["modulo"]] = [
         estadoPc,
-        estadoOctoprint,
-        estadoKlipper,
-        estadoFdmMonster,
+        moduloOctoprint,
+        moduloKlipper,
+        moduloFdmMonster,
+        moduloOBS,
     ]
     return listaModulos

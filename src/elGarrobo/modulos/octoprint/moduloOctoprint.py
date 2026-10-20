@@ -5,6 +5,7 @@ from typing import Any, Optional
 
 import requests
 
+from elGarrobo.modulos.octoprint.accionesOctoprint import accionCancelarOctoprint, accionReimprimirOctoprint
 from elGarrobo.accionesOOP.accionMQTT import accionMQTT
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, SalvarArchivo
 from elGarrobo.modulos.modulo import modulo
@@ -22,10 +23,11 @@ _IMPRESORA_DEFECTO = {
 }
 
 
-class estadoOctoprint(modulo):
+class moduloOctoprint(modulo):
 
     nombre = "estadoOctoprint"
     modulo = "estado_octoprint"
+    acciones = [accionReimprimirOctoprint, accionCancelarOctoprint]
     descripcion = "Módulo para obtener el estado de Octoprint"
 
     archivoConfiguracion = "modulos/estado_octoprint.md"

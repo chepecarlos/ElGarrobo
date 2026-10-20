@@ -1,4 +1,4 @@
-"""Acción para mandar a imprimir el siguiente trabajo de la cola en FDM Monster"""
+"""Acciones para controlar la cola de impresión en FDM Monster"""
 
 import requests
 

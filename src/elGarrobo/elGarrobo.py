@@ -34,7 +34,7 @@ from .miLibrerias import (
     obtenerArchivoPaquete,
 )
 from .modulos import cargarModulos, modulo
-from .modulos.mi_obs import MiOBS
+from .modulos.obs import moduloOBS
 
 logger = ConfigurarLogging(__name__)
 
@@ -241,6 +241,9 @@ class elGarrobo(object):
 
         ListaAcciones = CargarAcciones()
         listaClasesAcciones = cargarClasesAcciones()
+        for moduloActivo in self.listaModulos:
+            for claseAccion in moduloActivo.acciones:
+                listaClasesAcciones[claseAccion.comando] = claseAccion
 
         ListaAcciones["alias"] = self.AccionesAlias
         ListaAcciones["random"] = self.AccionRandom
@@ -699,7 +702,7 @@ class elGarrobo(object):
         """
         Inicialioza el Objeto de OBS
         """
-        self.OBS = MiOBS()
+        self.OBS = next(m for m in self.listaModulos if isinstance(m, moduloOBS))
         self.OBS.DibujarDeck(self.SolisitarDibujar)
         self.OBS.AgregarNotificacion(self.SolisitarNotifiacacion)
 

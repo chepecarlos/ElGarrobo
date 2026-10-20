@@ -5,6 +5,7 @@ from typing import Any, Optional
 
 import requests
 
+from elGarrobo.modulos.fdmMonster.accionesFdmMonster import accionImprimirColaFDM
 from elGarrobo.accionesOOP.accionMQTT import accionMQTT
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, SalvarArchivo
 from elGarrobo.modulos.modulo import modulo
@@ -21,10 +22,11 @@ _CONFIGURACION_DEFECTO = {
 }
 
 
-class estadoFdmMonster(modulo):
+class moduloFdmMonster(modulo):
 
     nombre = "estadoFdmMonster"
     modulo = "estado_fdm_monster"
+    acciones = [accionImprimirColaFDM]
     descripcion = "Módulo para obtener el estado de las impresoras de FDM Monster"
 
     archivoConfiguracion = "modulos/estado_fdm_monster.md"

@@ -1,3 +1,4 @@
+from elGarrobo.accionesOOP.accion import accion
 from elGarrobo.accionesOOP.herramientas.valoresAccion import valoresAcciones
 
 
@@ -13,6 +14,8 @@ class modulo:
     """Archivo de configuración del módulo"""
     activado: bool = True
     """Indica si el módulo está activado"""
+    acciones: list[type[accion]] = []
+    """Clases de acciones que se registran solo si el módulo está activado"""
 
     def __init__(self, dataModulo: dict) -> None:
         pass

@@ -10,16 +10,16 @@ sys.path.insert(0, str(ROOT / "src"))
 
 
 def cargar_modulo_mi_obs():
-    return importlib.import_module("src.elGarrobo.modulos.mi_obs")
+    return importlib.import_module("src.elGarrobo.modulos.obs.moduloOBS")
 
 
 def crear_instancia_segura(monkeypatch, modulo_mi_obs):
     monkeypatch.setattr(modulo_mi_obs, "SalvarArchivo", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(modulo_mi_obs, "SalvarValor", lambda *_args, **_kwargs: None)
-    return modulo_mi_obs.MiOBS()
+    return modulo_mi_obs.moduloOBS()
 
 
-class TestMiOBS:
+class TestModuloOBS:
     def test_notificar_llama_callback_con_alerta(self, monkeypatch):
         modulo_mi_obs = cargar_modulo_mi_obs()
         mi_obs = crear_instancia_segura(monkeypatch, modulo_mi_obs)
