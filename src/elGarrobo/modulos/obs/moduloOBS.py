@@ -21,6 +21,8 @@ from elGarrobo.miLibrerias import (
 )
 from elGarrobo.modulos.modulo import modulo
 
+from .accionesOBS import accionesOBS
+
 logger = ConfigurarLogging(__name__)
 
 
@@ -30,6 +32,7 @@ class moduloOBS(modulo):
     nombre = "OBS"
     modulo = "obs"
     descripcion = "Control de OBS por WebSocket"
+    acciones = accionesOBS
 
     clienteConsultas: obs.ReqClient | None = None
     "Cliente para mandar información a OBS WebSocket"
@@ -84,11 +87,8 @@ class moduloOBS(modulo):
         """Limpia el estado guardado al activar el módulo"""
         self.Reiniciar()
 
-    def conectar(self, opciones: dict) -> bool:
+    def conectar(self, servidor: str = "localhost", puerto: int = 4455, password: str | None = None) -> bool:
         """Se conecta a OBS Websocket y inicializa los eventos.
-
-        Args:
-            opciones
 
         Returns:
             bool: True si se conecto, False si no
@@ -99,9 +99,9 @@ class moduloOBS(modulo):
             self.Notificar("OBS-Ya-Conectado")
             return False
 
-        self.servidor = opciones.get("servidor", "localhost")
-        self.puerto = int(opciones.get("puerto", 4455))
-        self.password = opciones.get("password", None)
+        self.servidor = servidor
+        self.puerto = int(puerto)
+        self.password = password
 
         modulos = leerData("modulos") or {}
         monitorAudio = modulos.get("obs_monitor_audio", False)
@@ -194,34 +194,6 @@ class moduloOBS(modulo):
         logger.info("Eventos registrados en OBS:")
         for evento in self.clienteEvento.callback.get():
             logger.info(f" - {evento}")
-
-    def IniciarAcciones(self, listaAcciones: dict) -> None:
-        """Acciones para controlar OBS
-
-        Args:
-            listaAcciones (dict): Diccionario de acciones para agregar
-        """
-        listaAcciones["obs_conectar"] = self.conectar
-        listaAcciones["obs_desconectar"] = self.desconectar
-        listaAcciones["obs_grabar"] = self.cambiarGrabacion
-        listaAcciones["obs_pausar"] = self.cambiarPausa
-        listaAcciones["obs_envivo"] = self.cambiarEnVivo
-        listaAcciones["obs_escena"] = self.cambiarEscena
-        listaAcciones["obs_fuente"] = self.cambiarFuente
-        listaAcciones["obs_camara_virtual"] = self.cambiarCamaraVirtual
-        listaAcciones["obs_filtro"] = self.cambiarFiltro
-        listaAcciones["obs_filtro_propiedad"] = self.CambiarFiltroPropiedad
-        # Lista de acciones verticales
-        listaAcciones["obs_grabar_vertical"] = self.cambiarGrabacionVertical
-        listaAcciones["obs_envivo_vertical"] = self.cambiarEnVivoVertical
-        listaAcciones["obs_escena_vertical"] = self.cambiarEscenaVertical
-        listaAcciones["obs_fuente_vertical"] = self.cambiarFuenteVertical
-        # listaAcciones["obs_estado"] = self.EstadoOBS
-        # listaAcciones["obs_tiempo_grabando"] = self.TiempoGrabando
-        # listaAcciones["obs_tiempo_envivo"] = self.TiempoEnVivo
-
-        # listaAcciones['obs_host'] = self.OBS.Conectar
-        # listaAcciones['obs_server'] = self.OBS.Conectar
 
     def Reiniciar(self):
         """Reiniciar todo los estado"""
@@ -607,41 +579,19 @@ class moduloOBS(modulo):
                     objetoMQTT.configurar(opciones)
                     objetoMQTT.ejecutar()
 
-    def cambiarEscena(self, opciones):
+    def cambiarEscena(self, escena: str):
         """Envía solicitud de cambiar de Escena."""
-        escena: str = opciones.get("escena")
-
-        if escena is None:
-            logger.info("OBS[Escena no definida]")
-            return
-
-        if not self.conectado:
-            logger.warning("OBS[No conectado]")
-            self.Notificar("OBS-No-Encontrado")
-            return
-
         try:
             self.clienteConsultas.set_current_program_scene(escena)
         except OBSerror.OBSSDKRequestError as e:
-            print(f"El error es {e}")
-            print(e.req_name, e.code)
+            logger.warning(f"OBS[No existe] {escena} {e}")
             self.Notificar(f"OBS[No existe] {escena}")
+            return
 
         logger.info(f"OBS[Cambiando] {escena}")
 
-    def cambiarFuente(self, opciones: dict):
-        """Envía solicitud de Cambia el estado de una fuente."""
-
-        fuente: str = opciones.get("fuente")
-
-        if fuente is None:
-            logger.warning("OBS[Falta Fuente]")
-            return
-
-        if not self.conectado:
-            logger.warning("OBS[No conectado]")
-            self.Notificar("OBS-No-Encontrado")
-            return
+    def cambiarFuente(self, fuente: str):
+        """Envía solicitud de cambiar el estado de una fuente en la escena actual."""
 
         # TODO: confirmar que exista fuente
 
@@ -660,48 +610,21 @@ class moduloOBS(modulo):
 
         self.clienteConsultas.set_scene_item_enabled(self.escenaActual, idFuente, not estadoEscena)
 
-    def cambiarFiltro(self, opciones):
-        """Envía solicitud de cambiar estado de filtro."""
-        fuente: str = opciones.get("fuente")
-        filtro: str = opciones.get("filtro")
-        estado: bool | None = opciones.get("estado")
-
-        if fuente is None or filtro is None:
-            logger.info("OBS[Falta Atributo]")
-            return
-
-        if self.conectado:
+    def cambiarFiltro(self, fuente: str, filtro: str, estado: bool | None = None):
+        """Envía solicitud de cambiar estado de filtro, sin `estado` lo invierte."""
+        if estado is None:
+            estado = ObtenerValor(unirPath(self.archivoEstado, "filtro"), [fuente, filtro])
             if estado is None:
-                estado = ObtenerValor(unirPath(self.archivoEstado, "filtro"), [fuente, filtro])
-                if estado is not None:
-                    estado = not estado
+                logger.warning(f"OBS[Filtro sin estado] {fuente}[{filtro}]")
+                return
+            estado = not estado
 
-            if estado is not None:
-                logger.info(f"OBS[Filtro] {fuente}[{filtro}]={estado}")
-                self.clienteConsultas.set_source_filter_enabled(fuente, filtro, estado)
-        else:
-            logger.info("OBS[no Conectado]")
-            self.Notificar("OBS-No-Conectado")
+        logger.info(f"OBS[Filtro] {fuente}[{filtro}]={estado}")
+        self.clienteConsultas.set_source_filter_enabled(fuente, filtro, estado)
 
-    def CambiarFiltroPropiedad(self, opciones):
-        """Envía solicitud de cambiar propiedades de un filtro."""
-        if not self.conectado:
-            logger.info("OBS[no Conectado]")
-            self.Notificar("OBS-No-Conectado")
-            return
-
-        filtro: str = opciones.get("filtro")
-        fuente: str = opciones.get("fuente")
-        agregar: bool = opciones.get("agregar", False)
-
-        propiedad: str = opciones.get("propiedad")
-        valor: str = opciones.get("valor")
-
+    def cambiarFiltroPropiedad(self, fuente: str, filtro: str, propiedad: str, valor, agregar: bool = False):
+        """Envía solicitud de cambiar una propiedad de un filtro, con `agregar` suma al valor anterior."""
         PropiedadesAnteriores = ObtenerValor(unirPath(self.archivoEstado, "filtro_propiedades"), [fuente, filtro])
-
-        if fuente is None or filtro is None or propiedad is None or valor is None:
-            logger.info("OBS[Falta Atributo]")
-            return
 
         if PropiedadesAnteriores is not None and agregar:
             for llaveAnterior, valorAnterior in PropiedadesAnteriores.items():
@@ -719,112 +642,61 @@ class moduloOBS(modulo):
         )
         self.SalvarFiltroFuente(fuente)
 
-    def cambiarGrabacion(self, opciones: dict | None = None):
+    def cambiarGrabacion(self):
         """Envía solicitud de cambiar estado de Grabación."""
-        if self.conectado:
-            logger.info("Cambiando[Grabación]")
-            try:
-                self.clienteConsultas.toggle_record()
-            except KeyError as e:
-                logger.error(f"OBS[Error] {e}")
-        else:
-            logger.info("OBS no Conectado")
-            self.Notificar("OBS-No-Conectado")
+        logger.info("Cambiando[Grabación]")
+        try:
+            self.clienteConsultas.toggle_record()
+        except KeyError as e:
+            logger.error(f"OBS[Error] {e}")
 
-    def cambiarPausa(self, opciones=None):
+    def cambiarPausa(self):
         """Envía solicitud de cambiar estado de Pausa Grabación."""
-        if self.conectado:
-            logger.info("Cambiando[Pausa]")
-            self.clienteConsultas.toggle_record_pause()
-        else:
-            logger.info("OBS no Conectado")
-            self.Notificar("OBS-No-Conectado")
+        logger.info("Cambiando[Pausa]")
+        self.clienteConsultas.toggle_record_pause()
 
-    def cambiarEnVivo(self, opciones=None):
-        """Envía solicitud de cambiar estado del Streaming ."""
-        if self.conectado:
-            logger.info("Cambiando[EnVivo]")
-            self.clienteConsultas.toggle_stream()
-        else:
-            logger.info("OBS no Conectado")
-            self.Notificar("OBS-No-Conectado")
+    def cambiarEnVivo(self):
+        """Envía solicitud de cambiar estado del Streaming."""
+        logger.info("Cambiando[EnVivo]")
+        self.clienteConsultas.toggle_stream()
 
-    def cambiarCamaraVirtual(self, opciones: dict | None = None):
+    def cambiarCamaraVirtual(self):
         """Envía solicitud de cambio estado Cámara Virtual"""
-        if self.conectado:
-            try:
-                self.clienteConsultas.toggle_virtual_cam()
-            except KeyError as e:
-                logger.error(f"OBS[Error] {e}")
-        else:
-            logger.info("OBS no Conectado")
-            self.Notificar("OBS-No-Conectado")
+        try:
+            self.clienteConsultas.toggle_virtual_cam()
+        except KeyError as e:
+            logger.error(f"OBS[Error] {e}")
 
-    def cambiarGrabacionVertical(self, opciones=None):
+    def cambiarGrabacionVertical(self):
         """Envía solicitud de cambiar estado de Grabación en plugin Vertical."""
-        if self.conectado:
-            logger.info("Cambiando[Grabación-Vertical]")
-            try:
-                self.clienteConsultas.call_vendor_request("aitum-vertical-canvas", "toggle_recording")
-            except KeyError as e:
-                if str(e) == "'requestStatus'":
-                    return
-                logger.error(f"OBS[Error] {e}")
-        else:
-            logger.info("OBS no Conectado")
-            self.Notificar("OBS-No-Conectado")
+        logger.info("Cambiando[Grabación-Vertical]")
+        try:
+            self.clienteConsultas.call_vendor_request("aitum-vertical-canvas", "toggle_recording")
+        except KeyError as e:
+            if str(e) == "'requestStatus'":
+                return
+            logger.error(f"OBS[Error] {e}")
 
-    def cambiarEnVivoVertical(self, opciones=None):
-        """Envía solicitud de cambiar estado del Streaming ."""
-        if self.conectado:
-            logger.info("Cambiando[EnVivo-Vertical]")
-            self.clienteConsultas.call_vendor_request("aitum-vertical-canvas", "toggle_streaming")
-        else:
-            logger.info("OBS no Conectado")
-            self.Notificar("OBS-No-Conectado")
+    def cambiarEnVivoVertical(self):
+        """Envía solicitud de cambiar estado del Streaming en plugin Vertical."""
+        logger.info("Cambiando[EnVivo-Vertical]")
+        self.clienteConsultas.call_vendor_request("aitum-vertical-canvas", "toggle_streaming")
 
-    def cambiarEscenaVertical(self, opciones: dict | None = None):
+    def cambiarEscenaVertical(self, escena: str):
         """Envía solicitud de cambiar de Escena en plugin Vertical."""
-        if opciones is None:
-            opciones = {}
+        try:
+            self.clienteConsultas.call_vendor_request("aitum-vertical-canvas", "switch_scene", {"scene": escena})
+        except KeyError as e:
+            # Captura el error específico de 'requestStatus'
+            logger.error(f"OBS[Error-Vertical] La solicitud falló o hay una incompatibilidad de protocolo. Error: {e}")
 
-        escena = opciones.get("escena")
+        logger.info(f"OBS[Cambiando-Vertical] {escena}")
 
-        if escena is None:
-            logger.info("OBS[Escena no definida]")
-            return
-
-        if self.conectado:
-            mensaje = {"scene": escena}
-
-            try:
-                self.clienteConsultas.call_vendor_request("aitum-vertical-canvas", "switch_scene", mensaje)
-            except KeyError as e:
-                # Captura el error específico de 'requestStatus'
-                logger.error("OBS[Error-Vertical] La solicitud falló o hay una incompatibilidad de protocolo. " f"Error: {e}")
-
-            logger.info(f"OBS[Cambiando-Vertical] {escena}")
-        else:
-            logger.warning("OBS[No conectado]")
-            self.Notificar("OBS-No-Encontrado")
-
-    def cambiarFuenteVertical(self, opciones: dict):
+    def cambiarFuenteVertical(self, fuente: str, escena: str | None = None):
         """Envía solicitud de cambiar el estado de una fuente en el canvas del plugin Vertical.
 
         Si no se indica `escena` usa la escena vertical actual.
         """
-        fuente: str = opciones.get("fuente")
-        escena: str = opciones.get("escena")
-
-        if fuente is None:
-            logger.warning("OBS[Falta Fuente]")
-            return
-
-        if not self.conectado:
-            logger.warning("OBS[No conectado]")
-            self.Notificar("OBS-No-Encontrado")
-            return
-
         cliente = self.clienteConsultas
         try:
             if escena is None:
@@ -879,7 +751,7 @@ class moduloOBS(modulo):
         SalvarArchivo(unirPath(self.archivoEstado, "filtro_propiedades"), dict())
         SalvarArchivo(unirPath(self.archivoEstado, "fuente_id"), dict())
 
-    def desconectar(self, opciones=False):
+    def desconectar(self):
         """Desconectar de OBS websocket."""
         logger.info(f"OBS[Desconectando] - {self.host}")
         self.Notificar("OBS-No-Conectado")

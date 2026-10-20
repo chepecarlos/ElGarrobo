@@ -43,19 +43,12 @@ class TestModuloOBS:
 
         assert mi_obs.notificaciones is None
 
-    def test_iniciar_acciones_registra_acciones_clave(self, monkeypatch):
+    def test_registra_acciones_clave(self, monkeypatch):
         modulo_mi_obs = cargar_modulo_mi_obs()
-        mi_obs = crear_instancia_segura(monkeypatch, modulo_mi_obs)
+        comandos = [claseAccion.comando for claseAccion in modulo_mi_obs.moduloOBS.acciones]
 
-        acciones = {}
-
-        mi_obs.IniciarAcciones(acciones)
-
-        assert acciones["obs_conectar"] == mi_obs.conectar
-        assert acciones["obs_desconectar"] == mi_obs.desconectar
-        assert acciones["obs_grabar"] == mi_obs.cambiarGrabacion
-        assert acciones["obs_envivo"] == mi_obs.cambiarEnVivo
-        assert acciones["obs_escena"] == mi_obs.cambiarEscena
+        for comando in ["obs_conectar", "obs_desconectar", "obs_grabar", "obs_envivo", "obs_escena", "obs_fuente"]:
+            assert comando in comandos
 
     def test_conectar_retorna_false_si_ya_esta_conectado(self, monkeypatch):
         modulo_mi_obs = cargar_modulo_mi_obs()
@@ -65,7 +58,7 @@ class TestModuloOBS:
         mi_obs.Notificar = notificar
         mi_obs.conectado = True
 
-        resultado = mi_obs.conectar({})
+        resultado = mi_obs.conectar()
 
         assert resultado is False
         notificar.assert_called_once_with("OBS-Ya-Conectado")
@@ -100,7 +93,7 @@ class TestModuloOBS:
         mi_obs.salvarEstadoActual = MagicMock()
         mi_obs.empezarConsultaTiempo = MagicMock()
 
-        resultado = mi_obs.conectar({"servidor": "127.0.0.1", "puerto": 4456, "password": "clave"})
+        resultado = mi_obs.conectar("127.0.0.1", 4456, "clave")
 
         assert resultado is True
         assert mi_obs.conectado is True
@@ -129,7 +122,7 @@ class TestModuloOBS:
         mi_obs.Notificar = MagicMock()
         mi_obs.LimpiarTemporales = MagicMock()
 
-        resultado = mi_obs.conectar({})
+        resultado = mi_obs.conectar()
 
         assert resultado is False
         assert mi_obs.conectado is False
@@ -151,7 +144,7 @@ class TestModuloOBS:
         mi_obs.Notificar = MagicMock()
         mi_obs.LimpiarTemporales = MagicMock()
 
-        resultado = mi_obs.conectar({"servidor": "localhost", "puerto": 4455})
+        resultado = mi_obs.conectar("localhost", 4455)
 
         assert resultado is False
         assert mi_obs.conectado is False
@@ -286,7 +279,9 @@ class TestModuloOBS:
         monkeypatch.setattr(modulo_mi_obs, "SalvarValor", salvar_valor)
         mi_obs.actualizarDeck = MagicMock()
 
-        mi_obs.on_source_filter_enable_state_changed(SimpleNamespace(filter_name="Color", source_name="Camara", filter_enabled=True))
+        mi_obs.on_source_filter_enable_state_changed(
+            SimpleNamespace(filter_name="Color", source_name="Camara", filter_enabled=True)
+        )
 
         salvar_valor.assert_called_once_with("data/obs/obs_filtro", ["Camara", "Color"], True, depuracion=True)
         mi_obs.actualizarDeck.assert_called_once()
@@ -300,7 +295,9 @@ class TestModuloOBS:
         monkeypatch.setattr(modulo_mi_obs, "SalvarValor", salvar_valor)
         mi_obs.actualizarDeck = MagicMock()
 
-        mi_obs.on_scene_item_enable_state_changed(SimpleNamespace(scene_name="Escena A", scene_item_id=9, scene_item_enabled=False))
+        mi_obs.on_scene_item_enable_state_changed(
+            SimpleNamespace(scene_name="Escena A", scene_item_id=9, scene_item_enabled=False)
+        )
 
         salvar_valor.assert_called_once_with("data/obs/obs_fuente", "Camara", False)
         mi_obs.actualizarDeck.assert_called_once()
@@ -345,17 +342,6 @@ class TestModuloOBS:
         salvar_valor.assert_called_once_with(mi_obs.archivoEstado, "obs_grabar_vertical", True)
         mi_obs.actualizarDeck.assert_called_once()
 
-    def test_cambiar_escena_no_conectado_notifica(self, monkeypatch):
-        modulo_mi_obs = cargar_modulo_mi_obs()
-        mi_obs = crear_instancia_segura(monkeypatch, modulo_mi_obs)
-
-        mi_obs.conectado = False
-        mi_obs.Notificar = MagicMock()
-
-        mi_obs.cambiarEscena({"escena": "Escena A"})
-
-        mi_obs.Notificar.assert_called_once_with("OBS-No-Encontrado")
-
     def test_cambiar_escena_conectado_ejecuta_cliente(self, monkeypatch):
         modulo_mi_obs = cargar_modulo_mi_obs()
         mi_obs = crear_instancia_segura(monkeypatch, modulo_mi_obs)
@@ -364,7 +350,7 @@ class TestModuloOBS:
         mi_obs.clienteConsultas = cliente
         mi_obs.conectado = True
 
-        mi_obs.cambiarEscena({"escena": "Escena A"})
+        mi_obs.cambiarEscena("Escena A")
 
         cliente.set_current_program_scene.assert_called_once_with("Escena A")
         mi_obs.conectado = False
@@ -378,21 +364,10 @@ class TestModuloOBS:
         mi_obs.clienteConsultas = cliente
         mi_obs.conectado = True
 
-        mi_obs.cambiarFiltro({"fuente": "Camara", "filtro": "Color"})
+        mi_obs.cambiarFiltro("Camara", "Color")
 
         cliente.set_source_filter_enabled.assert_called_once_with("Camara", "Color", False)
         mi_obs.conectado = False
-
-    def test_cambiar_grabacion_no_conectado_notifica(self, monkeypatch):
-        modulo_mi_obs = cargar_modulo_mi_obs()
-        mi_obs = crear_instancia_segura(monkeypatch, modulo_mi_obs)
-
-        mi_obs.Notificar = MagicMock()
-        mi_obs.conectado = False
-
-        mi_obs.cambiarGrabacion()
-
-        mi_obs.Notificar.assert_called_once_with("OBS-No-Conectado")
 
     def test_cambiar_grabacion_conectado_ejecuta_toggle(self, monkeypatch):
         modulo_mi_obs = cargar_modulo_mi_obs()
@@ -450,3 +425,48 @@ class TestModuloOBS:
         mi_obs.Notificar.assert_any_call("OBS-EnVivo")
         mi_obs.Notificar.assert_any_call("OBS-No-WebCamara")
         assert mi_obs.Notificar.call_count == 4
+
+
+class TestAccionesOBS:
+    def test_no_ejecuta_sin_conexion_y_notifica(self):
+        from elGarrobo.modulos.obs.accionesOBS import accionOBSFuente
+
+        accionOBSFuente.modulo = MagicMock(conectado=False)
+        objeto = accionOBSFuente()
+        objeto.configurar({"fuente": "Camara"})
+
+        assert objeto.ejecutar() is False
+        accionOBSFuente.modulo.cambiarFuente.assert_not_called()
+        accionOBSFuente.modulo.Notificar.assert_called_once_with("OBS-No-Conectado")
+
+    def test_conectar_no_requiere_conexion(self):
+        from elGarrobo.modulos.obs.accionesOBS import accionOBSConectar
+
+        accionOBSConectar.modulo = MagicMock(conectado=False)
+        objeto = accionOBSConectar()
+        objeto.configurar({})
+
+        assert objeto.ejecutar() is True
+        accionOBSConectar.modulo.conectar.assert_called_once_with("localhost", 4455, None)
+
+    def test_filtro_propiedad_pasa_agregar_por_defecto(self):
+        from elGarrobo.modulos.obs.accionesOBS import accionOBSFiltroPropiedad
+
+        accionOBSFiltroPropiedad.modulo = MagicMock(conectado=True)
+        objeto = accionOBSFiltroPropiedad()
+        objeto.configurar({"fuente": "Camara", "filtro": "Verde", "propiedad": "similarity", "valor": 10})
+
+        assert objeto.ejecutar() is True
+        accionOBSFiltroPropiedad.modulo.cambiarFiltroPropiedad.assert_called_once_with(
+            "Camara", "Verde", "similarity", 10, False
+        )
+
+    def test_ejecuta_con_conexion(self):
+        from elGarrobo.modulos.obs.accionesOBS import accionOBSFuenteVertical
+
+        accionOBSFuenteVertical.modulo = MagicMock(conectado=True)
+        objeto = accionOBSFuenteVertical()
+        objeto.configurar({"fuente": "Camara"})
+
+        assert objeto.ejecutar() is True
+        accionOBSFuenteVertical.modulo.cambiarFuenteVertical.assert_called_once_with("Camara", None)

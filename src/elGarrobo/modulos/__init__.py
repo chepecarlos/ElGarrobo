@@ -1,9 +1,9 @@
 from .estadoPc import estadoPc
 from .modulo import modulo
-from .octoprint import moduloOctoprint
-from .klipper import moduloKlipper
-from .fdmMonster import moduloFdmMonster
-from .obs import moduloOBS
+from .octoprint.moduloOctoprint import moduloOctoprint
+from .klipper.moduloKlipper import moduloKlipper
+from .fdmMonster.moduloFdmMonster import moduloFdmMonster
+from .obs.moduloOBS import moduloOBS
 
 
 def cargarModulos() -> list[type["modulo"]]:

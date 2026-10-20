@@ -34,7 +34,7 @@ from .miLibrerias import (
     obtenerArchivoPaquete,
 )
 from .modulos import cargarModulos, modulo
-from .modulos.obs import moduloOBS
+from .modulos.obs.moduloOBS import moduloOBS
 
 logger = ConfigurarLogging(__name__)
 
@@ -243,6 +243,7 @@ class elGarrobo(object):
         listaClasesAcciones = cargarClasesAcciones()
         for moduloActivo in self.listaModulos:
             for claseAccion in moduloActivo.acciones:
+                claseAccion.modulo = moduloActivo
                 listaClasesAcciones[claseAccion.comando] = claseAccion
 
         ListaAcciones["alias"] = self.AccionesAlias
@@ -700,14 +701,11 @@ class elGarrobo(object):
 
     def CargarOBS(self):
         """
-        Inicialioza el Objeto de OBS
+        Inicializa el Objeto de OBS
         """
         self.OBS = next(m for m in self.listaModulos if isinstance(m, moduloOBS))
         self.OBS.DibujarDeck(self.SolisitarDibujar)
         self.OBS.AgregarNotificacion(self.SolisitarNotifiacacion)
-
-        # Acciones OBS
-        self.OBS.IniciarAcciones(self.ListaAcciones)
 
     def __exit__(self, exc_type, exc_value, traceback):
         print("Hora de matar todo XD")

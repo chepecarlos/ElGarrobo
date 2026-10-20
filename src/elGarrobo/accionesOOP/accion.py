@@ -88,7 +88,7 @@ class accion:
             bool: True si se ejecutó, False si no
         """
         if not self.sePuedeEjecutar():
-            logger.error(f"Acción[Error] {self.nombre} - Falta Propiedades.")
+            logger.error(f"Acción[Error] {self.nombre} - No se puede ejecutar")
             return False
 
         if callable(self.funcion):
