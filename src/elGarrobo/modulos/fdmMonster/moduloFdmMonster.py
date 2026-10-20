@@ -8,7 +8,7 @@ from elGarrobo.modulos.fdmMonster.accionesFdmMonster import accionImprimirColaFD
 from elGarrobo.accionesOOP.accionMQTT import accionMQTT
 from elGarrobo.miLibrerias import ConfigurarLogging
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
-from elGarrobo.modulos.modulo import modulo, propiedadesMonitoreo
+from elGarrobo.modulos.modulo import leerMonitoreo, modulo, propiedadesMonitoreo
 
 logger = ConfigurarLogging(__name__)
 
@@ -51,20 +51,7 @@ class moduloFdmMonster(modulo):
             logger.error(f"Modulo[{self.nombre}] - Falta 'url' o 'usuario', revisa {self.archivoConfiguracion}")
             return
 
-        try:
-            intervalo = max(5, int(self.config.get("intervalo_segundos", 30)))
-        except (TypeError, ValueError):
-            intervalo = 30
-
-        try:
-            intervalo_error = max(intervalo, int(self.config.get("intervalo_error_segundos", 120)))
-        except (TypeError, ValueError):
-            intervalo_error = 120
-
-        try:
-            limite_errores_log = max(1, int(self.config.get("limite_errores_log", 3)))
-        except (TypeError, ValueError):
-            limite_errores_log = 3
+        intervalo, intervalo_error, limite_errores_log = leerMonitoreo(self.config)
 
         self.activo = True
         self.hilo = threading.Thread(

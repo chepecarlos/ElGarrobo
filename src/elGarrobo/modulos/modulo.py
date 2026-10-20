@@ -58,3 +58,20 @@ def propiedadesMonitoreo() -> list[propiedadAccion]:
             defecto=3,
         ),
     ]
+
+
+def leerMonitoreo(config: dict) -> tuple[int, int, int]:
+    """Lee intervalo, intervalo con error y límite de errores con los defectos de `propiedadesMonitoreo()`
+
+    Un valor inválido usa el defecto; el intervalo mínimo es 5, el de error no baja del intervalo y el límite mínimo es 1
+    """
+    defectos = {propiedad.atributo: propiedad.defecto for propiedad in propiedadesMonitoreo()}
+
+    def leer(atributo: str) -> int:
+        try:
+            return int(config.get(atributo, defectos[atributo]))
+        except (TypeError, ValueError):
+            return defectos[atributo]
+
+    intervalo = max(5, leer("intervalo_segundos"))
+    return intervalo, max(intervalo, leer("intervalo_error_segundos")), max(1, leer("limite_errores_log"))

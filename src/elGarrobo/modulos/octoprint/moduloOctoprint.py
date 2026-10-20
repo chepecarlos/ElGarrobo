@@ -8,7 +8,7 @@ from elGarrobo.modulos.octoprint.accionesOctoprint import accionCancelarOctoprin
 from elGarrobo.accionesOOP.accionMQTT import accionMQTT
 from elGarrobo.miLibrerias import ConfigurarLogging
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
-from elGarrobo.modulos.modulo import modulo, propiedadesMonitoreo
+from elGarrobo.modulos.modulo import leerMonitoreo, modulo, propiedadesMonitoreo
 
 logger = ConfigurarLogging(__name__)
 
@@ -85,20 +85,7 @@ class moduloOctoprint(modulo):
                 logger.warning(f"EstadoOctoprint[{nombre}] - Falta 'url' o 'token', se omite esta impresora")
                 continue
 
-            try:
-                intervalo = max(5, int(config.get("intervalo_segundos", 30)))
-            except (TypeError, ValueError):
-                intervalo = 30
-
-            try:
-                intervalo_error = max(intervalo, int(config.get("intervalo_error_segundos", 120)))
-            except (TypeError, ValueError):
-                intervalo_error = 120
-
-            try:
-                limite_errores_log = max(1, int(config.get("limite_errores_log", 3)))
-            except (TypeError, ValueError):
-                limite_errores_log = 3
+            intervalo, intervalo_error, limite_errores_log = leerMonitoreo(config)
 
             hilo = threading.Thread(
                 target=self._monitorear_estado,

@@ -34,7 +34,7 @@ class estadoPc(modulo):
             obligatorio=True,
             descripcion="Se usa en los topics MQTT: estado_pc/<nombre>/cpu",
             ejemplo="mi-pc",
-            defecto="pc-default",
+            defecto=nombrePC,
         )
     ]
 
@@ -48,8 +48,12 @@ class estadoPc(modulo):
         dataModulo = dataModulo or {}
         self.nombrePC = dataModulo.get("nombre_pc", self.nombrePC)
 
-        if self.nombrePC == "pc-default":
-            logger.warning(f"Estado[{self.nombrePC}] - No se especificó nombre del PC, " f"usando valor por defecto: {self.nombrePC}, " "cámbialo en la GUI en /modulos")
+        if self.nombrePC == estadoPc.nombrePC:
+            logger.warning(
+                f"Estado[{self.nombrePC}] - No se especificó nombre del PC, "
+                f"usando valor por defecto: {self.nombrePC}, "
+                "cámbialo en la GUI en /modulos"
+            )
 
         logger.info(f"Estado[{self.nombrePC}] - Publicando estado de PC[{self.nombrePC}] por MQTT")
 
