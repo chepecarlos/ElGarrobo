@@ -10,6 +10,7 @@ import yaml
 from fastapi import Response
 from nicegui import app, ui
 
+from elGarrobo import servicio
 from elGarrobo.accionesOOP import accion
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.dispositivos.dataAccion import dataAccion
@@ -290,6 +291,11 @@ class miGui(dispositivo):
 
             accionListaCheckBox.registrarCliente(ui.context.client)
             self.mostrarListaActivables("Dispositivos", "dispositivos", cargarDispositivos())
+            self.estructura()
+
+        @ui.page("/configurar")
+        def paginaConfigurar():
+            self.mostrarConfigurar()
             self.estructura()
 
     @staticmethod
@@ -1195,6 +1201,23 @@ class miGui(dispositivo):
                 elif getattr(clase, "propiedades", None):
                     self.mostrarConfiguracionModulo(clase)
 
+    def mostrarConfigurar(self) -> None:
+        """Opciones generales de ElGarrobo, por ahora solo el arranque automático al iniciar sesión"""
+
+        def cambiarAutoarranque(valor: bool) -> None:
+            servicio.cambiarAutoarranque(valor)
+            ui.notify("ElGarrobo iniciará al encender la PC" if valor else "ElGarrobo ya no iniciará al encender la PC")
+
+        miGui.encabezado(ui.label("Configurar").classes("text-h5 p-4"), 2)
+        with ui.column().classes("p-4 gap-2 w-full"):
+            with ui.row().classes(f"items-center w-full border-b border-{self.colorOscuro} pb-2"):
+                interruptor = ui.switch(value=servicio.autoarranque().exists(), on_change=lambda e: cambiarAutoarranque(e.value))
+                interruptor.props["aria-label"] = "Iniciar al encender la PC"
+                interruptor.mark("autoarranque")
+                with ui.column().classes("gap-0"):
+                    ui.label("Iniciar al encender la PC").classes("font-bold")
+                    ui.label("Abre el ícono de la barra de estado al iniciar sesión, y este arranca ElGarrobo").classes("text-caption")
+
     def mostrarConfiguracionModulo(self, clase: type) -> None:
         """Desplegable para editar la configuración de un módulo (ej. modulos/estado_octoprint.md)
 
@@ -1440,6 +1463,7 @@ class miGui(dispositivo):
                             ui.menu_item("Acciones", on_click=lambda: ui.navigate.to("/")).mark("menu-Acciones")
                             ui.menu_item("Módulos", on_click=lambda: ui.navigate.to("/modulos")).mark("menu-Módulos")
                             ui.menu_item("Dispositivos", on_click=lambda: ui.navigate.to("/dispositivos")).mark("menu-Dispositivos")
+                            ui.menu_item("Configurar", on_click=lambda: ui.navigate.to("/configurar")).mark("menu-Configurar")
                             ui.menu_item("Acerca de", on_click=dialogoAcercaDe.open).mark("menu-AcercaDe")
                             ui.separator()
                             ui.menu_item("Reiniciar", on_click=dialogoReiniciar.open).mark("menu-Reiniciar")

@@ -476,7 +476,7 @@ class TestMenu:
         clickEnDialogoAbierto(user, "Cancelar")
         gui.ejecutarAccionSistema.assert_not_called()
 
-    @pytest.mark.parametrize("item, ruta", [("Módulos", "/modulos"), ("Dispositivos", "/dispositivos"), ("Acciones", "/")])
+    @pytest.mark.parametrize("item, ruta", [("Módulos", "/modulos"), ("Dispositivos", "/dispositivos"), ("Configurar", "/configurar"), ("Acciones", "/")])
     async def test_navegar(self, user: User, gui: miGui, monkeypatch, item, ruta):
         monkeypatch.setattr(moduloMiGui, "leerData", lambda _: {})
         await user.open("/modulos")
@@ -493,6 +493,23 @@ class TestMenu:
         with user:
             gui.ejecutarAccionSistema("salir")
         await user.should_see("No se encontró la acción salir")
+
+
+class TestConfigurar:
+    async def test_switch_autoarranque(self, user: User, gui: miGui, monkeypatch, tmp_path):
+        from elGarrobo import servicio
+
+        monkeypatch.setenv("HOME", str(tmp_path))
+        monkeypatch.setattr(servicio.subprocess, "run", MagicMock())
+        inicio = tmp_path / ".config/autostart/elgarrobo.desktop"
+
+        await user.open("/configurar")
+        user.find(marker="autoarranque").click()
+        assert inicio.exists()
+        assert (tmp_path / ".config/systemd/user/elgarrobo.service").exists()
+
+        user.find(marker="autoarranque").click()
+        assert not inicio.exists()
 
 
 class TestActivables:

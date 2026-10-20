@@ -2,12 +2,8 @@
 Este es el Inicio del Código que llama a las funciones
 """
 
-import os
 import signal
-import subprocess
-import sys
 import threading
-from pathlib import Path
 from typing import Optional
 
 import typer
@@ -16,7 +12,7 @@ from rich.table import Table
 from typing_extensions import Annotated
 
 from configurar.modulo import ConfigurarModulos
-from elGarrobo import miLibrerias
+from elGarrobo import miLibrerias, servicio
 from elGarrobo.elGarrobo import elGarrobo
 from elGarrobo.dispositivos import cargarDispositivos
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, SalvarValor, leerData
@@ -181,56 +177,19 @@ def abrir_gui() -> None:
     accionAbrirGUI().ejecutar()
 
 
-def _archivosServicio() -> dict[Path, str]:
-    """Archivos que instala `elgarrobo servicio instalar`, con la ruta real del ejecutable (pipx o venv)"""
-    ejecutable = os.path.abspath(sys.argv[0])
-    bandeja = Path(__file__).with_name("bandeja.py")
-    escritorio = f"""[Desktop Entry]
-Type=Application
-Name=ElGarrobo
-Comment=Macros para StreamDeck, teclados, MQTT y OBS
-Exec=/usr/bin/python3 {bandeja} {ejecutable}
-Icon=input-keyboard
-Terminal=false
-Categories=Utility;
-X-GNOME-Autostart-Delay=5
-"""
-    # Sin [Install]: no arranca solo, lo arranca la bandeja ya con la sesión gráfica lista
-    servicio = f"""[Unit]
-Description=ElGarrobo - Macros para StreamDeck, teclados, MQTT y OBS
-
-[Service]
-ExecStart={ejecutable}
-Restart=on-failure
-RestartSec=3
-"""
-    home = Path.home()
-    return {
-        home / ".config/systemd/user/elgarrobo.service": servicio,
-        home / ".local/share/applications/elgarrobo.desktop": escritorio,
-        home / ".config/autostart/elgarrobo.desktop": escritorio,
-    }
-
-
 @servicio_app.command("instalar")
 def servicio_instalar() -> None:
     """Instala el servicio de systemd, el ícono de la barra de estado (al iniciar sesión) y la entrada en el menú."""
-    for archivo, contenido in _archivosServicio().items():
-        archivo.parent.mkdir(parents=True, exist_ok=True)
-        archivo.write_text(contenido)
+    for archivo in servicio.instalar():
         typer.echo(f"Creado {archivo}")
-    subprocess.run(["systemctl", "--user", "daemon-reload"])
     typer.echo("Listo: abre ElGarrobo desde el menú o inicia sesión de nuevo")
 
 
 @servicio_app.command("desinstalar")
 def servicio_desinstalar() -> None:
     """Detiene el servicio y borra los archivos creados por `servicio instalar`."""
-    subprocess.run(["systemctl", "--user", "stop", "elgarrobo"])
-    for archivo in _archivosServicio():
-        archivo.unlink(missing_ok=True)
+    for archivo in servicio.desinstalar():
         typer.echo(f"Borrado {archivo}")
-    subprocess.run(["systemctl", "--user", "daemon-reload"])
 
 
 def configurar() -> None:
