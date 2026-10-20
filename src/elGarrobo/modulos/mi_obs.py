@@ -205,6 +205,7 @@ class MiOBS:
         listaAcciones["obs_grabar_vertical"] = self.cambiarGrabacionVertical
         listaAcciones["obs_envivo_vertical"] = self.cambiarEnVivoVertical
         listaAcciones["obs_escena_vertical"] = self.cambiarEscenaVertical
+        listaAcciones["obs_fuente_vertical"] = self.cambiarFuenteVertical
         # listaAcciones["obs_estado"] = self.EstadoOBS
         # listaAcciones["obs_tiempo_grabando"] = self.TiempoGrabando
         # listaAcciones["obs_tiempo_envivo"] = self.TiempoEnVivo
@@ -796,6 +797,45 @@ class MiOBS:
         else:
             logger.warning("OBS[No conectado]")
             self.Notificar("OBS-No-Encontrado")
+
+    def cambiarFuenteVertical(self, opciones: dict):
+        """Envía solicitud de cambiar el estado de una fuente en el canvas del plugin Vertical.
+
+        Si no se indica `escena` usa la escena vertical actual.
+        """
+        fuente: str = opciones.get("fuente")
+        escena: str = opciones.get("escena")
+
+        if fuente is None:
+            logger.warning("OBS[Falta Fuente]")
+            return
+
+        if not self.conectado:
+            logger.warning("OBS[No conectado]")
+            self.Notificar("OBS-No-Encontrado")
+            return
+
+        cliente = self.clienteConsultas
+        try:
+            if escena is None:
+                consulta = {"vendorName": "aitum-vertical-canvas", "requestType": "current_scene"}
+                escena = cliente.send("CallVendorRequest", consulta, raw=True)["responseData"]["scene"]
+            # Por nombre OBS solo busca en el canvas principal, el vertical requiere sceneUuid (obs-websocket >= 5.7)
+            canvas = cliente.send("GetCanvasList", raw=True)["canvases"]
+            idCanvas = next(c["canvasUuid"] for c in canvas if c["canvasName"] == "Aitum Vertical")
+            escenas = cliente.send("GetSceneList", {"canvasUuid": idCanvas}, raw=True)["scenes"]
+            idEscena = next(e["sceneUuid"] for e in escenas if e["sceneName"] == escena)
+            item = {"sceneUuid": idEscena}
+            idFuente = cliente.send("GetSceneItemId", {**item, "sourceName": fuente}, raw=True)["sceneItemId"]
+            item["sceneItemId"] = idFuente
+            estado = cliente.send("GetSceneItemEnabled", item, raw=True)["sceneItemEnabled"]
+            cliente.send("SetSceneItemEnabled", {**item, "sceneItemEnabled": not estado})
+        except (StopIteration, OBSerror.OBSSDKRequestError) as e:
+            logger.warning(f"OBS[No existe-Vertical] {escena}/{fuente} {e}")
+            self.Notificar(f"OBS[No existe] {fuente}")
+            return
+
+        logger.info(f"OBS[Cambiando Fuente-Vertical] {escena}/{fuente} {not estado}")
 
     def TiempoGrabando(self, opciones=None):
         if self.conectado and self.clienteConsultas is not None:
