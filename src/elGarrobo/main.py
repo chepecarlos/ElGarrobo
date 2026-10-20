@@ -2,7 +2,12 @@
 Este es el Inicio del Código que llama a las funciones
 """
 
+import os
+import signal
+import subprocess
+import sys
 import threading
+from pathlib import Path
 from typing import Optional
 
 import typer
@@ -27,6 +32,8 @@ modulos_app = typer.Typer(help="Gestión de los módulos de ElGarrobo")
 app.add_typer(modulos_app, name="modulos")
 dispositivos_app = typer.Typer(help="Gestión de los dispositivos de ElGarrobo")
 app.add_typer(dispositivos_app, name="dispositivos")
+servicio_app = typer.Typer(help="Servicio de systemd, ícono de la barra de estado y entrada en el menú")
+app.add_typer(servicio_app, name="servicio")
 
 
 def _version_callback(valor: bool) -> None:
@@ -69,6 +76,8 @@ def _cli(
             _mantenerVivo(app)
         except Exception as error:
             logger.exception(f"Error Main[{error}]")
+            # Código distinto de 0 para que systemd lo marque como error y lo reinicie
+            raise typer.Exit(1)
 
 
 def _mantenerVivo(app: elGarrobo) -> None:
@@ -76,10 +85,11 @@ def _mantenerVivo(app: elGarrobo) -> None:
     sigan corriendo. Sin esto, el hilo principal termina apenas se crea elGarrobo() y Python
     empieza a cerrar el interprete mientras esos hilos todavia estan arrancando.
 
-    Al salir (Ctrl+C) llama a Salir(), que desconecta los dispositivos y mata el proceso.
-    De lo contrario los hilos en segundo plano (teclado, deck, GUI) quedan vivos para siempre
-    y el proceso nunca termina.
+    Al salir (Ctrl+C o SIGTERM de `systemctl stop`) llama a Salir(), que desconecta los dispositivos
+    (resetea el StreamDeck) y mata el proceso. De lo contrario los hilos en segundo plano (teclado, deck, GUI)
+    quedan vivos para siempre y el proceso nunca termina.
     """
+    signal.signal(signal.SIGTERM, lambda *_: app.Salir([]))
     try:
         threading.Event().wait()
     except KeyboardInterrupt:
@@ -161,6 +171,66 @@ def dispositivos_activar(nombre: str) -> None:
 def dispositivos_desactivar(nombre: str) -> None:
     """Desactiva un dispositivo por su nombre o clave (ej: teclado, mqtt, deck_combinado)."""
     _cambiar_estado("dispositivos", cargarDispositivos, "Dispositivo", nombre, False)
+
+
+@app.command("abrir-gui")
+def abrir_gui() -> None:
+    """Abre la interface web de ElGarrobo en el navegador."""
+    from elGarrobo.accionesOOP.accionAbrirGUI import accionAbrirGUI
+
+    accionAbrirGUI().ejecutar()
+
+
+def _archivosServicio() -> dict[Path, str]:
+    """Archivos que instala `elgarrobo servicio instalar`, con la ruta real del ejecutable (pipx o venv)"""
+    ejecutable = os.path.abspath(sys.argv[0])
+    bandeja = Path(__file__).with_name("bandeja.py")
+    escritorio = f"""[Desktop Entry]
+Type=Application
+Name=ElGarrobo
+Comment=Macros para StreamDeck, teclados, MQTT y OBS
+Exec=/usr/bin/python3 {bandeja} {ejecutable}
+Icon=input-keyboard
+Terminal=false
+Categories=Utility;
+X-GNOME-Autostart-Delay=5
+"""
+    # Sin [Install]: no arranca solo, lo arranca la bandeja ya con la sesión gráfica lista
+    servicio = f"""[Unit]
+Description=ElGarrobo - Macros para StreamDeck, teclados, MQTT y OBS
+
+[Service]
+ExecStart={ejecutable}
+Restart=on-failure
+RestartSec=3
+"""
+    home = Path.home()
+    return {
+        home / ".config/systemd/user/elgarrobo.service": servicio,
+        home / ".local/share/applications/elgarrobo.desktop": escritorio,
+        home / ".config/autostart/elgarrobo.desktop": escritorio,
+    }
+
+
+@servicio_app.command("instalar")
+def servicio_instalar() -> None:
+    """Instala el servicio de systemd, el ícono de la barra de estado (al iniciar sesión) y la entrada en el menú."""
+    for archivo, contenido in _archivosServicio().items():
+        archivo.parent.mkdir(parents=True, exist_ok=True)
+        archivo.write_text(contenido)
+        typer.echo(f"Creado {archivo}")
+    subprocess.run(["systemctl", "--user", "daemon-reload"])
+    typer.echo("Listo: abre ElGarrobo desde el menú o inicia sesión de nuevo")
+
+
+@servicio_app.command("desinstalar")
+def servicio_desinstalar() -> None:
+    """Detiene el servicio y borra los archivos creados por `servicio instalar`."""
+    subprocess.run(["systemctl", "--user", "stop", "elgarrobo"])
+    for archivo in _archivosServicio():
+        archivo.unlink(missing_ok=True)
+        typer.echo(f"Borrado {archivo}")
+    subprocess.run(["systemctl", "--user", "daemon-reload"])
 
 
 def configurar() -> None:

@@ -7,9 +7,11 @@ PACKAGE = src/elGarrobo
 install:
 	@echo "Instalando Paquete..."
 	pipx install . --force
+	$$(pipx environment --value PIPX_BIN_DIR)/elgarrobo servicio instalar
 
 uninstall:
 	@echo "Desinstalando Paquete..."
+	-$$(pipx environment --value PIPX_BIN_DIR)/elgarrobo servicio desinstalar
 	pipx uninstall elgarrobo
 
 # Instalar en venv editable para pruebas (los cambios en src/ se ven sin reinstalar)
@@ -56,3 +58,5 @@ extras:
 	@echo "Instalado Manejador de ventana"
 	@echo "Instalando xdotool para simulación de teclado con caracteres especiales"
 	sudo apt install -y xdotool
+	@echo "Instalando soporte para el ícono en la barra de estado"
+	sudo apt install -y python3-gi gir1.2-ayatanaappindicator3-0.1
