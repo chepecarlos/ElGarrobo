@@ -97,7 +97,7 @@ async def llenarFormulario(user: User, nombre: str = "", tecla: str = "", acció
 def seleccionarPestaña(user: User, gui: miGui, nombre: str) -> None:
     # ponytail: el simulador no cambia el valor de ui.tabs al hacer click, se asigna directo
     with user:
-        gui.pestañas.value = nombre
+        gui.pestañas.tabs.value = nombre
 
 
 def clickEnDialogoAbierto(user: User, texto: str) -> None:
@@ -159,23 +159,23 @@ class TestOrdenarAcciones:
 
 
 class TestClaseNavegacion:
-    def test_entra_y_sale_de_folder(self, deck: dispositivoFalso):
-        gui = miGui({"nombre": "gui"})
-        assert gui.claseNavegación(deck) == ""
-        assert gui.claseNavegación(deck) == "", "redibujar el mismo folder no anima"
+    async def test_entra_y_sale_de_folder(self, user: User, gui: miGui, deck: dispositivoFalso):
+        await user.open("/")
+        assert gui.pestañas.claseNavegación(deck) == ""
+        assert gui.pestañas.claseNavegación(deck) == "", "redibujar el mismo folder no anima"
         deck.folderActual = "obs/escenas"
-        assert gui.claseNavegación(deck) == "navega-entra"
+        assert gui.pestañas.claseNavegación(deck) == "navega-entra"
         deck.folderActual = "/"
-        assert gui.claseNavegación(deck) == "navega-sale"
+        assert gui.pestañas.claseNavegación(deck) == "navega-sale"
 
-    def test_pagina_siguiente_y_anterior(self, deck: dispositivoFalso):
-        gui = miGui({"nombre": "gui"})
+    async def test_pagina_siguiente_y_anterior(self, user: User, gui: miGui, deck: dispositivoFalso):
+        await user.open("/")
         deck.paginaActual = lambda: 1
-        gui.claseNavegación(deck)
+        gui.pestañas.claseNavegación(deck)
         deck.paginaActual = lambda: 2
-        assert gui.claseNavegación(deck) == "navega-entra"
+        assert gui.pestañas.claseNavegación(deck) == "navega-entra"
         deck.paginaActual = lambda: 1
-        assert gui.claseNavegación(deck) == "navega-sale"
+        assert gui.pestañas.claseNavegación(deck) == "navega-sale"
 
 
 class TestPaginaAcciones:
@@ -736,7 +736,7 @@ class TestCuadricula:
     async def test_interruptor_a_lista(self, user: User, guiPedal: miGui, pedal: MiPedal):
         await user.open("/")
         with user:
-            guiPedal.cambiarVista(pedal, True)
+            guiPedal.pestañas.cambiarVista(pedal, True)
         await user.should_see(marker="orden-key-pedal")
         await user.should_not_see(marker="tecla-pedal-1")
 
@@ -1103,8 +1103,8 @@ class TestPropiedadesFolder:
     async def test_crear_editar_y_quitar(self, user: User, guiPedal: miGui, pedal: MiPedal):
         await user.open("/")
         user.find(marker="propiedadesFolder-pedal").click()
-        guiPedal.propiedadesFolder.fondo.value = "#0606bb"
-        guiPedal.propiedadesFolder.tamaño.value = 40
+        guiPedal.pestañas.propiedadesFolder.fondo.value = "#0606bb"
+        guiPedal.pestañas.propiedadesFolder.tamaño.value = 40
         user.find(marker="botonGuardarFolder").click()
 
         assert pedal.propiedadFolder.aDict() == {
@@ -1114,9 +1114,9 @@ class TestPropiedadesFolder:
         }
 
         user.find(marker="propiedadesFolder-pedal").click()
-        assert guiPedal.propiedadesFolder.fondo.value == "#0606bb"
-        guiPedal.propiedadesFolder.fondo.value = ""
-        guiPedal.propiedadesFolder.tamaño.value = None
+        assert guiPedal.pestañas.propiedadesFolder.fondo.value == "#0606bb"
+        guiPedal.pestañas.propiedadesFolder.fondo.value = ""
+        guiPedal.pestañas.propiedadesFolder.tamaño.value = None
         user.find(marker="botonGuardarFolder").click()
 
         assert pedal.propiedadFolder is None, "vacía se quita del .md"
@@ -1156,22 +1156,22 @@ class TestCuadriculaFolder:
     async def test_guardar_desde_el_dialogo(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
         user.find(marker="propiedadesFolder-deck").click()
-        assert gui.propiedadesFolder.filaCuadricula.visible
-        gui.propiedadesFolder.columnas.value = 4
-        gui.propiedadesFolder.filas.value = 2
+        assert gui.pestañas.propiedadesFolder.filaCuadricula.visible
+        gui.pestañas.propiedadesFolder.columnas.value = 4
+        gui.pestañas.propiedadesFolder.filas.value = 2
         user.find(marker="botonGuardarFolder").click()
         assert deck.propiedadFolder.aDict() == {"key": "propiedad_folder", "cuadricula": {"columnas": 4, "filas": 2}}
         await user.should_see(marker="tecla-deck-8")
 
         user.find(marker="propiedadesFolder-deck").click()
-        gui.propiedadesFolder.columnas.value = None
+        gui.pestañas.propiedadesFolder.columnas.value = None
         user.find(marker="botonGuardarFolder").click()
         assert deck.propiedadFolder is None, "sin columnas o filas se quita la cuadrícula"
 
     async def test_aparatos_fisicos_no_muestran_columnas(self, user: User, guiPedal: miGui):
         await user.open("/")
         user.find(marker="propiedadesFolder-pedal").click()
-        assert not guiPedal.propiedadesFolder.filaCuadricula.visible
+        assert not guiPedal.pestañas.propiedadesFolder.filaCuadricula.visible
 
     async def test_cambiar_vista_con_iconos(self, user: User, gui: miGui, deck: dispositivoFalso):
         deck.listaAcciones.append(dataAccion(key="propiedad_folder", extra={"cuadricula": {"columnas": 2, "filas": 1}}))

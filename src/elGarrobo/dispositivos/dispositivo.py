@@ -57,12 +57,8 @@ class dispositivo:
     clase: str
     "Sub Categoria del dispositivo"
     funcionActualizarPestaña: Optional[Callable] = None
-    "Función que llama actualizar la information de GUI"
+    "Función que llama actualizar la información de GUI"
 
-    pestaña = None
-    "Pestaña del dispositivo en la interfaz"
-    panel = None
-    "Panel del dispositivo en la interfaz"
     nivelOrdenar: int = 0
     "Nivel para ordenar los dispositivos en la interfaz"
 
@@ -97,8 +93,6 @@ class dispositivo:
         self.ejecutarAcción = None
         self.clase = ""
         self.funcionActualizarPestaña = None
-        self.pestaña = None
-        self.panel = None
 
     @staticmethod
     def cargarDispositivos(dispositivosCargados: dict, claseDispositivo: type["dispositivo"]) -> list["dispositivo"]:
