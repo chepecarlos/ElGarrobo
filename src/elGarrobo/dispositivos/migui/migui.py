@@ -3,7 +3,6 @@ import logging
 import threading
 from pathlib import Path
 
-import yaml
 from nicegui import app, ui
 
 from elGarrobo.accionesOOP import accion
@@ -11,19 +10,12 @@ from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.mideck.mi_streamdeck_plus import MiStreamDeckPlus
 from elGarrobo.dispositivos.migui import configuracion, tema
-from elGarrobo.dispositivos.migui.dialogos import crearDialogoConfirmacion, dialogoPregunta
+from elGarrobo.dispositivos.migui.dialogos import crearDialogoConfirmacion
 from elGarrobo.dispositivos.migui.distribucion import dialogoDistribucion, medidaDistribucion
-from elGarrobo.dispositivos.migui.editores import (
-    avisarError,
-    cargarOpciones,
-    crearEditor,
-    encabezado,
-    leerOpciones,
-    marcarError,
-    nombrar,
-)
+from elGarrobo.dispositivos.migui.editores import encabezado, nombrar
 from elGarrobo.dispositivos.migui.folder import dialogoFolder, usaCuadriculaFolder
-from elGarrobo.dispositivos.migui.pasos import editorPasos
+from elGarrobo.dispositivos.migui.formulario import formularioAccion
+from elGarrobo.dispositivos.migui.teclas import ordenarAcciones, ordenTecla, tamañoTecla, teclaRepetida, unidadTecla
 from elGarrobo.dispositivos.migui.vistas import servirVista, urlVista
 from elGarrobo.miLibrerias import ConfigurarLogging, SalvarValor, leerData
 
@@ -53,11 +45,6 @@ class miGui(dispositivo):
     listaDispositivos: list[dispositivo] = None
     "Lista de dispositivos conectados"
 
-    accionEditar: dict
-    "Acción modificando o agregando"
-    dispositivoEditar: dispositivo
-    "dispositivo a modificar la acción"
-
     puerto: int = 8080
     "puerto de la interfaz web"
 
@@ -77,13 +64,8 @@ class miGui(dispositivo):
         self.listaClasesAcciones: dict = dict()
         self.salvarAcciones: callable = None
         self.ejecutaEvento: callable = None
-        self.accionEditar: dict = None
-        self.dispositivoEditar: dispositivo = None
-        self.opcionesEditar = None
         self.pestañas = None
         self.paneles: ui.tab_panel = None
-        self.editorAcción = None
-        self.editoresData: dict = {}
         self.ordenCampo: str = "key"
         self.dispositivosEnLista: set[str] = set()
         "Dispositivos con distribución física que el usuario cambió a vista de lista"
@@ -103,10 +85,8 @@ class miGui(dispositivo):
         self.modoUsar: bool = False
         "Modo Usar: click en una tecla la ejecuta; modo Editar: la abre en el formulario"
         self.splitter: ui.splitter = None
-        self.tituloFormulario: ui.label = None
-        self.formularioInicial: tuple = None
-        "Valores del formulario al cargarlo, para avisar antes de descartar cambios"
         self.contenedorFormulario: ui.column = None
+        self.formulario: formularioAccion = None
         self.borrados: dict[int, tuple] = {}
         "id del aviso → (acción, dispositivo, folder, posición) que todavía se puede deshacer"
         self.contadorBorrados: int = 0
@@ -140,7 +120,16 @@ class miGui(dispositivo):
                 self.splitter.classes("w-full pagina-acciones")
                 with self.splitter.before:
                     with ui.column().classes("w-full formulario-gui") as self.contenedorFormulario:
-                        self.mostrarFormulario()
+                        self.formulario = formularioAccion(
+                            self.listaClasesAcciones,
+                            self.listaDispositivos,
+                            pestañaActual=lambda: self.pestañas.value if self.pestañas else None,
+                            alGuardar=self.actualizarPestaña,
+                            borrarConDeshacer=self.borrarConDeshacer,
+                            probarAcción=self.probarAcción,
+                        )
+                    self.propiedadesFolder = dialogoFolder(self.actualizarPestaña)
+                    self.distribuciones = dialogoDistribucion(self.actualizarPestaña)
                 with self.splitter.after:
                     self.pestañas = ui.tabs(on_change=self.actualizarCabecera).props("outside-arrows mobile-arrows")
                     # Se mueven a la cabecera en estructura()
@@ -176,187 +165,11 @@ class miGui(dispositivo):
             configuracion.mostrarConfigurar()
             self.estructura()
 
-    @staticmethod
-    def teclaRepetida(listaAcciones: list[dict], tecla, ignorar: dict = None) -> dict:
-        """Devuelve la acción que ya usa la tecla (sin contar ignorar), o None"""
-        for acción in listaAcciones:
-            if acción is not ignorar and str(acción.get("key")) == str(tecla):
-                return acción
-        return None
-
-    @staticmethod
-    def ordenTecla(acción: dict) -> tuple:
-        """Números primero (streamdeck/pedal), luego texto (teclados), sin comparar int con str"""
-        tecla = acción.get("key")
-        return (0, tecla, "") if isinstance(tecla, int) else (1, 0, str(tecla))
-
-    @staticmethod
-    def ordenarAcciones(listaAcciones: list[dict], campo: str, inverso: bool = False) -> list[dict]:
-        """Copia ordenada de las acciones por "nombre", "titulo", "key" o "accion", sin tocar la lista guardada"""
-        if campo == "key":
-            orden = miGui.ordenTecla
-        else:
-            orden = lambda acción: str(acción.get(campo) or "").lower()
-        return sorted(listaAcciones, key=orden, reverse=inverso)
-
     def cambiarOrden(self, campo: str, dispositivo: dispositivo) -> None:
         """Ordena por campo; si ya estaba ordenado por ese campo invierte el sentido"""
         self.ordenInverso = not self.ordenInverso if self.ordenCampo == campo else False
         self.ordenCampo = campo
         self.actualizarPestaña(dispositivo)
-
-    def mostrarFormulario(self):
-        """Muestra el formulario para agregar o editar acciones"""
-
-        def agregarAcción():
-            self.limpiarErrores()
-            # Los vacíos son None para no guardar claves vacías en el .md
-            valores = {atributo: None if editor.value in ("", None) else editor.value for atributo, editor in self.editoresData.items()}
-            nombre = valores["nombre"]
-            tecla = valores["key"]
-            acción = self.editorAcción.value
-            acción = self.comandoAcción(acción) or acción
-            nombreDispositivo = self.pestañas.value
-
-            if not nombreDispositivo:
-                ui.notify("Selecciona un dispositivo", type="warning")
-                return
-            for propiedad in dataAccion.propiedadesGui():
-                if propiedad.obligatorio and not valores[propiedad.atributo]:
-                    avisarError(self.editoresData[propiedad.atributo], f"Falta {propiedad.nombre}")
-                    return
-            if not acción:
-                avisarError(self.editorAcción, "Falta elegir la acción")
-                return
-
-            dispositivoDestino = self.dispositivoEditar or self.obtenerDispositivoSeleccionado(nombreDispositivo)
-            if dispositivoDestino is None:
-                ui.notify(f"No se encontró el dispositivo {nombreDispositivo}")
-                return
-
-            if dispositivoDestino.tipo in ["streamdeck", "streamdeckplus", "deck_combinado", "pedal"]:
-                aparatos = getattr(dispositivoDestino, "listaDeck", [dispositivoDestino])
-                conPlus = any(isinstance(aparato, MiStreamDeckPlus) for aparato in aparatos)
-                try:
-                    tecla = valores["key"] = int(tecla)
-                except ValueError:
-                    # Perillas y pantalla táctil del StreamDeck Plus: dial_1, touchscreen_1...
-                    if not (conPlus and MiStreamDeckPlus.patronControles.fullmatch(str(tecla))):
-                        ejemplo = " o un control del Plus (dial_1, dial_derecho_1, touchscreen_1, deslizar_izquierda_1)" if conPlus else ""
-                        avisarError(self.editoresData["key"], f"En {dispositivoDestino.nombre} la tecla es un número{ejemplo}")
-                        return
-
-            editando = self.accionEditar is not None
-            repetida = self.teclaRepetida(dispositivoDestino.listaAcciones, tecla, self.accionEditar if editando else None)
-            if repetida is not None:
-                avisarError(self.editoresData["key"], f"La tecla {tecla} ya la usa '{repetida.get('nombre')}', elige otra")
-                return
-
-            # Antes de tocar la acción: si una opción no es válida la guardada queda igual, no a medias
-            # (otro salvarAcciones del dispositivo escribiría el cambio parcial al .md)
-            opciones = None
-            if self.opcionesEditar is not None:
-                try:
-                    opciones = leerOpciones(self.opcionesEditar, self.obtenerAcciónOop(acción))
-                except ValueError:
-                    return
-
-            if editando:
-                for atributo, valor in valores.items():
-                    self.accionEditar[atributo] = valor
-                self.accionEditar["accion"] = acción
-                self.aplicarApariencia(self.accionEditar)
-                if opciones is not None:
-                    self.accionEditar["opciones"] = opciones
-
-                ui.notify(f"{nombre} guardada en {dispositivoDestino.nombre}, tecla {tecla}", type="positive")
-                logger.info(f"Editar acción {nombre} a {nombreDispositivo}")
-            else:
-                acciónNueva: dict[str:any] = {**valores, "accion": acción}
-                if opciones is not None:
-                    acciónNueva["opciones"] = opciones
-
-                acciónNueva = dataAccion.desdeDict(acciónNueva)
-                self.aplicarApariencia(acciónNueva)
-                dispositivoDestino.listaAcciones.append(acciónNueva)
-                ui.notify(f"{nombre} agregada en {dispositivoDestino.nombre}, tecla {tecla}", type="positive")
-                logger.info(f"Agregando acción {nombre} a {nombreDispositivo}")
-
-            guardada = self.accionEditar if editando else acciónNueva
-            dispositivoDestino.listaAcciones.sort(key=self.ordenTecla)
-            dispositivoDestino.salvarAcciones()
-            self.actualizarPestaña(dispositivoDestino)
-            self.limpiarFormulario()
-            self.ofrecerCrearFolder(guardada, dispositivoDestino)
-
-        self.pregunta = dialogoPregunta()
-
-        self.pasos = editorPasos(self.listaClasesAcciones)
-
-        self.tituloFormulario = ui.label("").classes(f"text-{tema.colorClaro} font-bold px-2").mark("tituloFormulario")
-        with ui.scroll_area().classes("w-full").style("height: 75vh"):
-
-            # Campos de dataAccion marcados con gui, la clave del dict es la clave en el .md
-            self.editoresData = {propiedad.atributo: crearEditor(propiedad, f"editor-{propiedad.atributo}").props("clearable") for propiedad in dataAccion.propiedadesGui()}
-
-            self.propiedadesFolder = dialogoFolder(self.actualizarPestaña)
-
-            # entrar_folder a un folder donde el dispositivo no tiene archivo de acciones
-            with ui.dialog() as self.dialogoCrearFolder, ui.card():
-                self.textoCrearFolder = ui.label("")
-                with ui.row():
-                    ui.button("Cancelar", on_click=self.dialogoCrearFolder.close).props("flat")
-                    ui.button("Crear y entrar", icon="create_new_folder", color=tema.colorOscuro, on_click=self.crearFolderPendiente).mark("botonCrearFolder")
-
-            self.distribuciones = dialogoDistribucion(self.actualizarPestaña)
-
-            # Apariencia del botón en un diálogo aparte para no llenar el formulario
-            with ui.dialog() as self.dialogoBoton, ui.card():
-                encabezado(ui.label("Apariencia del botón").classes("text-lg"), 2)
-                with ui.row().classes("items-start"):
-                    with ui.column().classes("w-64"):
-                        self.editorTitulo = ui.input("Título", on_change=self.actualizarVistaPrevia).classes("w-full").props("clearable").mark("editor-titulo")
-                        self.editorTituloMQTT = ui.input("Tópico MQTT del título", on_change=self.actualizarVistaPrevia).classes("w-full").props("clearable").mark("editor-titulo-mqtt")
-                        self.editorTituloMQTT.props["hint"] = "El valor que llega reemplaza {} en el título, ej. {:.0f}%"
-                        self.editorFondo = ui.color_input("Fondo", preview=True, on_change=self.actualizarVistaPrevia).classes("w-full").mark("editor-fondo")
-                    self.vistaPrevia = ui.image().classes("w-24 h-24 rounded").props("fit=contain").mark("vistaPrevia")
-                ui.button("Listo", color=tema.colorOscuro, on_click=self.dialogoBoton.close).mark("botonListoBoton")
-            ui.button("Editar apariencia", icon="palette", color=tema.colorOscuro, on_click=self.abrirEditorApariencia).classes("w-full").mark("botonEditarBoton")
-
-            self.listaNombreAcciones: list[str] = list()
-            for clave in self.listaClasesAcciones.keys():
-                claseAccion = self.listaClasesAcciones.get(clave)
-                nombreAccion = claseAccion().nombre
-                self.listaNombreAcciones.append(nombreAccion)
-
-            self.editorAcción = ui.select(options=self.listaNombreAcciones, with_input=True, label="Acción", on_change=self.mostrarOpciones).classes("w-full").mark("editorAcción")
-            self.editorDescripcion = ui.label("").classes(f"w-full bg-{tema.colorTecla} p-2 text-white rounded-lg")
-            self.editorDescripcion.visible = False
-            self.editorPropiedades = ui.column().classes("w-full")
-            self.editorOpción = ui.textarea(label="Opciones (solo lectura, se conservan al guardar)").classes("w-full").props("readonly").mark("editorOpción")
-            self.editorOpción.visible = False
-
-        with ui.row().classes("items-center gap-2"):
-            # Ícono + (agregar) o disquete (guardar cambios); el tooltip dice cuál
-            self.botonAgregar = ui.button(icon="add", color=tema.colorOscuro, on_click=agregarAcción).props("rounded").mark("botonAgregar")
-            with self.botonAgregar:
-                self.tooltipAgregar = ui.tooltip()
-            self.mostrarBotonGuardar(False)
-            # Sueltos y no en button_group: con Ejecutar y Borrar ocultos el grupo deja Limpiar sin esquinas redondeadas
-            # Ejecutar y Borrar solo se ven al editar una acción guardada
-            self.botonEjecutar = ui.button(icon="play_arrow", color=tema.colorOscuro, on_click=self.ejecutarAcciónEditada).props("rounded").mark("botonEjecutar")
-            nombrar(self.botonEjecutar, "Ejecutar acción guardada")
-            nombrar(ui.button(icon="clear_all", color=tema.colorOscuro, on_click=lambda: self.siNoHayCambios(self.limpiarFormulario)).props("rounded").mark("botonLimpiar"), "Limpiar formulario")
-            self.botonBorrar = ui.button(icon="delete", color=tema.colorPeligro, on_click=self.borrarAcciónEditada).props("rounded").mark("botonBorrar")
-            nombrar(self.botonBorrar, "Borrar acción")
-            self.botonEjecutar.visible = self.botonBorrar.visible = False
-
-    def mostrarBotonGuardar(self, editando: bool) -> None:
-        """Agregar para una acción nueva, Guardar cambios al editar una guardada"""
-        texto = "Guardar cambios" if editando else "Agregar acción"
-        self.botonAgregar.icon = "save" if editando else "add"
-        self.botonAgregar.props["aria-label"] = texto
-        self.tooltipAgregar.text = texto
 
     def actualizarCabecera(self) -> None:
         """Muestra información del dispositivo rutas de la interfaz web"""
@@ -369,7 +182,8 @@ class miGui(dispositivo):
             # title: el folder se recorta con … si no cabe en la cabecera
             self.folderLabel.props["title"] = folder
             self.folderLabel.text = folder
-        self.actualizarTituloFormulario()
+        if self.formulario is not None:
+            self.formulario.actualizarTituloFormulario()
 
     def cambiarModo(self, usar: bool) -> None:
         """Cambia entre Usar y Editar, lo recuerda para la próxima vez y redibuja los dispositivos"""
@@ -432,198 +246,6 @@ class miGui(dispositivo):
                 f"getHtmlElement({self.ultimaFila.id})?.animate([{{backgroundColor: 'rgba(94, 234, 212, 0.35)'}}, {{backgroundColor: 'transparent'}}], {{duration: 600, easing: 'ease-out'}})"
             )
 
-    def mostrarOpciones(self):
-        """Muestra las opciones de la acción seleccionada"""
-        self.editorDescripcion.text = ""
-        self.editorDescripcion.visible = False
-        # Guarda los valores para pasarlos a las propiedades con el mismo nombre de la nueva acción
-        valoresAnteriores = {nombre: (editor.tipoEditor, editor.value) for nombre, editor in (self.opcionesEditar or {}).items()}
-        self.editorPropiedades.clear()
-        accionSeleccionada = self.editorAcción.value
-
-        if accionSeleccionada is None or accionSeleccionada == "":
-            return
-
-        logger.info(f"Mostrando opciones para: {accionSeleccionada}")
-
-        for acción in self.listaClasesAcciones.keys():
-            claseAccion = self.listaClasesAcciones.get(acción)
-            acciónTmp: accion = claseAccion()
-            # if acción == accionOpciones or acciónTmp.nombre == accionOpciones:
-            if acciónTmp.nombre != accionSeleccionada:
-                continue
-
-            self.editorDescripcion.visible = True
-            self.editorDescripcion.text = acciónTmp.descripcion
-            with self.editorPropiedades:
-                self.opcionesEditar = dict()
-                for propiedad in acciónTmp.listaPropiedades:
-                    nombre: str = propiedad.nombre
-                    editor = crearEditor(propiedad, f"opción-{nombre}")
-                    tipoAnterior, valorAnterior = valoresAnteriores.get(nombre, (None, None))
-                    if valorAnterior and tipoAnterior == editor.tipoEditor:
-                        editor.value = valorAnterior
-                    self.opcionesEditar[nombre] = editor
-                    if propiedad.atributo == acciónTmp.atributoLista:
-                        ui.button("Editar pasos", icon="view_list", color=tema.colorOscuro, on_click=lambda e=editor: self.pasos.abrir(e)).classes("w-full").mark("botonEditarPasos")
-            return
-
-        logger.warning(f"No hay opciones para: {accionSeleccionada}")
-
-    def limpiarErrores(self) -> None:
-        for editor in [*self.editoresData.values(), self.editorAcción, *(self.opcionesEditar or {}).values()]:
-            marcarError(editor, None)
-
-    def estadoFormulario(self) -> tuple:
-        """Foto de los valores del formulario, para saber si hay cambios sin guardar"""
-        editores = [*self.editoresData.values(), self.editorTitulo, self.editorTituloMQTT, self.editorFondo, self.editorAcción, *(self.opcionesEditar or {}).values()]
-        return tuple(str(editor.value) for editor in editores)
-
-    def recordarFormulario(self) -> None:
-        self.formularioInicial = self.estadoFormulario()
-        self.actualizarTituloFormulario()
-
-    @staticmethod
-    def mostrarFormularioEnCelular() -> None:
-        """En celular/tablet el formulario queda debajo del dispositivo: se lleva a la vista al elegir una tecla"""
-        ui.run_javascript("if (innerWidth < 1024) document.querySelector('.formulario-gui')?.scrollIntoView({behavior: 'smooth'})")
-
-    def hayCambios(self) -> bool:
-        return self.formularioInicial is not None and self.estadoFormulario() != self.formularioInicial
-
-    def siNoHayCambios(self, funcion) -> None:
-        """Ejecuta funcion, o antes pregunta si descartar los cambios sin guardar del formulario"""
-        if not self.hayCambios():
-            funcion()
-            return
-        nombre = f"'{self.accionEditar.get('nombre')}'" if self.accionEditar else "la acción nueva"
-        self.pregunta.preguntar(f"Hay cambios sin guardar en {nombre}. ¿Descartarlos?", "Descartar", funcion)
-
-    def actualizarTituloFormulario(self) -> None:
-        """Dice arriba del formulario qué se está editando y en qué dispositivo se guardará"""
-        if self.tituloFormulario is None:
-            return
-        destino = self.dispositivoEditar or (self.obtenerDispositivoSeleccionado() if self.pestañas else None)
-        enDispositivo = f" · {destino.nombre}" if destino else ""
-        if self.accionEditar is not None:
-            self.tituloFormulario.text = f"Editando '{self.accionEditar.get('nombre')}'{enDispositivo} · tecla {self.accionEditar.get('key')}"
-        else:
-            tecla = self.editoresData["key"].value
-            self.tituloFormulario.text = f"Nueva acción{enDispositivo}" + (f" · tecla {tecla}" if tecla not in ("", None) else "")
-
-    def comandoAcción(self, nombreAcción: str) -> str | None:
-        """Comando de la acción a partir del nombre que muestra el selector"""
-        for claseAcción in self.listaClasesAcciones.values():
-            objetoClase: accion = claseAcción()
-            if objetoClase.nombre == nombreAcción:
-                return objetoClase.comando
-        return None
-
-    def abrirEditorApariencia(self) -> None:
-        # Sin apariencia todavía: el nombre sirve de título para configurarlo más rápido
-        if not (self.editorTitulo.value or self.editorTituloMQTT.value or self.editorFondo.value):
-            self.editorTitulo.value = self.editoresData["nombre"].value or ""
-        self.actualizarVistaPrevia()
-        self.dialogoBoton.open()
-
-    def actualizarVistaPrevia(self, *_) -> None:
-        """Dibuja el botón con lo que hay en el formulario, sin guardar"""
-        dispositivoActual = self.dispositivoEditar or (self.obtenerDispositivoSeleccionado() if self.pestañas else None)
-        if dispositivoActual is None:
-            return
-
-        # Copia profunda: imagen_opciones es un dict y aplicarApariencia lo modifica, no debe tocar la acción guardada
-        acción = copy.deepcopy(self.accionEditar) if self.accionEditar else dataAccion()
-        acción.accion = self.comandoAcción(self.editorAcción.value) or acción.accion
-        self.aplicarApariencia(acción)
-        # En teclados cada tecla mide distinto, se usa la medida de la tecla editada
-        tecla = str(self.editoresData["key"].value)
-        teclaFisica = next((t for t in dispositivoActual.distribucionTeclas() or [] if t["key"] == tecla), None)
-        tamaño = self.tamañoTecla(teclaFisica) if teclaFisica else dispositivoActual.tamañoBoton()
-        try:
-            dibujo = dispositivoActual.dibujo()
-            fps = getattr(dispositivoActual, "fps", None)
-            imagen = dibujo.dibujarAnimado(acción, tamaño, fps=fps) or dibujo.dibujar(acción, tamaño, conGif=True)
-        except Exception as error:
-            # Ej: color a medio escribir, se deja la vista previa anterior
-            logger.debug(f"Vista previa[Error] {error}")
-            return
-        self.vistaPrevia.set_source(imagen)
-
-    def aplicarApariencia(self, acción: dataAccion) -> None:
-        """Pasa a la acción el título, tópico MQTT del título y fondo del editor del botón"""
-        acción.titulo = self.editorTitulo.value or None
-        acción.fondo = self.editorFondo.value or None
-        if self.editorTituloMQTT.value:
-            acción.tituloOpciones["mqtt"] = self.editorTituloMQTT.value
-        else:
-            acción.tituloOpciones.pop("mqtt", None)
-
-    def limpiarFormulario(self):
-        """Limpia el formulario de acciones"""
-        self.mostrarBotonGuardar(False)
-        self.botonEjecutar.visible = self.botonBorrar.visible = False
-        for editor in self.editoresData.values():
-            editor.value = ""
-        self.editorTitulo.value = ""
-        self.editorTituloMQTT.value = ""
-        self.editorFondo.value = ""
-        self.editorAcción.value = ""
-        self.editorOpción.value = ""
-        self.editorOpción.visible = False
-        self.editorAcción.set_options(self.listaNombreAcciones)
-        self.editorDescripcion.text = ""
-        self.editorDescripcion.visible = False
-        self.editorPropiedades.clear()
-        self.accionEditar = None
-        self.dispositivoEditar = None
-        self.opcionesEditar = None
-        self.limpiarErrores()
-        self.recordarFormulario()
-
-    def ejecutarAcciónEditada(self) -> None:
-        acción, dispositivo = self.accionEditar, self.dispositivoEditar
-        # Se revisa antes: si el folder existe el dispositivo entra y la ruta relativa ya no sirve
-        faltaFolder = self.folderFaltante(acción, dispositivo)
-        self.probarAcción(acción)
-        if faltaFolder:
-            self.ofrecerCrearFolder(acción, dispositivo)
-
-    def folderFaltante(self, acción: dataAccion, dispositivo: dispositivo) -> tuple[dispositivo, str] | None:
-        """(dispositivo, folder) si la acción es entrar_folder y ese dispositivo no tiene archivo de acciones ahí"""
-        if acción is None:
-            return None
-        opciones = acción.get("opciones")
-        if acción.get("accion") != "entrar_folder" or not isinstance(opciones, dict) or not opciones.get("folder"):
-            return None
-        # Con 'dispositivo' en las opciones el folder es de ese dispositivo, no del que se edita
-        if opciones.get("dispositivo"):
-            nombre = opciones["dispositivo"].lower()
-            dispositivo = next((d for d in self.listaDispositivos if d.nombre.lower() == nombre), None)
-        if dispositivo is None or dispositivo.tieneFolder(opciones["folder"]):
-            return None
-        return dispositivo, opciones["folder"]
-
-    def ofrecerCrearFolder(self, acción: dataAccion, dispositivo: dispositivo) -> None:
-        """Pregunta si crear el folder de un entrar_folder cuando el dispositivo no tiene acciones ahí"""
-        self.folderPendiente = self.folderFaltante(acción, dispositivo)
-        if self.folderPendiente is None:
-            return
-        dispositivo, folder = self.folderPendiente
-        self.textoCrearFolder.text = f"{dispositivo.nombre} no tiene acciones en {folder}. ¿Crear el folder y entrar?"
-        self.dialogoCrearFolder.open()
-
-    def crearFolderPendiente(self) -> None:
-        dispositivo, folder = self.folderPendiente
-        dispositivo.crearFolder(folder)
-        self.dialogoCrearFolder.close()
-        ui.notify(f"Folder {folder} creado en {dispositivo.nombre}")
-        self.actualizarPestaña(dispositivo)
-
-    def borrarAcciónEditada(self) -> None:
-        """Borra la acción que está en el editor y lo limpia"""
-        self.borrarConDeshacer(self.accionEditar, self.dispositivoEditar, antes=self.limpiarFormulario)
-
     def borrarConDeshacer(self, acción: dataAccion, dispositivo: dispositivo, antes=None) -> None:
         """Borra sin preguntar y muestra un aviso con Deshacer mientras dura"""
         if antes is not None:
@@ -653,7 +275,7 @@ class miGui(dispositivo):
         if dispositivo.folderActual != folder:
             ui.notify(f"No se pudo deshacer: {dispositivo.nombre} ya no está en el folder {folder}", type="warning")
             return
-        repetida = self.teclaRepetida(dispositivo.listaAcciones, acción.get("key"), None)
+        repetida = teclaRepetida(dispositivo.listaAcciones, acción.get("key"), None)
         if repetida is not None:
             ui.notify(f"No se pudo deshacer: la tecla {acción.get('key')} ya la usa '{repetida.get('nombre')}'", type="warning")
             return
@@ -699,47 +321,6 @@ class miGui(dispositivo):
             self.paneles.update()
             self.actualizarCabecera()
             return
-
-    def seleccionarAcción(self, accion: dict, dispositivo: dispositivo = None):
-        if dispositivo is not None:
-            self.dispositivoEditar = dispositivo
-        else:
-            self.dispositivoEditar = None
-
-        self.accionEditar = accion
-        self.limpiarErrores()
-        self.mostrarFormularioEnCelular()
-        self.mostrarBotonGuardar(True)
-        self.botonEjecutar.visible = self.botonBorrar.visible = True
-        for atributo, editor in self.editoresData.items():
-            editor.value = accion.get(atributo)
-        self.editorTitulo.value = accion.titulo or ""
-        self.editorTituloMQTT.value = accion.tituloOpciones.get("mqtt") or ""
-        self.editorFondo.value = accion.fondo or ""
-
-        # Sin esto mostrarOpciones pasaría los valores de la acción editada antes
-        self.opcionesEditar = None
-        claseAcción = self.obtenerAcciónOop(accion.get("accion"))
-        if claseAcción is None:
-            # Acción sin clase OOP (ej. macro): se agrega al selector para no perderla al guardar
-            comando = accion.get("accion")
-            self.editorAcción.set_options(self.listaNombreAcciones + [comando], value=comando)
-        else:
-            objetoClase = claseAcción()
-            self.editorAcción.value = objetoClase.nombre
-        self.mostrarOpciones()
-        opcionesActuales = accion.get("opciones")
-        self.editorOpción.visible = False
-
-        if opcionesActuales:
-
-            if claseAcción is not None:
-                cargarOpciones(self.opcionesEditar, claseAcción, opcionesActuales)
-            else:
-                # Sin editor para estas opciones (ej. pasos de una macro): se muestran y se guardan sin cambios
-                self.editorOpción.visible = True
-                self.editorOpción.value = yaml.safe_dump(opcionesActuales, allow_unicode=True, sort_keys=False)
-        self.recordarFormulario()
 
     def obtenerDispositivoSeleccionado(self, nombreDispositivo: str = None) -> dispositivo:
         """Busca la instancia real del dispositivo por nombre de pestaña
@@ -996,7 +577,7 @@ class miGui(dispositivo):
 
         if distribucion:
             # Teclado: botones con posición libre en unidades de tecla, dibujados como el StreamDeck pero a la medida de cada tecla
-            unidad = self.unidadTecla
+            unidad = unidadTecla
             dibujo = dispositivo.dibujo()
             ancho, alto = medidaDistribucion(distribucion)
             # El teclado crece hasta llenar el ancho y alto del área (sin pasar de unidad px por tecla); posiciones en % del teclado
@@ -1009,7 +590,7 @@ class miGui(dispositivo):
                         acción = accionesPorTecla.get(tecla)
                         etiqueta = teclaFisica.get("etiqueta") or tecla.removeprefix("KEY_")
                         x, y = teclaFisica.get("x", 0), teclaFisica.get("y", 0)
-                        tamaño = self.tamañoTecla(teclaFisica)
+                        tamaño = tamañoTecla(teclaFisica)
                         imagen = None
                         if acción is not None:
                             try:
@@ -1226,14 +807,6 @@ class miGui(dispositivo):
                             etiqueta = f"{dial}: {presionar.get('nombre')}" if presionar else str(dial)
                             ui.label(etiqueta).classes("text-xs truncate text-center max-w-full").tooltip(etiqueta)
 
-    unidadTecla = 112
-    "Pixeles de una tecla de 1x1 en la distribución del teclado: resolución del dibujo y tamaño máximo en pantalla"
-
-    @classmethod
-    def tamañoTecla(cls, teclaFisica: dict) -> tuple[int, int]:
-        """Ancho y alto en pixeles de una tecla de la distribución, dejando 4px de separación"""
-        return (int(teclaFisica.get("w", 1) * cls.unidadTecla) - 4, int(teclaFisica.get("h", 1) * cls.unidadTecla) - 4)
-
     def botonDistribucion(self, dispositivo: dispositivo) -> None:
         distribucion = ui.button(icon="keyboard", color=tema.colorBotones, on_click=lambda: self.distribuciones.abrir(dispositivo)).mark(f"distribucion-{dispositivo.nombre}")
         nombrar(distribucion, "Distribución del teclado")
@@ -1260,9 +833,9 @@ class miGui(dispositivo):
         elif nombre in self.acciónDuplicar:
             self.seleccionarDuplicar(dispositivo, tecla, acción)
         elif acción is not None:
-            self.siNoHayCambios(lambda: self.seleccionarAcción(acción, dispositivo))
+            self.formulario.siNoHayCambios(lambda: self.formulario.seleccionarAcción(acción, dispositivo))
         else:
-            self.siNoHayCambios(lambda: self.nuevaAcciónTecla(dispositivo, tecla))
+            self.formulario.siNoHayCambios(lambda: self.formulario.nuevaAcciónTecla(dispositivo, tecla))
 
     def marcarTecla(self, dispositivo: dispositivo, tecla, boton: ui.element, acción: dataAccion | None) -> None:
         """Anillo en la tecla elegida para intercambiar o en la acción elegida para duplicar"""
@@ -1299,7 +872,7 @@ class miGui(dispositivo):
             copia = dataAccion.desdeDict(copy.deepcopy(copiada.aDict()))
             copia.key = tecla
             dispositivo.listaAcciones.append(copia)
-            dispositivo.listaAcciones.sort(key=self.ordenTecla)
+            dispositivo.listaAcciones.sort(key=ordenTecla)
             dispositivo.salvarAcciones()
             ui.notify(f"{copia.nombre or 'Acción'} duplicada en la tecla {tecla}")
             self.actualizarPestaña(dispositivo)
@@ -1318,7 +891,7 @@ class miGui(dispositivo):
             if acciónB is not None:
                 acciónB.key = primera
             if acciónA is not None or acciónB is not None:
-                dispositivo.listaAcciones.sort(key=self.ordenTecla)
+                dispositivo.listaAcciones.sort(key=ordenTecla)
                 dispositivo.salvarAcciones()
                 self.actualizarPestaña(dispositivo)
                 return
@@ -1334,18 +907,10 @@ class miGui(dispositivo):
         cambiar()
         dispositivo.actualizar()
 
-    def nuevaAcciónTecla(self, dispositivo: dispositivo, tecla: int) -> None:
-        """Prepara el formulario para agregar una acción en una tecla vacía de la cuadrícula"""
-        self.limpiarFormulario()
-        self.dispositivoEditar = dispositivo
-        self.editoresData["key"].value = tecla
-        self.recordarFormulario()
-        self.mostrarFormularioEnCelular()
-
     def dibujarBotonera(self, listaAcciones: list[dict], dispositivo: dispositivo) -> None:
         """Modo Usar para dispositivos sin cuadrícula (MQTT, teclado sin distribución): un botón grande por acción"""
         with ui.element("div").classes("grid gap-3 p-4 w-full").style("grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr))"):
-            for acción in self.ordenarAcciones(listaAcciones, "key"):
+            for acción in ordenarAcciones(listaAcciones, "key"):
                 tecla = acción.get("key")
                 if tecla == "propiedad_folder":
                     continue
@@ -1381,7 +946,7 @@ class miGui(dispositivo):
             cabecera("Acción", "accion", "solo-ancho")
             cabecera("Opciones", clases="solo-ancho")
 
-        for acciónActual in self.ordenarAcciones(listaAcciones, self.ordenCampo, self.ordenInverso):
+        for acciónActual in ordenarAcciones(listaAcciones, self.ordenCampo, self.ordenInverso):
             nombreAcción = acciónActual.get("nombre")
             teclaAcción = acciónActual.get("key")
             if teclaAcción == "propiedad_folder":
@@ -1407,7 +972,7 @@ class miGui(dispositivo):
                 with ui.row().classes("no-wrap gap-1 items-center"):
                     with ui.button_group().props("rounded"):
                         nombrar(ui.button(icon="play_arrow", color=tema.colorBotones, on_click=lambda a=acciónActual: self.probarAcción(a)).mark(f"ejecutar-{marca}"), f"Probar {nombreAcción}")
-                        nombrar(ui.button(icon="edit", color=tema.colorBotones, on_click=lambda a=acciónActual: self.siNoHayCambios(lambda: self.seleccionarAcción(a, dispositivo))).mark(f"editar-{marca}"), f"Editar {nombreAcción}")
+                        nombrar(ui.button(icon="edit", color=tema.colorBotones, on_click=lambda a=acciónActual: self.formulario.siNoHayCambios(lambda: self.formulario.seleccionarAcción(a, dispositivo))).mark(f"editar-{marca}"), f"Editar {nombreAcción}")
                     nombrar(ui.button(icon="delete", color=tema.colorPeligro, on_click=lambda a=acciónActual, d=dispositivo: self.borrarConDeshacer(a, d)).props("flat round").mark(f"borrar-{marca}"), f"Borrar {nombreAcción}")
 
     def probarAcción(self, acción: dataAccion) -> None:

@@ -23,6 +23,7 @@ from elGarrobo.dispositivos.mipedal.mi_pedal import MiPedal
 from elGarrobo.dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro, folderDistribuciones
 from elGarrobo.dispositivos.migui import migui as moduloMiGui
 from elGarrobo.dispositivos.migui import configuracion, tema, vistas
+from elGarrobo.dispositivos.migui import teclas as moduloTeclas
 from elGarrobo.dispositivos.migui.migui import miGui
 
 
@@ -113,33 +114,33 @@ def teclas(dispositivo: dispositivo) -> list:
 class TestTeclaRepetida:
     def test_detecta_tecla_repetida(self):
         lista = [{"nombre": "a", "key": 1}, {"nombre": "b", "key": 2}]
-        assert miGui.teclaRepetida(lista, 2) is lista[1]
+        assert moduloTeclas.teclaRepetida(lista, 2) is lista[1]
 
     def test_tecla_libre(self):
-        assert miGui.teclaRepetida([{"nombre": "a", "key": 1}], 3) is None
+        assert moduloTeclas.teclaRepetida([{"nombre": "a", "key": 1}], 3) is None
 
     def test_numero_y_texto_son_la_misma_tecla(self):
         lista = [{"nombre": "a", "key": 5}]
-        assert miGui.teclaRepetida(lista, "5") is lista[0]
+        assert moduloTeclas.teclaRepetida(lista, "5") is lista[0]
 
     def test_editar_no_choca_consigo_misma(self):
         lista = [{"nombre": "a", "key": 1}, {"nombre": "b", "key": 2}]
-        assert miGui.teclaRepetida(lista, 1, ignorar=lista[0]) is None
+        assert moduloTeclas.teclaRepetida(lista, 1, ignorar=lista[0]) is None
 
     def test_editar_detecta_otra_accion(self):
         lista = [{"nombre": "a", "key": 1}, {"nombre": "b", "key": 2}]
-        assert miGui.teclaRepetida(lista, 2, ignorar=lista[0]) is lista[1]
+        assert moduloTeclas.teclaRepetida(lista, 2, ignorar=lista[0]) is lista[1]
 
     def test_ignorar_compara_por_identidad(self):
         # Una acción igual en contenido pero distinta en memoria sigue siendo repetida
         lista = [{"nombre": "a", "key": 1}]
-        assert miGui.teclaRepetida(lista, 1, ignorar={"nombre": "a", "key": 1}) is lista[0]
+        assert moduloTeclas.teclaRepetida(lista, 1, ignorar={"nombre": "a", "key": 1}) is lista[0]
 
 
 class TestOrdenTecla:
     def test_numeros_antes_que_texto(self):
         lista = [{"key": "b"}, {"key": 10}, {"key": "a"}, {"key": 2}]
-        lista.sort(key=miGui.ordenTecla)
+        lista.sort(key=moduloTeclas.ordenTecla)
         assert [a["key"] for a in lista] == [2, 10, "a", "b"]
 
 
@@ -147,13 +148,13 @@ class TestOrdenarAcciones:
     lista = [{"nombre": "b", "key": 2, "accion": "os"}, {"nombre": "A", "key": 1, "accion": "escribir"}]
 
     def test_por_nombre_ignora_mayusculas(self):
-        assert [a["nombre"] for a in miGui.ordenarAcciones(self.lista, "nombre")] == ["A", "b"]
+        assert [a["nombre"] for a in moduloTeclas.ordenarAcciones(self.lista, "nombre")] == ["A", "b"]
 
     def test_por_accion_inverso(self):
-        assert [a["accion"] for a in miGui.ordenarAcciones(self.lista, "accion", True)] == ["os", "escribir"]
+        assert [a["accion"] for a in moduloTeclas.ordenarAcciones(self.lista, "accion", True)] == ["os", "escribir"]
 
     def test_no_modifica_lista_original(self):
-        miGui.ordenarAcciones(self.lista, "key")
+        moduloTeclas.ordenarAcciones(self.lista, "key")
         assert self.lista[0]["key"] == 2
 
 
@@ -211,7 +212,7 @@ class TestPaginaAcciones:
 
         await user.should_see("Tres agregada en deck, tecla 3")
         assert deck.listaAcciones[-1].descripcion == "Escribe adios"
-        assert gui.editoresData["nombre"].value == ""
+        assert gui.formulario.editoresData["nombre"].value == ""
 
     async def test_agregar_ordena_por_tecla(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
@@ -227,7 +228,7 @@ class TestPaginaAcciones:
         await user.should_see("La tecla 1 ya la usa 'Uno', elige otra")
         assert teclas(deck) == [1, 2]
         assert deck.vecesSalvado == 0
-        assert gui.editoresData["nombre"].value == "Otra", "el formulario no se limpia para poder corregir"
+        assert gui.formulario.editoresData["nombre"].value == "Otra", "el formulario no se limpia para poder corregir"
 
     @pytest.mark.parametrize(
         "campos, mensaje",
@@ -250,23 +251,23 @@ class TestPaginaAcciones:
         await llenarFormulario(user, "Tres", "3", "Escribir texto")
         user.find(marker="botonAgregar").click()
         await user.should_see("Falta Texto")
-        assert gui.opcionesEditar["Texto"].props["error-message"] == "Falta Texto", "el error se marca en el campo"
+        assert gui.formulario.opcionesEditar["Texto"].props["error-message"] == "Falta Texto", "el error se marca en el campo"
         assert deck.vecesSalvado == 0
 
     async def test_editar_llena_formulario(self, user: User, gui: miGui):
         await user.open("/")
         user.find(marker="editar-deck-1").click()
-        assert gui.botonAgregar.icon == "save" and gui.tooltipAgregar.text == "Guardar cambios"
-        assert gui.editoresData["nombre"].value == "Uno"
-        assert gui.editoresData["key"].value == 1
-        assert gui.editorAcción.value == "Escribir texto"
-        assert gui.opcionesEditar["Texto"].value == "hola"
+        assert gui.formulario.botonAgregar.icon == "save" and gui.formulario.tooltipAgregar.text == "Guardar cambios"
+        assert gui.formulario.editoresData["nombre"].value == "Uno"
+        assert gui.formulario.editoresData["key"].value == 1
+        assert gui.formulario.editorAcción.value == "Escribir texto"
+        assert gui.formulario.opcionesEditar["Texto"].value == "hola"
 
     async def test_cambiar_accion_mantiene_propiedades(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
         user.find(marker="editar-deck-1").click()
         await llenarFormulario(user, acción="Pegar texto")
-        assert gui.opcionesEditar["Texto"].value == "hola"
+        assert gui.formulario.opcionesEditar["Texto"].value == "hola"
 
         user.find(marker="botonAgregar").click()
         await user.should_see("Uno guardada en deck, tecla 1")
@@ -278,7 +279,7 @@ class TestPaginaAcciones:
         await user.open("/")
         user.find(marker="editar-deck-1").click()
         user.find(marker="editar-deck-3").click()
-        assert gui.opcionesEditar["Texto"].value in ("", None)
+        assert gui.formulario.opcionesEditar["Texto"].value in ("", None)
 
     async def test_opcion_invalida_no_cambia_la_accion(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
@@ -302,15 +303,15 @@ class TestPaginaAcciones:
         assert deck.listaAcciones[0]["nombre"] == "Uno editado"
         assert deck.listaAcciones[0]["opciones"] == {"texto": "chao"}
         assert deck.vecesSalvado == 1
-        assert gui.botonAgregar.icon == "add" and gui.tooltipAgregar.text == "Agregar acción"
+        assert gui.formulario.botonAgregar.icon == "add" and gui.formulario.tooltipAgregar.text == "Agregar acción"
 
     async def test_botones_al_editar(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
-        assert not gui.botonEjecutar.visible and not gui.botonBorrar.visible
+        assert not gui.formulario.botonEjecutar.visible and not gui.formulario.botonBorrar.visible
         cantidad = len(deck.listaAcciones)
         acción = deck.listaAcciones[0]
         user.find(marker=f"editar-deck-{acción.key}").click()
-        assert gui.botonEjecutar.visible and gui.botonBorrar.visible
+        assert gui.formulario.botonEjecutar.visible and gui.formulario.botonBorrar.visible
 
         gui.ejecutarAcción = MagicMock()
         user.find(marker="botonEjecutar").click()
@@ -318,7 +319,7 @@ class TestPaginaAcciones:
 
         user.find(marker="botonBorrar").click()
         assert acción not in deck.listaAcciones and len(deck.listaAcciones) == cantidad - 1
-        assert gui.accionEditar is None and not gui.botonBorrar.visible
+        assert gui.formulario.accionEditar is None and not gui.formulario.botonBorrar.visible
 
     async def test_editar_a_tecla_ocupada(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
@@ -341,9 +342,9 @@ class TestPaginaAcciones:
         await user.open("/")
         user.find(marker="editar-deck-1").click()
         user.find(marker="botonLimpiar").click()
-        assert gui.botonAgregar.icon == "add" and gui.tooltipAgregar.text == "Agregar acción"
-        assert gui.accionEditar is None
-        assert gui.editoresData["nombre"].value == ""
+        assert gui.formulario.botonAgregar.icon == "add" and gui.formulario.tooltipAgregar.text == "Agregar acción"
+        assert gui.formulario.accionEditar is None
+        assert gui.formulario.editoresData["nombre"].value == ""
 
     async def test_borrar_accion(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
@@ -386,22 +387,22 @@ class TestFormularioSeguro:
     async def test_cambiar_de_tecla_pregunta_si_hay_cambios(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
         user.find(marker="editar-deck-1").click()
-        assert gui.tituloFormulario.text == "Editando 'Uno' · deck · tecla 1"
+        assert gui.formulario.tituloFormulario.text == "Editando 'Uno' · deck · tecla 1"
         user.find(marker="editar-deck-2").click()
-        assert gui.editoresData["nombre"].value == "Dos", "sin cambios no pregunta"
+        assert gui.formulario.editoresData["nombre"].value == "Dos", "sin cambios no pregunta"
 
         await llenarFormulario(user, nombre="Dos cambiado")
         user.find(marker="editar-deck-1").click()
-        assert gui.editoresData["nombre"].value == "Dos cambiado", "con cambios espera la respuesta"
+        assert gui.formulario.editoresData["nombre"].value == "Dos cambiado", "con cambios espera la respuesta"
         await user.should_see("Hay cambios sin guardar en 'Dos'. ¿Descartarlos?")
         clickEnDialogoAbierto(user, "Descartar")
-        assert gui.editoresData["nombre"].value == "Uno"
+        assert gui.formulario.editoresData["nombre"].value == "Uno"
 
     async def test_guarda_numero_bool_y_yaml_con_su_tipo(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
         await llenarFormulario(user, "Tres", "3", "Escribir texto", Texto="hola")
         with user:
-            gui.opcionesEditar["Velocidad"].value = 0.5
+            gui.formulario.opcionesEditar["Velocidad"].value = 0.5
         user.find(marker="botonAgregar").click()
         assert deck.listaAcciones[-1]["opciones"] == {"texto": "hola", "intervalo": 0.5}
 
@@ -419,10 +420,10 @@ class TestFormularioSeguro:
         deck.listaAcciones.append(dataAccion.desdeDict({"nombre": "E", "key": 6, "accion": "escribir", "opciones": {"texto": "x", "intervalo": "rápido"}}))
         await user.open("/")
         user.find(marker="editar-deck-5").click()
-        assert gui.opcionesEditar["Presionado"].value == "accion: delay\n"
+        assert gui.formulario.opcionesEditar["Presionado"].value == "accion: delay\n"
         user.find(marker="editar-deck-6").click()
-        assert gui.opcionesEditar["Velocidad"].value is None
-        assert gui.opcionesEditar["Velocidad"].props["error"], "valor viejo inválido se marca"
+        assert gui.formulario.opcionesEditar["Velocidad"].value is None
+        assert gui.formulario.opcionesEditar["Velocidad"].props["error"], "valor viejo inválido se marca"
 
     async def test_perder_foco_suelta_las_teclas(self, user: User, gui: miGui, deck: dispositivoFalso, monkeypatch):
         monkeypatch.setattr(moduloMiGui, "SalvarValor", MagicMock())
@@ -614,7 +615,7 @@ class TestEditorApariencia:
         user.find(marker="editar-deck-1").click()
         user.find(marker="botonEditarBoton").click()
         user.find(marker="editor-titulo").clear().type("Hola")
-        gui.editorFondo.value = "#2b7a10"  # ponytail: el simulador no escribe en color_input
+        gui.formulario.editorFondo.value = "#2b7a10"  # ponytail: el simulador no escribe en color_input
         user.find(marker="botonListoBoton").click()
         user.find(marker="botonAgregar").click()
 
@@ -623,19 +624,19 @@ class TestEditorApariencia:
         assert deck.listaAcciones[0].aDict()["imagen_opciones"] == {"fondo": "#2b7a10"}
 
         user.find(marker="editar-deck-1").click()
-        assert gui.editorFondo.value == "#2b7a10"
+        assert gui.formulario.editorFondo.value == "#2b7a10"
 
 
     async def test_editor_sin_apariencia_usa_nombre_como_titulo(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
         user.find(marker="editar-deck-1").click()
         user.find(marker="botonEditarBoton").click()
-        assert gui.editorTitulo.value == deck.listaAcciones[0].nombre
+        assert gui.formulario.editorTitulo.value == deck.listaAcciones[0].nombre
 
         user.find(marker="editor-titulo").clear().type("Hola")
         user.find(marker="botonListoBoton").click()
         user.find(marker="botonEditarBoton").click()
-        assert gui.editorTitulo.value == "Hola", "con apariencia no se reemplaza el título"
+        assert gui.formulario.editorTitulo.value == "Hola", "con apariencia no se reemplaza el título"
 
     async def test_editor_boton_guarda_topico_mqtt_del_titulo(self, user: User, gui: miGui, deck: dispositivoFalso):
         deck.listaAcciones[0].tituloOpciones = {"color": "blue"}
@@ -648,7 +649,7 @@ class TestEditorApariencia:
         assert deck.listaAcciones[0].tituloOpciones == {"color": "blue", "mqtt": "estado/progreso"}
 
         user.find(marker="editar-deck-1").click()
-        assert gui.editorTituloMQTT.value == "estado/progreso"
+        assert gui.formulario.editorTituloMQTT.value == "estado/progreso"
         user.find(marker="botonEditarBoton").click()
         user.find(marker="editor-titulo-mqtt").clear()
         user.find(marker="botonListoBoton").click()
@@ -659,11 +660,11 @@ class TestEditorApariencia:
         await user.open("/")
         user.find(marker="editar-deck-1").click()
         user.find(marker="botonEditarBoton").click()
-        gui.editorFondo.value = "#ff0000"
+        gui.formulario.editorFondo.value = "#ff0000"
 
-        assert gui.vistaPrevia.visible
-        assert isinstance(gui.vistaPrevia.source, Image.Image)
-        assert gui.vistaPrevia.source.convert("RGB").getpixel((1, 1)) == (255, 0, 0)
+        assert gui.formulario.vistaPrevia.visible
+        assert isinstance(gui.formulario.vistaPrevia.source, Image.Image)
+        assert gui.formulario.vistaPrevia.source.convert("RGB").getpixel((1, 1)) == (255, 0, 0)
         assert deck.listaAcciones[0].fondo is None, "la vista previa no guarda"
 
 
@@ -672,7 +673,7 @@ class TestEditorApariencia:
         await user.open("/")
         user.find(marker="editar-deck-1").click()
 
-        assert gui.editorFondo.value == "#ff8000"
+        assert gui.formulario.editorFondo.value == "#ff8000"
         assert deck.listaAcciones[0].fondo == "#ff8000", "la vista previa no debe modificar la acción"
 
 
@@ -711,15 +712,15 @@ class TestCuadricula:
     async def test_click_en_boton_edita_la_accion(self, user: User, guiPedal: miGui, pedal: MiPedal):
         await user.open("/")
         user.find(marker="tecla-pedal-1").click()
-        assert guiPedal.editoresData["nombre"].value == "Uno"
-        assert guiPedal.dispositivoEditar is pedal
+        assert guiPedal.formulario.editoresData["nombre"].value == "Uno"
+        assert guiPedal.formulario.dispositivoEditar is pedal
 
     async def test_click_en_vacio_prepara_la_tecla(self, user: User, guiPedal: miGui, pedal: MiPedal):
         await user.open("/")
         user.find(marker="tecla-pedal-2").click()
-        assert guiPedal.editoresData["key"].value == 2
-        assert guiPedal.editoresData["nombre"].value == ""
-        assert guiPedal.dispositivoEditar is pedal
+        assert guiPedal.formulario.editoresData["key"].value == 2
+        assert guiPedal.formulario.editoresData["nombre"].value == ""
+        assert guiPedal.formulario.dispositivoEditar is pedal
 
     async def test_cambiar_pagina_mueve_el_pedal(self, user: User, guiPedal: miGui, pedal: MiPedal):
         await user.open("/")
@@ -754,7 +755,7 @@ class TestCuadricula:
 
         user.find(marker="duplicar-pedal").click()
         user.find(marker="tecla-pedal-2").click()
-        assert guiPedal.editoresData["nombre"].value == "Uno", "fuera del modo vuelve a editar"
+        assert guiPedal.formulario.editoresData["nombre"].value == "Uno", "fuera del modo vuelve a editar"
 
     async def test_intercambiar_teclas(self, user: User, guiPedal: miGui, pedal: MiPedal):
         await user.open("/")
@@ -776,7 +777,7 @@ class TestCuadricula:
 
         user.find(marker="intercambiar-pedal").click()
         user.find(marker="tecla-pedal-2").click()
-        assert guiPedal.editoresData["nombre"].value == "Uno", "fuera del modo vuelve a editar"
+        assert guiPedal.formulario.editoresData["nombre"].value == "Uno", "fuera del modo vuelve a editar"
 
     async def test_modos_marcan_sin_redibujar(self, user: User, guiPedal: miGui, pedal: MiPedal):
         await user.open("/")
@@ -817,7 +818,7 @@ class TestModoUsar:
 
         user.find(marker="tecla-pedal-1").trigger("pointerdown")
         guiPedal.ejecutarAcción.assert_called_once_with(pedal.listaAcciones[0])
-        assert guiPedal.editoresData["nombre"].value == "", "en Usar no abre el formulario"
+        assert guiPedal.formulario.editoresData["nombre"].value == "", "en Usar no abre el formulario"
         await user.should_see(marker="ultimaAcción")
         assert guiPedal.ultimaLabel.text == "Uno"
 
@@ -827,7 +828,7 @@ class TestModoUsar:
         with user:
             guiPedal.cambiarModo(True)
             guiPedal.cambiarModo(False)
-        assert guiPedal.editoresData["nombre"].value == "Uno"
+        assert guiPedal.formulario.editoresData["nombre"].value == "Uno"
         await user.should_see(marker="intercambiar-pedal")
 
     async def test_sin_cuadricula_muestra_botonera(self, user: User, gui: miGui, deck: dispositivoFalso):
@@ -902,10 +903,10 @@ class TestStreamDeckPlus:
     async def test_click_edita_y_prepara_controles(self, user: User, guiPlus: miGui, plus: MiDeckCombinado):
         await user.open("/")
         user.find(marker="tecla-plus-dial_1").click()
-        assert guiPlus.editoresData["nombre"].value == "Mute"
+        assert guiPlus.formulario.editoresData["nombre"].value == "Mute"
         user.find(marker="botonLimpiar").click()
         user.find(marker="tecla-plus-dial_derecho_2").click()
-        assert guiPlus.editoresData["key"].value == "dial_derecho_2"
+        assert guiPlus.formulario.editoresData["key"].value == "dial_derecho_2"
 
     async def test_guardar_control_del_plus(self, user: User, guiPlus: miGui, plus: MiDeckCombinado):
         await user.open("/")
@@ -962,9 +963,9 @@ class TestDistribucionTeclado:
         await user.open("/")
         await user.should_see(marker="tecla-teclado-KEY_ESC")
         user.find(marker="tecla-teclado-KEY_A").click()
-        assert guiTeclado.editoresData["nombre"].value == "Escena"
+        assert guiTeclado.formulario.editoresData["nombre"].value == "Escena"
         user.find(marker="tecla-teclado-KEY_B").click()
-        assert guiTeclado.editoresData["key"].value == "KEY_B"
+        assert guiTeclado.formulario.editoresData["key"].value == "KEY_B"
 
     async def test_vista_previa_a_la_medida_de_la_tecla(self, user: User, guiTeclado: miGui, teclado: MiTecladoMacro):
         teclado.listaAcciones.append(dataAccion.desdeDict({"nombre": "Grabar", "key": "KEY_SPACE", "accion": "escribir", "titulo": "REC"}))
@@ -972,10 +973,10 @@ class TestDistribucionTeclado:
         espacio = next(t for t in teclado.distribucionTeclas() if t["key"] == "KEY_SPACE")
         imagen = user.find(marker="tecla-teclado-KEY_SPACE").elements.pop().default_slot.children[0].source
         imagen = imagenVista(imagen)
-        assert imagen.size == miGui.tamañoTecla(espacio) and imagen.width > imagen.height, "la barra espaciadora se dibuja ancha"
+        assert imagen.size == moduloTeclas.tamañoTecla(espacio) and imagen.width > imagen.height, "la barra espaciadora se dibuja ancha"
         user.find(marker="tecla-teclado-KEY_SPACE").click()
-        guiTeclado.abrirEditorApariencia()
-        assert guiTeclado.vistaPrevia.source.size == miGui.tamañoTecla(espacio)
+        guiTeclado.formulario.abrirEditorApariencia()
+        assert guiTeclado.formulario.vistaPrevia.source.size == moduloTeclas.tamañoTecla(espacio)
 
     async def test_intercambiar(self, user: User, guiTeclado: miGui, teclado: MiTecladoMacro):
         await user.open("/")
@@ -989,7 +990,7 @@ class TestDistribucionTeclado:
         await user.open("/")
         await user.should_see("Otras teclas")
         user.find(marker="tecla-teclado-KEY_F13").click()
-        assert guiTeclado.editoresData["nombre"].value == "Capa Fn"
+        assert guiTeclado.formulario.editoresData["nombre"].value == "Capa Fn"
 
     async def test_cambiar_distribucion(self, user: User, guiTeclado: miGui, teclado: MiTecladoMacro, monkeypatch):
         moduloTeclado = sys.modules[MiTecladoMacro.__module__]
@@ -1035,8 +1036,8 @@ class TestAccionSinClase:
         await user.open("/")
         user.find(marker="editar-deck-9").click()
 
-        assert gui.editorAcción.value == "random"
-        assert "teclas" in gui.editorOpción.value
+        assert gui.formulario.editorAcción.value == "random"
+        assert "teclas" in gui.formulario.editorOpción.value
 
         user.find(marker="editor-nombre").clear().type("Azar 2")
         user.find(marker="botonAgregar").click()
@@ -1053,8 +1054,8 @@ class TestAccionMacro:
         await user.open("/")
         user.find(marker="editar-deck-9").click()
 
-        assert gui.editorAcción.value == "Macro"
-        assert "teclas" in gui.opcionesEditar["Acciones"].value
+        assert gui.formulario.editorAcción.value == "Macro"
+        assert "teclas" in gui.formulario.opcionesEditar["Acciones"].value
 
         user.find(marker="editor-nombre").clear().type("Macro 2")
         user.find(marker="botonAgregar").click()
@@ -1238,11 +1239,11 @@ class TestCrearFolder:
 
         user.find(marker="tecla-pedal-2").click()
         user.find(marker="botonEjecutar").click()
-        assert not gui.dialogoCrearFolder.value, "el folder existe, no pregunta"
+        assert not gui.formulario.dialogoCrearFolder.value, "el folder existe, no pregunta"
 
         user.find(marker="tecla-pedal-1").click()
         user.find(marker="botonEjecutar").click()
-        assert gui.dialogoCrearFolder.value
+        assert gui.formulario.dialogoCrearFolder.value
         await user.should_see("pedal no tiene acciones en nuevo")
         user.find(marker="botonCrearFolder").click()
 
@@ -1257,4 +1258,4 @@ class TestCrearFolder:
 
         user.find(marker="tecla-pedal-1").click()
         user.find(marker="botonAgregar").click()
-        assert gui.dialogoCrearFolder.value
+        assert gui.formulario.dialogoCrearFolder.value
