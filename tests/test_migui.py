@@ -22,6 +22,7 @@ from elGarrobo.dispositivos.mideck.mi_deck_combinado import MiDeckCombinado
 from elGarrobo.dispositivos.mipedal.mi_pedal import MiPedal
 from elGarrobo.dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro, folderDistribuciones
 from elGarrobo.dispositivos.migui import migui as moduloMiGui
+from elGarrobo.dispositivos.migui import vistas
 from elGarrobo.dispositivos.migui.migui import miGui
 
 
@@ -41,22 +42,22 @@ class dispositivoFalso(dispositivo):
 
 def imagenVista(url: str) -> Image.Image:
     """Imagen que sirve /vista/{hash} para una tecla de la cuadrícula"""
-    contenido, _ = moduloMiGui._vistas[url.removeprefix("/vista/")]
+    contenido, _ = vistas._vistas[url.removeprefix("/vista/")]
     return Image.open(io.BytesIO(contenido))
 
 
 def test_url_vista_por_contenido():
     roja = Image.new("RGB", (8, 8), "red")
-    url = moduloMiGui.urlVista(roja)
-    assert url == moduloMiGui.urlVista(roja.copy()), "misma imagen, misma URL: el navegador la reusa"
-    assert url != moduloMiGui.urlVista(Image.new("RGB", (8, 8), "blue"))
-    respuesta = moduloMiGui.servirVista(url.removeprefix("/vista/"))
+    url = vistas.urlVista(roja)
+    assert url == vistas.urlVista(roja.copy()), "misma imagen, misma URL: el navegador la reusa"
+    assert url != vistas.urlVista(Image.new("RGB", (8, 8), "blue"))
+    respuesta = vistas.servirVista(url.removeprefix("/vista/"))
     assert respuesta.media_type == "image/png" and "immutable" in respuesta.headers["cache-control"]
     assert imagenVista(url).convert("RGB").getpixel((1, 1)) == (255, 0, 0)
-    assert moduloMiGui.servirVista("no-existe").status_code == 404
+    assert vistas.servirVista("no-existe").status_code == 404
     # los gifs llegan como data URI WebP y se sirven con su tipo
-    webp = moduloMiGui.urlVista("data:image/webp;base64," + base64.b64encode(b"RIFF").decode())
-    assert moduloMiGui.servirVista(webp.removeprefix("/vista/")).media_type == "image/webp"
+    webp = vistas.urlVista("data:image/webp;base64," + base64.b64encode(b"RIFF").decode())
+    assert vistas.servirVista(webp.removeprefix("/vista/")).media_type == "image/webp"
 
 
 def accionesIniciales() -> list[dict]:
