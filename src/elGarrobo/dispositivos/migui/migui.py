@@ -12,6 +12,7 @@ from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.mideck.mi_streamdeck_plus import MiStreamDeckPlus
 from elGarrobo.dispositivos.migui import configuracion, tema
 from elGarrobo.dispositivos.migui.dialogos import crearDialogoConfirmacion, dialogoPregunta
+from elGarrobo.dispositivos.migui.distribucion import dialogoDistribucion, medidaDistribucion
 from elGarrobo.dispositivos.migui.editores import (
     avisarError,
     cargarOpciones,
@@ -21,6 +22,7 @@ from elGarrobo.dispositivos.migui.editores import (
     marcarError,
     nombrar,
 )
+from elGarrobo.dispositivos.migui.folder import dialogoFolder, usaCuadriculaFolder
 from elGarrobo.dispositivos.migui.pasos import editorPasos
 from elGarrobo.dispositivos.migui.vistas import servirVista, urlVista
 from elGarrobo.miLibrerias import ConfigurarLogging, SalvarValor, leerData
@@ -85,8 +87,6 @@ class miGui(dispositivo):
         self.ordenCampo: str = "key"
         self.dispositivosEnLista: set[str] = set()
         "Dispositivos con distribución física que el usuario cambió a vista de lista"
-        self.dispositivoFolder = None
-        "Dispositivo cuyas propiedades del folder se están editando"
         self.ordenInverso: bool = False
         self.teclaIntercambio: dict = {}
         "Dispositivos en modo intercambiar → primera tecla seleccionada (None si aún no hay)"
@@ -299,17 +299,7 @@ class miGui(dispositivo):
             # Campos de dataAccion marcados con gui, la clave del dict es la clave en el .md
             self.editoresData = {propiedad.atributo: crearEditor(propiedad, f"editor-{propiedad.atributo}").props("clearable") for propiedad in dataAccion.propiedadesGui()}
 
-            # Propiedades del folder: valores por defecto de los botones del folder actual
-            with ui.dialog() as self.dialogoFolder, ui.card():
-                encabezado(ui.label("Apariencia del folder").classes("text-lg"), 2)
-                ui.label("Valores por defecto de los botones de este folder").classes("text-xs")
-                self.editorFolderFondo = ui.color_input("Fondo", preview=True).classes("w-64").mark("editor-folder-fondo")
-                self.editorFolderTamaño = ui.number("Tamaño máximo del título", min=1, precision=0).classes("w-64").mark("editor-folder-tamanno")
-                # Solo dispositivos sin botones físicos (MQTT, GUI): se dibujan con esta cuadrícula
-                with ui.row().classes("w-64 no-wrap") as self.filaFolderCuadricula:
-                    self.editorFolderColumnas = ui.number("Columnas", min=1, precision=0).classes("flex-1").mark("editor-folder-columnas")
-                    self.editorFolderFilas = ui.number("Filas", min=1, precision=0).classes("flex-1").mark("editor-folder-filas")
-                ui.button("Guardar", color=tema.colorOscuro, on_click=self.guardarPropiedadesFolder).mark("botonGuardarFolder")
+            self.propiedadesFolder = dialogoFolder(self.actualizarPestaña)
 
             # entrar_folder a un folder donde el dispositivo no tiene archivo de acciones
             with ui.dialog() as self.dialogoCrearFolder, ui.card():
@@ -318,9 +308,7 @@ class miGui(dispositivo):
                     ui.button("Cancelar", on_click=self.dialogoCrearFolder.close).props("flat")
                     ui.button("Crear y entrar", icon="create_new_folder", color=tema.colorOscuro, on_click=self.crearFolderPendiente).mark("botonCrearFolder")
 
-            # Se llena al abrir con las distribuciones disponibles
-            with ui.dialog() as self.dialogoDistribucion, ui.card():
-                self.listaDistribuciones = ui.column()
+            self.distribuciones = dialogoDistribucion(self.actualizarPestaña)
 
             # Apariencia del botón en un diálogo aparte para no llenar el formulario
             with ui.dialog() as self.dialogoBoton, ui.card():
@@ -1010,7 +998,7 @@ class miGui(dispositivo):
             # Teclado: botones con posición libre en unidades de tecla, dibujados como el StreamDeck pero a la medida de cada tecla
             unidad = self.unidadTecla
             dibujo = dispositivo.dibujo()
-            ancho, alto = self.medidaDistribucion(distribucion)
+            ancho, alto = medidaDistribucion(distribucion)
             # El teclado crece hasta llenar el ancho y alto del área (sin pasar de unidad px por tecla); posiciones en % del teclado
             relleno = "3rem" if usar else "1rem"
             medidaTeclado = f"width: min(100% - {relleno}, {ancho * unidad}px, (100vh - var(--alto-cabecera) - 172px) * {ancho / alto:.4f})"
@@ -1103,7 +1091,7 @@ class miGui(dispositivo):
                                     ui.label(etiqueta).classes("text-xs truncate text-center").style(medidaTecla.split(";")[0]).tooltip(etiqueta)
                     if isinstance(dibujante, MiStreamDeckPlus):
                         self.dibujarControlesPlus(dibujante, accionesPorTecla, alClick, marcar)
-        if miGui.usaCuadriculaFolder(dispositivo):
+        if usaCuadriculaFolder(dispositivo):
             # Teclas de texto (MQTT) o fuera de la cuadrícula del folder
             celdas = sum(grupo.filas * grupo.columnas for grupo in grupos)
             self.dibujarOtrasTeclas(accionesPorTecla, {str(tecla) for tecla in range(1, celdas + 1)}, alClick, marcar)
@@ -1120,12 +1108,6 @@ class miGui(dispositivo):
                 boton = ui.button(acción.get("nombre"), color=tema.colorTecla, on_click=alClick(tecla, acción)).props("dense no-caps")
                 boton.classes("text-xs tecla-viva").tooltip(tecla)
                 marcar(boton, tecla)
-
-    @staticmethod
-    def usaCuadriculaFolder(aparato: dispositivo) -> bool:
-        """Dispositivos sin botones físicos (MQTT, GUI): su cuadrícula sale de la propiedad_folder"""
-        # Los teclados no: eligen una distribución
-        return type(aparato).gruposBotones is dispositivo.gruposBotones and not hasattr(aparato, "cambiarDistribucion")
 
     def barraHerramientas(self, dispositivo: dispositivo, cuadricula: bool) -> None:
         """Fila sobre el área del dispositivo: subir folder, páginas, herramientas de edición y la vista Cuadrícula/Lista"""
@@ -1152,7 +1134,7 @@ class miGui(dispositivo):
                 nombrar(duplicar, "Duplicar acción")
                 self.herramientasModo[nombre] = {"intercambiar": intercambiar, "duplicar": duplicar}
                 self.pintarHerramientas(dispositivo)
-            apariencia = ui.button(icon="folder_special", color=tema.colorBotones, on_click=lambda: self.abrirPropiedadesFolder(dispositivo)).mark(f"propiedadesFolder-{nombre}")
+            apariencia = ui.button(icon="folder_special", color=tema.colorBotones, on_click=lambda: self.propiedadesFolder.abrir(dispositivo)).mark(f"propiedadesFolder-{nombre}")
             nombrar(apariencia, "Apariencia del folder")
             if hasattr(dispositivo, "cambiarDistribucion"):
                 self.botonDistribucion(dispositivo)
@@ -1252,48 +1234,9 @@ class miGui(dispositivo):
         """Ancho y alto en pixeles de una tecla de la distribución, dejando 4px de separación"""
         return (int(teclaFisica.get("w", 1) * cls.unidadTecla) - 4, int(teclaFisica.get("h", 1) * cls.unidadTecla) - 4)
 
-    @staticmethod
-    def medidaDistribucion(distribucion: list[dict]) -> tuple[float, float]:
-        """Ancho y alto del teclado en unidades de tecla"""
-        ancho = max(t.get("x", 0) + t.get("w", 1) for t in distribucion)
-        alto = max(t.get("y", 0) + t.get("h", 1) for t in distribucion)
-        return ancho, alto
-
     def botonDistribucion(self, dispositivo: dispositivo) -> None:
-        distribucion = ui.button(icon="keyboard", color=tema.colorBotones, on_click=lambda: self.abrirDistribuciones(dispositivo)).mark(f"distribucion-{dispositivo.nombre}")
+        distribucion = ui.button(icon="keyboard", color=tema.colorBotones, on_click=lambda: self.distribuciones.abrir(dispositivo)).mark(f"distribucion-{dispositivo.nombre}")
         nombrar(distribucion, "Distribución del teclado")
-
-    def abrirDistribuciones(self, dispositivo: dispositivo) -> None:
-        """Muestra las distribuciones disponibles con una miniatura; al elegir una se guarda en teclados.md"""
-        from elGarrobo.dispositivos.miteclado.mi_teclado_macro import cargarDistribucion, distribucionesDisponibles, folderDistribucionesUsuario
-
-        def elegir(nombreDistribucion: str | None) -> None:
-            dispositivo.cambiarDistribucion(nombreDistribucion)
-            self.dialogoDistribucion.close()
-            ui.notify(f"Distribución de {dispositivo.nombre}: {nombreDistribucion or 'ninguna'}")
-            self.actualizarPestaña(dispositivo)
-
-        unidad = 10
-        self.listaDistribuciones.clear()
-        with self.listaDistribuciones:
-            encabezado(ui.label(f"Distribución de {dispositivo.nombre}").classes("text-lg"), 2)
-            ui.label(f"Agrega las tuyas (JSON de keyboard-layout-editor.com) en {folderDistribucionesUsuario()}").classes("text-xs")
-            for nombreDistribucion in [None, *distribucionesDisponibles()]:
-                actual = nombreDistribucion == dispositivo.distribucion
-                with ui.card().classes(f"w-full cursor-pointer opcion-distribucion {f'border-2 border-{tema.colorActivo}' if actual else ''}") as tarjeta:
-                    tarjeta.props(f"tabindex=0 role=button aria-pressed={str(actual).lower()}")
-                    for evento in ("click", "keydown.enter", "keydown.space"):
-                        tarjeta.on(evento, lambda n=nombreDistribucion: elegir(n))
-                    tarjeta.mark(f"opcionDistribucion-{nombreDistribucion}")
-                    ui.label(nombreDistribucion or "Ninguna (ver como lista)").classes("font-bold")
-                    distribucion = cargarDistribucion(nombreDistribucion) if nombreDistribucion else None
-                    if distribucion:
-                        ancho, alto = self.medidaDistribucion(distribucion)
-                        with ui.element("div").classes("relative").style(f"width: {ancho * unidad}px; height: {alto * unidad}px"):
-                            for t in distribucion:
-                                estilo = f"left: {t.get('x', 0) * unidad}px; top: {t.get('y', 0) * unidad}px; width: {t.get('w', 1) * unidad - 1}px; height: {t.get('h', 1) * unidad - 1}px"
-                                ui.element("div").classes(f"absolute bg-{tema.colorTeclaVacia} rounded-sm").style(estilo)
-        self.dialogoDistribucion.open()
 
     def cambiarModoIntercambio(self, dispositivo: dispositivo) -> None:
         """Activa o desactiva el modo intercambiar teclas en la cuadrícula del dispositivo"""
@@ -1380,47 +1323,6 @@ class miGui(dispositivo):
                 self.actualizarPestaña(dispositivo)
                 return
         self.marcarSelección(dispositivo)
-
-    def abrirPropiedadesFolder(self, dispositivo: dispositivo) -> None:
-        """Carga en el diálogo la propiedad_folder del folder actual del dispositivo"""
-        self.dispositivoFolder = dispositivo
-        propiedad = dispositivo.propiedadFolder
-        self.editorFolderFondo.value = (propiedad.fondo if propiedad else None) or ""
-        self.editorFolderTamaño.value = (propiedad.tituloOpciones.get("tamanno_maximo") if propiedad else None)
-        self.filaFolderCuadricula.visible = miGui.usaCuadriculaFolder(dispositivo)
-        columnas, filas = dispositivo.cuadriculaFolder() or (None, None)
-        self.editorFolderColumnas.value = columnas
-        self.editorFolderFilas.value = filas
-        self.dialogoFolder.open()
-
-    def guardarPropiedadesFolder(self) -> None:
-        """Guarda la propiedad_folder; la crea si no existe y la quita si queda vacía"""
-        dispositivo = self.dispositivoFolder
-        propiedad = dispositivo.propiedadFolder
-        if propiedad is None:
-            propiedad = dataAccion(key="propiedad_folder")
-            dispositivo.listaAcciones.append(propiedad)
-
-        propiedad.fondo = self.editorFolderFondo.value or None
-        tamaño = self.editorFolderTamaño.value
-        if tamaño:
-            propiedad.tituloOpciones["tamanno_maximo"] = int(tamaño)
-        else:
-            propiedad.tituloOpciones.pop("tamanno_maximo", None)
-        if self.filaFolderCuadricula.visible:
-            columnas, filas = self.editorFolderColumnas.value, self.editorFolderFilas.value
-            if columnas and filas:
-                propiedad.extra["cuadricula"] = {"columnas": int(columnas), "filas": int(filas)}
-            else:
-                propiedad.extra.pop("cuadricula", None)
-
-        if propiedad.aDict() == {"key": "propiedad_folder"}:
-            dispositivo.listaAcciones.remove(propiedad)
-
-        dispositivo.salvarAcciones()
-        self.dialogoFolder.close()
-        ui.notify(f"Apariencia del folder guardada en {dispositivo.nombre}")
-        self.actualizarPestaña(dispositivo)
 
     def subirFolder(self, dispositivo: dispositivo) -> None:
         """Carga el folder anterior en el dispositivo; avisa a la GUI al cargar"""

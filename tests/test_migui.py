@@ -1102,8 +1102,8 @@ class TestPropiedadesFolder:
     async def test_crear_editar_y_quitar(self, user: User, guiPedal: miGui, pedal: MiPedal):
         await user.open("/")
         user.find(marker="propiedadesFolder-pedal").click()
-        guiPedal.editorFolderFondo.value = "#0606bb"
-        guiPedal.editorFolderTamaño.value = 40
+        guiPedal.propiedadesFolder.fondo.value = "#0606bb"
+        guiPedal.propiedadesFolder.tamaño.value = 40
         user.find(marker="botonGuardarFolder").click()
 
         assert pedal.propiedadFolder.aDict() == {
@@ -1113,9 +1113,9 @@ class TestPropiedadesFolder:
         }
 
         user.find(marker="propiedadesFolder-pedal").click()
-        assert guiPedal.editorFolderFondo.value == "#0606bb"
-        guiPedal.editorFolderFondo.value = ""
-        guiPedal.editorFolderTamaño.value = None
+        assert guiPedal.propiedadesFolder.fondo.value == "#0606bb"
+        guiPedal.propiedadesFolder.fondo.value = ""
+        guiPedal.propiedadesFolder.tamaño.value = None
         user.find(marker="botonGuardarFolder").click()
 
         assert pedal.propiedadFolder is None, "vacía se quita del .md"
@@ -1155,22 +1155,22 @@ class TestCuadriculaFolder:
     async def test_guardar_desde_el_dialogo(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
         user.find(marker="propiedadesFolder-deck").click()
-        assert gui.filaFolderCuadricula.visible
-        gui.editorFolderColumnas.value = 4
-        gui.editorFolderFilas.value = 2
+        assert gui.propiedadesFolder.filaCuadricula.visible
+        gui.propiedadesFolder.columnas.value = 4
+        gui.propiedadesFolder.filas.value = 2
         user.find(marker="botonGuardarFolder").click()
         assert deck.propiedadFolder.aDict() == {"key": "propiedad_folder", "cuadricula": {"columnas": 4, "filas": 2}}
         await user.should_see(marker="tecla-deck-8")
 
         user.find(marker="propiedadesFolder-deck").click()
-        gui.editorFolderColumnas.value = None
+        gui.propiedadesFolder.columnas.value = None
         user.find(marker="botonGuardarFolder").click()
         assert deck.propiedadFolder is None, "sin columnas o filas se quita la cuadrícula"
 
     async def test_aparatos_fisicos_no_muestran_columnas(self, user: User, guiPedal: miGui):
         await user.open("/")
         user.find(marker="propiedadesFolder-pedal").click()
-        assert not guiPedal.filaFolderCuadricula.visible
+        assert not guiPedal.propiedadesFolder.filaCuadricula.visible
 
     async def test_cambiar_vista_con_iconos(self, user: User, gui: miGui, deck: dispositivoFalso):
         deck.listaAcciones.append(dataAccion(key="propiedad_folder", extra={"cuadricula": {"columnas": 2, "filas": 1}}))
