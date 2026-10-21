@@ -6,15 +6,24 @@ from pathlib import Path
 import yaml
 from nicegui import app, ui
 
-from elGarrobo import servicio
 from elGarrobo.accionesOOP import accion
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.mideck.mi_streamdeck_plus import MiStreamDeckPlus
-from elGarrobo.dispositivos.migui import tema
+from elGarrobo.dispositivos.migui import configuracion, tema
+from elGarrobo.dispositivos.migui.editores import (
+    avisarError,
+    cargarOpciones,
+    crearEditor,
+    encabezado,
+    leerValor,
+    marcarError,
+    nombrar,
+    ponerValor,
+)
 from elGarrobo.dispositivos.migui.vistas import servirVista, urlVista
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerArchivo, SalvarArchivo, SalvarValor, leerData
+from elGarrobo.miLibrerias import ConfigurarLogging, SalvarValor, leerData
 
 # librería https://nicegui.io/
 # estilo https://tailwindcss.com/
@@ -151,7 +160,7 @@ class miGui(dispositivo):
             from elGarrobo.modulos import cargarModulos
 
             accionListaCheckBox.registrarCliente(ui.context.client)
-            self.mostrarListaActivables("Módulos", "modulos", cargarModulos())
+            configuracion.mostrarListaActivables("Módulos", "modulos", cargarModulos())
             self.estructura()
 
         @ui.page("/dispositivos")
@@ -160,12 +169,12 @@ class miGui(dispositivo):
             from elGarrobo.dispositivos import cargarDispositivos
 
             accionListaCheckBox.registrarCliente(ui.context.client)
-            self.mostrarListaActivables("Dispositivos", "dispositivos", cargarDispositivos())
+            configuracion.mostrarListaActivables("Dispositivos", "dispositivos", cargarDispositivos())
             self.estructura()
 
         @ui.page("/configurar")
         def paginaConfigurar():
-            self.mostrarConfigurar()
+            configuracion.mostrarConfigurar()
             self.estructura()
 
     @staticmethod
@@ -215,10 +224,10 @@ class miGui(dispositivo):
                 return
             for propiedad in dataAccion.propiedadesGui():
                 if propiedad.obligatorio and not valores[propiedad.atributo]:
-                    self.avisarError(self.editoresData[propiedad.atributo], f"Falta {propiedad.nombre}")
+                    avisarError(self.editoresData[propiedad.atributo], f"Falta {propiedad.nombre}")
                     return
             if not acción:
-                self.avisarError(self.editorAcción, "Falta elegir la acción")
+                avisarError(self.editorAcción, "Falta elegir la acción")
                 return
 
             dispositivoDestino = self.dispositivoEditar or self.obtenerDispositivoSeleccionado(nombreDispositivo)
@@ -235,13 +244,13 @@ class miGui(dispositivo):
                     # Perillas y pantalla táctil del StreamDeck Plus: dial_1, touchscreen_1...
                     if not (conPlus and MiStreamDeckPlus.patronControles.fullmatch(str(tecla))):
                         ejemplo = " o un control del Plus (dial_1, dial_derecho_1, touchscreen_1, deslizar_izquierda_1)" if conPlus else ""
-                        self.avisarError(self.editoresData["key"], f"En {dispositivoDestino.nombre} la tecla es un número{ejemplo}")
+                        avisarError(self.editoresData["key"], f"En {dispositivoDestino.nombre} la tecla es un número{ejemplo}")
                         return
 
             editando = self.accionEditar is not None
             repetida = self.teclaRepetida(dispositivoDestino.listaAcciones, tecla, self.accionEditar if editando else None)
             if repetida is not None:
-                self.avisarError(self.editoresData["key"], f"La tecla {tecla} ya la usa '{repetida.get('nombre')}', elige otra")
+                avisarError(self.editoresData["key"], f"La tecla {tecla} ya la usa '{repetida.get('nombre')}', elige otra")
                 return
 
             # Antes de tocar la acción: si una opción no es válida la guardada queda igual, no a medias
@@ -289,7 +298,7 @@ class miGui(dispositivo):
 
         # Pasos de una macro como bloques; se llena al abrir con los pasos del editor YAML
         with ui.dialog() as self.dialogoPasos, ui.card().classes("w-full max-w-2xl"):
-            miGui.encabezado(ui.label("Pasos de la macro").classes("text-lg"), 2)
+            encabezado(ui.label("Pasos de la macro").classes("text-lg"), 2)
             self.listaPasos = ui.column().classes("w-full gap-1")
             self.formularioPaso = ui.column().classes("w-full")
             with ui.row():
@@ -301,11 +310,11 @@ class miGui(dispositivo):
         with ui.scroll_area().classes("w-full").style("height: 75vh"):
 
             # Campos de dataAccion marcados con gui, la clave del dict es la clave en el .md
-            self.editoresData = {propiedad.atributo: self.crearEditor(propiedad, f"editor-{propiedad.atributo}").props("clearable") for propiedad in dataAccion.propiedadesGui()}
+            self.editoresData = {propiedad.atributo: crearEditor(propiedad, f"editor-{propiedad.atributo}").props("clearable") for propiedad in dataAccion.propiedadesGui()}
 
             # Propiedades del folder: valores por defecto de los botones del folder actual
             with ui.dialog() as self.dialogoFolder, ui.card():
-                miGui.encabezado(ui.label("Apariencia del folder").classes("text-lg"), 2)
+                encabezado(ui.label("Apariencia del folder").classes("text-lg"), 2)
                 ui.label("Valores por defecto de los botones de este folder").classes("text-xs")
                 self.editorFolderFondo = ui.color_input("Fondo", preview=True).classes("w-64").mark("editor-folder-fondo")
                 self.editorFolderTamaño = ui.number("Tamaño máximo del título", min=1, precision=0).classes("w-64").mark("editor-folder-tamanno")
@@ -328,7 +337,7 @@ class miGui(dispositivo):
 
             # Apariencia del botón en un diálogo aparte para no llenar el formulario
             with ui.dialog() as self.dialogoBoton, ui.card():
-                miGui.encabezado(ui.label("Apariencia del botón").classes("text-lg"), 2)
+                encabezado(ui.label("Apariencia del botón").classes("text-lg"), 2)
                 with ui.row().classes("items-start"):
                     with ui.column().classes("w-64"):
                         self.editorTitulo = ui.input("Título", on_change=self.actualizarVistaPrevia).classes("w-full").props("clearable").mark("editor-titulo")
@@ -361,10 +370,10 @@ class miGui(dispositivo):
             # Sueltos y no en button_group: con Ejecutar y Borrar ocultos el grupo deja Limpiar sin esquinas redondeadas
             # Ejecutar y Borrar solo se ven al editar una acción guardada
             self.botonEjecutar = ui.button(icon="play_arrow", color=tema.colorOscuro, on_click=self.ejecutarAcciónEditada).props("rounded").mark("botonEjecutar")
-            miGui.nombrar(self.botonEjecutar, "Ejecutar acción guardada")
-            miGui.nombrar(ui.button(icon="clear_all", color=tema.colorOscuro, on_click=lambda: self.siNoHayCambios(self.limpiarFormulario)).props("rounded").mark("botonLimpiar"), "Limpiar formulario")
+            nombrar(self.botonEjecutar, "Ejecutar acción guardada")
+            nombrar(ui.button(icon="clear_all", color=tema.colorOscuro, on_click=lambda: self.siNoHayCambios(self.limpiarFormulario)).props("rounded").mark("botonLimpiar"), "Limpiar formulario")
             self.botonBorrar = ui.button(icon="delete", color=tema.colorPeligro, on_click=self.borrarAcciónEditada).props("rounded").mark("botonBorrar")
-            miGui.nombrar(self.botonBorrar, "Borrar acción")
+            nombrar(self.botonBorrar, "Borrar acción")
             self.botonEjecutar.visible = self.botonBorrar.visible = False
 
     def mostrarBotonGuardar(self, editando: bool) -> None:
@@ -475,7 +484,7 @@ class miGui(dispositivo):
                 self.opcionesEditar = dict()
                 for propiedad in acciónTmp.listaPropiedades:
                     nombre: str = propiedad.nombre
-                    editor = self.crearEditor(propiedad, f"opción-{nombre}")
+                    editor = crearEditor(propiedad, f"opción-{nombre}")
                     tipoAnterior, valorAnterior = valoresAnteriores.get(nombre, (None, None))
                     if valorAnterior and tipoAnterior == editor.tipoEditor:
                         editor.value = valorAnterior
@@ -492,11 +501,11 @@ class miGui(dispositivo):
         for editor in editores.values():
             propiedad: propiedadAccion = editor.propiedad
             try:
-                valor = self.leerValor(editor)
+                valor = leerValor(editor)
                 if valor is None and propiedad.obligatorio:
                     raise ValueError(f"Falta {propiedad.nombre}")
             except ValueError as error:
-                self.avisarError(editor, str(error))
+                avisarError(editor, str(error))
                 raise
             if valor is not None:
                 opciones[propiedad.atributo] = valor
@@ -506,22 +515,12 @@ class miGui(dispositivo):
             return opciones.get(atributoLista, [])
         return opciones
 
-    def cargarOpciones(self, editores: dict[str, ui.element], claseAcción: type[accion], opciones: dict | list) -> None:
-        """Pone en los editores las opciones guardadas en el .md"""
-        objetoClase = claseAcción()
-        if isinstance(opciones, list) and objetoClase.atributoLista:
-            opciones = {objetoClase.atributoLista: opciones}
-        if isinstance(opciones, dict):
-            for propiedad in objetoClase.listaPropiedades:
-                if propiedad.atributo in opciones:
-                    self.ponerValor(editores.get(propiedad.nombre), opciones[propiedad.atributo])
-
     def abrirPasos(self, editor: ui.element) -> None:
         """Abre los pasos del editor YAML de la macro como bloques"""
         try:
-            pasos = self.leerValor(editor) or []
+            pasos = leerValor(editor) or []
         except ValueError as error:
-            self.avisarError(editor, str(error))
+            avisarError(editor, str(error))
             return
         self.editorPasos = editor
         self.pasosMacro: list[dict] = copy.deepcopy(pasos)
@@ -531,7 +530,7 @@ class miGui(dispositivo):
 
     def terminarPasos(self) -> None:
         """Devuelve los pasos al editor YAML; se guardan en el .md con el resto del formulario"""
-        self.ponerValor(self.editorPasos, self.pasosMacro)
+        ponerValor(self.editorPasos, self.pasosMacro)
         self.dialogoPasos.close()
 
     def dibujarPasos(self) -> None:
@@ -552,10 +551,10 @@ class miGui(dispositivo):
                             ui.label(claseAcción().nombre if claseAcción else comando)
                             ui.label(resumen).classes("text-xs truncate w-full").tooltip(resumen)
                         with ui.button_group().props("flat"):
-                            miGui.nombrar(ui.button(icon="arrow_upward", on_click=lambda i=i: self.moverPaso(i, -1)).props(f"flat {'disable' if i == 0 else ''}").mark(f"subirPaso-{i}"), "Subir paso")
-                            miGui.nombrar(ui.button(icon="arrow_downward", on_click=lambda i=i: self.moverPaso(i, 1)).props(f"flat {'disable' if i == len(self.pasosMacro) - 1 else ''}").mark(f"bajarPaso-{i}"), "Bajar paso")
-                            miGui.nombrar(ui.button(icon="edit", on_click=lambda i=i: self.editarPaso(i)).props("flat").mark(f"editarPaso-{i}"), "Editar paso")
-                            miGui.nombrar(ui.button(icon="delete", color=tema.colorPeligro, on_click=lambda i=i: self.borrarPaso(i)).props("flat").mark(f"borrarPaso-{i}"), "Borrar paso")
+                            nombrar(ui.button(icon="arrow_upward", on_click=lambda i=i: self.moverPaso(i, -1)).props(f"flat {'disable' if i == 0 else ''}").mark(f"subirPaso-{i}"), "Subir paso")
+                            nombrar(ui.button(icon="arrow_downward", on_click=lambda i=i: self.moverPaso(i, 1)).props(f"flat {'disable' if i == len(self.pasosMacro) - 1 else ''}").mark(f"bajarPaso-{i}"), "Bajar paso")
+                            nombrar(ui.button(icon="edit", on_click=lambda i=i: self.editarPaso(i)).props("flat").mark(f"editarPaso-{i}"), "Editar paso")
+                            nombrar(ui.button(icon="delete", color=tema.colorPeligro, on_click=lambda i=i: self.borrarPaso(i)).props("flat").mark(f"borrarPaso-{i}"), "Borrar paso")
 
     def moverPaso(self, i: int, cambio: int) -> None:
         pasos = self.pasosMacro
@@ -606,17 +605,17 @@ class miGui(dispositivo):
         with self.propiedadesPaso:
             if claseAcción is None:
                 propiedad = propiedadAccion("Opciones", "opciones", tipo=[dict, list])
-                self.opcionesPaso = {propiedad.nombre: self.crearEditor(propiedad, "opción-paso-Opciones")}
-                self.ponerValor(self.opcionesPaso[propiedad.nombre], opciones)
+                self.opcionesPaso = {propiedad.nombre: crearEditor(propiedad, "opción-paso-Opciones")}
+                ponerValor(self.opcionesPaso[propiedad.nombre], opciones)
                 return
-            self.opcionesPaso = {propiedad.nombre: self.crearEditor(propiedad, f"opción-paso-{propiedad.nombre}") for propiedad in claseAcción().listaPropiedades}
+            self.opcionesPaso = {propiedad.nombre: crearEditor(propiedad, f"opción-paso-{propiedad.nombre}") for propiedad in claseAcción().listaPropiedades}
         if opciones:
-            self.cargarOpciones(self.opcionesPaso, claseAcción, opciones)
+            cargarOpciones(self.opcionesPaso, claseAcción, opciones)
 
     def guardarPaso(self) -> None:
         comando = self.comandoPaso()
         if not comando:
-            self.avisarError(self.editorAcciónPaso, "Falta elegir la acción")
+            avisarError(self.editorAcciónPaso, "Falta elegir la acción")
             return
         try:
             opciones = self.leerOpciones(self.opcionesPaso, comando)
@@ -638,117 +637,9 @@ class miGui(dispositivo):
         self.cerrarPaso()
         self.dibujarPasos()
 
-    @staticmethod
-    def tipoEditor(propiedad: propiedadAccion) -> str:
-        """"bool", "numero", "yaml" (dict/list) o "texto" según los tipos que acepta la propiedad"""
-        tipos = set(propiedad.tipo)
-        if tipos == {bool}:
-            return "bool"
-        if tipos and tipos <= {int, float}:
-            return "numero"
-        if tipos and tipos <= {dict, list}:
-            return "yaml"
-        return "texto"
-
-    @staticmethod
-    def crearEditor(propiedad: propiedadAccion, marca: str) -> ui.element:
-        """Crea el editor de una propiedad según su tipo: switch, número, YAML (dict/list) o texto; * si es obligatoria"""
-        etiqueta = f"* {propiedad.nombre}" if propiedad.obligatorio else propiedad.nombre
-        tipo = miGui.tipoEditor(propiedad)
-        if tipo == "bool":
-            editor = ui.switch(etiqueta, value=bool(propiedad.defecto))
-            if propiedad.descripcion:
-                editor.tooltip(propiedad.descripcion)
-        else:
-            if tipo == "numero":
-                editor = ui.number(label=etiqueta, placeholder=propiedad.ejemplo, precision=None if float in propiedad.tipo else 0)
-            elif tipo == "yaml" or propiedad.multilinea:
-                editor = ui.textarea(label=etiqueta, placeholder=propiedad.ejemplo)
-            else:
-                editor = ui.input(label=etiqueta, placeholder=propiedad.ejemplo)
-            # La ayuda queda visible debajo del campo, no en un aviso que desaparece
-            ayuda = propiedad.descripcion or ""
-            if tipo == "yaml":
-                ayuda = f"{ayuda} (en YAML)".strip()
-            if ayuda:
-                editor.props["hint"] = ayuda
-            editor.on_value_change(lambda _, e=editor: miGui.marcarError(e, None))
-        editor.propiedad = propiedad
-        editor.tipoEditor = tipo
-        return editor.classes("w-full").mark(marca)
-
-    @staticmethod
-    def ponerValor(editor: ui.element, valor) -> None:
-        """Muestra en el editor un valor guardado en el .md según el tipo del editor"""
-        tipo = getattr(editor, "tipoEditor", "texto")
-        if tipo == "yaml":
-            editor.value = "" if valor in (None, "") else yaml.safe_dump(valor, allow_unicode=True, sort_keys=False)
-        elif tipo == "numero":
-            try:
-                editor.value = None if valor in (None, "") else float(valor)
-            except (TypeError, ValueError):
-                # Ej: guardado como texto por una versión vieja de la GUI
-                editor.value = None
-                miGui.marcarError(editor, f"El valor guardado no es un número: {valor}")
-        elif tipo == "bool":
-            editor.value = bool(valor)
-        else:
-            editor.value = valor
-
-    @staticmethod
-    def leerValor(editor: ui.element):
-        """Valor del editor con el tipo de su propiedad, None si quedó vacío; ValueError si no es válido"""
-        propiedad: propiedadAccion = editor.propiedad
-        valor = editor.value
-        if editor.tipoEditor == "bool":
-            # Solo se guarda si cambia el valor por defecto, para no llenar el .md
-            return valor if propiedad.obligatorio or valor != bool(propiedad.defecto) else None
-        if valor in ("", None):
-            return None
-        if editor.tipoEditor == "numero":
-            return float(valor) if float in propiedad.tipo else int(valor)
-        if editor.tipoEditor == "yaml":
-            try:
-                dato = yaml.safe_load(valor)
-            except yaml.YAMLError as error:
-                raise ValueError(f"{propiedad.nombre}: YAML con error ({getattr(error, 'problem', error)})")
-            if not propiedad.mismoTipo(dato):
-                tipos = " o ".join("lista" if t is list else "diccionario" for t in propiedad.tipo)
-                raise ValueError(f"{propiedad.nombre}: debe ser {tipos} en YAML")
-            return dato
-        return valor
-
-    @staticmethod
-    def nombrar(elemento: ui.element, texto: str) -> ui.element:
-        """Tooltip y nombre accesible (aria-label) para botones de solo ícono"""
-        elemento.props["aria-label"] = texto
-        return elemento.tooltip(texto)
-
-    @staticmethod
-    def encabezado(etiqueta: ui.label, nivel: int) -> ui.label:
-        """Título que un lector de pantalla reconoce como encabezado (ui.label es un div)"""
-        return etiqueta.props(f"role=heading aria-level={nivel}")
-
-    @staticmethod
-    def marcarError(editor: ui.element, mensaje: str | None) -> None:
-        """Marca (o limpia con None) el error en el campo; sin validation de nicegui hay que usar las props de Quasar"""
-        if getattr(editor, "tipoEditor", None) == "bool" or isinstance(editor, ui.switch):
-            return
-        # None y no False al limpiar: con error=False Quasar reserva espacio para el mensaje y el campo crece.
-        # No quitar la prop, nicegui lee props["error"] al cambiar el valor y daría KeyError
-        editor.props["error"] = mensaje is not None or None
-        editor.props["error-message"] = mensaje
-        editor.update()
-
-    def avisarError(self, editor: ui.element, mensaje: str) -> None:
-        """Marca el campo con el error y además lo avisa, por si el campo quedó fuera de la vista"""
-        self.marcarError(editor, mensaje)
-        ui.notify(mensaje, type="warning")
-        logger.warning(f"Formulario[Error] {mensaje}")
-
     def limpiarErrores(self) -> None:
         for editor in [*self.editoresData.values(), self.editorAcción, *(self.opcionesEditar or {}).values()]:
-            self.marcarError(editor, None)
+            marcarError(editor, None)
 
     def estadoFormulario(self) -> tuple:
         """Foto de los valores del formulario, para saber si hay cambios sin guardar"""
@@ -1021,7 +912,7 @@ class miGui(dispositivo):
         if opcionesActuales:
 
             if claseAcción is not None:
-                self.cargarOpciones(self.opcionesEditar, claseAcción, opcionesActuales)
+                cargarOpciones(self.opcionesEditar, claseAcción, opcionesActuales)
             else:
                 # Sin editor para estas opciones (ej. pasos de una macro): se muestran y se guardan sin cambios
                 self.editorOpción.visible = True
@@ -1039,218 +930,6 @@ class miGui(dispositivo):
             if dispositivoActual.nombre == nombreDispositivo:
                 return dispositivoActual
         return None
-
-    def mostrarListaActivables(self, titulo: str, archivo: str, listaClases: list) -> None:
-        """Lista módulos o dispositivos con un switch para activarlos/desactivarlos
-
-        Args:
-            titulo (str): Título de la página
-            archivo (str): Archivo de configuración ("modulos" o "dispositivos")
-            listaClases (list): Clases con atributos `modulo`, `nombre` y `descripcion`
-        """
-        configuracion = leerData(archivo) or {}
-
-        def cambiarEstado(clave: str, valor: bool, nombre: str) -> None:
-            SalvarValor(archivo, clave, valor)
-            ui.notify(f"{nombre} {'activado' if valor else 'desactivado'}. Reinicia ElGarrobo para aplicarlo")
-
-        miGui.encabezado(ui.label(titulo).classes("text-h5 p-4"), 2)
-        ui.label("Los cambios se aplican al reiniciar ElGarrobo (menú → Reiniciar)").classes(f"text-caption px-4 text-{tema.colorClaro}")
-        with ui.column().classes("p-4 gap-2 w-full"):
-            for clase in listaClases:
-                activo = configuracion.get(clase.modulo, False)
-                with ui.row().classes(f"items-center w-full border-b border-{tema.colorOscuro} pb-2"):
-                    interruptor = ui.switch(value=activo, on_change=lambda e, c=clase: cambiarEstado(c.modulo, e.value, c.nombre))
-                    interruptor.props["aria-label"] = f"Activar {clase.nombre}"
-                    with ui.column().classes("gap-0"):
-                        ui.label(clase.nombre).classes("font-bold")
-                        ui.label(clase.descripcion).classes("text-caption")
-                # En dispositivos archivoConfiguracion es una lista de aparatos, en módulos un dict de opciones
-                if issubclass(clase, dispositivo) and clase.archivoConfiguracion:
-                    self.mostrarAparatos(clase)
-                elif getattr(clase, "propiedades", None):
-                    self.mostrarConfiguracionModulo(clase)
-
-    def mostrarConfigurar(self) -> None:
-        """Opciones generales de ElGarrobo, por ahora solo el arranque automático al iniciar sesión"""
-
-        def cambiarAutoarranque(valor: bool) -> None:
-            servicio.cambiarAutoarranque(valor)
-            ui.notify("ElGarrobo iniciará al encender la PC" if valor else "ElGarrobo ya no iniciará al encender la PC")
-
-        miGui.encabezado(ui.label("Configurar").classes("text-h5 p-4"), 2)
-        with ui.column().classes("p-4 gap-2 w-full"):
-            with ui.row().classes(f"items-center w-full border-b border-{tema.colorOscuro} pb-2"):
-                interruptor = ui.switch(value=servicio.autoarranque().exists(), on_change=lambda e: cambiarAutoarranque(e.value))
-                interruptor.props["aria-label"] = "Iniciar al encender la PC"
-                interruptor.mark("autoarranque")
-                with ui.column().classes("gap-0"):
-                    ui.label("Iniciar al encender la PC").classes("font-bold")
-                    ui.label("Abre el ícono de la barra de estado al iniciar sesión, y este arranca ElGarrobo").classes("text-caption")
-
-    def mostrarConfiguracionModulo(self, clase: type) -> None:
-        """Desplegable para editar la configuración de un módulo (ej. modulos/estado_octoprint.md)
-
-        El formulario sale de `clase.propiedades` y no del archivo: aparecen todas las opciones aunque el archivo
-        no exista o le falten, con su valor por defecto. Las propiedades con `elementos` (ej. impresoras) se pueden
-        agregar y quitar. Un campo vacío se quita del archivo para que el módulo use su valor por defecto, y las
-        claves del archivo que no están en las propiedades se guardan igual.
-        """
-        archivo = clase.archivoConfiguracion
-        data = ObtenerArchivo(archivo)
-        data = data if isinstance(data, dict) else {}
-        editores: list[tuple[propiedadAccion, ui.element]] = []
-        recienAgregado: list[dict] = []
-        "Elemento que se acaba de agregar, se muestra abierto"
-
-        def campo(contenedor: dict, propiedad: propiedadAccion, marca: str) -> None:
-            valor = contenedor.get(propiedad.atributo, propiedad.defecto)
-            if bool in propiedad.tipo:
-                editor = ui.switch(propiedad.nombre, value=bool(valor))
-            elif int in propiedad.tipo or float in propiedad.tipo:
-                valor = valor if isinstance(valor, (int, float)) else None
-                editor = ui.number(propiedad.nombre, value=valor, precision=0 if int in propiedad.tipo else None)
-            else:
-                secreto = propiedad.atributo in ("token", "clave", "password")
-                texto = "" if valor is None else str(valor)
-                editor = ui.input(
-                    propiedad.nombre,
-                    value=texto,
-                    placeholder=propiedad.ejemplo,
-                    password=secreto,
-                    password_toggle_button=secreto,
-                )
-            if propiedad.descripcion:
-                editor.tooltip(propiedad.descripcion)
-            editor.mark(f"config-{marca}-{propiedad.atributo}")
-
-            def actualizar(evento, contenedor=contenedor, propiedad=propiedad) -> None:
-                # Se guarda al escribir para que agregar o quitar elementos (refresh) no pierda lo editado
-                if evento.value in (None, ""):
-                    contenedor.pop(propiedad.atributo, None)
-                else:
-                    contenedor[propiedad.atributo] = int(evento.value) if int in propiedad.tipo else evento.value
-
-            editor.on_value_change(actualizar)
-            editores.append((propiedad, editor))
-
-        def campos(contenedor: dict, propiedades: list[propiedadAccion], marca: str) -> None:
-            with ui.row().classes("items-start gap-4 p-2"):
-                for propiedad in propiedades:
-                    if not propiedad.elementos:
-                        campo(contenedor, propiedad, marca)
-            for propiedad in propiedades:
-                if propiedad.elementos:
-                    lista(contenedor, propiedad, marca)
-
-        def lista(contenedor: dict, propiedad: propiedadAccion, marca: str) -> None:
-            elementos = contenedor.setdefault(propiedad.atributo, [])
-
-            def agregar() -> None:
-                nuevo = {p.atributo: p.defecto for p in propiedad.elementos if p.defecto is not None}
-                elementos.append(nuevo)
-                recienAgregado[:] = [nuevo]
-                formulario.refresh()
-
-            def quitar(número: int) -> None:
-                elementos.pop(número)
-                formulario.refresh()
-
-            ui.label(propiedad.nombre).classes("font-bold px-2")
-            for número, elemento in enumerate(elementos):
-                titulo = str(elemento.get("nombre") or f"{propiedad.nombre} {número + 1}")
-                abierto = any(elemento is otro for otro in recienAgregado)
-                with ui.expansion(titulo, icon="tune", value=abierto) as desplegable:
-                    desplegable.classes(f"w-full border border-{tema.colorOscuro} rounded")
-                    campos(elemento, propiedad.elementos, f"{marca}-{número}")
-                    botonQuitar = ui.button(
-                        "Quitar", icon="delete", color="negative", on_click=lambda n=número: quitar(n)
-                    )
-                    botonQuitar.props("flat").classes("m-2").mark(f"quitar-{marca}-{número}")
-            botonAgregar = ui.button("Agregar", icon="add", color=tema.colorOscuro, on_click=agregar)
-            botonAgregar.props("flat").classes("m-2").mark(f"agregar-{marca}-{propiedad.atributo}")
-
-        @ui.refreshable
-        def formulario() -> None:
-            editores.clear()
-            campos(data, clase.propiedades, clase.modulo)
-
-        def guardar() -> None:
-            faltan = [editor for propiedad, editor in editores if propiedad.obligatorio and editor.value in (None, "")]
-            for _, editor in editores:
-                self.marcarError(editor, "Obligatorio" if editor in faltan else None)
-            if faltan:
-                ui.notify("Faltan valores obligatorios", type="warning")
-                return
-            SalvarArchivo(archivo, data)
-            ui.notify(f"{clase.nombre} guardado. Reinicia ElGarrobo para aplicarlo", type="positive")
-
-        with ui.column().classes("w-full pl-12 gap-1"):
-            with ui.expansion("Configuración", caption=archivo, icon="settings") as desplegable:
-                desplegable.classes(f"w-full border border-{tema.colorOscuro} rounded")
-                formulario()
-                guardarBoton = ui.button("Guardar", icon="save", color=tema.colorOscuro, on_click=guardar)
-                guardarBoton.classes("m-2").mark(f"guardar-{clase.modulo}")
-
-    def mostrarAparatos(self, clase: type[dispositivo]) -> None:
-        """Lista los aparatos de un tipo (ej. teclados.md) con un desplegable para editar nombre y orden"""
-        archivo = clase.archivoConfiguracion
-        aparatos = ObtenerArchivo(archivo) or []
-
-        def guardar(data: dict, nombre: ui.input, orden: ui.number, internos: list, desplegable: ui.expansion) -> None:
-            nombreNuevo = (nombre.value or "").strip()
-            error = None
-            # elGarrobo busca dispositivos por nombre sin importar mayúsculas (ej. entrar_folder con 'dispositivo')
-            if any(otro is not data and str(otro.get("nombre")).lower() == nombreNuevo.lower() for otro in aparatos):
-                error = f"Ya existe {nombreNuevo}"
-            self.marcarError(nombre, "El nombre no puede quedar vacío" if not nombreNuevo else error)
-            vacíos = [editor for _, editor in internos if not (editor.value or "").strip()]
-            for _, editor in internos:
-                self.marcarError(editor, "Falta el nombre" if editor in vacíos else None)
-            if not nombreNuevo or error or vacíos:
-                return
-            data["nombre"] = nombreNuevo
-            data["ordenar"] = int(orden.value or 0)
-            for dataInterno, editor in internos:
-                dataInterno["nombre"] = editor.value.strip()
-            SalvarArchivo(archivo, aparatos)
-            desplegable.text = nombreNuevo
-            ui.notify(f"{nombreNuevo} guardado. Reinicia ElGarrobo para aplicarlo", type="positive")
-
-        with ui.column().classes("w-full pl-12 gap-1"):
-            if not aparatos:
-                ui.label(f"No hay aparatos en {archivo}").classes("text-caption")
-            for data in aparatos:
-                titulo, ruta = data.get("nombre", "Sin nombre"), data.get("dispositivo", "")
-                with ui.expansion(titulo, caption=ruta, icon=clase.icono) as desplegable:
-                    desplegable.classes(f"w-full border border-{tema.colorOscuro} rounded")
-                    with ui.row().classes("items-start gap-4 p-2"):
-                        nombre = ui.input("Nombre", value=data.get("nombre", ""))
-                        orden = ui.number("Orden", value=data.get("ordenar", 0), precision=0).classes("w-24")
-                    # Aparatos dentro de otro, ej. los StreamDeck de deck_combinado.md (streamDecks / streamDecksPlus)
-                    internos = [
-                        interno
-                        for valor in data.values()
-                        if isinstance(valor, list)
-                        for interno in valor
-                        if isinstance(interno, dict) and "nombre" in interno
-                    ]
-                    editoresInternos = []
-                    if internos:
-                        ui.label("Aparatos internos").classes("text-caption px-2")
-                        with ui.row().classes("items-start gap-4 px-2"):
-                            for interno in internos:
-                                etiqueta = f"Nombre · {interno.get('dispositivo', '')}"
-                                editor = ui.input(etiqueta, value=interno["nombre"])
-                                editoresInternos.append((interno, editor))
-                    ui.button(
-                        "Guardar",
-                        icon="save",
-                        color=tema.colorOscuro,
-                        on_click=lambda d=data, n=nombre, o=orden, i=editoresInternos, e=desplegable: guardar(
-                            d, n, o, i, e
-                        ),
-                    ).classes("m-2")
 
     def crearDialogoConfirmacion(self, mensaje: str, textoBoton: str, accionConfirmada) -> ui.dialog:
         """Crea (sin abrir) un diálogo de confirmación para una acción crítica.
@@ -1300,7 +979,7 @@ class miGui(dispositivo):
         with ui.header(elevated=True) as cabecera:
             cabecera.classes(f"bg-{tema.colorOscuro} items-center justify-between gap-0")
             cabecera.style("padding: 1px")
-            miGui.encabezado(ui.label("ElGarrobo").classes("text-h5 px-4 sm:px-8"), 1)
+            encabezado(ui.label("ElGarrobo").classes("text-h5 px-4 sm:px-8"), 1)
             if conModo and self.pestañas is not None:
                 cabecera.classes("cabecera-grilla")
                 self.pestañas.move(cabecera)
@@ -1640,26 +1319,26 @@ class miGui(dispositivo):
         enLista = cuadricula and nombre in self.dispositivosEnLista
         with ui.row().classes("items-center p-2 w-full gap-2"):
             subir = ui.button(icon="arrow_upward", color=tema.colorBotones, on_click=lambda: self.subirFolder(dispositivo)).mark(f"subirFolder-{nombre}")
-            miGui.nombrar(subir, "Subir al folder anterior")
+            nombrar(subir, "Subir al folder anterior")
             subir.set_enabled(not dispositivo.enFolderRaiz())
             if hasattr(dispositivo, "siguientePagina") and cuadricula and not enLista:
                 anterior = ui.button(icon="chevron_left", color=tema.colorBotones, on_click=lambda: self.cambiarPagina(dispositivo, dispositivo.anteriorPagina)).mark(f"paginaAnterior-{nombre}")
-                miGui.nombrar(anterior, "Página anterior").set_enabled(dispositivo.puedeAnteriorPagina())
+                nombrar(anterior, "Página anterior").set_enabled(dispositivo.puedeAnteriorPagina())
                 ui.label(f"Página {dispositivo.paginaActual()}").mark(f"pagina-{nombre}")
                 siguiente = ui.button(icon="chevron_right", color=tema.colorBotones, on_click=lambda: self.cambiarPagina(dispositivo, lambda: dispositivo.siguientePagina(not usar))).mark(f"paginaSiguiente-{nombre}")
-                miGui.nombrar(siguiente, "Página siguiente").set_enabled(dispositivo.puedeSiguientePagina(not usar))
+                nombrar(siguiente, "Página siguiente").set_enabled(dispositivo.puedeSiguientePagina(not usar))
             if usar:
                 return
             ui.space()
             if cuadricula and not enLista:
                 intercambiar = ui.button(icon="swap_horiz", color=tema.colorBotones, on_click=lambda: self.cambiarModoIntercambio(dispositivo)).mark(f"intercambiar-{nombre}")
-                miGui.nombrar(intercambiar, "Intercambiar teclas")
+                nombrar(intercambiar, "Intercambiar teclas")
                 duplicar = ui.button(icon="content_copy", color=tema.colorBotones, on_click=lambda: self.cambiarModoDuplicar(dispositivo)).mark(f"duplicar-{nombre}")
-                miGui.nombrar(duplicar, "Duplicar acción")
+                nombrar(duplicar, "Duplicar acción")
                 self.herramientasModo[nombre] = {"intercambiar": intercambiar, "duplicar": duplicar}
                 self.pintarHerramientas(dispositivo)
             apariencia = ui.button(icon="folder_special", color=tema.colorBotones, on_click=lambda: self.abrirPropiedadesFolder(dispositivo)).mark(f"propiedadesFolder-{nombre}")
-            miGui.nombrar(apariencia, "Apariencia del folder")
+            nombrar(apariencia, "Apariencia del folder")
             if hasattr(dispositivo, "cambiarDistribucion"):
                 self.botonDistribucion(dispositivo)
             if cuadricula:
@@ -1669,7 +1348,7 @@ class miGui(dispositivo):
                         vista = ui.button(icon=icono, on_click=lambda lista=lista: self.cambiarVista(dispositivo, lista))
                         vista.props(f"color={tema.colorSeleccion if activo else tema.colorInterruptor} text-color={'black' if activo else 'white'}")
                         vista.props["aria-pressed"] = activo
-                        miGui.nombrar(vista, texto).mark(f"vista-{'lista' if lista else 'cuadricula'}-{nombre}")
+                        nombrar(vista, texto).mark(f"vista-{'lista' if lista else 'cuadricula'}-{nombre}")
 
     def dibujarControlesPlus(self, plus, accionesPorTecla: dict, alClick, marcar) -> None:
         """Pantalla táctil y perillas del StreamDeck Plus, debajo de sus teclas y del mismo ancho
@@ -1767,7 +1446,7 @@ class miGui(dispositivo):
 
     def botonDistribucion(self, dispositivo: dispositivo) -> None:
         distribucion = ui.button(icon="keyboard", color=tema.colorBotones, on_click=lambda: self.abrirDistribuciones(dispositivo)).mark(f"distribucion-{dispositivo.nombre}")
-        miGui.nombrar(distribucion, "Distribución del teclado")
+        nombrar(distribucion, "Distribución del teclado")
 
     def abrirDistribuciones(self, dispositivo: dispositivo) -> None:
         """Muestra las distribuciones disponibles con una miniatura; al elegir una se guarda en teclados.md"""
@@ -1782,7 +1461,7 @@ class miGui(dispositivo):
         unidad = 10
         self.listaDistribuciones.clear()
         with self.listaDistribuciones:
-            miGui.encabezado(ui.label(f"Distribución de {dispositivo.nombre}").classes("text-lg"), 2)
+            encabezado(ui.label(f"Distribución de {dispositivo.nombre}").classes("text-lg"), 2)
             ui.label(f"Agrega las tuyas (JSON de keyboard-layout-editor.com) en {folderDistribucionesUsuario()}").classes("text-xs")
             for nombreDistribucion in [None, *distribucionesDisponibles()]:
                 actual = nombreDistribucion == dispositivo.distribucion
@@ -2010,9 +1689,9 @@ class miGui(dispositivo):
                 # Una sola celda de la grilla para los tres botones
                 with ui.row().classes("no-wrap gap-1 items-center"):
                     with ui.button_group().props("rounded"):
-                        miGui.nombrar(ui.button(icon="play_arrow", color=tema.colorBotones, on_click=lambda a=acciónActual: self.probarAcción(a)).mark(f"ejecutar-{marca}"), f"Probar {nombreAcción}")
-                        miGui.nombrar(ui.button(icon="edit", color=tema.colorBotones, on_click=lambda a=acciónActual: self.siNoHayCambios(lambda: self.seleccionarAcción(a, dispositivo))).mark(f"editar-{marca}"), f"Editar {nombreAcción}")
-                    miGui.nombrar(ui.button(icon="delete", color=tema.colorPeligro, on_click=lambda a=acciónActual, d=dispositivo: self.borrarConDeshacer(a, d)).props("flat round").mark(f"borrar-{marca}"), f"Borrar {nombreAcción}")
+                        nombrar(ui.button(icon="play_arrow", color=tema.colorBotones, on_click=lambda a=acciónActual: self.probarAcción(a)).mark(f"ejecutar-{marca}"), f"Probar {nombreAcción}")
+                        nombrar(ui.button(icon="edit", color=tema.colorBotones, on_click=lambda a=acciónActual: self.siNoHayCambios(lambda: self.seleccionarAcción(a, dispositivo))).mark(f"editar-{marca}"), f"Editar {nombreAcción}")
+                    nombrar(ui.button(icon="delete", color=tema.colorPeligro, on_click=lambda a=acciónActual, d=dispositivo: self.borrarConDeshacer(a, d)).props("flat round").mark(f"borrar-{marca}"), f"Borrar {nombreAcción}")
 
     def probarAcción(self, acción: dataAccion) -> None:
         """Botón ▶: presiona y suelta seguido, para que acciones como Presiona no queden a medias"""

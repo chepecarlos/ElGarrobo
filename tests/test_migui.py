@@ -22,7 +22,7 @@ from elGarrobo.dispositivos.mideck.mi_deck_combinado import MiDeckCombinado
 from elGarrobo.dispositivos.mipedal.mi_pedal import MiPedal
 from elGarrobo.dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro, folderDistribuciones
 from elGarrobo.dispositivos.migui import migui as moduloMiGui
-from elGarrobo.dispositivos.migui import tema, vistas
+from elGarrobo.dispositivos.migui import configuracion, tema, vistas
 from elGarrobo.dispositivos.migui.migui import miGui
 
 
@@ -480,6 +480,7 @@ class TestMenu:
     @pytest.mark.parametrize("item, ruta", [("Módulos", "/modulos"), ("Dispositivos", "/dispositivos"), ("Configurar", "/configurar"), ("Acciones", "/")])
     async def test_navegar(self, user: User, gui: miGui, monkeypatch, item, ruta):
         monkeypatch.setattr(moduloMiGui, "leerData", lambda _: {})
+        monkeypatch.setattr(configuracion, "leerData", lambda _: {})
         await user.open("/modulos")
         user.find(marker=f"menu-{item}").click()
         for _ in range(20):  # la navegación corre en segundo plano
@@ -517,8 +518,8 @@ class TestActivables:
     @pytest.mark.parametrize("ruta, archivo", [("/modulos", "modulos"), ("/dispositivos", "dispositivos")])
     async def test_switch_guarda_estado(self, user: User, gui: miGui, monkeypatch, ruta, archivo):
         salvar = MagicMock()
-        monkeypatch.setattr(moduloMiGui, "leerData", lambda _: {})
-        monkeypatch.setattr(moduloMiGui, "SalvarValor", salvar)
+        monkeypatch.setattr(configuracion, "leerData", lambda _: {})
+        monkeypatch.setattr(configuracion, "SalvarValor", salvar)
         await user.open(ruta)
         await user.should_see("Los cambios se aplican al reiniciar ElGarrobo (menú → Reiniciar)")
 
@@ -535,9 +536,9 @@ class TestConfiguracionModulos:
     def archivos(self, monkeypatch) -> dict:
         """Archivos de configuración en memoria: lo que se guarda queda en el dict"""
         archivos = {}
-        monkeypatch.setattr(moduloMiGui, "leerData", lambda _: {})
-        monkeypatch.setattr(moduloMiGui, "ObtenerArchivo", lambda archivo: archivos.get(archivo))
-        monkeypatch.setattr(moduloMiGui, "SalvarArchivo", lambda archivo, data: archivos.update({archivo: data}))
+        monkeypatch.setattr(configuracion, "leerData", lambda _: {})
+        monkeypatch.setattr(configuracion, "ObtenerArchivo", lambda archivo: archivos.get(archivo))
+        monkeypatch.setattr(configuracion, "SalvarArchivo", lambda archivo, data: archivos.update({archivo: data}))
         return archivos
 
     @staticmethod
