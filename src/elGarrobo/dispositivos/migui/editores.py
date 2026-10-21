@@ -124,6 +124,27 @@ def avisarError(editor: ui.element, mensaje: str) -> None:
     logger.warning(f"Formulario[Error] {mensaje}")
 
 
+def leerOpciones(editores: dict[str, ui.element], claseAcción: type[accion] | None) -> dict | list:
+    """Opciones con el tipo de cada propiedad; marca el campo y lanza ValueError si alguno no es válido"""
+    opciones = dict()
+    for editor in editores.values():
+        propiedad: propiedadAccion = editor.propiedad
+        try:
+            valor = leerValor(editor)
+            if valor is None and propiedad.obligatorio:
+                raise ValueError(f"Falta {propiedad.nombre}")
+        except ValueError as error:
+            avisarError(editor, str(error))
+            raise
+        if valor is not None:
+            opciones[propiedad.atributo] = valor
+    # Acciones como macro guardan sus opciones en el .md como lista
+    atributoLista = getattr(claseAcción, "atributoLista", None)
+    if atributoLista:
+        return opciones.get(atributoLista, [])
+    return opciones
+
+
 def cargarOpciones(editores: dict[str, ui.element], claseAcción: type[accion], opciones: dict | list) -> None:
     """Pone en los editores las opciones guardadas en el .md"""
     objetoClase = claseAcción()
