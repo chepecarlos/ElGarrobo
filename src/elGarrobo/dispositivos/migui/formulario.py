@@ -62,7 +62,7 @@ class formularioAccion:
 
         self.pasos = editorPasos(self.listaClasesAcciones)
 
-        self.tituloFormulario = ui.label("").classes(f"text-{tema.colorClaro} font-bold px-2").mark("tituloFormulario")
+        self.tituloFormulario = ui.label("").classes("texto-acento font-bold px-2").mark("tituloFormulario")
         with ui.scroll_area().classes("w-full").style("height: 75vh"):
 
             # Campos de dataAccion marcados con gui, la clave del dict es la clave en el .md

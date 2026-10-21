@@ -514,6 +514,23 @@ class TestConfigurar:
         user.find(marker="autoarranque").click()
         assert not inicio.exists()
 
+    async def test_cambiar_tema(self, user: User, gui: miGui, monkeypatch):
+        salvar = MagicMock()
+        monkeypatch.setattr(moduloMiGui, "SalvarValor", salvar)
+        await user.open("/configurar")
+        oscuro = next(iter(user.find(kind=ui.dark_mode).elements))
+        assert oscuro.value is True, "por defecto oscuro, como antes de tener temas"
+
+        selector = next(iter(user.find(marker="tema").elements))
+        for nombreTema, valor in (("claro", False), ("auto", None)):
+            with user:
+                selector.value = nombreTema
+            assert oscuro.value is valor
+            salvar.assert_called_with(moduloMiGui.ARCHIVO_PREFERENCIAS, "tema", nombreTema)
+
+        await user.open("/")
+        assert next(iter(user.find(kind=ui.dark_mode).elements)).value is None, "las otras páginas abren con el tema elegido"
+
 
 class TestActivables:
     @pytest.mark.parametrize("ruta, archivo", [("/modulos", "modulos"), ("/dispositivos", "dispositivos")])

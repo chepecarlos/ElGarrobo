@@ -63,6 +63,8 @@ class miGui(dispositivo):
         self.teclasPresionadas: dict[int, dataAccion] = {}
         "id → acción presionada en modo Usar, para mandar soltar una sola vez"
         self.modoUsar: bool = False
+        self.nombreTema: str = tema.TEMA_DEFECTO
+        "Clave de tema.TEMAS: auto, claro u oscuro"
         "Modo Usar: click en una tecla la ejecuta; modo Editar: la abre en el formulario"
         self.splitter: ui.splitter = None
         self.contenedorFormulario: ui.column = None
@@ -146,8 +148,9 @@ class miGui(dispositivo):
 
         @ui.page("/configurar")
         def paginaConfigurar():
-            configuracion.mostrarConfigurar()
-            self.estructura()
+            # Antes que el contenido: el selector de tema cambia el dark_mode que crea estructura()
+            oscuro = self.estructura()
+            configuracion.mostrarConfigurar(self.nombreTema, lambda nombreTema: self.cambiarTema(nombreTema, oscuro))
 
     def actualizarCabecera(self) -> None:
         """Muestra información del dispositivo rutas de la interfaz web"""
@@ -172,6 +175,12 @@ class miGui(dispositivo):
         self.aplicarModo()
         for dispositivoActual in self.listaDispositivos:
             self.actualizarPestaña(dispositivoActual)
+
+    def cambiarTema(self, nombreTema: str, oscuro: ui.dark_mode) -> None:
+        """Aplica el tema en la página y lo recuerda; las otras páginas lo toman al abrirse"""
+        self.nombreTema = nombreTema
+        oscuro.value = tema.TEMAS[nombreTema]
+        SalvarValor(ARCHIVO_PREFERENCIAS, "tema", nombreTema)
 
     def aplicarModo(self) -> None:
         """Oculta el formulario en modo Usar; el formulario conserva lo que se estaba editando"""
@@ -279,12 +288,15 @@ class miGui(dispositivo):
         """Reinicia el proceso de ElGarrobo"""
         self.ejecutarAccionSistema("reiniciar_app")
 
-    def estructura(self, conModo: bool = False):
+    def estructura(self, conModo: bool = False) -> ui.dark_mode:
         """Estructura de la interfaz, cabecera y pie de página
 
         Args:
             conModo (bool): Página de acciones: muestra dispositivo/folder, última acción y el interruptor Usar/Editar
+        Returns:
+            ui.dark_mode: Tema claro u oscuro de la página
         """
+        oscuro = ui.dark_mode(tema.TEMAS[self.nombreTema])
         ui.add_css(tema.CSS_BOTONERA)
         ui.colors(**tema.COLORES_QUASAR)
         with ui.header(elevated=True) as cabecera:
@@ -311,8 +323,8 @@ class miGui(dispositivo):
                     ui.label("ElGarrobo").classes("text-h6")
                     ui.label("Creado por ChepeCarlos")
                     with ui.row():
-                        ui.link("YouTube", "https://www.youtube.com/@chepecarlo", new_tab=True).classes(f"text-{tema.colorClaro}")
-                        ui.link("TikTok", "https://www.tiktok.com/@chepecarlo", new_tab=True).classes(f"text-{tema.colorClaro}")
+                        ui.link("YouTube", "https://www.youtube.com/@chepecarlo", new_tab=True).classes("texto-acento")
+                        ui.link("TikTok", "https://www.tiktok.com/@chepecarlo", new_tab=True).classes("texto-acento")
                     ui.button("Cerrar", on_click=dialogoAcercaDe.close).props("flat")
                 with ui.row().classes("items-center gap-2 no-wrap"):
                     if conModo:
@@ -328,6 +340,7 @@ class miGui(dispositivo):
                             ui.separator()
                             ui.menu_item("Reiniciar", on_click=dialogoReiniciar.open).mark("menu-Reiniciar")
                             ui.menu_item("Salir", on_click=dialogoSalir.open).mark("menu-Salir")
+        return oscuro
 
 
     def seConectaGUI(self, client=None):
@@ -356,7 +369,10 @@ class miGui(dispositivo):
 
         logger.info("Iniciando NiceGUI")
         # Aquí y no en __init__: los tests crean miGui sin conectar y no deben depender de la config del usuario
-        self.modoUsar = bool((leerData(ARCHIVO_PREFERENCIAS) or {}).get("modo_usar", False))
+        preferencias = leerData(ARCHIVO_PREFERENCIAS) or {}
+        self.modoUsar = bool(preferencias.get("modo_usar", False))
+        nombreTema = preferencias.get("tema")
+        self.nombreTema = nombreTema if nombreTema in tema.TEMAS else tema.TEMA_DEFECTO
 
         app.on_connect(self.seConectaGUI)
         app.on_disconnect(self.seDesconectaGUI)
@@ -372,7 +388,8 @@ class miGui(dispositivo):
                 port=self.puerto,
                 reload=False,
                 show=False,
-                dark=True,
+                # Tema de la primera carga, antes de que ui.dark_mode de estructura() lo aplique: sin destello del otro tema
+                dark=tema.TEMAS[self.nombreTema],
                 language="es",
                 uvicorn_logging_level="warning",
                 favicon="🦎",

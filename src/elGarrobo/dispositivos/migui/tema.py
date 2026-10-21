@@ -3,11 +3,16 @@
 COLORES_QUASAR = {"primary": "#00786f", "negative": "#dc2626", "positive": "#15803d"}
 "Colores de Quasar con texto blanco encima ≥4.5:1 (los de NiceGUI daban 3.1, 2.6 y 2.5); primary es teal-700 como colorBotones"
 
+TEMAS = {"auto": None, "claro": False, "oscuro": True}
+"Tema guardado en gui_preferencias → valor de ui.dark_mode (None sigue al sistema operativo)"
+NOMBRES_TEMAS = {"auto": "Automático", "claro": "Claro", "oscuro": "Oscuro"}
+TEMA_DEFECTO = "oscuro"
+
 # Roles de color: usar estos y no colores sueltos. Los que llevan texto blanco deben dar ≥4.5:1
 colorOscuro = "teal-900"
 "Cabecera, pestañas y botones del formulario"
 colorClaro = "teal-300"
-"Texto e íconos de acento sobre fondo oscuro"
+"Texto e íconos de acento sobre la cabecera (siempre oscura); en la página usar la clase texto-acento, que cambia con el tema"
 colorBotones = "teal-700"
 "Botones de herramientas (subir, página, intercambiar…): blanco sobre teal-700 ≈ 5.3:1 (teal-500 daba 2.4:1)"
 colorTecla = "teal-700"
@@ -28,10 +33,16 @@ colorInterruptor = "teal-10"
 "Fondo de la opción no elegida del interruptor Usar/Editar sobre la cabecera"
 
 CSS_BOTONERA = """
-/* Únicos colores fijos del CSS: el fondo de la carcasa, el foco (teal-300, mismo que colorClaro) y el texto de error */
-:root { --color-carcasa: #0b1716; --color-foco: #5eead4; --color-error-texto: #f87171; }
+/* Únicos colores fijos del CSS: el fondo de la carcasa (oscuro en los dos temas, imita el aparato), el acento y foco
+   (texto de acento, etiqueta de campos y contorno con teclado) y el texto de error.
+   Tema claro sobre blanco: teal-700 5.5:1 y red-700 6.5:1. Tema oscuro (body--dark de Quasar): teal-300 12.7:1 y red-400 6.8:1.
+   La cabecera es teal-900 en los dos temas: ahí siempre van los claros (teal-700 daría 1.7:1) */
+:root { --color-carcasa: #0b1716; --color-acento: #0f766e; --color-foco: #0f766e; --color-error-texto: #b91c1c; }
+body.body--dark { --color-acento: #5eead4; --color-foco: #5eead4; --color-error-texto: #f87171; }
+.q-header { --color-acento: #5eead4; --color-foco: #5eead4; }
+.texto-acento { color: var(--color-acento); }
 /* primary y negative (ver COLORES_QUASAR) son fondos con texto blanco; como texto sobre el fondo oscuro no llegan a 4.5:1.
-   En campos, menús y botones planos se usa el teal claro y un rojo claro para la etiqueta, la opción elegida y los errores */
+   En campos, menús y botones planos se usa el acento del tema para la etiqueta, la opción elegida y los errores */
 .q-field, .q-menu, .q-btn--flat { --q-primary: var(--color-foco); }
 .q-field { --q-negative: var(--color-error-texto); }
 .modo-usar > .q-splitter__separator { display: none; }
@@ -91,3 +102,7 @@ CSS_BOTONERA = """
     .fila-acciones > .solo-ancho { display: none; }
 }
 """
+
+# NiceGUI toma teal-900, teal-700 y orange-700 como colores de Tailwind: solo pone bg-* y el texto hereda el de la página,
+# blanco en el tema oscuro pero negro en el claro (negro sobre teal-900 da 2.3:1). Los roles con texto blanco lo fijan aquí
+CSS_BOTONERA += ", ".join(f".q-btn.bg-{color}" for color in dict.fromkeys((colorOscuro, colorBotones, colorTecla, colorActivo))) + " { color: #fff; }\n"

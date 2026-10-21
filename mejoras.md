@@ -22,7 +22,7 @@
 - [ ] **Selector de acciones agrupado**: más de 37 acciones en una lista plana; agrupar por categoría (OBS, teclado, sonido, MQTT, folders...).
 - [ ] **Deshacer más allá de borrar**: borrar ya tiene Deshacer en el aviso; editar, intercambiar y duplicar todavía no.
 - [ ] **Atajos de teclado y edición en lote**: no hay atajos (guardar, limpiar, cambiar modo) ni forma de mover o borrar varias acciones a la vez.
-- [ ] **Temas claro y oscuro**: hoy la GUI es solo oscura (`dark=True` en `ui.run`). Selector Automático/Claro/Oscuro en la cabecera, guardado en `gui_preferencias`, con `ui.dark_mode()`. Los roles que fallan sobre fondo claro (`colorClaro` como texto en 5 lugares, `--color-foco`, `--color-error-texto`, `colorTeclaVacia`/`colorTeclaApagada`) pasan a variables CSS bajo `body--dark` en `tema.py`, así el cambio es en vivo sin redibujar. Revisar contraste ≥4.5:1 de la paleta clara; decidir si la carcasa se queda oscura. Hacer después de separar `migui.py` en componentes.
+- [x] **Temas claro y oscuro**: selector Automático/Claro/Oscuro en /configurar, guardado en `gui_preferencias` (`tema`: `auto`, `claro`, `oscuro`; por defecto `oscuro`) y aplicado con `ui.dark_mode()` en cada página. Acento, foco y errores son variables CSS en `tema.py` que cambian con `body--dark` (claro: teal-700 5.5:1, red-700 6.5:1); la cabecera y la carcasa quedan oscuras en los dos temas. En la cabecera y no en /configurar habría quedado muy llena.
 - [ ] **Alturas fijas en `vh`**: la cabecera ya se mide sola (`--alto-cabecera`), pero el formulario (75vh) y las restas en px del área de acciones siguen siendo aproximadas.
 
 ### Auditoría técnica (2026-10-17, `/impeccable audit`: 11/20)

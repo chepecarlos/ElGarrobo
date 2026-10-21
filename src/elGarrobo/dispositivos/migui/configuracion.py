@@ -28,7 +28,7 @@ def mostrarListaActivables(titulo: str, archivo: str, listaClases: list) -> None
         ui.notify(f"{nombre} {'activado' if valor else 'desactivado'}. Reinicia ElGarrobo para aplicarlo")
 
     encabezado(ui.label(titulo).classes("text-h5 p-4"), 2)
-    ui.label("Los cambios se aplican al reiniciar ElGarrobo (menú → Reiniciar)").classes(f"text-caption px-4 text-{tema.colorClaro}")
+    ui.label("Los cambios se aplican al reiniciar ElGarrobo (menú → Reiniciar)").classes("text-caption px-4 texto-acento")
     with ui.column().classes("p-4 gap-2 w-full"):
         for clase in listaClases:
             activo = configuracion.get(clase.modulo, False)
@@ -45,8 +45,13 @@ def mostrarListaActivables(titulo: str, archivo: str, listaClases: list) -> None
                 mostrarConfiguracionModulo(clase)
 
 
-def mostrarConfigurar() -> None:
-    """Opciones generales de ElGarrobo, por ahora solo el arranque automático al iniciar sesión"""
+def mostrarConfigurar(nombreTema: str, cambiarTema) -> None:
+    """Opciones generales de ElGarrobo: arranque automático al iniciar sesión y tema de la interfaz
+
+    Args:
+        nombreTema (str): tema actual, una clave de tema.TEMAS
+        cambiarTema: recibe la clave del tema elegido; lo aplica y lo guarda
+    """
 
     def cambiarAutoarranque(valor: bool) -> None:
         servicio.cambiarAutoarranque(valor)
@@ -61,6 +66,12 @@ def mostrarConfigurar() -> None:
             with ui.column().classes("gap-0"):
                 ui.label("Iniciar al encender la PC").classes("font-bold")
                 ui.label("Abre el ícono de la barra de estado al iniciar sesión, y este arranca ElGarrobo").classes("text-caption")
+        with ui.row().classes(f"items-center w-full border-b border-{tema.colorOscuro} pb-2"):
+            selector = ui.toggle(tema.NOMBRES_TEMAS, value=nombreTema, on_change=lambda e: cambiarTema(e.value))
+            selector.props("no-caps aria-label=Tema").mark("tema")
+            with ui.column().classes("gap-0"):
+                ui.label("Tema").classes("font-bold")
+                ui.label("Automático sigue el tema claro u oscuro de la PC o el celular").classes("text-caption")
 
 
 def mostrarConfiguracionModulo(clase: type) -> None:

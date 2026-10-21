@@ -22,6 +22,9 @@ pytest tests/test_tool.py -v    # un solo archivo de test
 make test-cov
 make test-cov-html
 
+# Capturas de la GUI en tema oscuro y claro (Playwright + Google Chrome) en capturas/
+make capturas
+
 # Documentación (pdoc)
 make docs
 make serve-docs

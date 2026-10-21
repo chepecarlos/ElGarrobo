@@ -1,8 +1,11 @@
-# Data Temrporal
+# Data Temporal
 Data/*
 
 # Demos de prueba
 demo/
+
+# Capturas de la GUI (make capturas)
+capturas/
 
 # Archivos de Audio
 *.mp3

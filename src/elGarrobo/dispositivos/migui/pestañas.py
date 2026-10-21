@@ -607,7 +607,8 @@ class pestañasDispositivos:
                 texto += " ▼" if self.ordenInverso else " ▲"
                 orden = "descending" if self.ordenInverso else "ascending"
             # Botón y no etiqueta: se ordena también con el teclado
-            boton = ui.button(texto, on_click=lambda c=campo: self.cambiarOrden(c, dispositivo)).props("flat dense no-caps align=left color=white padding=0")
+            # color=None: sin el primary de NiceGUI, el texto es el de la página como en "Opciones"
+            boton = ui.button(texto, color=None, on_click=lambda c=campo: self.cambiarOrden(c, dispositivo)).props("flat dense no-caps align=left padding=0")
             boton.classes(f"font-bold justify-self-start {clases}").mark(f"orden-{campo}-{dispositivo.nombre}")
             boton.props["aria-sort"] = orden
 

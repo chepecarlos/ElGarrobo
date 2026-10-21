@@ -1,3 +1,6 @@
+# Targets que son acciones y no archivos: se ejecutan siempre aunque exista una carpeta con ese nombre (ej. docs/, capturas/)
+.PHONY: install uninstall install-dev docs serve-docs clean-docs test test-cov test-cov-html extras capturas
+
 # Carpeta donde guardar la documentación
 DOCS_DIR = docs
 
@@ -50,6 +53,12 @@ test-cov-html:
 	@echo "Ejecutando tests con reporte HTML..."
 	pytest tests/ --cov=src/elGarrobo --cov-report=html
 	@echo "Reporte generado en htmlcov/index.html"
+
+# Capturas de la GUI en tema oscuro y claro para revisarlas a ojo (Playwright con el Google Chrome del sistema)
+capturas:
+	@echo "Tomando capturas de la GUI..."
+	venv/bin/python tests/visual/capturas.py
+	@echo "Capturas en capturas/"
 
 extras:
 	@echo "Instalando paquetes extras"

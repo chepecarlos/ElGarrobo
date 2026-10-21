@@ -28,7 +28,7 @@ elgarrobo = "elGarrobo.main:main"
 elgarrobo-tool = "elGarrobo.tool:main"
 
 [project.optional-dependencies]
-dev = ["pytest>=9.0", "pytest-cov>=4.0", "pytest-asyncio>=1.0"]
+dev = ["pytest>=9.0", "pytest-cov>=4.0", "pytest-asyncio>=1.0", "playwright>=1.50"]
 
 [tool.setuptools]
 package-dir = { "" = "src" }
