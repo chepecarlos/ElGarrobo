@@ -11,6 +11,7 @@ from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.mideck.mi_streamdeck_plus import MiStreamDeckPlus
 from elGarrobo.dispositivos.migui import configuracion, tema
+from elGarrobo.dispositivos.migui.dialogos import crearDialogoConfirmacion, dialogoPregunta
 from elGarrobo.dispositivos.migui.editores import (
     avisarError,
     cargarOpciones,
@@ -105,7 +106,6 @@ class miGui(dispositivo):
         self.tituloFormulario: ui.label = None
         self.formularioInicial: tuple = None
         "Valores del formulario al cargarlo, para avisar antes de descartar cambios"
-        self.funcionPregunta = None
         self.contenedorFormulario: ui.column = None
         self.borrados: dict[int, tuple] = {}
         "id del aviso → (acción, dispositivo, folder, posición) que todavía se puede deshacer"
@@ -289,11 +289,7 @@ class miGui(dispositivo):
             self.limpiarFormulario()
             self.ofrecerCrearFolder(guardada, dispositivoDestino)
 
-        with ui.dialog() as self.dialogoPregunta, ui.card():
-            self.textoPregunta = ui.label("")
-            with ui.row():
-                ui.button("Cancelar", on_click=self.dialogoPregunta.close).props("flat")
-                self.botonPregunta = ui.button("", color=tema.colorPeligro, on_click=self.confirmarPregunta).props("unelevated").mark("botonConfirmarPregunta")
+        self.pregunta = dialogoPregunta()
 
         self.pasos = editorPasos(self.listaClasesAcciones)
 
@@ -513,18 +509,7 @@ class miGui(dispositivo):
             funcion()
             return
         nombre = f"'{self.accionEditar.get('nombre')}'" if self.accionEditar else "la acción nueva"
-        self.preguntar(f"Hay cambios sin guardar en {nombre}. ¿Descartarlos?", "Descartar", funcion)
-
-    def preguntar(self, mensaje: str, textoBoton: str, funcion) -> None:
-        """Diálogo de confirmación con mensaje variable (crearDialogoConfirmacion es para mensajes fijos)"""
-        self.textoPregunta.text = mensaje
-        self.botonPregunta.text = textoBoton
-        self.funcionPregunta = funcion
-        self.dialogoPregunta.open()
-
-    def confirmarPregunta(self) -> None:
-        self.dialogoPregunta.close()
-        self.funcionPregunta()
+        self.pregunta.preguntar(f"Hay cambios sin guardar en {nombre}. ¿Descartarlos?", "Descartar", funcion)
 
     def actualizarTituloFormulario(self) -> None:
         """Dice arriba del formulario qué se está editando y en qué dispositivo se guardará"""
@@ -780,25 +765,6 @@ class miGui(dispositivo):
                 return dispositivoActual
         return None
 
-    def crearDialogoConfirmacion(self, mensaje: str, textoBoton: str, accionConfirmada) -> ui.dialog:
-        """Crea (sin abrir) un diálogo de confirmación para una acción crítica.
-
-        Se crea una sola vez al armar la página: si se crea recién al hacer
-        click en el menú, el diálogo no se pinta hasta el siguiente refresco
-        porque compite con la animación de cierre del menú.
-        """
-        with ui.dialog() as dialogo, ui.card():
-            ui.label(mensaje)
-            with ui.row():
-                ui.button("Cancelar", on_click=dialogo.close).props("flat")
-
-                def confirmar():
-                    dialogo.close()
-                    accionConfirmada()
-
-                ui.button(textoBoton, color=tema.colorPeligro, on_click=confirmar).props("unelevated")
-        return dialogo
-
     def ejecutarAccionSistema(self, comando: str) -> None:
         """Ejecuta una acción registrada por su comando (ej. `salir`, `reiniciar_app`)"""
         claseAccion = self.listaClasesAcciones.get(comando)
@@ -843,8 +809,8 @@ class miGui(dispositivo):
                             ui.icon("play_arrow", color=tema.colorClaro)
                             self.ultimaLabel = ui.label("").classes("truncate").mark("ultimaAcción")
                         self.ultimaFila.visible = False
-                dialogoReiniciar = self.crearDialogoConfirmacion("¿Reiniciar ElGarrobo? Las teclas no responden mientras arranca.", "Reiniciar", self.reiniciar)
-                dialogoSalir = self.crearDialogoConfirmacion("¿Cerrar ElGarrobo? Las teclas y esta página dejan de funcionar hasta que lo vuelvas a abrir.", "Salir", self.salir)
+                dialogoReiniciar = crearDialogoConfirmacion("¿Reiniciar ElGarrobo? Las teclas no responden mientras arranca.", "Reiniciar", self.reiniciar)
+                dialogoSalir = crearDialogoConfirmacion("¿Cerrar ElGarrobo? Las teclas y esta página dejan de funcionar hasta que lo vuelvas a abrir.", "Salir", self.salir)
                 with ui.dialog() as dialogoAcercaDe, ui.card():
                     ui.label("ElGarrobo").classes("text-h6")
                     ui.label("Creado por ChepeCarlos")
