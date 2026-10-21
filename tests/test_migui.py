@@ -22,7 +22,7 @@ from elGarrobo.dispositivos.mideck.mi_deck_combinado import MiDeckCombinado
 from elGarrobo.dispositivos.mipedal.mi_pedal import MiPedal
 from elGarrobo.dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro, folderDistribuciones
 from elGarrobo.dispositivos.migui import migui as moduloMiGui
-from elGarrobo.dispositivos.migui import vistas
+from elGarrobo.dispositivos.migui import tema, vistas
 from elGarrobo.dispositivos.migui.migui import miGui
 
 
@@ -781,16 +781,16 @@ class TestCuadricula:
         await user.open("/")
         tecla = lambda n: next(iter(user.find(marker=f"tecla-pedal-{n}").elements))
         uno = tecla(1)
-        anillo = f"ring-{guiPedal.colorActivo}"
+        anillo = f"ring-{tema.colorActivo}"
         intercambiar = next(iter(user.find(marker="intercambiar-pedal").elements))
 
         user.find(marker="intercambiar-pedal").click()
-        assert f"bg-{guiPedal.colorActivo}" in intercambiar.classes and intercambiar.props["aria-pressed"] == "true"
+        assert f"bg-{tema.colorActivo}" in intercambiar.classes and intercambiar.props["aria-pressed"] == "true"
         user.find(marker="tecla-pedal-1").click()
         assert tecla(1) is uno and anillo in uno.classes, "activar el modo y elegir solo marcan, no redibujan"
 
         user.find(marker="duplicar-pedal").click()
-        assert anillo not in uno.classes and f"bg-{guiPedal.colorBotones}" in intercambiar.classes
+        assert anillo not in uno.classes and f"bg-{tema.colorBotones}" in intercambiar.classes
         user.find(marker="tecla-pedal-1").click()
         assert tecla(1) is uno and anillo in uno.classes
 
