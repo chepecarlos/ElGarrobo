@@ -1419,6 +1419,8 @@ class TestOrdenPestañas:
         a, b, p = MiTecladoMacro({"nombre": "A", "ordenar": 5}), MiTecladoMacro({"nombre": "B", "ordenar": 3}), MiPedal({"nombre": "P"})
         gui.listaDispositivos = [p, b, a]
         await user.open("/dispositivos")
+        user.find(marker="ordenar-pestañas").click()
+        await user.should_see("Ordenar pestañas")
 
         assert not next(iter(user.find(marker="subir-A").elements)).enabled, "la primera no sube"
         assert not next(iter(user.find(marker="bajar-P").elements)).enabled, "la última no baja"

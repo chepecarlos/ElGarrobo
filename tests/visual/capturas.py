@@ -126,8 +126,12 @@ def recorrer(navegador, url: str, tema: str) -> None:
 
     página.goto(f"{url}/dispositivos")
     esperar(página)
-    página.get_by_text("Orden de pestañas").scroll_into_view_if_needed()
     foto(página, f"{t}-dispositivos")
+    botón(página, "Ordenar pestañas").click()
+    esperar(página)
+    foto(página, f"{t}-ordenar-pestanas")
+    página.keyboard.press("Escape")
+    esperar(página)
     botón(página, "Agregar teclado").click()
     esperar(página, 1)
     foto(página, f"{t}-agregar-buscar")

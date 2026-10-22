@@ -30,7 +30,16 @@ def mostrarListaActivables(titulo: str, archivo: str, listaClases: list, gui=Non
         SalvarValor(archivo, clave, valor)
         ui.notify(f"{nombre} {'activado' if valor else 'desactivado'}. Reinicia ElGarrobo para aplicarlo")
 
-    encabezado(ui.label(titulo).classes("text-h5 p-4"), 2)
+    with ui.row().classes("items-center w-full pr-4"):
+        encabezado(ui.label(titulo).classes("text-h5 p-4 grow"), 2)
+        if gui is not None:
+            with ui.dialog() as dialogoOrden, ui.card().classes("w-full max-w-xl"):
+                encabezado(ui.label("Ordenar pestañas").classes("text-h6"), 3)
+                ui.label("Se aplica al volver a Acciones").classes("text-caption")
+                ordenPestañas(gui)
+                ui.button("Listo", on_click=dialogoOrden.close).props("flat").classes("self-end")
+            ordenar = ui.button("Ordenar pestañas", icon="swap_vert", color=tema.colorOscuro, on_click=dialogoOrden.open)
+            ordenar.mark("ordenar-pestañas")
     ui.label("Los cambios se aplican al reiniciar ElGarrobo (menú → Reiniciar)").classes("text-caption px-4 texto-acento")
     with ui.column().classes("p-4 gap-2 w-full"):
         for clase in listaClases:
@@ -46,11 +55,6 @@ def mostrarListaActivables(titulo: str, archivo: str, listaClases: list, gui=Non
                 mostrarAparatos(clase, gui, interruptor)
             elif getattr(clase, "propiedades", None):
                 mostrarConfiguracionModulo(clase)
-    if gui is not None:
-        with ui.column().classes("p-4 gap-1 w-full max-w-xl"):
-            encabezado(ui.label("Orden de pestañas").classes("text-h6"), 3)
-            ui.label("Se aplica al volver a Acciones").classes("text-caption")
-            ordenPestañas(gui)
 
 
 def guardarOrden(dispositivos: list[dispositivo]) -> None:
