@@ -72,6 +72,8 @@ def recorrer(navegador, url: str, tema: str) -> None:
     botón(página, "Agregar acción").click()
     esperar(página)
     foto(página, f"{t}-formulario-errores")
+    # El aviso "Falta Nombre" dura 5s y saldría en las capturas siguientes
+    página.locator(".q-notification").evaluate_all("avisos => avisos.forEach(a => a.remove())")
 
     botón(página, "Escena").first.click()
     esperar(página)
@@ -140,6 +142,12 @@ def recorrer(navegador, url: str, tema: str) -> None:
     página.goto(f"{url}/dispositivos")
     esperar(página)
     foto(página, f"{t}-dispositivos")
+    # Cambio pendiente de reinicio: botón en la cabecera y etiqueta en la fila; se regresa para no afectar el resto
+    página.get_by_label("Activar Pedal StreamDeck").click()
+    esperar(página)
+    foto(página, f"{t}-dispositivos-pendiente")
+    página.get_by_label("Activar Pedal StreamDeck").click()
+    esperar(página)
     botón(página, "Agregar teclado").click()
     esperar(página, 1)
     foto(página, f"{t}-agregar-buscar")
@@ -156,6 +164,12 @@ def recorrer(navegador, url: str, tema: str) -> None:
     celular.goto(f"{url}/")
     esperar(celular, 1)
     foto(celular, f"{t}-celular")
+    celular.goto(f"{url}/dispositivos")
+    esperar(celular)
+    celular.get_by_label("Activar Pedal StreamDeck").click()
+    esperar(celular)
+    foto(celular, f"{t}-celular-pendiente")
+    celular.get_by_label("Activar Pedal StreamDeck").click()
     celular.close()
 
 

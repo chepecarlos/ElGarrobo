@@ -556,14 +556,35 @@ class TestActivables:
         monkeypatch.setattr(configuracion, "leerData", lambda _: {})
         monkeypatch.setattr(configuracion, "SalvarValor", salvar)
         await user.open(ruta)
-        await user.should_see("Los cambios se aplican al reiniciar ElGarrobo (menú → Reiniciar)")
+        await user.should_see("se aplica al reiniciar ElGarrobo")
+        await user.should_not_see(marker="reiniciar-pendiente")
 
         switch = next(iter(user.find(kind=ui.switch).elements))
         with user:
             switch.value = True
         assert salvar.call_args.args[0] == archivo
         assert salvar.call_args.args[2] is True
-        await user.should_see("activado. Reinicia ElGarrobo para aplicarlo")
+        await user.should_see("se activará al reiniciar ElGarrobo")
+        await user.should_see(marker="reiniciar-pendiente")
+        await user.should_see("Pendiente de reinicio")
+
+        with user:
+            switch.value = False
+        await user.should_see("como estaba")
+        await user.should_not_see(marker="reiniciar-pendiente")
+
+    async def test_pendiente_sigue_en_acciones_y_reinicia(self, user: User, gui: miGui, monkeypatch):
+        monkeypatch.setattr(configuracion, "leerData", lambda _: {})
+        monkeypatch.setattr(configuracion, "SalvarValor", MagicMock())
+        gui.ejecutarAccionSistema = MagicMock()
+        await user.open("/dispositivos")
+        with user:
+            next(iter(user.find(kind=ui.switch).elements)).value = True
+
+        await user.open("/")
+        user.find(marker="reiniciar-pendiente").click()
+        clickEnDialogoAbierto(user, "Reiniciar")
+        gui.ejecutarAccionSistema.assert_called_once_with("reiniciar_app")
 
 
 class TestConfiguracionModulos:
@@ -588,7 +609,9 @@ class TestConfiguracionModulos:
         user.find(marker="config-estado_pc-nombre_pc").clear().type("ryuk")
         user.find(marker="guardar-estado_pc").click()
 
-        await user.should_see("guardado. Reinicia ElGarrobo para aplicarlo")
+        await user.should_see("guardado; se aplica al reiniciar ElGarrobo")
+        await user.should_see(marker="reiniciar-pendiente")
+        assert gui.pendientesReinicio == {"modulos/estado_pc.md": "opciones de estadoPc"}
         assert archivos["modulos/estado_pc.md"] == {"nombre_pc": "ryuk"}
 
     async def test_edita_agrega_y_quita_impresoras(self, user: User, gui: miGui, archivos: dict):
@@ -611,7 +634,7 @@ class TestConfiguracionModulos:
         user.find(marker="config-estado_octoprint-1-token").type("otro")
         user.find(marker="guardar-estado_octoprint").click()
 
-        await user.should_see("guardado. Reinicia ElGarrobo para aplicarlo")
+        await user.should_see("guardado; se aplica al reiniciar ElGarrobo")
         impresoras = archivos["modulos/estado_octoprint.md"]["impresoras"]
         assert impresoras[0] == {"nombre": "Ender", "url": "http://b", "token": "secreto", "intervalo_segundos": 60}
         assert type(impresoras[0]["intervalo_segundos"]) is int

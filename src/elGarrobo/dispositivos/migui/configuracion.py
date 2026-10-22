@@ -15,37 +15,69 @@ from elGarrobo.dispositivos.migui.editores import encabezado, marcarError
 from elGarrobo.miLibrerias import ObtenerArchivo, SalvarArchivo, SalvarValor, leerData
 
 
-def mostrarListaActivables(titulo: str, archivo: str, listaClases: list, gui=None) -> None:
+def marcarPendiente(gui, clave: str, descripción: str | None) -> None:
+    """Agrega un cambio que espera reinicio, o lo quita con descripción None; la cabecera muestra el botón Reiniciar
+
+    Args:
+        gui (miGui): guarda los pendientes de todas las páginas; sin ella no hace nada
+        clave (str): identifica el cambio, el siguiente con la misma clave lo reemplaza
+        descripción (str): lo que se ve en el tooltip del botón (ej. "Pedal StreamDeck activado")
+    """
+    if gui is None:
+        return
+    pendientes = {k: v for k, v in gui.pendientesReinicio.items() if k != clave}
+    if descripción is not None:
+        pendientes[clave] = descripción
+    # Dict nuevo y no modificado: bind_*_from compara con el valor anterior y el mismo objeto no cuenta como cambio
+    gui.pendientesReinicio = pendientes
+
+
+def mostrarListaActivables(titulo: str, archivo: str, listaClases: list, aviso: str, gui=None) -> None:
     """Lista módulos o dispositivos con un switch para activarlos/desactivarlos
 
     Args:
         titulo (str): Título de la página
         archivo (str): Archivo de configuración ("modulos" o "dispositivos")
         listaClases (list): Clases con atributos `modulo`, `nombre` y `descripcion`
-        gui (miGui): para agregar y quitar aparatos sin reiniciar; sin ella solo se editan
+        aviso (str): qué se aplica al reiniciar y qué al momento, debajo del título
+        gui (miGui): marca los cambios pendientes de reinicio y agrega o quita aparatos al momento; sin ella solo se editan
     """
     configuracion = leerData(archivo) or {}
 
     def cambiarEstado(clave: str, valor: bool, nombre: str) -> None:
         SalvarValor(archivo, clave, valor)
-        ui.notify(f"{nombre} {'activado' if valor else 'desactivado'}. Reinicia ElGarrobo para aplicarlo")
+        alArrancar = gui.valoresAlArrancar.setdefault(f"{archivo}.{clave}", not valor) if gui else not valor
+        if valor == alArrancar:
+            marcarPendiente(gui, f"{archivo}.{clave}", None)
+            ui.notify(f"{nombre} queda {'activado' if valor else 'apagado'} como estaba")
+            return
+        marcarPendiente(gui, f"{archivo}.{clave}", f"{nombre} {'activado' if valor else 'apagado'}")
+        ui.notify(f"{nombre} se {'activará' if valor else 'apagará'} al reiniciar ElGarrobo")
 
     encabezado(ui.label(titulo).classes("text-h5 p-4"), 2)
-    ui.label("Los cambios se aplican al reiniciar ElGarrobo (menú → Reiniciar)").classes("text-caption px-4 texto-acento")
+    ui.label(aviso).classes("text-caption px-4")
     with ui.column().classes("p-4 gap-2 w-full"):
         for clase in listaClases:
             activo = configuracion.get(clase.modulo, False)
-            with ui.row().classes(f"items-center w-full border-b border-{tema.colorOscuro} pb-2"):
+            # no-wrap: en celular una descripción larga bajaba el texto debajo del switch
+            with ui.row().classes(f"items-center w-full no-wrap border-b border-{tema.colorOscuro} pb-2"):
                 interruptor = ui.switch(value=activo, on_change=lambda e, c=clase: cambiarEstado(c.modulo, e.value, c.nombre))
                 interruptor.props["aria-label"] = f"Activar {clase.nombre}"
-                with ui.column().classes("gap-0"):
-                    ui.label(clase.nombre).classes("font-bold")
+                with ui.column().classes("gap-0 min-w-0"):
+                    # Junto al nombre y no al final de la fila: en pantallas anchas quedaría lejos del switch
+                    with ui.row().classes("items-center gap-x-2 gap-y-0"):
+                        ui.label(clase.nombre).classes("font-bold")
+                        if gui is not None:
+                            pendiente = ui.badge("Pendiente de reinicio", color=tema.colorPendiente, text_color="black")
+                            pendiente.mark(f"pendiente-{clase.modulo}")
+                            clave = f"{archivo}.{clase.modulo}"
+                            pendiente.bind_visibility_from(gui, "pendientesReinicio", backward=lambda p, c=clave: c in p)
                     ui.label(clase.descripcion).classes("text-caption")
             # En dispositivos archivoConfiguracion es una lista de aparatos, en módulos un dict de opciones
             if issubclass(clase, dispositivo) and clase.archivoConfiguracion:
                 mostrarAparatos(clase, gui, interruptor)
             elif getattr(clase, "propiedades", None):
-                mostrarConfiguracionModulo(clase)
+                mostrarConfiguracionModulo(clase, gui)
 
 
 def guardarOrden(dispositivos: list[dispositivo]) -> None:
@@ -160,7 +192,7 @@ def mostrarConfigurar(nombreTema: str, cambiarTema) -> None:
                 ui.label("Automático sigue el tema claro u oscuro de la PC o el celular").classes("text-caption")
 
 
-def mostrarConfiguracionModulo(clase: type) -> None:
+def mostrarConfiguracionModulo(clase: type, gui=None) -> None:
     """Desplegable para editar la configuración de un módulo (ej. modulos/estado_octoprint.md)
 
     El formulario sale de `clase.propiedades` y no del archivo: aparecen todas las opciones aunque el archivo
@@ -255,7 +287,8 @@ def mostrarConfiguracionModulo(clase: type) -> None:
             ui.notify("Faltan valores obligatorios", type="warning")
             return
         SalvarArchivo(archivo, data)
-        ui.notify(f"{clase.nombre} guardado. Reinicia ElGarrobo para aplicarlo", type="positive")
+        marcarPendiente(gui, archivo, f"opciones de {clase.nombre}")
+        ui.notify(f"{clase.nombre} guardado; se aplica al reiniciar ElGarrobo", type="positive")
 
     with ui.column().classes("w-full pl-12 gap-1"):
         with ui.expansion("Configuración", caption=archivo, icon="settings") as desplegable:
@@ -295,7 +328,8 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
         # Se reemplaza su entrada en el archivo leído ahora, por si se agregó o quitó otro aparato desde que se dibujó
         SalvarArchivo(archivo, [data if otro.get("nombre") == nombreAnterior else otro for otro in aparatos])
         desplegable.text = nombreNuevo
-        ui.notify(f"{nombreNuevo} guardado. Reinicia ElGarrobo para aplicarlo", type="positive")
+        marcarPendiente(gui, f"{archivo}:{data.get('dispositivo', nombreAnterior)}", f"{nombreNuevo} editado")
+        ui.notify(f"{nombreNuevo} guardado; se aplica al reiniciar ElGarrobo", type="positive")
 
     def agregar(data: dict) -> None:
         # Pestaña al final: se ordenan de mayor a menor ordenar

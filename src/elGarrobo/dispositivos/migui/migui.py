@@ -73,6 +73,10 @@ class miGui(dispositivo):
         self.splitter: ui.splitter = None
         self.contenedorFormulario: ui.column = None
         self.formulario: formularioAccion = None
+        self.pendientesReinicio: dict[str, str] = {}
+        "clave → descripción de los cambios guardados que se aplican al reiniciar; se reemplaza entero para que los bind lo noten"
+        self.valoresAlArrancar: dict[str, bool] = {}
+        "clave del switch → su valor antes del primer cambio, para quitar el pendiente si se regresa"
         self.borrados: dict[int, tuple] = {}
         "id del aviso → (acción, dispositivo, folder, posición) que todavía se puede deshacer"
         self.contadorBorrados: int = 0
@@ -138,7 +142,8 @@ class miGui(dispositivo):
             from elGarrobo.modulos import cargarModulos
 
             accionListaCheckBox.registrarCliente(ui.context.client)
-            configuracion.mostrarListaActivables("Módulos", "modulos", cargarModulos())
+            aviso = "Activar, apagar o cambiar las opciones de un módulo se aplica al reiniciar ElGarrobo"
+            configuracion.mostrarListaActivables("Módulos", "modulos", cargarModulos(), aviso, self)
             self.estructura()
 
         @ui.page("/dispositivos")
@@ -147,7 +152,8 @@ class miGui(dispositivo):
             from elGarrobo.dispositivos import cargarDispositivos
 
             accionListaCheckBox.registrarCliente(ui.context.client)
-            configuracion.mostrarListaActivables("Dispositivos", "dispositivos", cargarDispositivos(), self)
+            aviso = "Activar o apagar un tipo se aplica al reiniciar ElGarrobo; los teclados se agregan y quitan al momento"
+            configuracion.mostrarListaActivables("Dispositivos", "dispositivos", cargarDispositivos(), aviso, self)
             self.estructura()
 
         @ui.page("/configurar")
@@ -331,6 +337,15 @@ class miGui(dispositivo):
                         ui.link("TikTok", "https://www.tiktok.com/@chepecarlo", new_tab=True).classes("texto-acento")
                     ui.button("Cerrar", on_click=dialogoAcercaDe.close).props("flat")
                 with ui.row().classes("items-center gap-2 no-wrap"):
+                    # En todas las páginas: un cambio hecho en /dispositivos sigue pendiente al volver a Acciones
+                    reinicio = ui.button(icon="restart_alt", color=tema.colorPendiente, on_click=dialogoReiniciar.open)
+                    reinicio.props("unelevated no-caps text-color=black").mark("reiniciar-pendiente")
+                    reinicio.props["aria-label"] = "Reiniciar para aplicar los cambios pendientes"
+                    with reinicio:
+                        # En celular solo el ícono: la cabecera no tiene espacio
+                        ui.label("Reiniciar para aplicar").classes("ml-2 max-sm:hidden")
+                        ui.tooltip().bind_text_from(self, "pendientesReinicio", backward=lambda p: "Pendiente: " + ", ".join(p.values()))
+                    reinicio.bind_visibility_from(self, "pendientesReinicio", backward=bool)
                     if conModo:
                         modo = ui.toggle({True: "Usar", False: "Editar"}, value=self.modoUsar, on_change=lambda e: self.cambiarModo(e.value))
                         modo.classes("modo-toggle").props("rounded unelevated no-caps toggle-text-color=black text-color=white").props(f"toggle-color={tema.colorSeleccion} color={tema.colorInterruptor}").mark("modo")

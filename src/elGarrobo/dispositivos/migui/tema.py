@@ -31,6 +31,8 @@ colorSeleccion = "teal-4"
 "Opción elegida en los interruptores (Usar/Editar, Cuadrícula/Lista), con texto negro"
 colorInterruptor = "teal-10"
 "Fondo de la opción no elegida del interruptor Usar/Editar sobre la cabecera"
+colorPendiente = "warning"
+"Cambios guardados que esperan reinicio, con texto negro (≈ 11:1); el mismo ámbar de los avisos ui.notify warning"
 
 CSS_BOTONERA = """
 /* Únicos colores fijos del CSS: el fondo de la carcasa (oscuro en los dos temas, imita el aparato), el acento y foco
