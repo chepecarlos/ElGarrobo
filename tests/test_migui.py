@@ -1407,7 +1407,7 @@ class TestAgregarTeclado:
 
 
 class TestOrdenPestañas:
-    async def test_bajar_guarda_ordenar_en_el_archivo_de_cada_tipo(self, user: User, monkeypatch):
+    async def test_bajar_guarda_y_mueve_las_pestañas(self, user: User, monkeypatch):
         archivos = {
             "teclados.md": [{"nombre": "A", "ordenar": 5}, {"nombre": "B", "ordenar": 3}, {"nombre": "Apagado"}],
             "pedal.md": [{"nombre": "P"}],
@@ -1418,9 +1418,9 @@ class TestOrdenPestañas:
         gui = miGui({"nombre": "gui"})
         a, b, p = MiTecladoMacro({"nombre": "A", "ordenar": 5}), MiTecladoMacro({"nombre": "B", "ordenar": 3}), MiPedal({"nombre": "P"})
         gui.listaDispositivos = [p, b, a]
-        await user.open("/dispositivos")
-        user.find(marker="ordenar-pestañas").click()
-        await user.should_see("Ordenar pestañas")
+        await user.open("/")
+        user.find(marker="ordenarPestañas-A").click()
+        await user.should_see("La primera de la lista va a la izquierda. Se guarda al mover")
 
         assert not next(iter(user.find(marker="subir-A").elements)).enabled, "la primera no sube"
         assert not next(iter(user.find(marker="bajar-P").elements)).enabled, "la última no baja"
@@ -1429,4 +1429,15 @@ class TestOrdenPestañas:
         assert [d.nombre for d in sorted(gui.listaDispositivos, key=lambda d: d.nivelOrdenar, reverse=True)] == ["B", "A", "P"]
         assert archivos["teclados.md"] == [{"nombre": "A", "ordenar": 2}, {"nombre": "B", "ordenar": 3}, {"nombre": "Apagado"}]
         assert archivos["pedal.md"] == [{"nombre": "P", "ordenar": 1}]
+        assert [t.props["name"] for t in gui.pestañas.tabs.default_slot.children] == ["B", "A", "P"], "se mueven sin recargar"
+        await user.should_see("A: posición 2 de 3")
         await esperarQue(lambda: not next(iter(user.find(marker="subir-B").elements)).enabled)  # redibujada con B primero
+
+    async def test_con_un_solo_dispositivo_no_hay_orden(self, user: User, gui: miGui):
+        await user.open("/")
+        await user.should_not_see(marker="ordenarPestañas-deck")
+
+    async def test_dispositivos_ya_no_tiene_orden(self, user: User, gui: miGui, monkeypatch):
+        monkeypatch.setattr(configuracion, "leerData", lambda _: {})
+        await user.open("/dispositivos")
+        await user.should_not_see("Ordenar pestañas")

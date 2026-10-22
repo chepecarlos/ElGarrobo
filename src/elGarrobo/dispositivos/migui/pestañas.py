@@ -12,6 +12,7 @@ from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.mideck.mi_streamdeck_plus import MiStreamDeckPlus
 from elGarrobo.dispositivos.migui import tema
+from elGarrobo.dispositivos.migui.configuracion import dialogoOrdenPestañas
 from elGarrobo.dispositivos.migui.distribucion import dialogoDistribucion, medidaDistribucion
 from elGarrobo.dispositivos.migui.editores import nombrar
 from elGarrobo.dispositivos.migui.folder import dialogoFolder, usaCuadriculaFolder
@@ -59,6 +60,8 @@ class pestañasDispositivos:
         self.alCambiar = alCambiar
         self.panel: dict[str, ui.tab_panel] = {}
         "dispositivo → panel de su pestaña"
+        self.pestaña: dict[str, ui.tab] = {}
+        "dispositivo → su pestaña, para moverla al cambiar el orden"
         self.ordenCampo: str = "key"
         self.ordenInverso: bool = False
         self.dispositivosEnLista: set[str] = set()
@@ -76,6 +79,7 @@ class pestañasDispositivos:
 
         self.propiedadesFolder = dialogoFolder(self.actualizarPestaña)
         self.distribuciones = dialogoDistribucion(self.actualizarPestaña)
+        self.abrirOrden = dialogoOrdenPestañas(listaDispositivos, self.reordenarPestañas)
         self.tabs = ui.tabs(on_change=alCambiar).props("outside-arrows mobile-arrows")
         # Se mueven a la cabecera en miGui.estructura()
         self.tabs.classes("cabecera-pestañas text-white")
@@ -105,7 +109,7 @@ class pestañasDispositivos:
             for dispositivoActual in self.listaDispositivos:
                 nombreDispositivo: str = dispositivoActual.nombre
                 # Cambiar de pestaña no limpia el formulario: la edición sigue ligada a su dispositivo (ver tituloFormulario)
-                pestaña = ui.tab(nombreDispositivo)
+                pestaña = self.pestaña[nombreDispositivo] = ui.tab(nombreDispositivo)
 
                 with self.paneles:
                     self.panel[nombreDispositivo] = ui.tab_panel(pestaña)
@@ -114,6 +118,14 @@ class pestañasDispositivos:
                 dispositivoActual.funcionActualizarPestaña = self.actualizarPestaña
 
         self.mostrarPestañas()
+
+    def reordenarPestañas(self) -> None:
+        """Mueve las pestañas al orden de nivelOrdenar sin redibujar los paneles"""
+        self.listaDispositivos.sort(key=lambda x: x.nivelOrdenar, reverse=True)
+        # Los agregados desde /dispositivos después de abrir la página todavía no tienen pestaña
+        conPestaña = [self.pestaña[d.nombre] for d in self.listaDispositivos if d.nombre in self.pestaña]
+        for posición, pestaña in enumerate(conPestaña):
+            pestaña.move(target_index=posición)
 
     def mostrarPestañas(self) -> None:
 
@@ -399,6 +411,9 @@ class pestañasDispositivos:
                         vista.props(f"color={tema.colorSeleccion if activo else tema.colorInterruptor} text-color={'black' if activo else 'white'}")
                         vista.props["aria-pressed"] = activo
                         nombrar(vista, texto).mark(f"vista-{'lista' if lista else 'cuadricula'}-{nombre}")
+            if len(self.listaDispositivos) > 1:
+                orden = ui.button(icon="tab", color=tema.colorBotones, on_click=self.abrirOrden).mark(f"ordenarPestañas-{nombre}")
+                nombrar(orden, "Ordenar pestañas")
 
     def dibujarControlesPlus(self, plus, accionesPorTecla: dict, alClick, marcar) -> None:
         """Pantalla táctil y perillas del StreamDeck Plus, debajo de sus teclas y del mismo ancho

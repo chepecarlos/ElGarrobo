@@ -30,16 +30,7 @@ def mostrarListaActivables(titulo: str, archivo: str, listaClases: list, gui=Non
         SalvarValor(archivo, clave, valor)
         ui.notify(f"{nombre} {'activado' if valor else 'desactivado'}. Reinicia ElGarrobo para aplicarlo")
 
-    with ui.row().classes("items-center w-full pr-4"):
-        encabezado(ui.label(titulo).classes("text-h5 p-4 grow"), 2)
-        if gui is not None:
-            with ui.dialog() as dialogoOrden, ui.card().classes("w-full max-w-xl"):
-                encabezado(ui.label("Ordenar pestañas").classes("text-h6"), 3)
-                ui.label("Se aplica al volver a Acciones").classes("text-caption")
-                ordenPestañas(gui)
-                ui.button("Listo", on_click=dialogoOrden.close).props("flat").classes("self-end")
-            ordenar = ui.button("Ordenar pestañas", icon="swap_vert", color=tema.colorOscuro, on_click=dialogoOrden.open)
-            ordenar.mark("ordenar-pestañas")
+    encabezado(ui.label(titulo).classes("text-h5 p-4"), 2)
     ui.label("Los cambios se aplican al reiniciar ElGarrobo (menú → Reiniciar)").classes("text-caption px-4 texto-acento")
     with ui.column().classes("p-4 gap-2 w-full"):
         for clase in listaClases:
@@ -72,33 +63,72 @@ def guardarOrden(dispositivos: list[dispositivo]) -> None:
         SalvarArchivo(archivo, aparatos)
 
 
-@ui.refreshable
-def ordenPestañas(gui) -> None:
-    """Dispositivos en el orden de sus pestañas con botones para subir y bajar; se guarda al mover"""
-    dispositivos = sorted(gui.listaDispositivos, key=lambda d: d.nivelOrdenar, reverse=True)
+def dialogoOrdenPestañas(dispositivos: list[dispositivo], alMover) -> callable:
+    """Diálogo con los dispositivos en el orden de sus pestañas y botones para subir y bajar; se guarda al mover
 
-    def mover(desde: int, hacia: int) -> None:
-        dispositivos[desde], dispositivos[hacia] = dispositivos[hacia], dispositivos[desde]
-        guardarOrden(dispositivos)
-        ordenPestañas.refresh()
+    Args:
+        dispositivos (list): dispositivos de las pestañas, se muestran por nivelOrdenar
+        alMover: se llama después de guardar, para mover las pestañas al nuevo orden
+    Returns:
+        callable: abre el diálogo con el orden actual
+    """
+    foco: dict = {}
+    "Dispositivo y dirección del último botón presionado: el refresh lo recrea y hay que devolverle el foco"
 
-    for posición, dispositivoActual in enumerate(dispositivos):
-        nombre = dispositivoActual.nombre
-        with ui.row().classes(f"items-center w-full no-wrap border-b border-{tema.colorOscuro} py-1"):
-            ui.icon(dispositivoActual.icono)
-            ui.label(nombre).classes("font-bold grow")
-            ui.label(dispositivoActual.tipo).classes("text-caption")
-            for icono, texto, hacia, marca in (
-                ("arrow_upward", "Subir", posición - 1, "subir"),
-                ("arrow_downward", "Bajar", posición + 1, "bajar"),
-            ):
-                boton = ui.button(icon=icono, on_click=lambda p=posición, h=hacia: mover(p, h)).props("flat round dense")
-                boton.props["aria-label"] = f"{texto} {nombre}"
-                boton.mark(f"{marca}-{nombre}")
-                if not 0 <= hacia < len(dispositivos):
-                    # Invisible y no solo deshabilitada: apagada casi no se distingue, y así no cambia el ancho
-                    boton.disable()
-                    boton.classes("invisible")
+    @ui.refreshable
+    def lista() -> None:
+        orden = sorted(dispositivos, key=lambda d: d.nivelOrdenar, reverse=True)
+
+        def mover(desde: int, hacia: int, marca: str) -> None:
+            orden[desde], orden[hacia] = orden[hacia], orden[desde]
+            guardarOrden(orden)
+            foco.update(nombre=orden[hacia].nombre, marca=marca)
+            estado.text = f"{orden[hacia].nombre}: posición {hacia + 1} de {len(orden)}"
+            alMover()
+            lista.refresh()
+
+        for posición, dispositivoActual in enumerate(orden):
+            nombre = dispositivoActual.nombre
+            activos: dict[str, ui.button] = {}
+            with ui.row().classes(f"items-center w-full no-wrap border-b border-{tema.colorOscuro} py-1"):
+                ui.icon(dispositivoActual.icono)
+                ui.label(nombre).classes("font-bold grow truncate min-w-0").props(f'title="{nombre}"')
+                ui.label(getattr(type(dispositivoActual), "nombre", dispositivoActual.tipo)).classes("text-caption truncate max-sm:hidden")
+                for icono, texto, hacia, marca in (
+                    ("arrow_upward", "Subir", posición - 1, "subir"),
+                    ("arrow_downward", "Bajar", posición + 1, "bajar"),
+                ):
+                    boton = ui.button(icon=icono, on_click=lambda p=posición, h=hacia, m=marca: mover(p, h, m)).props("flat round dense")
+                    boton.props["aria-label"] = f"{texto} {nombre}"
+                    boton.mark(f"{marca}-{nombre}")
+                    if 0 <= hacia < len(orden):
+                        activos[marca] = boton
+                    else:
+                        # Invisible y no solo deshabilitada: apagada casi no se distingue, y así no cambia el ancho
+                        boton.disable()
+                        boton.classes("invisible")
+            if foco.get("nombre") == nombre:
+                # En la orilla su botón desaparece: el foco pasa al otro para seguir moviéndolo con el teclado
+                objetivo = activos.get(foco["marca"]) or next(iter(activos.values()), None)
+                if objetivo is not None:
+                    ui.run_javascript(f"setTimeout(() => getHtmlElement({objetivo.id})?.focus(), 50)")
+
+    with ui.dialog() as dialogo, ui.card().classes("w-full max-w-xl"):
+        encabezado(ui.label("Ordenar pestañas").classes("text-h6"), 3)
+        ui.label("La primera de la lista va a la izquierda. Se guarda al mover").classes("text-caption")
+        lista()
+        with ui.row().classes("items-center w-full no-wrap"):
+            estado = ui.label("").classes("text-caption grow").mark("orden-estado")
+            estado.props["aria-live"] = "polite"
+            ui.button("Listo", on_click=dialogo.close).props("flat")
+
+    def abrir() -> None:
+        foco.clear()
+        estado.text = ""
+        lista.refresh()
+        dialogo.open()
+
+    return abrir
 
 
 def mostrarConfigurar(nombreTema: str, cambiarTema) -> None:
@@ -276,14 +306,12 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
             nuevo.crearFolder("/")
         ui.notify(f"{data['nombre']} agregado y conectado", type="positive")
         lista.refresh()
-        ordenPestañas.refresh()
 
     def quitar(nombre: str) -> None:
         SalvarArchivo(archivo, [data for data in ObtenerArchivo(archivo) or [] if data.get("nombre") != nombre])
         gui.quitarDispositivo(nombre)
         ui.notify(f"{nombre} quitado, su archivo de acciones se conserva")
         lista.refresh()
-        ordenPestañas.refresh()
 
     def abrirAgregar() -> None:
         aparatos = ObtenerArchivo(archivo) or []
