@@ -95,6 +95,11 @@ class dispositivo:
         self.funcionActualizarPestaña = None
 
     @staticmethod
+    def nombreAparato(ruta: str) -> str:
+        """Texto para identificar el aparato en la GUI; por defecto su ruta o número de serie"""
+        return ruta
+
+    @staticmethod
     def cargarDispositivos(dispositivosCargados: dict, claseDispositivo: type["dispositivo"]) -> list["dispositivo"]:
         """
         Preparara la informacion de los dispositivos en base a una clase

@@ -209,7 +209,7 @@ def mostrarAparatos(clase: type[dispositivo]) -> None:
             ui.label(f"No hay aparatos en {archivo}").classes("text-caption")
         for data in aparatos:
             titulo, ruta = data.get("nombre", "Sin nombre"), data.get("dispositivo", "")
-            with ui.expansion(titulo, caption=ruta, icon=clase.icono) as desplegable:
+            with ui.expansion(titulo, caption=clase.nombreAparato(ruta), icon=clase.icono) as desplegable:
                 desplegable.classes(f"w-full border border-{tema.colorOscuro} rounded")
                 with ui.row().classes("items-start gap-4 p-2"):
                     nombre = ui.input("Nombre", value=data.get("nombre", ""))

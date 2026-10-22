@@ -79,6 +79,17 @@ class MiTecladoMacro(dispositivo):
         self.distribucion: str | None = dataConfiguracion.get("distribucion")
         "Nombre del archivo en distribuciones/ (sin .json) para dibujar el teclado en la GUI"
 
+    @staticmethod
+    def nombreAparato(ruta: str) -> str:
+        """Nombre que da el teclado (ej. 'SONiX USB DEVICE'), más fácil de reconocer que la ruta en /dev/input"""
+        try:
+            teclado = InputDevice(ruta)
+        except OSError:
+            return f"{ruta} (desconectado)"
+        nombre = teclado.name
+        teclado.close()
+        return nombre
+
     def distribucionTeclas(self) -> list[dict] | None:
         return cargarDistribucion(self.distribucion) if self.distribucion else None
 
@@ -140,7 +151,7 @@ class MiTecladoMacro(dispositivo):
                     logger.info(f"Teclado[Conectado] {self.nombre}")
                 except Exception as error:
                     logger.exception(f"Teclado[Error] No se pudo conectar {self.nombre}")
-                    logger.warning(f"Teclado[Error] {self.nombre} Re-Intensando en {self.esperaReconectar} Error {error.errno}")
+                    logger.warning(f"Teclado[Error] {self.nombre} Reintentando en {self.esperaReconectar} Error {error.errno}")
                     if self.esperaReconectar < 60:
                         self.esperaReconectar += 5
                     time.sleep(self.esperaReconectar)
