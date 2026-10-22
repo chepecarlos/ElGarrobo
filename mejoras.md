@@ -41,6 +41,19 @@
 - [x] **[P3]** Docstrings de atributos desplazados en `__init__`; `input`, `tipo` y `folder` sin usar en `actualizarPestaña`; ortografía "Interface" → "Interfaz" y `seDesconectoGUI` → `seDesconectaGUI`.
 - [ ] **[P3]** Destello de la última acción con `rgba(94, 234, 212, 0.35)` fijo (duplica `--color-foco`).
 
+### Crítica de /dispositivos (2026-10-21, `/impeccable critique`: 22/40)
+
+- [x] **[P1] Estado de reinicio invisible**: el switch se aplica al reiniciar, Agregar/Quitar al momento y el orden al volver a Acciones; el aviso se iba con el toast. Hecho: `miGui.pendientesReinicio` (`marcarPendiente()` en `configuracion.py`), botón ámbar "Reiniciar para aplicar" en la cabecera de todas las páginas con tooltip de lo pendiente, etiqueta "Pendiente de reinicio" junto al tipo cambiado (se quita si el switch vuelve a como estaba) y aviso que dice qué se aplica al momento y qué al reiniciar.
+- [ ] **[P1] Apagar "Interfaz Gráfica" o el último teclado sin aviso**: un toque deja al usuario sin GUI tras reiniciar. Pasar por `dialogoPregunta` en `cambiarEstado` cuando `clase is miGui` o el tipo tiene aparatos ("Al reiniciar esta página dejará de abrir; para volver edita dispositivos.md").
+- [ ] **[P2] Agrupación rota y estados vacíos sin salida**: el `border-b` está en la fila del switch, así que "No hay aparatos en pedal.md" cae debajo del divisor y se lee como parte del tipo siguiente. Una sección por tipo con sus aparatos dentro y el divisor al final; estado vacío con verbo ("Sin pedales configurados · Cómo agregar uno"), el archivo en Avanzado; atenuar los aparatos de un tipo apagado.
+- [x] **[P2] "Ordenar pestañas" en /dispositivos**: era el botón más pesado de la página, perdía el foco al mover y mostraba el tipo crudo (`deck_combinado`). Hecho: botón de la barra de herramientas en Acciones (solo Editar y con más de un dispositivo), las pestañas se mueven en vivo, el foco vuelve al botón, `aria-live` con la posición y nombre de la clase en vez del tipo.
+- [ ] **[P2] Diálogo Agregar teclado**: Guardar queda cortado al pie (scroll `max-h-80` anidado dentro del del diálogo, `agregar.py:121`); distribuciones y teclas crudas (`ingles_87k`, `KEY_ENTER`). Navegación del stepper fija al pie, un solo scroll, nombres legibles ("Inglés 87 teclas (TKL)", "Enter") con el código en tooltip.
+- [ ] **[P2] Contraste del stepper**: paso activo `#00786f` sobre `#1d1d1d` da 3.1:1 en oscuro (`primary` como texto); el inactivo `#9e9e9e` sobre blanco da 2.7:1 en claro.
+- [ ] **[P3] Celular**: con el StreamDeck Plus la barra de herramientas pasa a 3 filas por el botón de ordenar; si estorba, `max-sm:hidden`.
+- [ ] **[P3]** `bind_enabled_from` habilita Agregar al activar el tipo aunque no carga hasta reiniciar (contradice el comentario de `configuracion.py`); ícono de lápiz de Quasar en el paso "Buscar"; `colorActivo` (naranja) en la tarjeta elegida significa "herramienta encendida" en Acciones; sin `truncate` en expansiones con nombres largos.
+- [ ] **[P3] Diagnóstico de permisos**: un teclado sin permiso de `/dev/input` sale como "(desconectado)" y `escucharTeclado` se traga el `OSError` (`agregar.py:24-27`); decir "sin permiso: agrega tu usuario al grupo input".
+- [ ] **[P3] Copy**: "aparato" vs "dispositivo" sin explicar; "Interfaz web/gráfica (GUI)" redundante; "macro pad" → "panel de macros"; nombres camelCase visibles en /modulos (`estadoPc`, `estadoKlipper`).
+
 ## Ícono en la barra de estado (`bandeja.py`)
 
 - [ ] **Último error en el menú**: en estado error, mostrar en la etiqueta la última línea de `journalctl --user -u elgarrobo -p err -n 1` para saber qué falló sin abrir la terminal.

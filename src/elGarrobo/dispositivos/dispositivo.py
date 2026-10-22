@@ -1,10 +1,12 @@
 import os
+import time
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Optional, Type
 
 from elGarrobo.accionesOOP.accion import accion
+from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dibujoBoton import dibujoBoton
 from elGarrobo.miLibrerias import (
@@ -57,6 +59,8 @@ class dispositivo:
     clase: str
     "Sub Categoria del dispositivo"
     funcionActualizarPestaña: Optional[Callable] = None
+    ultimaActividad: float = time.monotonic()
+    "Última tecla presionada en cualquier dispositivo, compartida (se cambia en la clase); la usa el reposo"
     "Función que llama actualizar la información de GUI"
 
     nivelOrdenar: int = 0
@@ -99,14 +103,26 @@ class dispositivo:
         """Texto para identificar el aparato en la GUI; por defecto su ruta o número de serie"""
         return ruta
 
+    propiedadesAparato: list[propiedadAccion] = []
+    "Opciones de cada aparato en su archivo de configuración editables en /configuracion (ej. brillo del StreamDeck)"
+
+    @staticmethod
+    def notaAparato(data: dict) -> str:
+        """Texto de ayuda bajo las propiedadesAparato en /configuracion, se actualiza al editarlas"""
+        return ""
+
+    def aplicarAparato(self, data: dict) -> bool:
+        """Aplica sin reiniciar las propiedadesAparato guardadas en /configuracion; False si hace falta reiniciar"""
+        return False
+
     @staticmethod
     def cargarDispositivos(dispositivosCargados: dict, claseDispositivo: type["dispositivo"]) -> list["dispositivo"]:
         """
-        Preparara la informacion de los dispositivos en base a una clase
+        Prepara la información de los dispositivos en base a una clase
 
         Args:
             dispositivosCargados (dict): Estado activado/desactivado de cada tipo de dispositivo (dispositivos.md)
-            claseDispositivo (dispositivo): Clase del dispositivo a cargar es basada es dispositivo
+            claseDispositivo (dispositivo): Clase del dispositivo a cargar, basada en dispositivo
 
         Returns:
             list (dispositivo): Lista de dispositivos configurados
@@ -383,6 +399,8 @@ class dispositivo:
             estado (estadoTecla): La tecla se precioso o se soltó
             fuerza (int, optional): Fuerza de la acción (por defecto es 1)
         """
+        # MQTT no pasa por aquí: solo cuenta lo que presiona una persona
+        dispositivo.ultimaActividad = time.monotonic()
         for acción in self.listaAcciones:
             if str(acción.get("key")) == str(tecla):
                 if estado == self.estadoTecla.PRESIONADA:

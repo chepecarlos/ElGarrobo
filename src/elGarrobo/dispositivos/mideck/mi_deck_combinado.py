@@ -1,7 +1,8 @@
 from typing import Optional, Union
 
+from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
-from elGarrobo.miLibrerias import ConfigurarLogging
+from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor
 
 from .mi_streamdeck import MiStreamDeck
 from .mi_streamdeck_plus import MiStreamDeckPlus
@@ -38,6 +39,35 @@ class MiDeckCombinado(dispositivo):
     fps: int = 60
     "fotogramas por segundo para gif"
 
+    propiedadesAparato = [
+        propiedadAccion("Brillo", "brillo", [int], defecto=70, descripcion="Brillo normal de 0 a 100"),
+        propiedadAccion(
+            "Minutos para reposo",
+            "minutos_reposo",
+            [int],
+            defecto=0,
+            descripcion="Minutos sin uso para bajar el brillo, 0 lo desactiva",
+        ),
+        propiedadAccion(
+            "Brillo en reposo",
+            "brillo_reposo",
+            [int],
+            defecto=0,
+            descripcion="De 0 a 100; con 0 se apaga y la primera tecla solo despierta",
+        ),
+    ]
+
+    @staticmethod
+    def notaAparato(data: dict) -> str:
+        """Explica el reposo configurado, sobre todo que con brillo_reposo 0 la primera tecla solo despierta"""
+        minutos = data.get("minutos_reposo", 0)
+        if not minutos:
+            return "Reposo desactivado: pon los minutos para bajar el brillo cuando no se usa y cuidar las pantallas"
+        brillo = data.get("brillo_reposo", 0)
+        if brillo:
+            return f"Reposo: tras {minutos} min sin uso baja al brillo {brillo}; las teclas funcionan normal"
+        return f"Reposo: tras {minutos} min sin uso se apaga; la primera tecla solo despierta, no ejecuta su acción"
+
     def __init__(self, dataConfiguracion: dict) -> None:
         """Inicializando Dispositivo de MiDeckCombinado
 
@@ -69,6 +99,18 @@ class MiDeckCombinado(dispositivo):
                 deckTemporal.imagenesBase = self.imagenesBase
                 deckTemporal.fps = self.fps
                 self.listaDeck.append(deckTemporal)
+
+        # brillo antes vivía solo en data/streamdeck.json (lo guarda deck_brillo), se usa si no está en la config
+        brillo = dataConfiguracion.get("brillo", ObtenerValor("data/streamdeck.json", "brillo"))
+        self.aplicarAparato({**dataConfiguracion, "brillo": 70 if brillo is None else brillo})
+
+    def aplicarAparato(self, data: dict) -> bool:
+        """Brillo y reposo se aplican al momento, sin reiniciar"""
+        for deckActual in self.listaDeck:
+            deckActual.brilloReposo = data.get("brillo_reposo", 0)
+            deckActual.minutosReposo = data.get("minutos_reposo", 0)
+            deckActual.Brillo(data.get("brillo", deckActual.brillo))
+        return True
 
     def conectar(self) -> None:
         """Conecta todos los dispositivos los dispositivos"""

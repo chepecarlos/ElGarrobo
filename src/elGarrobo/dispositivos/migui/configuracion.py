@@ -192,6 +192,40 @@ def mostrarConfigurar(nombreTema: str, cambiarTema) -> None:
                 ui.label("Automático sigue el tema claro u oscuro de la PC o el celular").classes("text-caption")
 
 
+def campoPropiedad(contenedor: dict, propiedad: propiedadAccion, marca: str, editores: list) -> ui.element:
+    """Campo según el tipo de la propiedad; lo escrito se guarda en `contenedor` al momento y vacío quita la clave"""
+    valor = contenedor.get(propiedad.atributo, propiedad.defecto)
+    if bool in propiedad.tipo:
+        editor = ui.switch(propiedad.nombre, value=bool(valor))
+    elif int in propiedad.tipo or float in propiedad.tipo:
+        valor = valor if isinstance(valor, (int, float)) else None
+        editor = ui.number(propiedad.nombre, value=valor, precision=0 if int in propiedad.tipo else None)
+    else:
+        secreto = propiedad.atributo in ("token", "clave", "password")
+        texto = "" if valor is None else str(valor)
+        editor = ui.input(
+            propiedad.nombre,
+            value=texto,
+            placeholder=propiedad.ejemplo,
+            password=secreto,
+            password_toggle_button=secreto,
+        )
+    if propiedad.descripcion:
+        editor.tooltip(propiedad.descripcion)
+    editor.mark(f"config-{marca}-{propiedad.atributo}")
+
+    def actualizar(evento, contenedor=contenedor, propiedad=propiedad) -> None:
+        # Se guarda al escribir para que agregar o quitar elementos (refresh) no pierda lo editado
+        if evento.value in (None, ""):
+            contenedor.pop(propiedad.atributo, None)
+        else:
+            contenedor[propiedad.atributo] = int(evento.value) if int in propiedad.tipo else evento.value
+
+    editor.on_value_change(actualizar)
+    editores.append((propiedad, editor))
+    return editor
+
+
 def mostrarConfiguracionModulo(clase: type, gui=None) -> None:
     """Desplegable para editar la configuración de un módulo (ej. modulos/estado_octoprint.md)
 
@@ -207,42 +241,11 @@ def mostrarConfiguracionModulo(clase: type, gui=None) -> None:
     recienAgregado: list[dict] = []
     "Elemento que se acaba de agregar, se muestra abierto"
 
-    def campo(contenedor: dict, propiedad: propiedadAccion, marca: str) -> None:
-        valor = contenedor.get(propiedad.atributo, propiedad.defecto)
-        if bool in propiedad.tipo:
-            editor = ui.switch(propiedad.nombre, value=bool(valor))
-        elif int in propiedad.tipo or float in propiedad.tipo:
-            valor = valor if isinstance(valor, (int, float)) else None
-            editor = ui.number(propiedad.nombre, value=valor, precision=0 if int in propiedad.tipo else None)
-        else:
-            secreto = propiedad.atributo in ("token", "clave", "password")
-            texto = "" if valor is None else str(valor)
-            editor = ui.input(
-                propiedad.nombre,
-                value=texto,
-                placeholder=propiedad.ejemplo,
-                password=secreto,
-                password_toggle_button=secreto,
-            )
-        if propiedad.descripcion:
-            editor.tooltip(propiedad.descripcion)
-        editor.mark(f"config-{marca}-{propiedad.atributo}")
-
-        def actualizar(evento, contenedor=contenedor, propiedad=propiedad) -> None:
-            # Se guarda al escribir para que agregar o quitar elementos (refresh) no pierda lo editado
-            if evento.value in (None, ""):
-                contenedor.pop(propiedad.atributo, None)
-            else:
-                contenedor[propiedad.atributo] = int(evento.value) if int in propiedad.tipo else evento.value
-
-        editor.on_value_change(actualizar)
-        editores.append((propiedad, editor))
-
     def campos(contenedor: dict, propiedades: list[propiedadAccion], marca: str) -> None:
         with ui.row().classes("items-start gap-4 p-2"):
             for propiedad in propiedades:
                 if not propiedad.elementos:
-                    campo(contenedor, propiedad, marca)
+                    campoPropiedad(contenedor, propiedad, marca, editores)
         for propiedad in propiedades:
             if propiedad.elementos:
                 lista(contenedor, propiedad, marca)
@@ -322,12 +325,18 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
             marcarError(editor, "Falta el nombre" if editor in vacíos else None)
         if not nombreNuevo or error or vacíos:
             return
+        cambióNombre = nombreNuevo != nombreAnterior or any(d["nombre"] != e.value.strip() for d, e in internos)
         data["nombre"] = nombreNuevo
         for dataInterno, editor in internos:
             dataInterno["nombre"] = editor.value.strip()
         # Se reemplaza su entrada en el archivo leído ahora, por si se agregó o quitó otro aparato desde que se dibujó
         SalvarArchivo(archivo, [data if otro.get("nombre") == nombreAnterior else otro for otro in aparatos])
         desplegable.text = nombreNuevo
+        # Los nombres se usan al cargar (pestañas, acciones con 'dispositivo'); el resto lo aplica el aparato si puede
+        conectado = [d for d in (gui.listaDispositivos if gui else []) if d.nombre == nombreAnterior]
+        if not cambióNombre and conectado and all(d.aplicarAparato(data) for d in conectado):
+            ui.notify(f"{nombreNuevo} guardado y aplicado", type="positive")
+            return
         marcarPendiente(gui, f"{archivo}:{data.get('dispositivo', nombreAnterior)}", f"{nombreNuevo} editado")
         ui.notify(f"{nombreNuevo} guardado; se aplica al reiniciar ElGarrobo", type="positive")
 
@@ -362,6 +371,13 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
             with ui.expansion(titulo, caption=clase.nombreAparato(ruta), icon=clase.icono) as desplegable:
                 desplegable.classes(f"w-full border border-{tema.colorOscuro} rounded")
                 nombre = ui.input("Nombre", value=data.get("nombre", "")).classes("p-2")
+                if clase.propiedadesAparato:
+                    with ui.row().classes("items-start gap-4 px-2"):
+                        marca = f"{clase.modulo}-{titulo}"
+                        editores = [campoPropiedad(data, p, marca, []) for p in clase.propiedadesAparato]
+                    nota = ui.label(clase.notaAparato(data)).classes("text-caption px-2")
+                    for editor in editores:
+                        editor.on_value_change(lambda _, d=data, n=nota: n.set_text(clase.notaAparato(d)))
                 # Aparatos dentro de otro, ej. los StreamDeck de deck_combinado.md (streamDecks / streamDecksPlus)
                 internos = [
                     interno

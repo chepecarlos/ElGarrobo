@@ -21,8 +21,14 @@ from elGarrobo.dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro
 for nombre in ("SalvarValor", "SalvarArchivo"):
     setattr(configuracion, nombre, lambda *a, **k: None)
 moduloMiGui.SalvarValor = lambda *a, **k: None
-configuracion.leerData = lambda archivo: {"teclado": True} if archivo == "dispositivos" else {}
-configuracion.ObtenerArchivo = lambda archivo: [{"nombre": "Completo", "dispositivo": "/dev/a"}] if archivo == "teclados.md" else None
+configuracion.leerData = lambda archivo: {"teclado": True, "deck_combinado": True} if archivo == "dispositivos" else {}
+archivosFalsos = {
+    "teclados.md": [{"nombre": "Completo", "dispositivo": "/dev/a"}],
+    "deck_combinado.md": [
+        {"nombre": "StreamDecks", "minutos_reposo": 10, "streamDecks": [{"nombre": "Viejo-V2", "dispositivo": "AL47I2C06277"}]}
+    ],
+}
+configuracion.ObtenerArchivo = archivosFalsos.get
 
 # Agregar teclado: teclados conectados falsos; en el Moonlander "se presionan" teclas
 MiTecladoMacro.listarDisponibles = staticmethod(

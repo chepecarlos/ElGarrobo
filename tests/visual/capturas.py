@@ -142,6 +142,15 @@ def recorrer(navegador, url: str, tema: str) -> None:
     página.goto(f"{url}/dispositivos")
     esperar(página)
     foto(página, f"{t}-dispositivos")
+    # Brillo y reposo del StreamDeck; la nota cambia al editar el brillo en reposo
+    página.locator(".q-expansion-item").get_by_text("StreamDecks", exact=True).click()
+    esperar(página)
+    foto(página, f"{t}-dispositivos-streamdeck")
+    página.get_by_label("Brillo en reposo").fill("15")
+    esperar(página)
+    foto(página, f"{t}-dispositivos-streamdeck-brillo")
+    página.goto(f"{url}/dispositivos")
+    esperar(página)
     # Cambio pendiente de reinicio: botón en la cabecera y etiqueta en la fila; se regresa para no afectar el resto
     página.get_by_label("Activar Pedal StreamDeck").click()
     esperar(página)

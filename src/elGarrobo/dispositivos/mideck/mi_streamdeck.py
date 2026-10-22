@@ -16,7 +16,7 @@ from StreamDeck.Transport.Transport import TransportError
 from elGarrobo.dispositivos import dispositivo
 from elGarrobo.dispositivos.dispositivo import grupoBotones
 from elGarrobo.dispositivos.dataAccion import dataAccion
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor, SalvarArchivo
+from elGarrobo.miLibrerias import ConfigurarLogging, SalvarArchivo
 
 logger = ConfigurarLogging(__name__)
 
@@ -61,6 +61,14 @@ class MiStreamDeck(dispositivo):
     fps: int = 60
     "fotogramas por segundo para gif"
 
+    brillo: int = 70
+    "brillo normal (0-100)"
+    brilloReposo: int = 0
+    "brillo en reposo (0-100), como el modo reposo de la app oficial para cuidar las pantallas"
+    minutosReposo: float = 0
+    "minutos sin tocar nada para entrar en reposo, 0 lo desactiva"
+    enReposo: bool = False
+
     _gifCache: dict[tuple[str, str, str], itertools.cycle] = {}
     "Caché para Gifs: clave(rutaGif, colorFondo, titulo)"
 
@@ -86,6 +94,7 @@ class MiStreamDeck(dispositivo):
         self.ultimoDibujo = None
         self.tiempoDibujar: float = 0.4
         self._gifCache = {}
+        self._teclaDespertar = None
         # self.archivoImagen = None
 
     def conectar(self) -> bool:
@@ -111,9 +120,9 @@ class MiStreamDeck(dispositivo):
                 self.listaBotones = None
                 self.cantidadBotones = self.deck.key_count()
                 self.layout = self.deck.key_layout()
-                brillo: int = ObtenerValor("data/streamdeck.json", "brillo")
-                # Todo: brillo no es un int
-                self.deck.set_brightness(brillo)
+                self.deck.set_brightness(self.brillo)
+                self.enReposo = False
+                dispositivo.ultimaActividad = time.monotonic()
                 self.deck.set_key_callback(self.actualizarBoton)
 
                 self.hiloGif = threading.Thread(target=self.animaciónGif, daemon=True)
@@ -282,9 +291,37 @@ class MiStreamDeck(dispositivo):
         self.deck.set_key_image(indice, PILHelper.to_native_format(self.deck, imagenNegro))
 
     def Brillo(self, Brillo):
-        """Cambia brillo de StreamDeck."""
-        if self.conectado:
-            self.deck.set_brightness(Brillo)
+        """Cambia brillo normal de StreamDeck; en reposo se aplica al despertar"""
+        self.brillo = Brillo
+        if self.conectado and not self.enReposo:
+            with self.deck:
+                self.deck.set_brightness(Brillo)
+
+    def buscarAccion(self, tecla: str, estado=dispositivo.estadoTecla.PRESIONADA, fuerza: int = 1) -> None:
+        """Toda entrada (teclas, diales, táctil) cuenta como actividad para el reposo, igual que en otros dispositivos.
+
+        Con brilloReposo 0 no se ven los íconos, así que la tecla solo despierta y su soltar también se ignora;
+        con brillo bajo se alcanzan a ver y la tecla se ejecuta normal.
+        """
+        dispositivo.ultimaActividad = time.monotonic()
+        if self.enReposo and not self.brilloReposo:
+            if estado == self.estadoTecla.PRESIONADA:
+                self._teclaDespertar = tecla
+            return
+        if self._teclaDespertar == tecla and estado == self.estadoTecla.LIBERADA:
+            self._teclaDespertar = None
+            return
+        super().buscarAccion(tecla, estado, fuerza)
+
+    def revisarReposo(self) -> None:
+        """Baja el brillo tras `minutosReposo` sin tocar ningún dispositivo y lo regresa al tocar uno"""
+        reposo = bool(self.minutosReposo) and time.monotonic() - dispositivo.ultimaActividad > self.minutosReposo * 60
+        if reposo == self.enReposo:
+            return
+        with self.deck:
+            self.deck.set_brightness(self.brilloReposo if reposo else self.brillo)
+        self.enReposo = reposo
+        logger.info(f"StreamDeck[{'Reposo' if reposo else 'Despierto'}] - {self.nombre}")
 
     def actualizarBoton(self, deck, key, estado) -> None:
 
@@ -412,17 +449,19 @@ class MiStreamDeck(dispositivo):
         siguienteFrame = Fraction(time.monotonic())
 
         while self.deck.is_open():
-            if not self.pausarDibujando and self.listaBotones is not None:
-                try:
+            try:
+                self.revisarReposo()
+                # En reposo no se animan los gifs, no se ven y se ahorra USB
+                if not self.pausarDibujando and not self.enReposo and self.listaBotones is not None:
                     with self.deck:
                         for i, accionActual in enumerate(self.listaBotones):
                             frames = accionActual.get("gif")
                             if not frames:
                                 continue
                             self.deck.set_key_image(i, next(frames))
-                except TransportError as err:
-                    logger.info(f"StreamDeck[Error] - {self.nombre} durante animación: {err}")
-                    break
+            except TransportError as err:
+                logger.info(f"StreamDeck[Error] - {self.nombre} durante animación: {err}")
+                break
 
             siguienteFrame += tiempoFrame
 

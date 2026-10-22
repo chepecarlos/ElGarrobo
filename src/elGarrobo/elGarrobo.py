@@ -703,7 +703,6 @@ class elGarrobo(object):
             dispositivoActual.actualizar()
 
     def DeckBrillo(self, opciones):
-        Brillo = ObtenerValor("data/streamdeck.json", "brillo")
 
         def constrain(n, minn, maxn):
             return max(min(maxn, n), minn)
@@ -712,12 +711,11 @@ class elGarrobo(object):
             cantidad = opciones["cantidad"]
         else:
             return
-        Brillo += cantidad
-        Brillo = constrain(Brillo, 0, 100)
-        logger.info(f"Deck[Brillo]: {Brillo}")
-        SalvarValor("data/streamdeck.json", "brillo", Brillo)
-        for deck in self.ListaDeck:
+        for deck in [deck for d in self.listaDispositivos for deck in getattr(d, "listaDeck", [])]:
+            Brillo = constrain(deck.brillo + cantidad, 0, 100)
             deck.Brillo(Brillo)
+            logger.info(f"Deck[Brillo]: {deck.nombre} {Brillo}")
+            SalvarValor("data/streamdeck.json", "brillo", Brillo)
 
     def CargarOBS(self):
         """
