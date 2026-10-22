@@ -63,7 +63,7 @@ def _cli(
         ConfigurarModulos()
     elif gui:
         logger.info("Iniciando la APP Gráfica")
-        app = elGarrobo(gui="true")
+        app = elGarrobo(gui=True)
         _mantenerVivo(app)
     else:
         logger.info("ElGarrobo[sin parametros]")

@@ -156,6 +156,9 @@ class elGarrobo(object):
             os._exit(0)
 
         self.dispositivos = self._cargarDataDispositivos()
+        if modulos.get("gui"):
+            # elgarrobo -g: la GUI arranca aunque esté apagada en dispositivos.md (no se guarda)
+            self.dispositivos["gui"] = True
 
         # TODO: Modulos en un dict
 

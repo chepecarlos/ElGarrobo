@@ -586,6 +586,21 @@ class TestActivables:
         clickEnDialogoAbierto(user, "Reiniciar")
         gui.ejecutarAccionSistema.assert_called_once_with("reiniciar_app")
 
+    async def test_la_gui_no_se_apaga_desde_dispositivos(self, user: User, gui: miGui, monkeypatch):
+        monkeypatch.setattr(configuracion, "leerData", lambda _: {"gui": True})
+        await user.open("/dispositivos")
+        await user.should_see("Pedal StreamDeck")
+        await user.should_not_see("Interfaz Gráfica")
+
+    def test_gui_forzada_con_g(self, monkeypatch):
+        from elGarrobo import elGarrobo as moduloElGarrobo
+
+        monkeypatch.setattr(moduloElGarrobo, "leerData", lambda archivo: {} if archivo == "modulos" else {"gui": False})
+        app = moduloElGarrobo.elGarrobo.__new__(moduloElGarrobo.elGarrobo)
+        app.cargarClasesModulos = MagicMock()
+        app.iniciarModulo(gui=True)
+        assert app.dispositivos["gui"] is True and app.ModuloGui is True
+
 
 class TestConfiguracionModulos:
     @pytest.fixture
@@ -1391,6 +1406,40 @@ class TestAgregarTeclado:
         assert archivos["teclados.md"] == []
         gui.quitarDispositivo.assert_called_once_with("Completo")
         await user.should_see("Completo quitado, su archivo de acciones se conserva")
+        await user.should_see("Conecta uno y presiona Agregar teclado")
+
+    async def test_cambiar_distribucion_desde_dispositivos(self, user: User, gui: miGui, archivos: dict, monkeypatch):
+        from elGarrobo.dispositivos.miteclado import mi_teclado_macro
+
+        monkeypatch.setattr(mi_teclado_macro, "ObtenerArchivo", lambda archivo: archivos.get(archivo))
+        monkeypatch.setattr(mi_teclado_macro, "SalvarArchivo", lambda archivo, data: archivos.update({archivo: data}))
+        # Conectado con otro nombre (renombrado sin reiniciar): se encuentra por ruta
+        conectado = MiTecladoMacro({"nombre": "Viejo", "dispositivo": "/dev/a"})
+        gui.listaDispositivos.append(conectado)
+        await user.open("/dispositivos")
+        await user.should_see("Ninguna, sus teclas se ven como lista")
+
+        user.find(marker="cambiarDistribucion-Completo").click()
+        user.find(marker="opcionDistribucion-ingles_87k").click()
+        assert archivos["teclados.md"][0]["distribucion"] == "ingles_87k"
+        assert conectado.distribucion == "ingles_87k", "la pestaña de Acciones usa la nueva sin reiniciar"
+        await user.should_not_see("Ninguna, sus teclas se ven como lista")
+
+        user.find(kind=ui.button, content="Guardar").click()
+        assert archivos["teclados.md"][0]["distribucion"] == "ingles_87k", "Guardar no regresa la anterior"
+
+    async def test_estados_vacios_dicen_como_agregar(self, user: User, gui: miGui, archivos: dict, monkeypatch):
+        monkeypatch.setattr(configuracion, "leerData", lambda _: {"teclado": False})
+        await user.open("/dispositivos")
+        await user.should_see("Aún no hay ningún Pedal StreamDeck")
+        await user.should_see("Por ahora se agrega a mano en")
+        await user.should_see("pedal.md")
+        await user.should_not_see("No hay aparatos")
+        # Tipo apagado: el motivo se lee, no queda en un tooltip del botón deshabilitado
+        await user.should_see("Activa Teclado Macro para agregar uno")
+        with user:
+            next(s for s in user.find(kind=ui.switch).elements if s.props.get("aria-label") == "Activar Teclado Macro").value = True
+        await user.should_not_see("Activa Teclado Macro para agregar uno")
 
     async def test_recargar_muestra_distribucion_nueva(self, user: User, gui: miGui, archivos: dict, distribucionesUsuario: Path):
         await user.open("/dispositivos")

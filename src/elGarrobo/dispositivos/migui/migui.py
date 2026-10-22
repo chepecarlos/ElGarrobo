@@ -153,7 +153,9 @@ class miGui(dispositivo):
 
             accionListaCheckBox.registrarCliente(ui.context.client)
             aviso = "Activar o apagar un tipo se aplica al reiniciar ElGarrobo; los teclados se agregan y quitan al momento"
-            configuracion.mostrarListaActivables("Dispositivos", "dispositivos", cargarDispositivos(), aviso, self)
+            # Sin la GUI: apagarla desde aquí dejaba la página sin forma de volver; se enciende con elgarrobo -g
+            tipos = [c for c in cargarDispositivos() if c is not miGui]
+            configuracion.mostrarListaActivables("Dispositivos", "dispositivos", tipos, aviso, self)
             self.estructura()
 
         @ui.page("/configurar")

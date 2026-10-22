@@ -3,6 +3,8 @@
 Funciones sin estado: cada página arma sus widgets al abrirse, así cada pestaña del navegador tiene los suyos
 """
 
+from pathlib import Path
+
 from nicegui import ui
 
 from elGarrobo import servicio
@@ -11,8 +13,15 @@ from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.migui import tema
 from elGarrobo.dispositivos.migui.agregar import dialogoAgregarTeclado
 from elGarrobo.dispositivos.migui.dialogos import dialogoPregunta
+from elGarrobo.dispositivos.migui.distribucion import dialogoDistribucion, miniatura
 from elGarrobo.dispositivos.migui.editores import encabezado, marcarError
-from elGarrobo.miLibrerias import ObtenerArchivo, SalvarArchivo, SalvarValor, leerData
+from elGarrobo.miLibrerias import ObtenerArchivo, ObtenerFolderConfig, SalvarArchivo, SalvarValor, leerData
+
+
+CONTENIDO_TIPO = "w-full pl-[4.5rem] max-sm:pl-6"
+"Aparatos y opciones bajo su tipo: 4.5rem es el ancho del switch, así empiezan donde el nombre del tipo"
+DESPLEGABLE_LIGERO = 'expand-separator header-class="pl-0"'
+"Aparato como fila y no como tarjeta con borde (pesaba más que el tipo); sin padding izquierdo se alinea con el nombre"
 
 
 def marcarPendiente(gui, clave: str, descripción: str | None) -> None:
@@ -54,30 +63,37 @@ def mostrarListaActivables(titulo: str, archivo: str, listaClases: list, aviso: 
         marcarPendiente(gui, f"{archivo}.{clave}", f"{nombre} {'activado' if valor else 'apagado'}")
         ui.notify(f"{nombre} se {'activará' if valor else 'apagará'} al reiniciar ElGarrobo")
 
-    encabezado(ui.label(titulo).classes("text-h5 p-4"), 2)
-    ui.label(aviso).classes("text-caption px-4")
-    with ui.column().classes("p-4 gap-2 w-full"):
-        for clase in listaClases:
-            activo = configuracion.get(clase.modulo, False)
-            # no-wrap: en celular una descripción larga bajaba el texto debajo del switch
-            with ui.row().classes(f"items-center w-full no-wrap border-b border-{tema.colorOscuro} pb-2"):
-                interruptor = ui.switch(value=activo, on_change=lambda e, c=clase: cambiarEstado(c.modulo, e.value, c.nombre))
-                interruptor.props["aria-label"] = f"Activar {clase.nombre}"
-                with ui.column().classes("gap-0 min-w-0"):
-                    # Junto al nombre y no al final de la fila: en pantallas anchas quedaría lejos del switch
-                    with ui.row().classes("items-center gap-x-2 gap-y-0"):
-                        ui.label(clase.nombre).classes("font-bold")
-                        if gui is not None:
-                            pendiente = ui.badge("Pendiente de reinicio", color=tema.colorPendiente, text_color="black")
-                            pendiente.mark(f"pendiente-{clase.modulo}")
-                            clave = f"{archivo}.{clase.modulo}"
-                            pendiente.bind_visibility_from(gui, "pendientesReinicio", backward=lambda p, c=clave: c in p)
-                    ui.label(clase.descripcion).classes("text-caption")
-            # En dispositivos archivoConfiguracion es una lista de aparatos, en módulos un dict de opciones
-            if issubclass(clase, dispositivo) and clase.archivoConfiguracion:
-                mostrarAparatos(clase, gui, interruptor)
-            elif getattr(clase, "propiedades", None):
-                mostrarConfiguracionModulo(clase, gui)
+    # Ancho de lectura: a todo el ancho el chevron de los desplegables quedaba a 1300px del nombre
+    with ui.column().classes("w-full max-w-3xl gap-0"):
+        encabezado(ui.label(titulo).classes("text-h5 p-4"), 2)
+        ui.label(aviso).classes("text-body2 px-4")
+        with ui.column().classes("p-4 gap-4 w-full"):
+            for clase in listaClases:
+                activo = configuracion.get(clase.modulo, False)
+                # Una sección por tipo con el divisor al final: antes iba bajo la fila del switch y los aparatos
+                # quedaban pegados al tipo siguiente
+                with ui.column().classes(f"w-full gap-2 border-b border-{tema.colorOscuro} pb-4"):
+                    # no-wrap: en celular una descripción larga bajaba el texto debajo del switch
+                    with ui.row().classes("items-center w-full no-wrap"):
+                        interruptor = ui.switch(
+                            value=activo, on_change=lambda e, c=clase: cambiarEstado(c.modulo, e.value, c.nombre)
+                        )
+                        interruptor.props["aria-label"] = f"Activar {clase.nombre}"
+                        with ui.column().classes("gap-0 min-w-0"):
+                            # Junto al nombre y no al final de la fila: en pantallas anchas quedaría lejos del switch
+                            with ui.row().classes("items-center gap-x-2 gap-y-0"):
+                                encabezado(ui.label(clase.nombre).classes("text-subtitle1 font-bold"), 3)
+                                if gui is not None:
+                                    pendiente = ui.badge("Pendiente de reinicio", color=tema.colorPendiente, text_color="black")
+                                    pendiente.mark(f"pendiente-{clase.modulo}")
+                                    clave = f"{archivo}.{clase.modulo}"
+                                    pendiente.bind_visibility_from(gui, "pendientesReinicio", backward=lambda p, c=clave: c in p)
+                            ui.label(clase.descripcion).classes("text-caption")
+                    # En dispositivos archivoConfiguracion es una lista de aparatos, en módulos un dict de opciones
+                    if issubclass(clase, dispositivo) and clase.archivoConfiguracion:
+                        mostrarAparatos(clase, gui, interruptor)
+                    elif getattr(clase, "propiedades", None):
+                        mostrarConfiguracionModulo(clase, gui)
 
 
 def guardarOrden(dispositivos: list[dispositivo]) -> None:
@@ -293,9 +309,9 @@ def mostrarConfiguracionModulo(clase: type, gui=None) -> None:
         marcarPendiente(gui, archivo, f"opciones de {clase.nombre}")
         ui.notify(f"{clase.nombre} guardado; se aplica al reiniciar ElGarrobo", type="positive")
 
-    with ui.column().classes("w-full pl-12 gap-1"):
+    with ui.column().classes(f"{CONTENIDO_TIPO} gap-1"):
         with ui.expansion("Configuración", caption=archivo, icon="settings") as desplegable:
-            desplegable.classes(f"w-full border border-{tema.colorOscuro} rounded")
+            desplegable.classes("w-full").props(DESPLEGABLE_LIGERO)
             formulario()
             guardarBoton = ui.button("Guardar", icon="save", color=tema.colorOscuro, on_click=guardar)
             guardarBoton.classes("m-2").mark(f"guardar-{clase.modulo}")
@@ -347,7 +363,7 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
         nuevo = gui.agregarDispositivo(clase, data)
         if not nuevo.tieneFolder("/"):
             nuevo.crearFolder("/")
-        ui.notify(f"{data['nombre']} agregado y conectado", type="positive")
+        ui.notify(f"{data['nombre']} agregado y conectado; asigna sus teclas en su pestaña de Acciones", type="positive")
         lista.refresh()
 
     def quitar(nombre: str) -> None:
@@ -355,6 +371,43 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
         gui.quitarDispositivo(nombre)
         ui.notify(f"{nombre} quitado, su archivo de acciones se conserva")
         lista.refresh()
+
+    def mostrarDistribucion(data: dict) -> None:
+        """Distribución del teclado con su miniatura y el mismo diálogo de la barra de Acciones para cambiarla"""
+        from elGarrobo.dispositivos.miteclado.mi_teclado_macro import cargarDistribucion
+
+        def alElegir(elegido: dispositivo) -> None:
+            # data se vuelve a guardar con Guardar: sin esto regresaría la distribución anterior
+            if elegido.distribucion:
+                data["distribucion"] = elegido.distribucion
+            else:
+                data.pop("distribucion", None)
+            # El conectado se busca por ruta: si le cambiaron el nombre sigue con el anterior hasta reiniciar
+            for conectado in gui.listaDispositivos if gui else []:
+                if type(conectado) is clase and conectado.dispositivo == data.get("dispositivo"):
+                    conectado.distribucion = elegido.distribucion
+            fila.refresh()
+
+        def abrir() -> None:
+            dialogoDistribuciones.alElegir = alElegir
+            # Instancia aparte y no la conectada: cambiarDistribucion guarda por nombre y el de data es el del archivo
+            dialogoDistribuciones.abrir(clase(data))
+
+        @ui.refreshable
+        def fila() -> None:
+            nombre = data.get("distribucion")
+            teclas = cargarDistribucion(nombre) if nombre else None
+            with ui.row().classes("items-center gap-x-4 gap-y-2 px-2"):
+                with ui.column().classes("gap-0"):
+                    ui.label("Distribución").classes("text-caption")
+                    ui.label(nombre or "Ninguna, sus teclas se ven como lista")
+                if teclas:
+                    miniatura(teclas, unidad=6)
+                boton = ui.button("Cambiar", icon="keyboard", on_click=abrir).props("flat no-caps")
+                boton.props["aria-label"] = f"Cambiar distribución de {data.get('nombre', '')}"
+                boton.mark(f"cambiarDistribucion-{data.get('nombre')}")
+
+        fila()
 
     def abrirAgregar() -> None:
         aparatos = ObtenerArchivo(archivo) or []
@@ -365,12 +418,25 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
     def lista() -> None:
         aparatos = ObtenerArchivo(archivo) or []
         if not aparatos:
-            ui.label(f"No hay aparatos en {archivo}").classes("text-caption")
+            # Qué falta y cómo agregarlo: el nombre del archivo solo no le dice nada a quien no edita .md
+            with ui.row().classes("items-center no-wrap gap-3 py-1").mark(f"vacio-{clase.modulo}"):
+                ui.icon(clase.icono, size="sm").classes("opacity-60")
+                with ui.column().classes("gap-0 min-w-0"):
+                    ui.label(f"Aún no hay ningún {clase.nombre}")
+                    if agregable:
+                        como = f"Conecta uno y presiona Agregar {clase.tipo}"
+                    else:
+                        # ponytail: pedal, StreamDeck y MQTT todavía no tienen asistente; agregarlo es otra mejora
+                        ruta = str(Path(ObtenerFolderConfig(), archivo)).replace(str(Path.home()), "~", 1)
+                        como = f"Por ahora se agrega a mano en {ruta}"
+                    ui.label(como).classes("text-caption break-words")
         for data in aparatos:
             titulo, ruta = data.get("nombre", "Sin nombre"), data.get("dispositivo", "")
             with ui.expansion(titulo, caption=clase.nombreAparato(ruta), icon=clase.icono) as desplegable:
-                desplegable.classes(f"w-full border border-{tema.colorOscuro} rounded")
+                desplegable.classes("w-full").props(DESPLEGABLE_LIGERO)
                 nombre = ui.input("Nombre", value=data.get("nombre", "")).classes("p-2")
+                if conDistribucion:
+                    mostrarDistribucion(data)
                 if clase.propiedadesAparato:
                     with ui.row().classes("items-start gap-4 px-2"):
                         marca = f"{clase.modulo}-{titulo}"
@@ -412,15 +478,21 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
                         )
                         quitarBoton.props("flat").mark(f"quitar-{titulo}")
 
+    conDistribucion = hasattr(clase, "cambiarDistribucion")
+    if conDistribucion:
+        dialogoDistribuciones = dialogoDistribucion(None)
     if agregable:
         dialogoAgregar = dialogoAgregarTeclado(agregar)
         pregunta = dialogoPregunta()
-    with ui.column().classes("w-full pl-12 gap-1"):
+    with ui.column().classes(f"{CONTENIDO_TIPO} gap-2"):
         lista()
         if agregable:
-            boton = ui.button(f"Agregar {clase.tipo}", icon="add", color=tema.colorOscuro, on_click=abrirAgregar)
-            boton.mark(f"agregar-{clase.modulo}")
-            if interruptor is not None:
-                # Con el tipo apagado ElGarrobo no carga sus aparatos: no tiene sentido conectar uno suelto
-                boton.bind_enabled_from(interruptor, "value")
-                boton.tooltip(f"Activa {clase.nombre} para agregar")
+            with ui.row().classes("items-center gap-x-3 gap-y-1"):
+                boton = ui.button(f"Agregar {clase.tipo}", icon="add", color=tema.colorOscuro, on_click=abrirAgregar)
+                boton.mark(f"agregar-{clase.modulo}")
+                if interruptor is not None:
+                    # Con el tipo apagado ElGarrobo no carga sus aparatos: no tiene sentido conectar uno suelto.
+                    # Texto visible y no tooltip: el botón deshabilitado no recibe foco ni hover en el celular
+                    boton.bind_enabled_from(interruptor, "value")
+                    motivo = ui.label(f"Activa {clase.nombre} para agregar uno").classes("text-caption")
+                    motivo.bind_visibility_from(interruptor, "value", backward=lambda v: not v)
