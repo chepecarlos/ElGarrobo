@@ -13,7 +13,7 @@ from nicegui import ui
 from elGarrobo.accionesOOP import cargarClasesAcciones
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.mideck.mi_deck_combinado import MiDeckCombinado
-from elGarrobo.dispositivos.migui import configuracion
+from elGarrobo.dispositivos.migui import agregar, configuracion
 from elGarrobo.dispositivos.migui import migui as moduloMiGui
 from elGarrobo.dispositivos.mipedal.mi_pedal import MiPedal
 from elGarrobo.dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro
@@ -21,8 +21,25 @@ from elGarrobo.dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro
 for nombre in ("SalvarValor", "SalvarArchivo"):
     setattr(configuracion, nombre, lambda *a, **k: None)
 moduloMiGui.SalvarValor = lambda *a, **k: None
-configuracion.leerData = lambda archivo: {}
-configuracion.ObtenerArchivo = lambda archivo: None
+configuracion.leerData = lambda archivo: {"teclado": True} if archivo == "dispositivos" else {}
+configuracion.ObtenerArchivo = lambda archivo: [{"nombre": "Completo", "dispositivo": "/dev/a"}] if archivo == "teclados.md" else None
+
+# Agregar teclado: teclados conectados falsos; en el Moonlander "se presionan" teclas
+MiTecladoMacro.listarDisponibles = staticmethod(
+    lambda: [("/dev/a", "DREVO BladeMaster TE 87K"), ("/dev/b", "ZSA Moonlander Mark I"), ("/dev/c", "SONiX USB DEVICE")]
+)
+
+
+async def escucharFalso(ruta, alPresionar):
+    import asyncio
+
+    if ruta == "/dev/b":
+        for tecla in ("KEY_ESC", "KEY_A", "KEY_SPACE", "KEY_ENTER"):
+            await asyncio.sleep(0.1)
+            alPresionar(ruta, tecla)
+
+
+agregar.escucharTeclado = escucharFalso
 
 
 class dispositivoFalso(dispositivo):

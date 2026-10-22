@@ -90,6 +90,12 @@ class MiTecladoMacro(dispositivo):
         teclado.close()
         return nombre
 
+    @staticmethod
+    def listarDisponibles() -> list[tuple[str, str]]:
+        """(ruta, nombre) de los teclados USB conectados; rutas de by-id porque no cambian al reconectar"""
+        rutas = sorted(str(ruta) for ruta in Path("/dev/input/by-id").glob("*-event-kbd"))
+        return [(ruta, MiTecladoMacro.nombreAparato(ruta)) for ruta in rutas]
+
     def distribucionTeclas(self) -> list[dict] | None:
         return cargarDistribucion(self.distribucion) if self.distribucion else None
 

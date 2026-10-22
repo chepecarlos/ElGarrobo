@@ -104,6 +104,8 @@ class elGarrobo(object):
                 if dispositivoActual.tipo == "gui":
                     dispositivoActual.listaDispositivos = self.listaDispositivos
                     dispositivoActual.listaClasesAcciones = self.listaClasesAcciones
+                    dispositivoActual.agregarDispositivo = self.agregarDispositivo
+                    dispositivoActual.quitarDispositivo = self.quitarDispositivo
                     dispositivoActual.actualizar()
 
     def iniciarDispositivos(self) -> None:
@@ -115,12 +117,30 @@ class elGarrobo(object):
             self.listaDispositivos.extend(claseDispositivo.cargarDispositivos(self.dispositivos, claseDispositivo))
 
         for dispositivoActual in self.listaDispositivos:
-            dispositivoActual.configurarFuncionAccion(self.ejecutarAcción)
-            dispositivoActual.asignarPerfil(self.folderPerfil)
-            if dispositivoActual.activado and not dispositivoActual.conectado:
-                dispositivoActual.cargarAccionesFolder("/")
-                dispositivoActual.conectar()
-                dispositivoActual.actualizar()
+            self.iniciarDispositivo(dispositivoActual)
+
+    def iniciarDispositivo(self, dispositivoActual: dispositivo) -> None:
+        """Le pasa ejecutarAcción y el perfil, carga su folder raíz y lo conecta"""
+        dispositivoActual.configurarFuncionAccion(self.ejecutarAcción)
+        dispositivoActual.asignarPerfil(self.folderPerfil)
+        if dispositivoActual.activado and not dispositivoActual.conectado:
+            dispositivoActual.cargarAccionesFolder("/")
+            dispositivoActual.conectar()
+            dispositivoActual.actualizar()
+
+    def agregarDispositivo(self, claseDispositivo: type[dispositivo], dataConfiguracion: dict) -> dispositivo:
+        """Crea, conecta y agrega un dispositivo sin reiniciar (ej. un teclado agregado desde la GUI)"""
+        nuevo = claseDispositivo(dataConfiguracion)
+        self.iniciarDispositivo(nuevo)
+        # ponytail: sin lock, otros hilos recorren la lista; append no rompe un for en curso
+        self.listaDispositivos.append(nuevo)
+        return nuevo
+
+    def quitarDispositivo(self, nombre: str) -> None:
+        """Desconecta y saca de la lista el dispositivo con ese nombre"""
+        for dispositivoActual in [d for d in self.listaDispositivos if d.nombre == nombre]:
+            dispositivoActual.desconectar()
+            self.listaDispositivos.remove(dispositivoActual)
 
     def iniciarModulo(self, **modulos) -> None:
         """

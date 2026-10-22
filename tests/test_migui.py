@@ -41,6 +41,14 @@ class dispositivoFalso(dispositivo):
         self.vecesSalvado += 1
 
 
+@pytest.fixture(autouse=True)
+def distribucionesUsuario(monkeypatch, tmp_path) -> Path:
+    """Las distribuciones propias del usuario en una carpeta temporal, no en su config real"""
+    folder = tmp_path / "distribuciones"
+    monkeypatch.setattr(sys.modules[MiTecladoMacro.__module__], "folderDistribucionesUsuario", lambda: folder)
+    return folder
+
+
 def imagenVista(url: str) -> Image.Image:
     """Imagen que sirve /vista/{hash} para una tecla de la cuadrícula"""
     contenido, _ = vistas._vistas[url.removeprefix("/vista/")]
@@ -105,6 +113,15 @@ def clickEnDialogoAbierto(user: User, texto: str) -> None:
     botones = [b for b in user.find(kind=ui.button, content=texto).elements if any(isinstance(p, ui.dialog) and p.value for p in b.ancestors())]
     assert len(botones) == 1
     UserInteraction(user, {botones[0]}, texto).click()
+
+
+async def esperarQue(condición, segundos: float = 1) -> None:
+    """Para cambios que nicegui dibuja en el siguiente ciclo (refresh, tareas de fondo) y should_see no revisa"""
+    for _ in range(int(segundos / 0.05)):
+        if condición():
+            return
+        await asyncio.sleep(0.05)
+    assert condición()
 
 
 def teclas(dispositivo: dispositivo) -> list:
@@ -1276,3 +1293,138 @@ class TestCrearFolder:
         user.find(marker="tecla-pedal-1").click()
         user.find(marker="botonAgregar").click()
         assert gui.formulario.dialogoCrearFolder.value
+
+
+class TestAgregarTeclado:
+    """Agregar y quitar teclados desde /dispositivos sin reiniciar"""
+
+    @pytest.fixture
+    def archivos(self, monkeypatch) -> dict:
+        archivos = {"teclados.md": [{"nombre": "Completo", "dispositivo": "/dev/a", "archivo": "drevo"}]}
+        monkeypatch.setattr(configuracion, "leerData", lambda _: {"teclado": True})
+        monkeypatch.setattr(configuracion, "ObtenerArchivo", lambda archivo: archivos.get(archivo))
+        monkeypatch.setattr(configuracion, "SalvarArchivo", lambda archivo, data: archivos.update({archivo: data}))
+        return archivos
+
+    @pytest.fixture(autouse=True)
+    def tecladosConectados(self, monkeypatch) -> None:
+        from elGarrobo.dispositivos.migui import agregar
+
+        async def escucharFalso(ruta, alPresionar):
+            if ruta == "/dev/b":
+                alPresionar(ruta, "KEY_A")  # el usuario presiona una tecla en el Moonlander
+
+        monkeypatch.setattr(MiTecladoMacro, "listarDisponibles", staticmethod(lambda: [("/dev/a", "DREVO"), ("/dev/b", "Moonlander")]))
+        monkeypatch.setattr(agregar, "escucharTeclado", escucharFalso)
+
+    async def test_agregar_elige_el_teclado_presionado(self, user: User, gui: miGui, archivos: dict):
+        nuevo = MagicMock()
+        nuevo.tieneFolder.return_value = False
+        gui.agregarDispositivo = MagicMock(return_value=nuevo)
+        await user.open("/dispositivos")
+
+        user.find(marker="agregar-teclado").click()
+        await user.should_see("Ya agregado")
+        await user.should_see("KEY_A")
+        user.find(marker="agregar-siguiente").click()
+        # Paso 2: se escucha solo el elegido y su tecla se ilumina en las miniaturas
+        tecla = next(iter(user.find(marker="mini-ingles_87k-KEY_A").elements))
+        await esperarQue(lambda: f"bg-{tema.colorActivo}" in tecla.classes)
+        user.find(marker="agregar-distribucion-ingles_87k").click()
+        user.find(marker="agregar-nombre").type("completo")
+        user.find(marker="agregar-guardar").click()
+        await user.should_see("Ya existe completo")
+        gui.agregarDispositivo.assert_not_called()
+
+        user.find(marker="agregar-nombre").clear().type("Moon Lander")
+        user.find(marker="agregar-guardar").click()
+        # Archivo por defecto teclado_<nombre>; pestaña al final (deck tiene ordenar 0)
+        data = {"nombre": "Moon Lander", "dispositivo": "/dev/b", "archivo": "teclado_moon_lander", "distribucion": "ingles_87k", "ordenar": -1}
+        assert archivos["teclados.md"][-1] == data
+        gui.agregarDispositivo.assert_called_once_with(MiTecladoMacro, data)
+        nuevo.crearFolder.assert_called_once_with("/")
+        await user.should_see("Moon Lander agregado y conectado")
+        await user.should_see(marker="quitar-Moon Lander")
+
+    async def test_archivo_sin_carpetas(self, user: User, gui: miGui, archivos: dict):
+        gui.agregarDispositivo = MagicMock()
+        await user.open("/dispositivos")
+        user.find(marker="agregar-teclado").click()
+        await user.should_see("KEY_A")
+        user.find(marker="agregar-siguiente").click()
+        user.find(marker="agregar-nombre").type("Moon")
+        user.find(marker="agregar-archivo").type("../fuera")
+        user.find(marker="agregar-guardar").click()
+        await user.should_see("Solo letras, números, - y _")
+        assert next(iter(user.find(kind=ui.expansion, content="Avanzado").elements)).value, "abre Avanzado para ver el error"
+        gui.agregarDispositivo.assert_not_called()
+
+    async def test_quitar_desconecta_y_borra_entrada(self, user: User, gui: miGui, archivos: dict):
+        gui.quitarDispositivo = MagicMock()
+        await user.open("/dispositivos")
+
+        user.find(marker="quitar-Completo").click()
+        clickEnDialogoAbierto(user, "Quitar")
+        assert archivos["teclados.md"] == []
+        gui.quitarDispositivo.assert_called_once_with("Completo")
+        await user.should_see("Completo quitado, su archivo de acciones se conserva")
+
+    async def test_recargar_muestra_distribucion_nueva(self, user: User, gui: miGui, archivos: dict, distribucionesUsuario: Path):
+        await user.open("/dispositivos")
+        user.find(marker="agregar-teclado").click()
+        await user.should_see("KEY_A")
+        user.find(marker="agregar-siguiente").click()
+        await user.should_see("¿No está tu teclado?")
+        assert distribucionesUsuario.is_dir(), "la carpeta existe para que el usuario la encuentre"
+
+        (distribucionesUsuario / "mia.json").write_text('[{"key": "KEY_A", "x": 0, "y": 0}]')
+        user.find(marker="recargar-distribuciones").click()
+        await user.should_see(marker="agregar-distribucion-mia")
+        user.find(marker="agregar-distribucion-mia").click()
+        user.find(marker="agregar-nombre").type("Moon")
+        gui.agregarDispositivo = MagicMock()
+        user.find(marker="agregar-guardar").click()
+        assert archivos["teclados.md"][-1]["distribucion"] == "mia"
+
+    async def test_siguiente_espera_elegir_teclado(self, user: User, gui: miGui, archivos: dict, monkeypatch):
+        from elGarrobo.dispositivos.migui import agregar
+
+        async def nadiePresiona(ruta, alPresionar):
+            pass
+
+        monkeypatch.setattr(agregar, "escucharTeclado", nadiePresiona)
+        await user.open("/dispositivos")
+        user.find(marker="agregar-teclado").click()
+        await user.should_see("Moonlander")
+        assert not next(iter(user.find(marker="agregar-siguiente").elements)).enabled
+        user.find(marker="teclado-/dev/b").click()
+        assert next(iter(user.find(marker="agregar-siguiente").elements)).enabled
+
+    async def test_tipo_apagado_no_deja_agregar(self, user: User, gui: miGui, archivos: dict, monkeypatch):
+        monkeypatch.setattr(configuracion, "leerData", lambda _: {"teclado": False})
+        await user.open("/dispositivos")
+        assert not next(iter(user.find(marker="agregar-teclado").elements)).enabled
+
+
+class TestOrdenPestañas:
+    async def test_bajar_guarda_ordenar_en_el_archivo_de_cada_tipo(self, user: User, monkeypatch):
+        archivos = {
+            "teclados.md": [{"nombre": "A", "ordenar": 5}, {"nombre": "B", "ordenar": 3}, {"nombre": "Apagado"}],
+            "pedal.md": [{"nombre": "P"}],
+        }
+        monkeypatch.setattr(configuracion, "leerData", lambda _: {})
+        monkeypatch.setattr(configuracion, "ObtenerArchivo", lambda archivo: archivos.get(archivo))
+        monkeypatch.setattr(configuracion, "SalvarArchivo", lambda archivo, data: archivos.update({archivo: data}))
+        gui = miGui({"nombre": "gui"})
+        a, b, p = MiTecladoMacro({"nombre": "A", "ordenar": 5}), MiTecladoMacro({"nombre": "B", "ordenar": 3}), MiPedal({"nombre": "P"})
+        gui.listaDispositivos = [p, b, a]
+        await user.open("/dispositivos")
+
+        assert not next(iter(user.find(marker="subir-A").elements)).enabled, "la primera no sube"
+        assert not next(iter(user.find(marker="bajar-P").elements)).enabled, "la última no baja"
+        user.find(marker="bajar-A").click()
+
+        assert [d.nombre for d in sorted(gui.listaDispositivos, key=lambda d: d.nivelOrdenar, reverse=True)] == ["B", "A", "P"]
+        assert archivos["teclados.md"] == [{"nombre": "A", "ordenar": 2}, {"nombre": "B", "ordenar": 3}, {"nombre": "Apagado"}]
+        assert archivos["pedal.md"] == [{"nombre": "P", "ordenar": 1}]
+        await esperarQue(lambda: not next(iter(user.find(marker="subir-B").elements)).enabled)  # redibujada con B primero

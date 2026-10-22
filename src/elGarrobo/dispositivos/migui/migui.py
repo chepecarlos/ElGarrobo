@@ -58,6 +58,10 @@ class miGui(dispositivo):
         self.folder: str = "?"
         self.listaClasesAcciones: dict = dict()
         self.salvarAcciones: callable = None
+        self.agregarDispositivo: callable = None
+        "elGarrobo.agregarDispositivo: crea y conecta un aparato sin reiniciar"
+        self.quitarDispositivo: callable = None
+        "elGarrobo.quitarDispositivo: desconecta un aparato por nombre"
         self.ejecutaEvento: callable = None
         self.pestañas: pestañasDispositivos = None
         self.teclasPresionadas: dict[int, dataAccion] = {}
@@ -143,7 +147,7 @@ class miGui(dispositivo):
             from elGarrobo.dispositivos import cargarDispositivos
 
             accionListaCheckBox.registrarCliente(ui.context.client)
-            configuracion.mostrarListaActivables("Dispositivos", "dispositivos", cargarDispositivos())
+            configuracion.mostrarListaActivables("Dispositivos", "dispositivos", cargarDispositivos(), self)
             self.estructura()
 
         @ui.page("/configurar")

@@ -9,17 +9,20 @@ from elGarrobo import servicio
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.migui import tema
+from elGarrobo.dispositivos.migui.agregar import dialogoAgregarTeclado
+from elGarrobo.dispositivos.migui.dialogos import dialogoPregunta
 from elGarrobo.dispositivos.migui.editores import encabezado, marcarError
 from elGarrobo.miLibrerias import ObtenerArchivo, SalvarArchivo, SalvarValor, leerData
 
 
-def mostrarListaActivables(titulo: str, archivo: str, listaClases: list) -> None:
+def mostrarListaActivables(titulo: str, archivo: str, listaClases: list, gui=None) -> None:
     """Lista módulos o dispositivos con un switch para activarlos/desactivarlos
 
     Args:
         titulo (str): Título de la página
         archivo (str): Archivo de configuración ("modulos" o "dispositivos")
         listaClases (list): Clases con atributos `modulo`, `nombre` y `descripcion`
+        gui (miGui): para agregar y quitar aparatos sin reiniciar; sin ella solo se editan
     """
     configuracion = leerData(archivo) or {}
 
@@ -40,9 +43,58 @@ def mostrarListaActivables(titulo: str, archivo: str, listaClases: list) -> None
                     ui.label(clase.descripcion).classes("text-caption")
             # En dispositivos archivoConfiguracion es una lista de aparatos, en módulos un dict de opciones
             if issubclass(clase, dispositivo) and clase.archivoConfiguracion:
-                mostrarAparatos(clase)
+                mostrarAparatos(clase, gui, interruptor)
             elif getattr(clase, "propiedades", None):
                 mostrarConfiguracionModulo(clase)
+    if gui is not None:
+        with ui.column().classes("p-4 gap-1 w-full max-w-xl"):
+            encabezado(ui.label("Orden de pestañas").classes("text-h6"), 3)
+            ui.label("Se aplica al volver a Acciones").classes("text-caption")
+            ordenPestañas(gui)
+
+
+def guardarOrden(dispositivos: list[dispositivo]) -> None:
+    """La primera pestaña recibe el ordenar más alto; se guarda en el archivo de cada tipo (teclados.md, pedal.md…)"""
+    for nivel, dispositivoActual in zip(range(len(dispositivos), 0, -1), dispositivos):
+        dispositivoActual.nivelOrdenar = nivel
+    for archivo in {type(d).archivoConfiguracion for d in dispositivos} - {""}:
+        aparatos = ObtenerArchivo(archivo)
+        if not isinstance(aparatos, list):
+            continue
+        niveles = {d.nombre: d.nivelOrdenar for d in dispositivos if type(d).archivoConfiguracion == archivo}
+        for data in aparatos:
+            if data.get("nombre") in niveles:
+                data["ordenar"] = niveles[data["nombre"]]
+        SalvarArchivo(archivo, aparatos)
+
+
+@ui.refreshable
+def ordenPestañas(gui) -> None:
+    """Dispositivos en el orden de sus pestañas con botones para subir y bajar; se guarda al mover"""
+    dispositivos = sorted(gui.listaDispositivos, key=lambda d: d.nivelOrdenar, reverse=True)
+
+    def mover(desde: int, hacia: int) -> None:
+        dispositivos[desde], dispositivos[hacia] = dispositivos[hacia], dispositivos[desde]
+        guardarOrden(dispositivos)
+        ordenPestañas.refresh()
+
+    for posición, dispositivoActual in enumerate(dispositivos):
+        nombre = dispositivoActual.nombre
+        with ui.row().classes(f"items-center w-full no-wrap border-b border-{tema.colorOscuro} py-1"):
+            ui.icon(dispositivoActual.icono)
+            ui.label(nombre).classes("font-bold grow")
+            ui.label(dispositivoActual.tipo).classes("text-caption")
+            for icono, texto, hacia, marca in (
+                ("arrow_upward", "Subir", posición - 1, "subir"),
+                ("arrow_downward", "Bajar", posición + 1, "bajar"),
+            ):
+                boton = ui.button(icon=icono, on_click=lambda p=posición, h=hacia: mover(p, h)).props("flat round dense")
+                boton.props["aria-label"] = f"{texto} {nombre}"
+                boton.mark(f"{marca}-{nombre}")
+                if not 0 <= hacia < len(dispositivos):
+                    # Invisible y no solo deshabilitada: apagada casi no se distingue, y así no cambia el ancho
+                    boton.disable()
+                    boton.classes("invisible")
 
 
 def mostrarConfigurar(nombreTema: str, cambiarTema) -> None:
@@ -179,16 +231,23 @@ def mostrarConfiguracionModulo(clase: type) -> None:
             guardarBoton.classes("m-2").mark(f"guardar-{clase.modulo}")
 
 
-def mostrarAparatos(clase: type[dispositivo]) -> None:
-    """Lista los aparatos de un tipo (ej. teclados.md) con un desplegable para editar nombre y orden"""
-    archivo = clase.archivoConfiguracion
-    aparatos = ObtenerArchivo(archivo) or []
 
-    def guardar(data: dict, nombre: ui.input, orden: ui.number, internos: list, desplegable: ui.expansion) -> None:
+
+def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch | None = None) -> None:
+    """Lista los aparatos de un tipo (ej. teclados.md) con un desplegable para editar el nombre
+
+    Las clases con listarDisponibles (teclados) además se pueden agregar y quitar sin reiniciar, si hay gui
+    """
+    archivo = clase.archivoConfiguracion
+    agregable = gui is not None and hasattr(clase, "listarDisponibles")
+
+    def guardar(data: dict, nombre: ui.input, internos: list, desplegable: ui.expansion) -> None:
+        aparatos = ObtenerArchivo(archivo) or []
+        nombreAnterior = data.get("nombre")
         nombreNuevo = (nombre.value or "").strip()
         error = None
         # elGarrobo busca dispositivos por nombre sin importar mayúsculas (ej. entrar_folder con 'dispositivo')
-        if any(otro is not data and str(otro.get("nombre")).lower() == nombreNuevo.lower() for otro in aparatos):
+        if any(otro.get("nombre") != nombreAnterior and str(otro.get("nombre")).lower() == nombreNuevo.lower() for otro in aparatos):
             error = f"Ya existe {nombreNuevo}"
         marcarError(nombre, "El nombre no puede quedar vacío" if not nombreNuevo else error)
         vacíos = [editor for _, editor in internos if not (editor.value or "").strip()]
@@ -197,23 +256,46 @@ def mostrarAparatos(clase: type[dispositivo]) -> None:
         if not nombreNuevo or error or vacíos:
             return
         data["nombre"] = nombreNuevo
-        data["ordenar"] = int(orden.value or 0)
         for dataInterno, editor in internos:
             dataInterno["nombre"] = editor.value.strip()
-        SalvarArchivo(archivo, aparatos)
+        # Se reemplaza su entrada en el archivo leído ahora, por si se agregó o quitó otro aparato desde que se dibujó
+        SalvarArchivo(archivo, [data if otro.get("nombre") == nombreAnterior else otro for otro in aparatos])
         desplegable.text = nombreNuevo
         ui.notify(f"{nombreNuevo} guardado. Reinicia ElGarrobo para aplicarlo", type="positive")
 
-    with ui.column().classes("w-full pl-12 gap-1"):
+    def agregar(data: dict) -> None:
+        # Pestaña al final: se ordenan de mayor a menor ordenar
+        data["ordenar"] = min((d.nivelOrdenar for d in gui.listaDispositivos), default=1) - 1
+        SalvarArchivo(archivo, (ObtenerArchivo(archivo) or []) + [data])
+        nuevo = gui.agregarDispositivo(clase, data)
+        if not nuevo.tieneFolder("/"):
+            nuevo.crearFolder("/")
+        ui.notify(f"{data['nombre']} agregado y conectado", type="positive")
+        lista.refresh()
+        ordenPestañas.refresh()
+
+    def quitar(nombre: str) -> None:
+        SalvarArchivo(archivo, [data for data in ObtenerArchivo(archivo) or [] if data.get("nombre") != nombre])
+        gui.quitarDispositivo(nombre)
+        ui.notify(f"{nombre} quitado, su archivo de acciones se conserva")
+        lista.refresh()
+        ordenPestañas.refresh()
+
+    def abrirAgregar() -> None:
+        aparatos = ObtenerArchivo(archivo) or []
+        nombres = {str(d.nombre).lower() for d in gui.listaDispositivos} | {str(a.get("nombre")).lower() for a in aparatos}
+        dialogoAgregar.abrir({a.get("dispositivo") for a in aparatos}, nombres)
+
+    @ui.refreshable
+    def lista() -> None:
+        aparatos = ObtenerArchivo(archivo) or []
         if not aparatos:
             ui.label(f"No hay aparatos en {archivo}").classes("text-caption")
         for data in aparatos:
             titulo, ruta = data.get("nombre", "Sin nombre"), data.get("dispositivo", "")
             with ui.expansion(titulo, caption=clase.nombreAparato(ruta), icon=clase.icono) as desplegable:
                 desplegable.classes(f"w-full border border-{tema.colorOscuro} rounded")
-                with ui.row().classes("items-start gap-4 p-2"):
-                    nombre = ui.input("Nombre", value=data.get("nombre", ""))
-                    orden = ui.number("Orden", value=data.get("ordenar", 0), precision=0).classes("w-24")
+                nombre = ui.input("Nombre", value=data.get("nombre", "")).classes("p-2")
                 # Aparatos dentro de otro, ej. los StreamDeck de deck_combinado.md (streamDecks / streamDecksPlus)
                 internos = [
                     interno
@@ -230,11 +312,33 @@ def mostrarAparatos(clase: type[dispositivo]) -> None:
                             etiqueta = f"Nombre · {interno.get('dispositivo', '')}"
                             editor = ui.input(etiqueta, value=interno["nombre"])
                             editoresInternos.append((interno, editor))
-                ui.button(
-                    "Guardar",
-                    icon="save",
-                    color=tema.colorOscuro,
-                    on_click=lambda d=data, n=nombre, o=orden, i=editoresInternos, e=desplegable: guardar(
-                        d, n, o, i, e
-                    ),
-                ).classes("m-2")
+                with ui.row().classes("m-2"):
+                    ui.button(
+                        "Guardar",
+                        icon="save",
+                        color=tema.colorOscuro,
+                        on_click=lambda d=data, n=nombre, i=editoresInternos, e=desplegable: guardar(d, n, i, e),
+                    )
+                    if agregable:
+                        quitarBoton = ui.button(
+                            "Quitar",
+                            icon="delete",
+                            color=tema.colorPeligro,
+                            on_click=lambda t=titulo: pregunta.preguntar(
+                                f"¿Quitar {t}? Se desconecta y su archivo de acciones se conserva", "Quitar", lambda: quitar(t)
+                            ),
+                        )
+                        quitarBoton.props("flat").mark(f"quitar-{titulo}")
+
+    if agregable:
+        dialogoAgregar = dialogoAgregarTeclado(agregar)
+        pregunta = dialogoPregunta()
+    with ui.column().classes("w-full pl-12 gap-1"):
+        lista()
+        if agregable:
+            boton = ui.button(f"Agregar {clase.tipo}", icon="add", color=tema.colorOscuro, on_click=abrirAgregar)
+            boton.mark(f"agregar-{clase.modulo}")
+            if interruptor is not None:
+                # Con el tipo apagado ElGarrobo no carga sus aparatos: no tiene sentido conectar uno suelto
+                boton.bind_enabled_from(interruptor, "value")
+                boton.tooltip(f"Activa {clase.nombre} para agregar")

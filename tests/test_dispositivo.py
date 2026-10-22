@@ -46,3 +46,19 @@ def test_gui_se_avisa_con_el_folder_ya_cambiado(monkeypatch, tmp_path):
     combinado.cargarAccionesFolder("/")
 
     assert vistos == [(".", "Raiz"), ("sub", "Sub"), (".", "Raiz")]
+
+
+def test_agregar_y_quitar_dispositivo_en_caliente():
+    from types import SimpleNamespace
+
+    from elGarrobo.elGarrobo import elGarrobo
+
+    garrobo = SimpleNamespace(listaDispositivos=[], iniciarDispositivo=MagicMock())
+    nuevo = elGarrobo.agregarDispositivo(garrobo, dispositivo, {"nombre": "Moon", "dispositivo": "/dev/b"})
+    garrobo.iniciarDispositivo.assert_called_once_with(nuevo)
+    assert garrobo.listaDispositivos == [nuevo] and nuevo.dispositivo == "/dev/b"
+
+    nuevo.desconectar = MagicMock()
+    elGarrobo.quitarDispositivo(garrobo, "Moon")
+    nuevo.desconectar.assert_called_once()
+    assert garrobo.listaDispositivos == []
