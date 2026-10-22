@@ -48,16 +48,17 @@ def ayudaDistribuciones(alRecargar=None) -> None:
     folder = folderDistribucionesUsuario()
     folder.mkdir(parents=True, exist_ok=True)  # que exista cuando el usuario la busque
     with ui.row().classes("w-full items-start no-wrap gap-2"):
-        ui.icon("help_outline").classes("texto-acento mt-1")
-        # html y no markdown: el enlace debe abrir otra pestaña, no sacar al usuario de la GUI
-        ui.html(
-            "<b>¿No está tu teclado?</b> Dibújalo en "
-            '<a href="https://www.keyboard-layout-editor.com" target="_blank" rel="noopener" class="texto-acento">'
-            "keyboard-layout-editor.com</a>, descárgalo con <i>Download JSON</i> y guárdalo en "
-            f"<code>{html.escape(str(folder))}</code>. Las teclas se reconocen por su texto (Q, F1, Shift…); "
-            "en las especiales escribe el código que aparece al presionarlas, ej. <code>KEY_F13</code>.",
-            sanitize=False,
-        ).classes("text-caption grow")
+        # Cerrada: la explicación es larga y solo la necesita quien no encuentra su distribución
+        with ui.expansion("¿No está tu teclado?", icon="help_outline").classes("grow text-caption").props("dense"):
+            # html y no markdown: el enlace debe abrir otra pestaña, no sacar al usuario de la GUI
+            ui.html(
+                "Dibújalo en "
+                '<a href="https://www.keyboard-layout-editor.com" target="_blank" rel="noopener" class="texto-acento">'
+                "keyboard-layout-editor.com</a>, descárgalo con <i>Download JSON</i> y guárdalo en "
+                f"<code>{html.escape(str(folder))}</code>. Las teclas se reconocen por su texto (Q, F1, Shift…); "
+                "en las especiales escribe el código que aparece al presionarlas, ej. <code>KEY_F13</code>.",
+                sanitize=False,
+            ).classes("text-caption px-4 pb-2")
         if alRecargar:
             boton = ui.button(icon="refresh", on_click=alRecargar).props("flat round dense")
             boton.props["aria-label"] = "Recargar distribuciones"
