@@ -63,8 +63,9 @@ def mostrarListaActivables(titulo: str, archivo: str, listaClases: list, aviso: 
         marcarPendiente(gui, f"{archivo}.{clave}", f"{nombre} {'activado' if valor else 'apagado'}")
         ui.notify(f"{nombre} se {'activará' if valor else 'apagará'} al reiniciar ElGarrobo")
 
-    # Ancho de lectura: a todo el ancho el chevron de los desplegables quedaba a 1300px del nombre
-    with ui.column().classes("w-full max-w-3xl gap-0"):
+    # Ancho de lectura: a todo el ancho el chevron de los desplegables quedaba a 1300px del nombre.
+    # Centrado: pegado a la izquierda dejaba media pantalla vacía a la derecha
+    with ui.column().classes("w-full max-w-3xl mx-auto gap-0"):
         encabezado(ui.label(titulo).classes("text-h5 p-4"), 2)
         ui.label(aviso).classes("text-body2 px-4")
         with ui.column().classes("p-4 gap-4 w-full"):
