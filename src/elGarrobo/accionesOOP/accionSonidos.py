@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import logging
+import os
 import threading
 import time
 from pathlib import Path
 
 import numpy as np
-import sounddevice as sd
+
+# Sin esto PortAudio abre un cliente JACK (pipewire-jack) permanente con
+# lock-quantum y always-process que hace resincronizar la Scarlett. Se usa ALSA.
+os.environ.setdefault("PIPEWIRE_NOJACK", "1")
+import sounddevice as sd  # noqa: E402
 import soundfile as sf
 
 from elGarrobo.accionesOOP.accion import accion, propiedadAccion
@@ -33,6 +38,8 @@ class miReproductor:
             samplerate=self.samplerate,
             channels=self.channels,
             dtype="float32",
+            # Búfer grande: un efecto de sonido no necesita baja latencia y así no baja el quantum de PipeWire
+            latency="high",
             callback=self._callback,
         )
 
