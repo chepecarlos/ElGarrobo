@@ -78,8 +78,6 @@ class dispositivo:
     recargar: bool = True
     "Es necesario actualizar la imagen o titulo"
 
-    listaIndexUsados: list = list()
-
     def __init__(self, dataConfiguración: dict = None) -> None:
         """Inicializa un dispositivo base.
 
@@ -433,10 +431,6 @@ class dispositivo:
                 - fuerza:  Multiplicador de intensidad (por defecto 1).
         """
         self.ejecutarAcción = funcionAccion
-
-    @staticmethod
-    def agregarIndexUsado(indexUsado: int):
-        dispositivo.listaIndexUsados.append(indexUsado)
 
     def actualizar(self) -> None:
         """Actualiza la imagen del dispositivo"""

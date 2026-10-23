@@ -21,6 +21,25 @@ from elGarrobo.miLibrerias import ConfigurarLogging, SalvarArchivo
 logger = ConfigurarLogging(__name__)
 
 
+def listarStreamDecks(compatibles: list[str]) -> list[tuple[str, str]]:
+    """(serial, modelo) de los StreamDeck conectados de esos modelos (ej. "Stream Deck Pedal")
+
+    ponytail: los que ya tiene abiertos ElGarrobo u otro programa fallan al abrir y no salen;
+    ya están en su archivo, así que no hacen falta para agregar
+    """
+    disponibles = []
+    for deck in DeviceManager().enumerate():
+        if deck.DECK_TYPE not in compatibles:
+            continue
+        try:
+            deck.open()
+            disponibles.append((deck.get_serial_number(), deck.DECK_TYPE))
+            deck.close()
+        except TransportError:
+            pass
+    return disponibles
+
+
 # TODO: si re recarga folder borrar _gifCache
 class MiStreamDeck(dispositivo):
 

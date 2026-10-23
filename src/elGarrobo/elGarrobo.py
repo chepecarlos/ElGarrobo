@@ -131,6 +131,9 @@ class elGarrobo(object):
     def agregarDispositivo(self, claseDispositivo: type[dispositivo], dataConfiguracion: dict) -> dispositivo:
         """Crea, conecta y agrega un dispositivo sin reiniciar (ej. un teclado agregado desde la GUI)"""
         nuevo = claseDispositivo(dataConfiguracion)
+        if nuevo.tipo == "mqtt":
+            # Para suscribirse a los títulos MQTT de las acciones de todos los dispositivos
+            nuevo.listaDispositivos = self.listaDispositivos
         self.iniciarDispositivo(nuevo)
         # ponytail: sin lock, otros hilos recorren la lista; append no rompe un for en curso
         self.listaDispositivos.append(nuevo)

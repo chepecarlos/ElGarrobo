@@ -1,6 +1,6 @@
 """Editores de propiedades: crea el campo según el tipo, pone y lee su valor y marca errores
 
-Los usan el formulario de acciones, los pasos de macro y la configuración de módulos
+Los usan el formulario de acciones, los pasos de macro y la configuración de módulos y dispositivos
 """
 
 import logging
@@ -154,3 +154,43 @@ def cargarOpciones(editores: dict[str, ui.element], claseAcción: type[accion], 
         for propiedad in objetoClase.listaPropiedades:
             if propiedad.atributo in opciones:
                 ponerValor(editores.get(propiedad.nombre), opciones[propiedad.atributo])
+
+
+def campoPropiedad(contenedor: dict, propiedad: propiedadAccion, marca: str, editores: list) -> ui.element:
+    """Campo según el tipo de la propiedad; lo escrito se guarda en `contenedor` al momento y vacío quita la clave
+
+    Un atributo con punto va dentro de un dict del archivo, ej. "control.topic" en mqtt.md
+    """
+    *ruta, atributo = propiedad.atributo.split(".")
+    for parte in ruta:
+        contenedor = contenedor.setdefault(parte, {})
+    valor = contenedor.get(atributo, propiedad.defecto)
+    if bool in propiedad.tipo:
+        editor = ui.switch(propiedad.nombre, value=bool(valor))
+    elif int in propiedad.tipo or float in propiedad.tipo:
+        valor = valor if isinstance(valor, (int, float)) else None
+        editor = ui.number(propiedad.nombre, value=valor, precision=0 if int in propiedad.tipo else None)
+    else:
+        secreto = atributo in ("token", "clave", "password", "contrasenna")
+        texto = "" if valor is None else str(valor)
+        editor = ui.input(
+            propiedad.nombre,
+            value=texto,
+            placeholder=propiedad.ejemplo,
+            password=secreto,
+            password_toggle_button=secreto,
+        )
+    if propiedad.descripcion:
+        editor.tooltip(propiedad.descripcion)
+    editor.mark(f"config-{marca}-{propiedad.atributo}")
+
+    def actualizar(evento, contenedor=contenedor, propiedad=propiedad, atributo=atributo) -> None:
+        # Se guarda al escribir para que agregar o quitar elementos (refresh) no pierda lo editado
+        if evento.value in (None, ""):
+            contenedor.pop(atributo, None)
+        else:
+            contenedor[atributo] = int(evento.value) if int in propiedad.tipo else evento.value
+
+    editor.on_value_change(actualizar)
+    editores.append((propiedad, editor))
+    return editor

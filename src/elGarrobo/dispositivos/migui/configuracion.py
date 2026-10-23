@@ -11,10 +11,10 @@ from elGarrobo import servicio
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.migui import tema
-from elGarrobo.dispositivos.migui.agregar import dialogoAgregarTeclado
+from elGarrobo.dispositivos.migui.agregar import dialogoAgregar
 from elGarrobo.dispositivos.migui.dialogos import dialogoPregunta
 from elGarrobo.dispositivos.migui.distribucion import dialogoDistribucion, miniatura
-from elGarrobo.dispositivos.migui.editores import encabezado, marcarError
+from elGarrobo.dispositivos.migui.editores import campoPropiedad, encabezado, marcarError
 from elGarrobo.miLibrerias import ObtenerArchivo, ObtenerFolderConfig, SalvarArchivo, SalvarValor, leerData
 
 
@@ -87,8 +87,14 @@ def mostrarListaActivables(titulo: str, archivo: str, listaClases: list, aviso: 
                                 if gui is not None:
                                     pendiente = ui.badge("Pendiente de reinicio", color=tema.colorPendiente, text_color="black")
                                     pendiente.mark(f"pendiente-{clase.modulo}")
-                                    clave = f"{archivo}.{clase.modulo}"
-                                    pendiente.bind_visibility_from(gui, "pendientesReinicio", backward=lambda p, c=clave: c in p)
+                                    # También por sus aparatos u opciones editados (claves "<archivo>:..." y "<archivo>"):
+                                    # sus desplegables no tienen lugar para la etiqueta y así se sabe qué tipo espera
+                                    claves = (f"{archivo}.{clase.modulo}", getattr(clase, "archivoConfiguracion", None) or "-")
+                                    pendiente.bind_visibility_from(
+                                        gui,
+                                        "pendientesReinicio",
+                                        backward=lambda p, c=claves: any(k in (c[0], c[1]) or k.startswith(f"{c[1]}:") for k in p),
+                                    )
                             ui.label(clase.descripcion).classes("text-caption")
                     # En dispositivos archivoConfiguracion es una lista de aparatos, en módulos un dict de opciones
                     if issubclass(clase, dispositivo) and clase.archivoConfiguracion:
@@ -209,40 +215,6 @@ def mostrarConfigurar(nombreTema: str, cambiarTema) -> None:
                 ui.label("Automático sigue el tema claro u oscuro de la PC o el celular").classes("text-caption")
 
 
-def campoPropiedad(contenedor: dict, propiedad: propiedadAccion, marca: str, editores: list) -> ui.element:
-    """Campo según el tipo de la propiedad; lo escrito se guarda en `contenedor` al momento y vacío quita la clave"""
-    valor = contenedor.get(propiedad.atributo, propiedad.defecto)
-    if bool in propiedad.tipo:
-        editor = ui.switch(propiedad.nombre, value=bool(valor))
-    elif int in propiedad.tipo or float in propiedad.tipo:
-        valor = valor if isinstance(valor, (int, float)) else None
-        editor = ui.number(propiedad.nombre, value=valor, precision=0 if int in propiedad.tipo else None)
-    else:
-        secreto = propiedad.atributo in ("token", "clave", "password")
-        texto = "" if valor is None else str(valor)
-        editor = ui.input(
-            propiedad.nombre,
-            value=texto,
-            placeholder=propiedad.ejemplo,
-            password=secreto,
-            password_toggle_button=secreto,
-        )
-    if propiedad.descripcion:
-        editor.tooltip(propiedad.descripcion)
-    editor.mark(f"config-{marca}-{propiedad.atributo}")
-
-    def actualizar(evento, contenedor=contenedor, propiedad=propiedad) -> None:
-        # Se guarda al escribir para que agregar o quitar elementos (refresh) no pierda lo editado
-        if evento.value in (None, ""):
-            contenedor.pop(propiedad.atributo, None)
-        else:
-            contenedor[propiedad.atributo] = int(evento.value) if int in propiedad.tipo else evento.value
-
-    editor.on_value_change(actualizar)
-    editores.append((propiedad, editor))
-    return editor
-
-
 def mostrarConfiguracionModulo(clase: type, gui=None) -> None:
     """Desplegable para editar la configuración de un módulo (ej. modulos/estado_octoprint.md)
 
@@ -323,10 +295,16 @@ def mostrarConfiguracionModulo(clase: type, gui=None) -> None:
 def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch | None = None) -> None:
     """Lista los aparatos de un tipo (ej. teclados.md) con un desplegable para editar el nombre
 
-    Las clases con listarDisponibles (teclados) además se pueden agregar y quitar sin reiniciar, si hay gui
+    Las clases con listarDisponibles (teclados, pedal) además se pueden agregar y quitar sin reiniciar, si hay gui.
+    Las de grupos (StreamDeck, con listaDeModelo) crean grupos vacíos y adentro se agregan, ordenan y quitan
+    los StreamDeck; cada cambio reconecta solo ese grupo
     """
     archivo = clase.archivoConfiguracion
-    agregable = gui is not None and hasattr(clase, "listarDisponibles")
+    # Sin aparato que buscar (MQTT) se agrega llenando sus propiedadesAparato
+    agregable = gui is not None and (hasattr(clase, "listarDisponibles") or bool(clase.propiedadesAparato))
+    conGrupos = hasattr(clase, "listaDeModelo")
+    abierto: dict = {}
+    "Grupo que se acaba de crear o cambiar (se dibuja abierto) y botón que tenía el foco, el refresh los recrea"
 
     def guardar(data: dict, nombre: ui.input, internos: list, desplegable: ui.expansion) -> None:
         aparatos = ObtenerArchivo(archivo) or []
@@ -362,10 +340,44 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
         data["ordenar"] = min((d.nivelOrdenar for d in gui.listaDispositivos), default=1) - 1
         SalvarArchivo(archivo, (ObtenerArchivo(archivo) or []) + [data])
         nuevo = gui.agregarDispositivo(clase, data)
-        if not nuevo.tieneFolder("/"):
+        # MQTT no tiene archivo de acciones: las recibe por su topic de control
+        if data.get("archivo") and not nuevo.tieneFolder("/"):
             nuevo.crearFolder("/")
-        ui.notify(f"{data['nombre']} agregado y conectado; asigna sus teclas en su pestaña de Acciones", type="positive")
+        if conGrupos:
+            abierto.update(grupo=data["nombre"], marca=None)
+            ui.notify(f"Grupo {data['nombre']} creado; agrega sus StreamDeck", type="positive")
+        else:
+            ui.notify(f"{data['nombre']} agregado y conectado; asigna sus teclas en su pestaña de Acciones", type="positive")
         lista.refresh()
+
+    def reconectarGrupo(data: dict, aviso: str, marca: str | None = None) -> None:
+        """Guarda el grupo y lo vuelve a conectar con sus StreamDeck, así el cambio se aplica sin reiniciar"""
+        SalvarArchivo(archivo, [data if otro.get("nombre") == data["nombre"] else otro for otro in ObtenerArchivo(archivo) or []])
+        gui.quitarDispositivo(data["nombre"])
+        gui.agregarDispositivo(clase, data)
+        abierto.update(grupo=data["nombre"], marca=marca)
+        ui.notify(aviso, type="positive")
+        lista.refresh()
+
+    def moverDeck(data: dict, decks: list, desde: int, hacia: int, marca: str) -> None:
+        decks[desde], decks[hacia] = decks[hacia], decks[desde]
+        reconectarGrupo(data, f"{decks[hacia]['nombre']}: posición {hacia + 1} de {len(decks)}", marca)
+
+    def quitarDeck(data: dict, decks: list, posición: int) -> None:
+        quitado = decks.pop(posición)
+        reconectarGrupo(data, f"{quitado['nombre']} quitado de {data['nombre']}")
+
+    def abrirAgregarDeck(data: dict) -> None:
+        def alGuardar(nuevo: dict) -> None:
+            modelo = asistenteDeck.disponibles.get(nuevo["dispositivo"], "")
+            data.setdefault(clase.listaDeModelo(modelo), []).append(nuevo)
+            reconectarGrupo(data, f"{nuevo['nombre']} agregado a {data['nombre']}")
+
+        grupos = ObtenerArchivo(archivo) or []
+        decks = [d for grupo in grupos for valor in grupo.values() if isinstance(valor, list) for d in valor if isinstance(d, dict)]
+        nombres = {str(d.nombre).lower() for d in gui.listaDispositivos} | {str(a.get("nombre")).lower() for a in grupos + decks}
+        asistenteDeck.alGuardar = alGuardar
+        asistenteDeck.abrir({d.get("dispositivo") for d in decks}, nombres)
 
     def quitar(nombre: str) -> None:
         SalvarArchivo(archivo, [data for data in ObtenerArchivo(archivo) or [] if data.get("nombre") != nombre])
@@ -413,7 +425,7 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
     def abrirAgregar() -> None:
         aparatos = ObtenerArchivo(archivo) or []
         nombres = {str(d.nombre).lower() for d in gui.listaDispositivos} | {str(a.get("nombre")).lower() for a in aparatos}
-        dialogoAgregar.abrir({a.get("dispositivo") for a in aparatos}, nombres)
+        asistente.abrir({a.get("dispositivo") for a in aparatos}, nombres)
 
     @ui.refreshable
     def lista() -> None:
@@ -424,16 +436,21 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
                 ui.icon(clase.icono, size="sm").classes("opacity-60")
                 with ui.column().classes("gap-0 min-w-0"):
                     ui.label(f"Aún no hay ningún {clase.nombre}")
-                    if agregable:
-                        como = f"Conecta uno y presiona Agregar {clase.tipo}"
+                    if agregable and conGrupos:
+                        como = "Presiona Agregar grupo y luego agrega sus StreamDeck"
+                    elif agregable and hasattr(clase, "listarDisponibles"):
+                        como = f"Conecta uno y presiona {textoAgregar}"
+                    elif agregable:
+                        como = f"Presiona {textoAgregar}"
                     else:
-                        # ponytail: pedal, StreamDeck y MQTT todavía no tienen asistente; agregarlo es otra mejora
+                        # Sin gui no se puede conectar al momento
                         ruta = str(Path(ObtenerFolderConfig(), archivo)).replace(str(Path.home()), "~", 1)
                         como = f"Por ahora se agrega a mano en {ruta}"
                     ui.label(como).classes("text-caption break-words")
         for data in aparatos:
             titulo, ruta = data.get("nombre", "Sin nombre"), data.get("dispositivo", "")
-            with ui.expansion(titulo, caption=clase.nombreAparato(ruta), icon=clase.icono) as desplegable:
+            caption = "Grupo de StreamDeck" if conGrupos else clase.nombreAparato(ruta)
+            with ui.expansion(titulo, caption=caption, icon=clase.icono, value=abierto.get("grupo") == titulo) as desplegable:
                 desplegable.classes("w-full").props(DESPLEGABLE_LIGERO)
                 nombre = ui.input("Nombre", value=data.get("nombre", "")).classes("p-2")
                 if conDistribucion:
@@ -447,20 +464,28 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
                         editor.on_value_change(lambda _, d=data, n=nota: n.set_text(clase.notaAparato(d)))
                 # Aparatos dentro de otro, ej. los StreamDeck de deck_combinado.md (streamDecks / streamDecksPlus)
                 internos = [
-                    interno
+                    (valor, posición, interno)
                     for valor in data.values()
                     if isinstance(valor, list)
-                    for interno in valor
+                    for posición, interno in enumerate(valor)
                     if isinstance(interno, dict) and "nombre" in interno
                 ]
                 editoresInternos = []
+                ordenable = conGrupos and agregable
                 if internos:
-                    ui.label("Aparatos internos").classes("text-caption px-2")
-                    with ui.row().classes("items-start gap-4 px-2"):
-                        for interno in internos:
-                            etiqueta = f"Nombre · {interno.get('dispositivo', '')}"
-                            editor = ui.input(etiqueta, value=interno["nombre"])
-                            editoresInternos.append((interno, editor))
+                    ui.label("StreamDeck del grupo, en el orden de sus teclas" if conGrupos else "Aparatos internos").classes("text-caption px-2")
+                for decks, posición, interno in internos:
+                    with ui.row().classes("items-center gap-1 px-2 no-wrap w-full max-w-md"):
+                        etiqueta = f"Nombre · {interno.get('dispositivo', '')}"
+                        editor = ui.input(etiqueta, value=interno["nombre"]).classes("grow")
+                        editoresInternos.append((interno, editor))
+                        if ordenable:
+                            botonesDeck(data, decks, posición, interno["nombre"])
+                if ordenable:
+                    if not internos:
+                        ui.label("Grupo vacío: agrega el primer StreamDeck").classes("text-caption px-2")
+                    botonDeck = ui.button("Agregar StreamDeck", icon="add", on_click=lambda d=data: abrirAgregarDeck(d))
+                    botonDeck.props("flat no-caps").classes("mx-2").mark(f"agregarDeck-{titulo}")
                 with ui.row().classes("m-2"):
                     ui.button(
                         "Guardar",
@@ -480,16 +505,51 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
                         quitarBoton.props("flat").mark(f"quitar-{titulo}")
 
     conDistribucion = hasattr(clase, "cambiarDistribucion")
+    if conGrupos:
+        textoAgregar = "Agregar grupo"
+    elif hasattr(clase, "listarDisponibles"):
+        textoAgregar = f"Agregar {clase.tipo}"
+    else:
+        textoAgregar = f"Agregar {clase.nombre}"
     if conDistribucion:
         dialogoDistribuciones = dialogoDistribucion(None)
+    def botonesDeck(data: dict, decks: list, posición: int, nombre: str) -> None:
+        """Subir, bajar y quitar un StreamDeck del grupo; el orden es el de sus teclas"""
+        # ponytail: los Plus van en su propia lista y siempre después de los normales, solo se ordenan entre ellos
+        for icono, texto, hacia, marca in (("arrow_upward", "Subir", posición - 1, "subir"), ("arrow_downward", "Bajar", posición + 1, "bajar")):
+            marca = f"{marca}-{nombre}"
+            boton = ui.button(icon=icono, on_click=lambda h=hacia, m=marca: moverDeck(data, decks, posición, h, m))
+            boton.props("flat round dense").mark(marca)
+            boton.props["aria-label"] = f"{texto} {nombre}"
+            if not 0 <= hacia < len(decks):
+                # Invisible y no solo deshabilitado, como en Ordenar pestañas: así no cambia el ancho
+                boton.disable()
+                boton.classes("invisible")
+            elif abierto.get("marca") == marca:
+                # El refresh recrea el botón: se le devuelve el foco para seguir moviendo con el teclado
+                ui.run_javascript(f"setTimeout(() => getHtmlElement({boton.id})?.focus(), 50)")
+        quitarBoton = ui.button(
+            icon="delete",
+            color=tema.colorPeligro,
+            on_click=lambda: pregunta.preguntar(f"¿Quitar {nombre} de {data['nombre']}?", "Quitar", lambda: quitarDeck(data, decks, posición)),
+        )
+        quitarBoton.props("flat round dense").mark(f"quitarDeck-{nombre}")
+        quitarBoton.props["aria-label"] = f"Quitar {nombre}"
+
     if agregable:
-        dialogoAgregar = dialogoAgregarTeclado(agregar)
+        if conGrupos:
+            asistente = dialogoAgregar("Nuevo grupo de StreamDeck", agregar, prefijoArchivo="streamdeck")
+            asistenteDeck = dialogoAgregar("Agregar StreamDeck", None, clase.listarDisponibles)
+        elif hasattr(clase, "listarDisponibles"):
+            asistente = dialogoAgregar(textoAgregar, agregar, clase.listarDisponibles, clase.tipo, conDistribucion)
+        else:
+            asistente = dialogoAgregar(textoAgregar, agregar, propiedades=clase.propiedadesAparato)
         pregunta = dialogoPregunta()
     with ui.column().classes(f"{CONTENIDO_TIPO} gap-2"):
         lista()
         if agregable:
             with ui.row().classes("items-center gap-x-3 gap-y-1"):
-                boton = ui.button(f"Agregar {clase.tipo}", icon="add", color=tema.colorOscuro, on_click=abrirAgregar)
+                boton = ui.button(textoAgregar, icon="add", color=tema.colorOscuro, on_click=abrirAgregar)
                 boton.mark(f"agregar-{clase.modulo}")
                 if interruptor is not None:
                     # Con el tipo apagado ElGarrobo no carga sus aparatos: no tiene sentido conectar uno suelto.

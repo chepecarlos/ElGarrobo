@@ -4,6 +4,7 @@ from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Transport.Transport import TransportError
 
 from elGarrobo.dispositivos.dispositivo import dispositivo, grupoBotones
+from elGarrobo.dispositivos.mideck.mi_streamdeck import listarStreamDecks
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 logger = ConfigurarLogging(__name__)
@@ -20,7 +21,6 @@ class MiPedal(dispositivo):
     archivoConfiguracion = "pedal.md"
     icono = "touch_app"
     deck: DeviceManager = None
-    idDeck: int = -1
     cantidad: int = 3
     "Cantidad de pedales"
     desfaseTeclas: int = 0
@@ -40,45 +40,36 @@ class MiPedal(dispositivo):
         self.id = dataConfiguracion.get("id", "")
         self.conectado: bool = False
 
+    @staticmethod
+    def listarDisponibles() -> list[tuple[str, str]]:
+        """(serial, modelo) de los pedales conectados"""
+        return listarStreamDecks(MiPedal.compatibles)
+
     def conectar(self) -> None:
-        streamdecks = DeviceManager().enumerate()
-
-        listaIdUsados = dispositivo.listaIndexUsados
-
-        for idActual, deck in enumerate(streamdecks):
-
+        # ponytail: se prueban todos los compatibles por serial, como MiStreamDeck; los que ya usa otro
+        # fallan al abrir y se saltan
+        for deck in DeviceManager().enumerate():
             if deck.DECK_TYPE not in self.compatibles:
                 continue
-
-            idProbar = True
-            for idUsado in listaIdUsados:
-                if idActual == idUsado:
-                    idProbar = False
-
-            if idProbar:
-                try:
-                    self.deck = deck
-                    self.deck.open()
-                    self.deck.reset()
-                    if self.deck.get_serial_number() == self.dispositivo and self.deck.deck_type() == "Stream Deck Pedal":
-                        self.conectado = True
-                        self.cantidad = self.deck.key_count()
-                        self.deck.set_key_callback(self.actualizarBoton)
-                        self.idDeck = idActual
-                        dispositivo.agregarIndexUsado(self.idDeck)
-                        return
-                    else:
-                        self.deck.close()
-                except TransportError as error:
-                    self.conectado = False
-                    self.deck = None
-                    logger.exception(f"Error 1 {error}")
-                    logger.error(f"Error 1 {error}")
-                except Exception as error:
-                    self.conectado = False
-                    self.deck = None
-                    logger.exception(f"Error 2 {error}")
-                    logger.error(f"Error 2 {error}")
+            try:
+                deck.open()
+                if deck.get_serial_number() != self.dispositivo:
+                    deck.close()
+                    continue
+                # reset después del serial, si no reinicia otro pedal
+                deck.reset()
+                self.deck = deck
+                self.conectado = True
+                self.cantidad = deck.key_count()
+                deck.set_key_callback(self.actualizarBoton)
+                return
+            except TransportError:
+                continue
+            except Exception as error:
+                self.conectado = False
+                self.deck = None
+                logger.exception(f"Pedal[Error] {self.nombre}: {error}")
+        logger.warning(f"Pedal[No encontrado] {self.nombre}[{self.dispositivo}]")
 
     def actualizarBoton(self, Deck, Key: int, Estado: bool):
         if Estado:

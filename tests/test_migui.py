@@ -19,6 +19,7 @@ from elGarrobo.accionesOOP import cargarClasesAcciones
 from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.mideck.mi_deck_combinado import MiDeckCombinado
+from elGarrobo.dispositivos.mimqtt.mi_mqtt import MiMQTT
 from elGarrobo.dispositivos.mipedal.mi_pedal import MiPedal
 from elGarrobo.dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro, folderDistribuciones
 from elGarrobo.dispositivos.migui import migui as moduloMiGui
@@ -488,6 +489,12 @@ class TestMenu:
         clickEnDialogoAbierto(user, item)
         gui.ejecutarAccionSistema.assert_called_once_with(comando)
 
+    async def test_reiniciar_sin_pendientes_no_lista(self, user: User, gui: miGui):
+        await user.open("/")
+        user.find(marker="menu-Reiniciar").click()
+        await user.should_see("¿Reiniciar ElGarrobo?")
+        await user.should_not_see(marker="reiniciar-pendientes")
+
     async def test_cancelar_no_ejecuta(self, user: User, gui: miGui):
         gui.ejecutarAccionSistema = MagicMock()
         await user.open("/")
@@ -583,7 +590,10 @@ class TestActivables:
 
         await user.open("/")
         user.find(marker="reiniciar-pendiente").click()
-        clickEnDialogoAbierto(user, "Reiniciar")
+        # El diálogo dice qué se aplica: el tooltip del botón no se ve en celular ni con teclado
+        await user.should_see(marker="reiniciar-pendientes")
+        await user.should_see(f"{next(iter(gui.pendientesReinicio.values()))}")
+        clickEnDialogoAbierto(user, "Reiniciar ahora")
         gui.ejecutarAccionSistema.assert_called_once_with("reiniciar_app")
 
     async def test_la_gui_no_se_apaga_desde_dispositivos(self, user: User, gui: miGui, monkeypatch):
@@ -626,6 +636,7 @@ class TestConfiguracionModulos:
 
         await user.should_see("guardado; se aplica al reiniciar ElGarrobo")
         await user.should_see(marker="reiniciar-pendiente")
+        await user.should_see(marker="pendiente-estado_pc"), "la etiqueta del módulo también marca sus opciones"
         assert gui.pendientesReinicio == {"modulos/estado_pc.md": "opciones de estadoPc"}
         assert archivos["modulos/estado_pc.md"] == {"nombre_pc": "ryuk"}
 
@@ -1427,13 +1438,15 @@ class TestAgregarTeclado:
 
         user.find(kind=ui.button, content="Guardar").click()
         assert archivos["teclados.md"][0]["distribucion"] == "ingles_87k", "Guardar no regresa la anterior"
+        await user.should_see(marker="pendiente-teclado"), "el tipo marca al aparato editado que espera reinicio"
 
     async def test_estados_vacios_dicen_como_agregar(self, user: User, gui: miGui, archivos: dict, monkeypatch):
         monkeypatch.setattr(configuracion, "leerData", lambda _: {"teclado": False})
         await user.open("/dispositivos")
         await user.should_see("Aún no hay ningún Pedal StreamDeck")
-        await user.should_see("Por ahora se agrega a mano en")
-        await user.should_see("pedal.md")
+        await user.should_see("Conecta uno y presiona Agregar pedal")
+        await user.should_see("Presiona Agregar Servidor MQTT")
+        await user.should_see("Presiona Agregar grupo y luego agrega sus StreamDeck")
         await user.should_not_see("No hay aparatos")
         # Tipo apagado: el motivo se lee, no queda en un tooltip del botón deshabilitado
         await user.should_see("Activa Teclado Macro para agregar uno")
@@ -1476,6 +1489,113 @@ class TestAgregarTeclado:
         monkeypatch.setattr(configuracion, "leerData", lambda _: {"teclado": False})
         await user.open("/dispositivos")
         assert not next(iter(user.find(marker="agregar-teclado").elements)).enabled
+
+
+class TestAgregarPedal:
+    """El pedal usa el mismo asistente que el teclado, sin distribución: se elige con click por su serial"""
+
+    async def test_agregar_pedal(self, user: User, gui: miGui, monkeypatch):
+        archivos = {"pedal.md": [{"nombre": "Pedal", "dispositivo": "AAA"}]}
+        monkeypatch.setattr(configuracion, "leerData", lambda _: {"pedal": True})
+        monkeypatch.setattr(configuracion, "ObtenerArchivo", lambda archivo: archivos.get(archivo))
+        monkeypatch.setattr(configuracion, "SalvarArchivo", lambda archivo, data: archivos.update({archivo: data}))
+        monkeypatch.setattr(MiPedal, "listarDisponibles", staticmethod(lambda: [("AAA", "Stream Deck Pedal"), ("BBB", "Stream Deck Pedal")]))
+        gui.agregarDispositivo = MagicMock()
+        await user.open("/dispositivos")
+
+        user.find(marker="agregar-pedal").click()
+        await user.should_see("Ya agregado")
+        await user.should_not_see("Distribución")
+        user.find(marker="teclado-BBB").click()
+        user.find(marker="agregar-siguiente").click()
+        user.find(marker="agregar-nombre").type("Pies")
+        user.find(marker="agregar-guardar").click()
+        data = {"nombre": "Pies", "dispositivo": "BBB", "archivo": "pedal_pies", "ordenar": -1}
+        assert archivos["pedal.md"][-1] == data
+        gui.agregarDispositivo.assert_called_once_with(MiPedal, data)
+
+
+class TestGruposStreamDeck:
+    """Grupos de deck_combinado.md: se crean vacíos y adentro se agregan, ordenan y quitan StreamDeck sin reiniciar"""
+
+    @pytest.fixture
+    def archivos(self, monkeypatch, gui: miGui) -> dict:
+        archivos = {"deck_combinado.md": [{"nombre": "Mesa", "archivo": "streamdeck", "streamDecks": [{"nombre": "A", "dispositivo": "S1"}, {"nombre": "B", "dispositivo": "S2"}]}]}
+        monkeypatch.setattr(configuracion, "leerData", lambda _: {"deck_combinado": True})
+        monkeypatch.setattr(configuracion, "ObtenerArchivo", lambda archivo: archivos.get(archivo))
+        monkeypatch.setattr(configuracion, "SalvarArchivo", lambda archivo, data: archivos.update({archivo: data}))
+        disponibles = [("S1", "Stream Deck Original"), ("P1", "Stream Deck +")]
+        monkeypatch.setattr(MiDeckCombinado, "listarDisponibles", staticmethod(lambda: disponibles))
+        gui.agregarDispositivo = MagicMock()
+        gui.quitarDispositivo = MagicMock()
+        return archivos
+
+    async def test_crear_grupo_vacio(self, user: User, gui: miGui, archivos: dict):
+        await user.open("/dispositivos")
+        user.find(marker="agregar-deck_combinado").click()
+        await user.should_see("Nuevo grupo de StreamDeck")
+        user.find(marker="agregar-nombre").type("Estudio")
+        user.find(marker="agregar-guardar").click()
+        data = {"nombre": "Estudio", "archivo": "streamdeck_estudio", "ordenar": -1}
+        assert archivos["deck_combinado.md"][-1] == data
+        gui.agregarDispositivo.assert_called_once_with(MiDeckCombinado, data)
+        await user.should_see("Grupo vacío: agrega el primer StreamDeck")
+
+    async def test_agregar_plus_al_grupo(self, user: User, gui: miGui, archivos: dict):
+        await user.open("/dispositivos")
+        user.find(marker="agregarDeck-Mesa").click()
+        await user.should_see("Ya agregado")
+        user.find(marker="teclado-P1").click()
+        user.find(marker="agregar-siguiente").click()
+        user.find(marker="agregar-nombre").type("a")
+        user.find(marker="agregar-guardar").click()
+        await user.should_see("Ya existe a"), "los nombres de los StreamDeck tampoco se repiten"
+        user.find(marker="agregar-nombre").clear().type("Perillas")
+        user.find(marker="agregar-guardar").click()
+        grupo = archivos["deck_combinado.md"][0]
+        assert grupo["streamDecksPlus"] == [{"nombre": "Perillas", "dispositivo": "P1"}], "el Plus va en su propia lista"
+        gui.quitarDispositivo.assert_called_once_with("Mesa")
+        gui.agregarDispositivo.assert_called_once_with(MiDeckCombinado, grupo)
+
+    async def test_ordenar_y_quitar(self, user: User, gui: miGui, archivos: dict):
+        await user.open("/dispositivos")
+        user.find(marker="bajar-A").click()
+        assert [d["nombre"] for d in archivos["deck_combinado.md"][0]["streamDecks"]] == ["B", "A"]
+        await user.should_see("A: posición 2 de 2")
+        gui.agregarDispositivo.assert_called_once()
+        # refresh se dibuja en el siguiente ciclo: B ya arriba puede bajar
+        await esperarQue(lambda: next(iter(user.find(marker="bajar-B").elements)).enabled)
+
+        user.find(marker="quitarDeck-B").click()
+        clickEnDialogoAbierto(user, "Quitar")
+        assert archivos["deck_combinado.md"][0]["streamDecks"] == [{"nombre": "A", "dispositivo": "S1"}]
+
+
+class TestAgregarMQTT:
+    """MQTT no tiene aparato que buscar: se agrega con un formulario de broker, puerto y control"""
+
+    async def test_agregar_servidor(self, user: User, gui: miGui, monkeypatch):
+        archivos = {}
+        monkeypatch.setattr(configuracion, "leerData", lambda _: {"mqtt": True})
+        monkeypatch.setattr(configuracion, "ObtenerArchivo", lambda archivo: archivos.get(archivo))
+        monkeypatch.setattr(configuracion, "SalvarArchivo", lambda archivo, data: archivos.update({archivo: data}))
+        nuevo = MagicMock()
+        gui.agregarDispositivo = MagicMock(return_value=nuevo)
+        await user.open("/dispositivos")
+
+        user.find(marker="agregar-mqtt").click()
+        user.find(marker="agregar-nombre").type("Casa")
+        user.find(marker="agregar-guardar").click()
+        await user.should_see("Obligatorio")
+        gui.agregarDispositivo.assert_not_called()
+
+        user.find(marker="config-agregar-dispositivo").type("192.168.1.10")
+        user.find(marker="config-agregar-control.topic").type("casa/control")
+        user.find(marker="agregar-guardar").click()
+        data = {"nombre": "Casa", "dispositivo": "192.168.1.10", "control": {"topic": "casa/control"}, "ordenar": -1}
+        assert archivos["mqtt.md"] == [data]
+        gui.agregarDispositivo.assert_called_once_with(MiMQTT, data)
+        nuevo.crearFolder.assert_not_called(), "MQTT no tiene archivo de acciones"
 
 
 class TestOrdenPestañas:

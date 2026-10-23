@@ -6,7 +6,7 @@ from nicegui import app, ui
 from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.migui import configuracion, tema
-from elGarrobo.dispositivos.migui.dialogos import crearDialogoConfirmacion
+from elGarrobo.dispositivos.migui.dialogos import crearDialogoConfirmacion, crearDialogoReiniciar
 from elGarrobo.dispositivos.migui.editores import encabezado
 from elGarrobo.dispositivos.migui.formulario import formularioAccion
 from elGarrobo.dispositivos.migui.pestañas import pestañasDispositivos
@@ -152,7 +152,7 @@ class miGui(dispositivo):
             from elGarrobo.dispositivos import cargarDispositivos
 
             accionListaCheckBox.registrarCliente(ui.context.client)
-            aviso = "Activar o apagar un tipo se aplica al reiniciar ElGarrobo; los teclados se agregan y quitan al momento"
+            aviso = "Activar o apagar un tipo se aplica al reiniciar ElGarrobo; los aparatos se agregan y quitan al momento"
             # Sin la GUI: apagarla desde aquí dejaba la página sin forma de volver; se enciende con elgarrobo -g
             tipos = [c for c in cargarDispositivos() if c is not miGui]
             configuracion.mostrarListaActivables("Dispositivos", "dispositivos", tipos, aviso, self)
@@ -329,7 +329,7 @@ class miGui(dispositivo):
                             ui.icon("play_arrow", color=tema.colorClaro)
                             self.ultimaLabel = ui.label("").classes("truncate").mark("ultimaAcción")
                         self.ultimaFila.visible = False
-                dialogoReiniciar = crearDialogoConfirmacion("¿Reiniciar ElGarrobo? Las teclas no responden mientras arranca.", "Reiniciar", self.reiniciar)
+                abrirReiniciar = crearDialogoReiniciar(lambda: self.pendientesReinicio, self.reiniciar)
                 dialogoSalir = crearDialogoConfirmacion("¿Cerrar ElGarrobo? Las teclas y esta página dejan de funcionar hasta que lo vuelvas a abrir.", "Salir", self.salir)
                 with ui.dialog() as dialogoAcercaDe, ui.card():
                     ui.label("ElGarrobo").classes("text-h6")
@@ -340,7 +340,7 @@ class miGui(dispositivo):
                     ui.button("Cerrar", on_click=dialogoAcercaDe.close).props("flat")
                 with ui.row().classes("items-center gap-2 no-wrap"):
                     # En todas las páginas: un cambio hecho en /dispositivos sigue pendiente al volver a Acciones
-                    reinicio = ui.button(icon="restart_alt", color=tema.colorPendiente, on_click=dialogoReiniciar.open)
+                    reinicio = ui.button(icon="restart_alt", color=tema.colorPendiente, on_click=abrirReiniciar)
                     reinicio.props("unelevated no-caps text-color=black").mark("reiniciar-pendiente")
                     reinicio.props["aria-label"] = "Reiniciar para aplicar los cambios pendientes"
                     with reinicio:
@@ -359,7 +359,7 @@ class miGui(dispositivo):
                             ui.menu_item("Configurar", on_click=lambda: ui.navigate.to("/configurar")).mark("menu-Configurar")
                             ui.menu_item("Acerca de", on_click=dialogoAcercaDe.open).mark("menu-AcercaDe")
                             ui.separator()
-                            ui.menu_item("Reiniciar", on_click=dialogoReiniciar.open).mark("menu-Reiniciar")
+                            ui.menu_item("Reiniciar", on_click=abrirReiniciar).mark("menu-Reiniciar")
                             ui.menu_item("Salir", on_click=dialogoSalir.open).mark("menu-Salir")
         return oscuro
 

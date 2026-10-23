@@ -1,4 +1,4 @@
-"""Diálogo para agregar un teclado en dos pasos: buscarlo presionando una tecla en él y luego configurarlo"""
+"""Diálogo para agregar un aparato (teclado, pedal, StreamDeck o grupo de StreamDeck): buscarlo y luego configurarlo"""
 
 import asyncio
 import re
@@ -8,9 +8,8 @@ from nicegui import background_tasks, ui
 
 from elGarrobo.dispositivos.migui import tema
 from elGarrobo.dispositivos.migui.distribucion import ayudaDistribuciones, miniatura
-from elGarrobo.dispositivos.migui.editores import encabezado, marcarError
+from elGarrobo.dispositivos.migui.editores import campoPropiedad, encabezado, marcarError
 from elGarrobo.dispositivos.miteclado.mi_teclado_macro import (
-    MiTecladoMacro,
     cargarDistribucion,
     distribucionesDisponibles,
 )
@@ -52,13 +51,40 @@ def tarjetaElegible(tarjeta: ui.card, alElegir) -> None:
         tarjeta.on(evento, alElegir)
 
 
-class dialogoAgregarTeclado:
-    """Paso 1: lista los teclados USB y el que recibe una tecla queda elegido.
-    Paso 2: nombre, distribución y en Avanzado el archivo de acciones; las teclas que se presionan se iluminan en las miniaturas"""
+class dialogoAgregar:
+    """Paso 1 (con listarDisponibles): lista los aparatos; en teclados el que recibe una tecla queda elegido.
+    Paso 2: nombre y en Avanzado el archivo de acciones (con prefijoArchivo); los teclados además eligen
+    distribución y las teclas que se presionan se iluminan en las miniaturas"""
 
-    def __init__(self, alGuardar) -> None:
+    def __init__(
+        self,
+        titulo: str,
+        alGuardar,
+        listarDisponibles=None,
+        prefijoArchivo: str | None = None,
+        conTeclas: bool = False,
+        propiedades: list | None = None,
+    ) -> None:
+        """
+        Args:
+            titulo (str): ej. "Agregar teclado"
+            alGuardar: recibe la data del aparato nuevo (entrada de teclados.md, pedal.md…)
+            listarDisponibles: devuelve [(ruta o serial, nombre)]; sin ella no hay paso Buscar (ej. un grupo vacío)
+            prefijoArchivo (str): del archivo de acciones por defecto (<prefijo>_<nombre>); sin él no se pide archivo
+            conTeclas (bool): teclados, se escuchan con evdev y tienen distribución
+            propiedades (list): propiedadAccion que se piden en Configurar (ej. broker y puerto de MQTT)
+        """
+        self.titulo = titulo
         self.alGuardar = alGuardar
-        "Recibe la data del teclado nuevo (entrada de teclados.md)"
+        self.listarDisponibles = listarDisponibles
+        self.prefijoArchivo = prefijoArchivo
+        self.conTeclas = conTeclas
+        self.propiedades = propiedades or []
+        self.datos: dict = {}
+        "Lo escrito en los campos de propiedades"
+        self.editores: list = []
+        self.disponibles: dict[str, str] = {}
+        "ruta → nombre de lo listado en el paso 1 (ej. el modelo de un StreamDeck)"
         self.escuchas: list[asyncio.Task] = []
         self.ruta: str | None = None
         "Teclado elegido en el paso 1"
@@ -74,7 +100,7 @@ class dialogoAgregarTeclado:
     def abrir(self, rutasUsadas: set[str], nombresUsados: set[str]) -> None:
         """
         Args:
-            rutasUsadas (set): rutas que ya están en teclados.md, se muestran pero no se pueden elegir
+            rutasUsadas (set): rutas o seriales que ya están en el archivo, se muestran pero no se pueden elegir
             nombresUsados (set): nombres en minúsculas de todos los dispositivos; las pestañas se buscan por nombre
         """
         self.ruta = None
@@ -84,20 +110,26 @@ class dialogoAgregarTeclado:
         self.teclaTeclado: dict[str, ui.label] = {}
         self.contenido.clear()
         with self.contenido:
-            encabezado(ui.label("Agregar teclado").classes("text-lg"), 2)
+            encabezado(ui.label(self.titulo).classes("text-lg"), 2)
             with ui.stepper().props("flat animated").classes("w-full") as self.pasos:
-                with ui.step("Buscar"):
-                    self.pasoBuscar(rutasUsadas)
+                if self.listarDisponibles:
+                    with ui.step("Buscar"):
+                        self.pasoBuscar(rutasUsadas)
                 with ui.step("Configurar"):
                     self.pasoConfigurar()
         self.escuchar(list(self.tarjetasTeclado), self.elegir)
         self.dialogo.open()
 
     def pasoBuscar(self, rutasUsadas: set[str]) -> None:
-        disponibles = MiTecladoMacro.listarDisponibles()
-        ui.label("Presiona una tecla en el teclado que quieres agregar").classes("texto-acento")
+        disponibles = self.listarDisponibles()
+        self.disponibles = dict(disponibles)
+        if self.conTeclas:
+            ui.label("Presiona una tecla en el teclado que quieres agregar").classes("texto-acento")
+        else:
+            ui.label("Elige el que quieres agregar").classes("texto-acento")
         if not disponibles:
-            ui.label("No hay teclados USB conectados").classes("text-caption")
+            # ponytail: los que ya usa ElGarrobo u otro programa no se pueden abrir y no salen
+            ui.label("No se encontró ninguno libre conectado").classes("text-caption")
         for ruta, nombre in disponibles:
             usado = ruta in rutasUsadas
             with ui.card().classes("w-full p-2" + (" opacity-50" if usado else "")) as tarjeta:
@@ -119,18 +151,28 @@ class dialogoAgregarTeclado:
 
     def pasoConfigurar(self) -> None:
         self.nombre = ui.input("Nombre", on_change=self.mostrarArchivoPorDefecto).classes("w-full").mark("agregar-nombre")
-        with ui.row().classes("w-full items-center"):
-            ui.label("Distribución").classes("font-bold")
-            ui.label("presiona teclas para verlas en las miniaturas").classes("text-caption")
-            self.ultimaTecla = ui.label("").classes("font-mono ml-auto")
-        self.listaDistribuciones = ui.column().classes("w-full gap-2 max-h-80 overflow-auto")
-        self.dibujarDistribuciones()
-        ayudaDistribuciones(self.dibujarDistribuciones)
-        with ui.expansion("Avanzado", icon="tune").classes("w-full") as self.avanzado:
-            self.archivo = ui.input("Archivo de acciones").classes("w-full").mark("agregar-archivo")
-        self.mostrarArchivoPorDefecto()
+        self.datos, self.editores = {}, []
+        if self.propiedades:
+            with ui.row().classes("w-full items-start gap-4"):
+                for propiedad in self.propiedades:
+                    campoPropiedad(self.datos, propiedad, "agregar", self.editores)
+        if self.conTeclas:
+            with ui.row().classes("w-full items-center"):
+                ui.label("Distribución").classes("font-bold")
+                ui.label("presiona teclas para verlas en las miniaturas").classes("text-caption")
+                self.ultimaTecla = ui.label("").classes("font-mono ml-auto")
+            self.listaDistribuciones = ui.column().classes("w-full gap-2 max-h-80 overflow-auto")
+            self.dibujarDistribuciones()
+            ayudaDistribuciones(self.dibujarDistribuciones)
+        if self.prefijoArchivo:
+            with ui.expansion("Avanzado", icon="tune").classes("w-full") as self.avanzado:
+                self.archivo = ui.input("Archivo de acciones").classes("w-full").mark("agregar-archivo")
+            self.mostrarArchivoPorDefecto()
         with ui.stepper_navigation():
-            ui.button("Atrás", on_click=self.volverABuscar).props("flat")
+            if self.listarDisponibles:
+                ui.button("Atrás", on_click=self.volverABuscar).props("flat")
+            else:
+                ui.button("Cancelar", on_click=self.dialogo.close).props("flat")
             ui.button("Guardar", icon="save", color=tema.colorOscuro, on_click=self.guardar).mark("agregar-guardar")
 
     def dibujarDistribuciones(self) -> None:
@@ -155,6 +197,8 @@ class dialogoAgregarTeclado:
 
     def escuchar(self, rutas: list[str], alPresionar) -> None:
         self.dejarDeEscuchar()
+        if not self.conTeclas:
+            return  # ponytail: el pedal se elige con click; escucharlo para reconocerlo es otra mejora
         self.escuchas = [background_tasks.create(escucharTeclado(ruta, alPresionar)) for ruta in rutas]
 
     def dejarDeEscuchar(self) -> None:
@@ -175,7 +219,8 @@ class dialogoAgregarTeclado:
         self.pasos.next()
 
     def volverABuscar(self) -> None:
-        self.apagarMiniaturas()
+        if self.conTeclas:
+            self.apagarMiniaturas()
         self.escuchar(list(self.tarjetasTeclado), self.elegir)
         self.pasos.previous()
 
@@ -197,31 +242,43 @@ class dialogoAgregarTeclado:
         marcarTarjeta(self.tarjetasDistribucion, nombreDistribucion)
 
     def archivoPorDefecto(self) -> str:
-        """teclado_<nombre>, ej. teclado_moon_lander: dice de qué es el archivo sin que el usuario lo piense"""
-        return "_".join(filter(None, ["teclado", re.sub(r"\W+", "_", (self.nombre.value or "").lower()).strip("_")]))
+        """<tipo>_<nombre>, ej. teclado_moon_lander: dice de qué es el archivo sin que el usuario lo piense"""
+        return "_".join(filter(None, [self.prefijoArchivo, re.sub(r"\W+", "_", (self.nombre.value or "").lower()).strip("_")]))
 
     def mostrarArchivoPorDefecto(self) -> None:
+        if not self.prefijoArchivo:
+            return
         # hint y no placeholder: Quasar solo muestra el placeholder con el campo enfocado
         self.archivo.props["hint"] = f"Si lo dejas vacío: {self.archivoPorDefecto()}.md"
         self.archivo.update()
 
     def guardar(self) -> None:
         nombre = (self.nombre.value or "").strip()
-        archivo = (self.archivo.value or "").strip().removesuffix(".md") or self.archivoPorDefecto()
+        archivo = None
+        if self.prefijoArchivo:
+            archivo = (self.archivo.value or "").strip().removesuffix(".md") or self.archivoPorDefecto()
         errorNombre = None
         if not nombre:
             errorNombre = "Falta el nombre"
         elif nombre.lower() in self.nombresUsados:
             errorNombre = f"Ya existe {nombre}"
         # Solo un nombre de archivo, sin carpetas: se crea en el perfil
-        errorArchivo = None if re.fullmatch(r"[\w-]+", archivo) else "Solo letras, números, - y _"
+        errorArchivo = None if archivo is None or re.fullmatch(r"[\w-]+", archivo) else "Solo letras, números, - y _"
         marcarError(self.nombre, errorNombre)
-        marcarError(self.archivo, errorArchivo if nombre else None)
+        faltan = [editor for propiedad, editor in self.editores if propiedad.obligatorio and editor.value in (None, "")]
+        for _, editor in self.editores:
+            marcarError(editor, "Obligatorio" if editor in faltan else None)
+        if self.prefijoArchivo:
+            marcarError(self.archivo, errorArchivo if nombre else None)
         if errorArchivo and nombre:
             self.avanzado.open()  # el error no se vería con Avanzado cerrado
-        if errorNombre or errorArchivo:
+        if errorNombre or errorArchivo or faltan:
             return
-        data = {"nombre": nombre, "dispositivo": self.ruta, "archivo": archivo}
+        data = {"nombre": nombre, **self.datos}
+        if self.ruta:
+            data["dispositivo"] = self.ruta
+        if archivo:
+            data["archivo"] = archivo
         if self.distribucion:
             data["distribucion"] = self.distribucion
         self.dialogo.close()

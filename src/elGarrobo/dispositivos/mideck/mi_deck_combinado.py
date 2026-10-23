@@ -4,7 +4,7 @@ from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerValor
 
-from .mi_streamdeck import MiStreamDeck
+from .mi_streamdeck import MiStreamDeck, listarStreamDecks
 from .mi_streamdeck_plus import MiStreamDeckPlus
 
 logger = ConfigurarLogging(__name__)
@@ -67,6 +67,16 @@ class MiDeckCombinado(dispositivo):
         if brillo:
             return f"Reposo: tras {minutos} min sin uso baja al brillo {brillo}; las teclas funcionan normal"
         return f"Reposo: tras {minutos} min sin uso se apaga; la primera tecla solo despierta, no ejecuta su acción"
+
+    @staticmethod
+    def listarDisponibles() -> list[tuple[str, str]]:
+        """(serial, modelo) de los StreamDeck que se pueden agregar a un grupo"""
+        return listarStreamDecks(MiStreamDeck.compatibles + MiStreamDeckPlus.compatibles)
+
+    @staticmethod
+    def listaDeModelo(modelo: str) -> str:
+        """Clave del grupo donde va un StreamDeck de ese modelo; los Plus se conectan después de los normales"""
+        return "streamDecksPlus" if modelo in MiStreamDeckPlus.compatibles else "streamDecks"
 
     def __init__(self, dataConfiguracion: dict) -> None:
         """Inicializando Dispositivo de MiDeckCombinado

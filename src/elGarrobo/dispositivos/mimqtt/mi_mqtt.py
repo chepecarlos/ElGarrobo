@@ -3,6 +3,7 @@ import threading
 
 import paho.mqtt.client as mqtt
 
+from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.miLibrerias import ConfigurarLogging, SalvarValor
 
@@ -17,6 +18,27 @@ class MiMQTT(dispositivo):
     descripcion = "Conexión con broker MQTT para dispositivos remotos"
     archivoConfiguracion = "mqtt.md"
     icono = "hub"
+
+    propiedadesAparato = [
+        propiedadAccion("Broker", "dispositivo", [str], obligatorio=True, ejemplo="192.168.1.10", descripcion="IP o dominio del broker MQTT"),
+        propiedadAccion("Puerto", "puerto", [int], defecto=1883),
+        propiedadAccion("Usuario", "usuario", [str]),
+        propiedadAccion("Contraseña", "contrasenna", [str]),
+        propiedadAccion(
+            "Topic de control",
+            "control.topic",
+            [str],
+            ejemplo="alsw/control",
+            descripcion="Recibe acciones en JSON para ejecutarlas en esta PC",
+        ),
+        propiedadAccion(
+            "Nombre en control",
+            "control.nombre",
+            [str],
+            ejemplo="mi_pc",
+            descripcion="Ejecuta las acciones de control con este host (o 'todos')",
+        ),
+    ]
 
     broker: str = ""
     "Direccion del broker MQTT"
@@ -47,6 +69,7 @@ class MiMQTT(dispositivo):
         super().__init__(dataConfiguración)
         self.nombre = dataConfiguración.get("nombre", "ServerMQTT")
 
+        self.puerto: int = dataConfiguración.get("puerto", 1883)
         self.usuario: str = dataConfiguración.get("usuario", "")
         self.contrasenna: str = dataConfiguración.get("contrasenna", "")
 
@@ -62,23 +85,23 @@ class MiMQTT(dispositivo):
         self.cliente.on_connect = self.eventoConectar
         self.cliente.on_disconnect = self.eventoDesconectando
         self.cliente.on_message = self.mensajeMQTT
-        # TODO: re intear reconeccion
 
         try:
             if self.usuario is not None:
                 self.cliente.username_pw_set(self.usuario, password=self.contrasenna)
-            self.cliente.connect(self.dispositivo, port=self.puerto, keepalive=60)
-            self.Hilo = threading.Thread(target=self.HiloServidor)
+            # Async: un broker que no responde no congela a quien conecta (ej. la GUI al agregarlo);
+            # conectado lo pone eventoConectar
+            self.cliente.connect_async(self.dispositivo, port=self.puerto, keepalive=60)
+            self.Hilo = threading.Thread(target=self.HiloServidor, daemon=True)
             self.Hilo.start()
-            self.conectado = True
         except Exception as error:
             logger.error(f"MQTT[Error] Dispositivo {self.nombre} no responde - {error}")
             self.conectado = False
-            # TODO intentar re-conectar después de un tiempo
 
     def HiloServidor(self):
         logger.info(f"MQTT[Hijo] - {self.nombre}")
-        self.cliente.loop_forever()
+        # Reintenta mientras el broker no responda, también la primera vez
+        self.cliente.loop_forever(retry_first_connection=True)
 
     def eventoConectar(self, client: mqtt.Client, userdata, flags, rc):
         """Respuesta de conecion y suscripción a topicos."""
@@ -148,6 +171,8 @@ class MiMQTT(dispositivo):
         if self.conectado:
             logger.info(f"MQTT[Desconectado] - {self.nombre}")
             self.cliente.publish(f"{self.topicControl}/{self.nombreControl}", "desconectado")
+        if self.cliente is not None:
+            # También sin conectar: detiene los reintentos de loop_forever
             self.cliente.disconnect()
 
     def actualizar(self):
