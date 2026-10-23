@@ -1,5 +1,6 @@
 import json
 import threading
+from urllib.parse import urlsplit
 
 import paho.mqtt.client as mqtt
 
@@ -20,10 +21,17 @@ class MiMQTT(dispositivo):
     icono = "hub"
 
     propiedadesAparato = [
-        propiedadAccion("Broker", "dispositivo", [str], obligatorio=True, ejemplo="192.168.1.10", descripcion="IP o dominio del broker MQTT"),
+        propiedadAccion(
+            "URL del broker",
+            "dispositivo",
+            [str],
+            obligatorio=True,
+            ejemplo="192.168.1.10",
+            descripcion="IP, dominio o URL (mqtt://casa.local:1883; su puerto reemplaza al de Puerto)",
+        ),
         propiedadAccion("Puerto", "puerto", [int], defecto=1883),
-        propiedadAccion("Usuario", "usuario", [str]),
-        propiedadAccion("Contraseña", "contrasenna", [str]),
+        propiedadAccion("Usuario (opcional)", "usuario", [str], descripcion="Vacío si el broker no pide usuario"),
+        propiedadAccion("Contraseña (opcional)", "contrasenna", [str]),
         propiedadAccion(
             "Topic de control",
             "control.topic",
@@ -70,6 +78,10 @@ class MiMQTT(dispositivo):
         self.nombre = dataConfiguración.get("nombre", "ServerMQTT")
 
         self.puerto: int = dataConfiguración.get("puerto", 1883)
+        if "://" in self.dispositivo:
+            # URL (mqtt://host:puerto): paho solo recibe el host
+            url = urlsplit(self.dispositivo)
+            self.dispositivo, self.puerto = url.hostname or "", url.port or self.puerto
         self.usuario: str = dataConfiguración.get("usuario", "")
         self.contrasenna: str = dataConfiguración.get("contrasenna", "")
 
@@ -87,7 +99,7 @@ class MiMQTT(dispositivo):
         self.cliente.on_message = self.mensajeMQTT
 
         try:
-            if self.usuario is not None:
+            if self.usuario:
                 self.cliente.username_pw_set(self.usuario, password=self.contrasenna)
             # Async: un broker que no responde no congela a quien conecta (ej. la GUI al agregarlo);
             # conectado lo pone eventoConectar
