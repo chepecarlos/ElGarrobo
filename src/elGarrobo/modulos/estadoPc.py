@@ -48,6 +48,12 @@ class estadoPc(modulo):
         dataModulo = dataModulo or {}
         self.nombrePC = dataModulo.get("nombre_pc", self.nombrePC)
 
+    def ejecutar(self) -> None:
+        """Obtiene el estado actual del PC"""
+
+        if self.activo:
+            return
+
         if self.nombrePC == estadoPc.nombrePC:
             logger.warning(
                 f"Estado[{self.nombrePC}] - No se especificó nombre del PC, "
@@ -56,12 +62,6 @@ class estadoPc(modulo):
             )
 
         logger.info(f"Estado[{self.nombrePC}] - Publicando estado de PC[{self.nombrePC}] por MQTT")
-
-    def ejecutar(self) -> None:
-        """Obtiene el estado actual del PC"""
-
-        if self.activo:
-            return
 
         self.activo = True
         self.hiloMonitoreo = threading.Thread(target=self._monitorear_recursos, daemon=True)

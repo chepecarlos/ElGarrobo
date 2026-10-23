@@ -60,11 +60,6 @@ class moduloOctoprint(modulo):
         impresoras_raw = dataModulo.get("impresoras")
         self.impresoras: list[dict] = impresoras_raw if isinstance(impresoras_raw, list) else []
 
-        if not self.impresoras:
-            logger.warning(f"Modulo[{self.nombre}] - No hay impresoras configuradas en 'impresoras'")
-        else:
-            logger.info(f"Modulo[{self.nombre}] - {len(self.impresoras)} impresora(s) configuradas")
-
     def ejecutar(self) -> None:
         """Inicia un hilo de monitoreo por cada impresora configurada."""
         if self.activo:
@@ -74,6 +69,7 @@ class moduloOctoprint(modulo):
             logger.error(f"Modulo[{self.nombre}] - Sin impresoras configuradas, revisa {self.archivoConfiguracion}")
             return
 
+        logger.info(f"Modulo[{self.nombre}] - {len(self.impresoras)} impresora(s) configuradas")
         self.activo = True
         for config in self.impresoras:
             nombre = str(config.get("nombre", "impresora-desconocida")).strip()

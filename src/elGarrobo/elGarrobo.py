@@ -119,6 +119,12 @@ class elGarrobo(object):
         for dispositivoActual in self.listaDispositivos:
             self.iniciarDispositivo(dispositivoActual)
 
+        if not self.listaDispositivos:
+            logger.warning(
+                "No hay dispositivos activos, activa alguno con 'elgarrobo dispositivos activar <nombre>' "
+                "(lista en 'elgarrobo dispositivos info') o abre la GUI con 'elgarrobo -g'"
+            )
+
     def iniciarDispositivo(self, dispositivoActual: dispositivo) -> None:
         """Le pasa ejecutarAcción y el perfil, carga su folder raíz y lo conecta"""
         dispositivoActual.configurarFuncionAccion(self.ejecutarAcción)
@@ -154,14 +160,20 @@ class elGarrobo(object):
         self.modulos = leerData("modulos")
 
         if self.modulos is None:
+            # Primer arranque: módulos apagados y solo la GUI, para configurar el resto desde ahí
             rutaConfig = miLibrerias.ObtenerFolderConfig()
-            logger.error(f"No existe archivo modulos.md en {rutaConfig}")
-            os._exit(0)
+            logger.warning(f"No existe modulos.md en {rutaConfig}, creando configuración inicial")
+            self.modulos = {claseModulo.modulo: False for claseModulo in cargarModulos()}
+            SalvarArchivo("modulos", self.modulos)
+            if leerData("dispositivos") is None:
+                SalvarArchivo("dispositivos", {clave: clave == "gui" for clave in CLAVES_DISPOSITIVOS})
 
         self.dispositivos = self._cargarDataDispositivos()
         if modulos.get("gui"):
             # elgarrobo -g: la GUI arranca aunque esté apagada en dispositivos.md (no se guarda)
             self.dispositivos["gui"] = True
+        if self.dispositivos.get("gui") and leerData("gui") is None:
+            SalvarArchivo("gui", [{"nombre": "Gui", "archivo": "gui", "activado": True}])
 
         # TODO: Modulos en un dict
 

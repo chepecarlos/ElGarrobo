@@ -8,8 +8,14 @@ from .accionNavegador import accionNavegador
 Logger = ConfigurarLogging(__name__)
 
 
+puertoEnUso: int | None = None
+"Puerto donde arrancó la GUI en este proceso (miGui.conectar), puede ser uno libre que no está en gui.md"
+
+
 def obtenerPuertoGUI() -> int:
-    """Puerto de la primera GUI activada en gui.md, mismo default que miGui"""
+    """Puerto de la GUI corriendo; si no arrancó, el de la primera GUI activada en gui.md"""
+    if puertoEnUso is not None:
+        return puertoEnUso
     for gui in ObtenerArchivo("gui.md") or []:
         if gui.get("activado", True):
             return gui.get("puerto", 8080)

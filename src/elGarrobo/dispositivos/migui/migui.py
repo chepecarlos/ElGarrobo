@@ -1,4 +1,6 @@
+import importlib
 import logging
+import socket
 import threading
 
 from nicegui import app, ui
@@ -21,8 +23,27 @@ from elGarrobo.miLibrerias import ConfigurarLogging, SalvarValor, leerData
 
 logger = ConfigurarLogging(__name__, logging.INFO)
 
+# importlib: el paquete accionesOOP exporta la clase accionAbrirGUI con el mismo nombre que el submódulo
+moduloAbrirGUI = importlib.import_module("elGarrobo.accionesOOP.accionAbrirGUI")
+
 ARCHIVO_PREFERENCIAS = "gui_preferencias"
 "Archivo de config con preferencias de la GUI (ej. el último modo Usar/Editar)"
+
+PUERTO_DEFECTO = 8080
+
+
+def buscarPuertoLibre(inicio: int = PUERTO_DEFECTO, intentos: int = 20) -> int:
+    """Primer puerto libre desde inicio, para no chocar con otro sistema cuando gui.md no fija uno"""
+    for puerto in range(inicio, inicio + intentos):
+        with socket.socket() as prueba:
+            # Igual que uvicorn: un puerto en TIME_WAIT de un reinicio reciente cuenta como libre
+            prueba.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                prueba.bind(("0.0.0.0", puerto))
+                return puerto
+            except OSError:
+                continue
+    return inicio
 
 
 class miGui(dispositivo):
@@ -40,8 +61,8 @@ class miGui(dispositivo):
     listaDispositivos: list[dispositivo] = None
     "Lista de dispositivos conectados"
 
-    puerto: int = 8080
-    "puerto de la interfaz web"
+    puerto: int | None = None
+    "puerto de la interfaz web; None busca uno libre al conectar"
 
     folderLabel: ui.label = None
     "Etiqueta con el dispositivo y folder actual"
@@ -53,7 +74,7 @@ class miGui(dispositivo):
         super().__init__(dataConfiguracion)
         self.nombre = dataConfiguracion.get("nombre", "miGui")
 
-        self.puerto = dataConfiguracion.get("puerto", 8080)
+        self.puerto = dataConfiguracion.get("puerto")
 
         self.folder: str = "?"
         self.listaClasesAcciones: dict = dict()
@@ -394,6 +415,12 @@ class miGui(dispositivo):
         self.modoUsar = bool(preferencias.get("modo_usar", False))
         nombreTema = preferencias.get("tema")
         self.nombreTema = nombreTema if nombreTema in tema.TEMAS else tema.TEMA_DEFECTO
+
+        # Puerto asignado por el usuario se usa tal cual, aunque falle; si no hay, el primero libre
+        if self.puerto is None:
+            self.puerto = buscarPuertoLibre()
+        moduloAbrirGUI.puertoEnUso = self.puerto
+        logger.info(f"GUI en http://localhost:{self.puerto}")
 
         app.on_connect(self.seConectaGUI)
         app.on_disconnect(self.seDesconectaGUI)

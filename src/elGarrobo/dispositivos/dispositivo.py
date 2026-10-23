@@ -137,10 +137,7 @@ class dispositivo:
         dataDispositivos = ObtenerArchivo(claseDispositivo.archivoConfiguracion)
 
         if dataDispositivos is None:
-            logger.warning(
-                f"Falta información para cargar {claseDispositivo.tipo} ",
-                f"{claseDispositivo.archivoConfiguracion}",
-            )
+            logger.warning(f"Falta información para cargar {claseDispositivo.tipo} en {claseDispositivo.archivoConfiguracion}")
             return listaDispositivos
 
         for dataActual in dataDispositivos:

@@ -11,3 +11,9 @@ def test_puerto_primera_gui_activada(monkeypatch):
 def test_puerto_default_sin_config(monkeypatch):
     monkeypatch.setattr(modulo, "ObtenerArchivo", lambda _: None)
     assert modulo.obtenerPuertoGUI() == 8080
+
+
+def test_puerto_en_uso_gana_a_config(monkeypatch):
+    monkeypatch.setattr(modulo, "ObtenerArchivo", lambda _: [{"puerto": 8383}])
+    monkeypatch.setattr(modulo, "puertoEnUso", 8081)
+    assert modulo.obtenerPuertoGUI() == 8081

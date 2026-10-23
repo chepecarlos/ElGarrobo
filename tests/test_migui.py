@@ -1633,3 +1633,13 @@ class TestOrdenPestañas:
         monkeypatch.setattr(configuracion, "leerData", lambda _: {})
         await user.open("/dispositivos")
         await user.should_not_see("Ordenar pestañas")
+
+
+def test_buscar_puerto_libre_salta_ocupado():
+    import socket
+
+    with socket.socket() as ocupado:
+        ocupado.bind(("0.0.0.0", 0))
+        ocupado.listen()
+        puerto = ocupado.getsockname()[1]
+        assert moduloMiGui.buscarPuertoLibre(puerto) != puerto
