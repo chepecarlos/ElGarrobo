@@ -13,7 +13,7 @@ class accionReiniciarApp(accion):
     nombre = "Reiniciar App"
     comando = "reiniciar_app"
     categoria = "ElGarrobo"
-    descripcion = "Reinicia el proceso de ElGarrobo"
+    descripcion = "Cierra y vuelve a abrir ElGarrobo"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)

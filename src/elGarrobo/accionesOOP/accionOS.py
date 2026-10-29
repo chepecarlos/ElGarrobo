@@ -16,7 +16,7 @@ class accionOS(accion):
     nombre = "Comando OS"
     comando = "os"
     categoria = "Ventanas y sistema"
-    descripcion = "Ejecuta comando de terminal"
+    descripcion = "Ejecuta un comando de terminal"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)

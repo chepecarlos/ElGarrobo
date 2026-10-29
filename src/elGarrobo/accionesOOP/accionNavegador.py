@@ -15,7 +15,7 @@ class accionNavegador(accion):
     nombre: str = "Abrir navegador"
     comando: str = "navegador"
     categoria = "Ventanas y sistema"
-    descripción: str = "Abre una url en navegador predeterminado"
+    descripción: str = "Abre una página web en el navegador predeterminado"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripción)

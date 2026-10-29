@@ -15,7 +15,7 @@ class accionEmularRaton(accion):
     nombre = "Ratón"
     comando = "raton"
     categoria = "Teclado y ratón"
-    descripcion = "Emula el funcionamiento de ratón"
+    descripcion = "Presiona o suelta un botón del ratón (izquierdo, centro o derecho)"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)

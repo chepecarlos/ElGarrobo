@@ -180,7 +180,7 @@ class accionListaCheckBox(accion):
     nombre = "ListaCheckBox"
     comando = "lista_checkbox"
     categoria = "Macros y datos"
-    descripcion = "Maneja una lista de checkboxes"
+    descripcion = "Abre una ventana con una lista de tareas para ir marcando"
 
     clientesRegistrados: dict = {}
     "Clientes NiceGUI conectados, por id"

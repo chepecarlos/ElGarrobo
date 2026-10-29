@@ -19,7 +19,7 @@ class accionMQTT(accion):
     nombre = "MQTT"
     comando = "mqtt"
     categoria = "Mensajes y red"
-    descripcion = "Envía un mensaje por mqtt"
+    descripcion = "Envía un mensaje a un tópico MQTT"
     clientes: dict[tuple, mqtt.Client] = {}
     "Conexiones abiertas por (servidor, puerto, usuario, contraseña), se reusan entre mensajes"
     candado = threading.Lock()

@@ -52,6 +52,8 @@ class catalogoAcciones:
         self.listaClasesAcciones = listaClasesAcciones
         self.selector: ui.select = None
         "Selector que abrió el panel"
+        self.primera: str = None
+        "Acción que elige Enter: la primera disponible que tiene el texto buscado en el nombre, si no la primera disponible"
         with ui.dialog() as self.dialogo, ui.card().classes("w-full max-w-3xl"):
             encabezado(ui.label("Acciones disponibles").classes("text-lg"), 2)
             self.buscador = (
@@ -60,6 +62,7 @@ class catalogoAcciones:
                 .classes("w-full")
                 .mark("catalogo-buscar")
             )
+            self.buscador.on("keydown.enter", lambda: self.primera and self.elegir(self.primera))
             self.lista = ui.column().classes("w-full gap-0")
             ui.button("Cerrar", on_click=self.dialogo.close).props("flat")
         # Se dibuja al abrir: cerrado no deja etiquetas con los nombres de las acciones repetidas en la página
@@ -88,6 +91,9 @@ class catalogoAcciones:
             for a in listarAcciones(self.listaClasesAcciones)
             if texto in f"{a.nombre} {a.comando} {a.descripcion}".lower()
         ]
+        disponibles = [a for a in acciones if not a.moduloApagado]
+        porNombre = [a for a in disponibles if texto in a.nombre.lower()]
+        self.primera = next((a.nombre for a in porNombre or disponibles), None)
         self.lista.clear()
         with self.lista:
             if not acciones:
@@ -103,16 +109,22 @@ class catalogoAcciones:
                     # Sin on_click no es clickable: la de un módulo apagado se ve pero no se elige
                     with ui.item(
                         on_click=(lambda nombre=acción.nombre: self.elegir(nombre)) if disponible else None
-                    ).mark(f"catalogo-{acción.comando}"):
+                    ).mark(f"catalogo-{acción.comando}") as item:
                         with ui.item_section().classes("" if disponible else "opacity-60"):
                             ui.item_label(acción.nombre)
                             ui.item_label(acción.descripcion).props("caption")
                         with ui.item_section().props("side"):
                             ui.item_label(acción.comando).props("caption")
+                            if texto and acción.nombre == self.primera:
+                                ui.item_label("↵ Enter").props("caption").classes("texto-acento")
+                    if acción.nombre == self.selector.value:
+                        item.props('active active-class="texto-acento text-bold"')
                     if not disponible:
-                        ui.label(f"Activa el módulo {acción.moduloApagado} en Módulos para usarla").classes(
-                            "texto-aviso text-caption px-4 pb-1"
-                        )
+                        with ui.row().classes("texto-aviso text-caption px-4 pb-1 gap-1"):
+                            ui.label(f"Activa el módulo {acción.moduloApagado} en")
+                            # Pestaña nueva: ir a /modulos aquí perdería lo que se está editando en el formulario
+                            ui.link("Módulos", "/modulos", new_tab=True).classes("texto-aviso")
+                            ui.label("para usarla")
 
     def elegir(self, nombre: str) -> None:
         self.selector.value = nombre

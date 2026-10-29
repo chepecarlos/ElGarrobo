@@ -40,7 +40,7 @@ class accionPegarTexto(accion):
     nombre = "Pegar texto"
     comando = "pegar"
     categoria = "Teclado y ratón"
-    descripcion = "Copia un texto al portapapeles y lo pega con ctrl+v"
+    descripcion = "Pega un texto fijo: lo copia al portapapeles y presiona ctrl+v"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)

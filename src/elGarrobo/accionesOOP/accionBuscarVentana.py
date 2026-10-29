@@ -14,7 +14,7 @@ class accionBuscarVentana(accion):
     nombre = "Buscar Ventana"
     comando = "mostrar_ventana"
     categoria = "Ventanas y sistema"
-    descripcion = "Buscar ventana con un nombre"
+    descripcion = "Trae al frente la ventana cuyo título contiene un texto, ej. obs"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)

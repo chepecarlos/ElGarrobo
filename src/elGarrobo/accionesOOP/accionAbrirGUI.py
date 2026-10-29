@@ -28,7 +28,7 @@ class accionAbrirGUI(accion):
     nombre = "Abrir GUI"
     comando = "abrir_gui"
     categoria = "ElGarrobo"
-    descripcion = "Abrir la Configuración del ElGarrobo en Navegador"
+    descripcion = "Abre esta página de configuración de ElGarrobo en el navegador"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)

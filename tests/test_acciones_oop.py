@@ -149,6 +149,11 @@ class TestCargarClasesAcciones:
             assert instancia.comando == comando, clase.__name__
             assert instancia.nombre and instancia.descripcion, clase.__name__
 
+    def test_acciones_base_tienen_categoria(self):
+        """Sin categoria quedan en "Otros" del panel de acciones; las de módulos usan el nombre del módulo"""
+        sinCategoria = [comando for comando, clase in cargarClasesAcciones().items() if clase.categoria == "Otros"]
+        assert sinCategoria == [], f"Falta categoria en: {sinCategoria}"
+
     def test_propiedades_con_tipos_validos_para_isinstance(self):
         """Un tipo como typing.Any hace que mismoTipo rechace siempre el valor"""
         for comando, clase in todasLasAcciones().items():

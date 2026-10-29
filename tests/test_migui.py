@@ -1203,12 +1203,22 @@ class TestCatalogoAcciones:
         user.find(marker="botonCatalogo").click()
         await user.should_see("Teclado y ratón")
         # OBS no está en las acciones registradas: sale con el aviso y no se puede elegir
-        await user.should_see("Activa el módulo OBS en Módulos para usarla")
+        await user.should_see("Activa el módulo OBS en")
         user.find(marker="catalogo-buscar").type("espera")
         await user.should_not_see(marker="catalogo-teclas")
         user.find(marker="catalogo-delay").click()
         assert user.find(marker="editorAcción").elements.pop().value == "Delay"
         await user.should_see(marker="opción-Tiempo")
+
+    async def test_enter_elige_la_primera_y_marca_la_actual(self, user: User, gui: miGui):
+        await user.open("/")
+        user.find(marker="botonCatalogo").click()
+        user.find(marker="catalogo-buscar").type("volumen").trigger("keydown.enter")
+        assert user.find(marker="editorAcción").elements.pop().value == "Volumen"
+        user.find(marker="botonCatalogo").click()
+        await user.should_see(marker="catalogo-volumen")
+        assert "active" in user.find(marker="catalogo-volumen").elements.pop().props
+        assert "active" not in user.find(marker="catalogo-delay").elements.pop().props
 
 
 class TestPropiedadesFolder:

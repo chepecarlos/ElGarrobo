@@ -13,7 +13,7 @@ class accionSalir(accion):
     nombre = "Salir"
     comando = "salir"
     categoria = "ElGarrobo"
-    descripcion = "Cierra el programa ElGarrobo"
+    descripcion = "Cierra ElGarrobo"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)

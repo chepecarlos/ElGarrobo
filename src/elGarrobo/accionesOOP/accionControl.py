@@ -15,7 +15,7 @@ class accionControl(accion):
     nombre = "Control MQTT"
     comando = "control"
     categoria = "Mensajes y red"
-    descripcion = "Controla la PC a distancia"
+    descripcion = "Manda por MQTT una acción para que la ejecute ElGarrobo en otra computadora"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)

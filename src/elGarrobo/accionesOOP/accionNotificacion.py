@@ -15,7 +15,7 @@ class accionNotificacion(accion):
     nombre = "Notificación"
     comando = "notificacion"
     categoria = "Ventanas y sistema"
-    descripcion = "Muestra un mensaje de escritorio"
+    descripcion = "Muestra una notificación de escritorio con un texto"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)

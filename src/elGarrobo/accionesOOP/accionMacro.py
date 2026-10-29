@@ -13,7 +13,7 @@ class accionMacro(accion):
     nombre = "Macro"
     comando = "macro"
     categoria = "Macros y datos"
-    descripcion = "Ejecuta una lista de acciones una tras otra"
+    descripcion = "Ejecuta varias acciones una tras otra; un paso puede usar el resultado del anterior"
     atributoLista = "acciones"
 
     def __init__(self) -> None:

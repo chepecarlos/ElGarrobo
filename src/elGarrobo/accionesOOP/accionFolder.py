@@ -17,7 +17,7 @@ class accionFolder(accion):
     nombre = "Abrir folder"
     comando = "folder"
     categoria = "Ventanas y sistema"
-    descripcion = "Abre una ventana del folder en Nemo"
+    descripcion = "Abre un folder en el explorador de archivos (Nemo)"
 
     propiedadRuta: propiedadAccion = propiedadAccion(
         nombre="Folder",

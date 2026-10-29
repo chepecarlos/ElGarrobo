@@ -95,7 +95,7 @@ class accionReproducir(accion):
     nombre = "Reproducir Sonido"
     comando = "reproduccion"
     categoria = "Sonido"
-    descripcion = "Reproduce un sonido"
+    descripcion = "Reproduce un archivo de sonido"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
@@ -182,7 +182,7 @@ class accionPararReproducciones(accion):
     nombre = "Parar Sonidos"
     comando = "detener_reproduccion"
     categoria = "Sonido"
-    descripcion = "Para todas las reproducciones de sonidos"
+    descripcion = "Detiene todos los sonidos que se están reproduciendo"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)

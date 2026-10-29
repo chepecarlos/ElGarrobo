@@ -86,6 +86,9 @@ def recorrer(navegador, url: str, tema: str) -> None:
     botón(página, "Ver todas las acciones").click()
     esperar(página)
     foto(página, f"{t}-dialogo-catalogo")
+    página.keyboard.type("volumen")
+    esperar(página)
+    foto(página, f"{t}-dialogo-catalogo-buscar")
     página.keyboard.press("Escape")
     esperar(página)
 

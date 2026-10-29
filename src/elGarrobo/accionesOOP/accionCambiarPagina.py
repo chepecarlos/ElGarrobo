@@ -10,10 +10,10 @@ Logger = ConfigurarLogging(__name__)
 class accionSiguientePagina(accion):
     """Siguiente pagina en Dispositivo StreamDeck"""
 
-    nombre = "Siguiente Pagina"
+    nombre = "Siguiente página"
     comando = "siguiente_pagina"
     categoria = "Folders y páginas"
-    descripcion = "Siguiente pagina en Dispositivos StreamDeck"
+    descripcion = "Pasa a la siguiente página de teclas del StreamDeck, pedal u otro dispositivo con páginas"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
@@ -31,10 +31,10 @@ class accionSiguientePagina(accion):
 class accionAnteriorPagina(accion):
     """Anterior pagina en Dispositivo StreamDeck"""
 
-    nombre = "Anterior Pagina"
+    nombre = "Página anterior"
     comando = "anterior_pagina"
     categoria = "Folders y páginas"
-    descripcion = "Anterior pagina en Dispositivos StreamDeck"
+    descripcion = "Regresa a la página de teclas anterior del StreamDeck, pedal u otro dispositivo con páginas"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
@@ -52,10 +52,10 @@ class accionAnteriorPagina(accion):
 class accionActualizarPagina(accion):
     """Actualiza pagina de  StreamDeck"""
 
-    nombre = "Actualiza Pagina"
+    nombre = "Actualizar página"
     comando = "actualizar_pagina"
     categoria = "Folders y páginas"
-    descripcion = "Actualiza pagina en Dispositivos StreamDeck"
+    descripcion = "Vuelve a dibujar los íconos de las teclas del StreamDeck"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)

@@ -36,7 +36,7 @@
 
 ### Acciones en StreamDeck
 - Anterior pagina de StreamDeck: [accionAnteriorPagina](./accionesOOP/accionAnteriorPagina)
-- Siguiente Pagina de StreamDeck: [accionSiguientePagina](./accionesOOP/accionSiguientePagina)
+- Siguiente página de StreamDeck: [accionSiguientePagina](./accionesOOP/accionSiguientePagina)
 - Actualiza la pagina de StreamDeck: [accionActualizarPagina](./accionesOOP/accionActualizarPagina)
 
 """
