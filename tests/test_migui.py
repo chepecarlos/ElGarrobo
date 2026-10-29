@@ -1706,6 +1706,24 @@ class TestEventos:
         ]
         await user.should_see("impresora = Ender → Escribir texto")
 
+    async def test_filtro_ofrece_impresoras_conocidas(self, user: User, gui: miGui, archivos: dict, monkeypatch):
+        from elGarrobo.modulos.fdmMonster.moduloFdmMonster import moduloFdmMonster
+
+        monkeypatch.setattr(moduloFdmMonster, "valoresDatos", {"impresora": ["Prusa", "CoreOne"]})
+        archivos["eventos"] = [{"evento": "fdm_monster/impresion_error", "filtro": {"impresora": "Ender"}, "accion": "escribir"}]
+        await user.open("/eventos")
+        user.find(marker="evento-agregar").click()
+        with user:
+            self.elemento(user, "evento-evento").value = "fdm_monster/impresion_terminada"
+            self.elemento(user, "evento-accion").value = "Escribir texto"
+            filtro = self.elemento(user, "evento-filtro-impresora")
+            assert filtro.options == ["CoreOne", "Ender", "Prusa"], "las que vio el módulo y las ya usadas"
+            filtro.value = "Prusa"
+        user.find(marker="evento-opción-Texto").type("listo")
+        user.find(marker="evento-guardar").click()
+        await user.should_see("Evento guardado")
+        assert archivos["eventos"][1]["filtro"] == {"impresora": "Prusa"}
+
     async def test_activar_probar_y_conservar_claves_extra(self, user: User, gui: miGui, archivos: dict):
         archivos["eventos"] = [{"evento": "fdm_monster/impresion_error", "accion": "escribir", "opciones": {"texto": "{impresora}: {motivo}"}, "extra": 1}]
         gui.ejecutarAcción = MagicMock()

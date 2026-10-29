@@ -199,5 +199,3 @@ class accionPararReproducciones(accion):
             except Exception as e:
                 logger.warning(f"Error al detener stream: {e}")
         listaSonidos = []
-
-

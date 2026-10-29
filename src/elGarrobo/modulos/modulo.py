@@ -39,6 +39,9 @@ class modulo:
     """Opciones del archivo de configuración, la GUI arma el formulario con ellas"""
     eventos: list[eventoModulo] = []
     """Eventos que emite el módulo con `emitirEvento`"""
+    valoresDatos: dict[str, list[str]] = {}
+    """Dato → valores reales vistos al correr (ej. nombres de impresoras); la GUI los ofrece en el filtro.
+    Se asigna en la clase hija (no se modifica este dict, es compartido)"""
     funcionEvento: Optional[Callable[[str, dict], None]] = None
     """Inyectada por elGarrobo: ejecuta las acciones de eventos.md del evento"""
 

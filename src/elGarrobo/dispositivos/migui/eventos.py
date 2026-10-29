@@ -67,7 +67,7 @@ def mostrarEventos(listaClasesAcciones: dict, ejecutarAcción) -> None:
         editorEvento.classes("w-full").mark("evento-evento")
         variables = ui.label("").classes("text-caption").mark("evento-variables")
         with ui.expansion("Filtro (opcional)", icon="filter_alt").classes("w-full"):
-            ui.label("Solo se ejecuta si el dato es igual al escrito; vacío acepta cualquiera").classes("text-caption")
+            ui.label("Solo se ejecuta si el dato es igual al elegido; vacío acepta cualquiera").classes("text-caption")
             columnaFiltro = ui.column().classes("w-full")
         editorAcción = ui.select(sorted(comandos), with_input=True, label="* Acción", on_change=lambda: mostrarOpciones(None))
         editorAcción.classes("w-full").mark("evento-accion")
@@ -80,13 +80,24 @@ def mostrarEventos(listaClasesAcciones: dict, ejecutarAcción) -> None:
         """Un campo por dato del evento elegido y la ayuda con sus variables"""
         columnaFiltro.clear()
         editando["filtro"] = {}
-        evento = catalogo.get(editorEvento.value, (None, None))[1]
+        clase, evento = catalogo.get(editorEvento.value, (None, None))
         datos = evento.datos if evento else {}
         variables.text = ("Variables para las opciones: " + " ".join(f"{{{dato}}}" for dato in datos)) if datos else ""
         with columnaFiltro:
             for dato, ejemplo in datos.items():
-                editor = ui.input(dato, value=str(filtro.get(dato, "")), placeholder=f"ej. {ejemplo}").classes("w-full")
-                editando["filtro"][dato] = editor.mark(f"evento-filtro-{dato}")
+                valor = str(filtro.get(dato, ""))
+                # Lo que vio el módulo al correr y lo ya usado en otros eventos (ej. una impresora apagada)
+                conocidos = {*clase.valoresDatos.get(dato, []), valor}
+                conocidos |= {str(e["filtro"][dato]) for e in entradas if dato in (e.get("filtro") or {})}
+                conocidos.discard("")
+                if conocidos:
+                    editor = ui.select(
+                        sorted(conocidos), label=dato, value=valor or None, with_input=True, new_value_mode="add-unique", clearable=True
+                    )
+                    editor.props["hint"] = "Elige de la lista o escribe otro y presiona Enter"
+                else:
+                    editor = ui.input(dato, value=valor, placeholder=f"ej. {ejemplo}")
+                editando["filtro"][dato] = editor.classes("w-full").mark(f"evento-filtro-{dato}")
 
     def mostrarOpciones(opciones: dict | list | None) -> None:
         """Editores de las opciones de la acción; las acciones sin clase OOP se editan en YAML (igual que los pasos)"""

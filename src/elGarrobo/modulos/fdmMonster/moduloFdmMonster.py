@@ -225,6 +225,9 @@ class moduloFdmMonster(modulo):
 
         consultadas = 0
         cola_total = 0
+        nombres = [str(i.get("name", i.get("id"))) for i in impresoras if i.get("enabled")]
+        # Para elegir la impresora del filtro en /eventos sin escribir su nombre a mano
+        moduloFdmMonster.valoresDatos = {"impresora": sorted(nombres)}
         for impresora in impresoras:
             if not impresora.get("enabled"):
                 continue

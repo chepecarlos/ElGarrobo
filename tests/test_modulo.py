@@ -138,7 +138,9 @@ class TestEventosFdmMonster:
         socket = {"current": {"payload": {"state": {"text": "Printing"}}}}
         respuestas = {"printer/": [{"id": 1, "name": "Ender", "enabled": True}], "print-queue/1": {"count": 0}, "printer/1/socket": socket}
         monkeypatch.setattr(fdm, "_obtener_json", lambda sesion, url: respuestas[url.removeprefix(self.API + "/")])
+        monkeypatch.setattr(moduloFdmMonster, "valoresDatos", {})
         for texto in ("Printing", "Pausing", "Paused", "Printing", "Paused"):
             socket["current"]["payload"]["state"]["text"] = texto
             fdm._consultar_impresoras(None, self.API)
         assert [d["estado"] for _, d in fdm.avisados] == ["Pausing"], "la segunda pausa cae en la espera de repetidos"
+        assert moduloFdmMonster.valoresDatos == {"impresora": ["Ender"]}, "para elegirla en el filtro de /eventos"

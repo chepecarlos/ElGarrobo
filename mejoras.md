@@ -95,7 +95,8 @@ Pendiente:
 - [ ] **Cajón inicial en macros**: acordado que el cajón empiece con los datos del evento; no se hizo porque `{dato}` ya se reemplaza en los pasos. Hacerlo si alguna acción necesita el dato como valor completo vía `solisita`.
 - [ ] **Condiciones en el filtro** (ej. `progreso > 50`); hoy solo igualdad.
 - [ ] **Otras fuentes**: `obs/grabacion_iniciada` (desde `on_record_state_changed`), Klipper/Octoprint, `mqtt/<topic>`, `elgarrobo/inicio`.
-- [ ] **GUI**: historial de últimos eventos recibidos; filtro de impresora como lista de nombres reales; el grupo muestra el nombre camelCase del módulo (`estadoFdmMonster`, ver Copy en la auditoría).
+- [x] **Filtro como lista** (2026-10-29): `modulo.valoresDatos` (FDM Monster lo llena con las impresoras habilitadas en cada consulta) + los ya usados en eventos.md; se puede escribir otro. Solo se llena con el módulo corriendo.
+- [ ] **GUI**: historial de últimos eventos recibidos; el grupo muestra el nombre camelCase del módulo (`estadoFdmMonster`, ver Copy en la auditoría).
 - [ ] **Voz** (futuro): migrar `textovoz` (`pyttsx3`) del paquete legacy `acciones/` a OOP; los eventos la usan sin cambios gracias a `{dato}`.
 
 ## Código
