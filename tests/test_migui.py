@@ -556,6 +556,14 @@ class TestConfigurar:
         assert next(iter(user.find(kind=ui.dark_mode).elements)).value is None, "las otras páginas abren con el tema elegido"
 
 
+def test_estado_de_grupo_cuenta_sus_decks():
+    grupo = MagicMock(listaDeck=[MagicMock(conectado=True), MagicMock(conectado=False)])
+    assert configuracion.estadoAparato(grupo, True) == ("1 de 2 conectados", tema.colorPendiente)
+    grupo.listaDeck[1].conectado = True
+    assert configuracion.estadoAparato(grupo, True) == ("Conectado", "positive")
+    assert configuracion.estadoAparato(None, False)[0] == "Apagado"
+
+
 class TestActivables:
     @pytest.mark.parametrize("ruta, archivo", [("/modulos", "modulos"), ("/dispositivos", "dispositivos")])
     async def test_switch_guarda_estado(self, user: User, gui: miGui, monkeypatch, ruta, archivo):
@@ -1453,6 +1461,21 @@ class TestAgregarTeclado:
         with user:
             next(s for s in user.find(kind=ui.switch).elements if s.props.get("aria-label") == "Activar Teclado Macro").value = True
         await user.should_not_see("Activa Teclado Macro para agregar uno")
+
+    async def test_chip_de_estado(self, user: User, gui: miGui, archivos: dict):
+        archivos["teclados.md"].append({"nombre": "Nuevo", "dispositivo": "/dev/b"})
+        # Renombrado sin reiniciar: se encuentra por ruta
+        cargado = MiTecladoMacro({"nombre": "Viejo", "dispositivo": "/dev/a"})
+        gui.listaDispositivos.append(cargado)
+        chip = lambda nombre: next(iter(user.find(marker=f"estado-{nombre}").elements)).default_slot.children[1].text
+        await user.open("/dispositivos")
+        await user.should_see("Desconectado")
+        await user.should_see("Se carga al reiniciar"), "Nuevo no está cargado"
+        cargado.conectado = True
+        await esperarQue(lambda: chip("Completo") == "Conectado", 3)
+        with user:
+            next(s for s in user.find(kind=ui.switch).elements if s.props.get("aria-label") == "Activar Teclado Macro").value = False
+        await esperarQue(lambda: chip("Nuevo") == "Apagado", 3)
 
     async def test_recargar_muestra_distribucion_nueva(self, user: User, gui: miGui, archivos: dict, distribucionesUsuario: Path):
         await user.open("/dispositivos")

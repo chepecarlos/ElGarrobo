@@ -41,6 +41,25 @@ def marcarPendiente(gui, clave: str, descripción: str | None) -> None:
     gui.pendientesReinicio = pendientes
 
 
+def estadoAparato(instancia: dispositivo | None, tipoActivo: bool) -> tuple[str, str]:
+    """Texto y color del chip de un aparato en /dispositivos
+
+    Args:
+        instancia (dispositivo): el que ElGarrobo tiene cargado para ese aparato, None si no lo cargó
+        tipoActivo (bool): switch de su tipo; sin instancia explica por qué no está cargado
+    """
+    if instancia is None:
+        return ("Apagado", "grey-6") if not tipoActivo else ("Se carga al reiniciar", tema.colorPendiente)
+    # Grupo de StreamDeck: conectado solo si están todos, si no cuántos
+    decks = getattr(instancia, "listaDeck", None)
+    if decks:
+        conectados = sum(bool(d.conectado) for d in decks)
+        if conectados < len(decks):
+            return (f"{conectados} de {len(decks)} conectados", "negative" if not conectados else tema.colorPendiente)
+        return "Conectado", "positive"
+    return ("Conectado", "positive") if instancia.conectado else ("Desconectado", "negative")
+
+
 def mostrarListaActivables(titulo: str, archivo: str, listaClases: list, aviso: str, gui=None) -> None:
     """Lista módulos o dispositivos con un switch para activarlos/desactivarlos
 
@@ -306,7 +325,7 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
     abierto: dict = {}
     "Grupo que se acaba de crear o cambiar (se dibuja abierto) y botón que tenía el foco, el refresh los recrea"
 
-    def guardar(data: dict, nombre: ui.input, internos: list, desplegable: ui.expansion) -> None:
+    def guardar(data: dict, nombre: ui.input, internos: list, etiqueta: ui.item_label) -> None:
         aparatos = ObtenerArchivo(archivo) or []
         nombreAnterior = data.get("nombre")
         nombreNuevo = (nombre.value or "").strip()
@@ -326,7 +345,7 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
             dataInterno["nombre"] = editor.value.strip()
         # Se reemplaza su entrada en el archivo leído ahora, por si se agregó o quitó otro aparato desde que se dibujó
         SalvarArchivo(archivo, [data if otro.get("nombre") == nombreAnterior else otro for otro in aparatos])
-        desplegable.text = nombreNuevo
+        etiqueta.text = nombreNuevo
         # Los nombres se usan al cargar (pestañas, acciones con 'dispositivo'); el resto lo aplica el aparato si puede
         conectado = [d for d in (gui.listaDispositivos if gui else []) if d.nombre == nombreAnterior]
         if not cambióNombre and conectado and all(d.aplicarAparato(data) for d in conectado):
@@ -447,11 +466,26 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
                         ruta = str(Path(ObtenerFolderConfig(), archivo)).replace(str(Path.home()), "~", 1)
                         como = f"Por ahora se agrega a mano en {ruta}"
                     ui.label(como).classes("text-caption break-words")
+        chips = []
         for data in aparatos:
             titulo, ruta = data.get("nombre", "Sin nombre"), data.get("dispositivo", "")
             caption = "Grupo de StreamDeck" if conGrupos else clase.nombreAparato(ruta)
-            with ui.expansion(titulo, caption=caption, icon=clase.icono, value=abierto.get("grupo") == titulo) as desplegable:
+            with ui.expansion(titulo, value=abierto.get("grupo") == titulo) as desplegable:
                 desplegable.classes("w-full").props(DESPLEGABLE_LIGERO)
+                # Cabecera propia para el estado: la de Quasar solo tiene ícono, nombre y caption.
+                # Junto al caption y no a la derecha: en celular le quitaba ancho y el caption bajaba palabra por palabra
+                with desplegable.add_slot("header"):
+                    with ui.item_section().props("avatar"):
+                        ui.icon(clase.icono)
+                    with ui.item_section():
+                        etiqueta = ui.item_label(titulo)
+                        with ui.row().classes("items-center gap-x-3 gap-y-0"):
+                            if gui is not None:
+                                with ui.row().classes("items-center no-wrap gap-1").mark(f"estado-{titulo}"):
+                                    punto = ui.element("span").classes("w-2 h-2 rounded-full shrink-0")
+                                    texto = ui.label().classes("text-caption")
+                                chips.append((data, punto, texto))
+                            ui.item_label(caption).props("caption")
                 nombre = ui.input("Nombre", value=data.get("nombre", "")).classes("p-2")
                 if conDistribucion:
                     mostrarDistribucion(data)
@@ -491,7 +525,7 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
                         "Guardar",
                         icon="save",
                         color=tema.colorOscuro,
-                        on_click=lambda d=data, n=nombre, i=editoresInternos, e=desplegable: guardar(d, n, i, e),
+                        on_click=lambda d=data, n=nombre, i=editoresInternos, e=etiqueta: guardar(d, n, i, e),
                     )
                     if agregable:
                         quitarBoton = ui.button(
@@ -503,6 +537,22 @@ def mostrarAparatos(clase: type[dispositivo], gui=None, interruptor: ui.switch |
                             ),
                         )
                         quitarBoton.props("flat").mark(f"quitar-{titulo}")
+
+        def actualizarEstados() -> None:
+            tipoActivo = interruptor.value if interruptor is not None else True
+            for data, punto, texto in chips:
+                ruta = data.get("dispositivo")
+                # Por ruta además del nombre: renombrado sigue cargado con el anterior hasta reiniciar
+                cargados = (d for d in gui.listaDispositivos if type(d) is clase)
+                instancia = next((d for d in cargados if d.nombre == data.get("nombre") or (ruta and d.dispositivo == ruta)), None)
+                estado, color = estadoAparato(instancia, tipoActivo)
+                texto.set_text(estado)
+                punto.classes(replace=f"w-2 h-2 rounded-full shrink-0 bg-{color}")
+
+        if chips:
+            actualizarEstados()
+            # ponytail: sondeo cada 2 s, los dispositivos no avisan al conectarse; con eventos se quitaría el timer
+            ui.timer(2, actualizarEstados)
 
     conDistribucion = hasattr(clase, "cambiarDistribucion")
     if conGrupos:

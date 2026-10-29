@@ -81,7 +81,8 @@ pedal._listaAcciones = pedal.convertirAcciones(
     ]
 )
 
-teclado = MiTecladoMacro({"nombre": "teclado", "distribucion": "ingles_87k"})
+teclado = MiTecladoMacro({"nombre": "teclado", "dispositivo": "/dev/a", "distribucion": "ingles_87k"})
+teclado.conectado = True  # el chip de /dispositivos lo encuentra por ruta (Completo en teclados.md)
 teclado._listaAcciones = teclado.convertirAcciones([{"nombre": "Escena", "key": "KEY_A", "accion": "escribir", "opciones": {"texto": "a"}}])
 
 mqtt = dispositivoFalso(
