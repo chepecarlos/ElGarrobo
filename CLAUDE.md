@@ -53,6 +53,7 @@ El formateador de código es **Black** con `line-length = 119`.
 
 Heredan de `accion` (clase base en `accion.py`). Cada acción define:
 - `nombre`, `comando` (string clave), `descripcion`
+- `categoria`: grupo en el panel de acciones de la GUI (botón 📖 junto a cada selector de acción, `dispositivos/migui/catalogo.py`). Las acciones de un módulo usan el nombre del módulo, y si está apagado salen en ese panel con aviso para activarlo
 - `listaPropiedades`: lista de `propiedadAccion` con nombre, tipo y si es obligatoria. Para propiedades `str` de varias líneas (ej. `texto` en `accionEscribirTexto`) usar `multilinea=True` para que la GUI muestre un `textarea` en vez de un `input`. Para archivos o folders que la acción busca con `accion.calcularRuta` usar `ruta=True`: la GUI avisa en ámbar (sin impedir guardar) si no existe. Rutas: `/x` desde la raíz del perfil (o ruta completa del sistema si existe), `./x` o `x` desde el folder del dispositivo que ejecuta la acción (`folderEjecución`, que pasa `ejecutarAcción(..., folder)` y heredan las macros)
 - `configurar(dict)` → valida y llena `listaValores`
 - `ejecutar()` → verifica propiedades y llama a `funcion` o `funcionExterna`
@@ -75,7 +76,7 @@ Integraciones de fondo (OBS, estado PC, Octoprint, MQTT estado). Heredan de `mod
 
 Un módulo agrega sus propias acciones con `acciones = [claseAccion, ...]`; `IniciarAcciones()` las registra solo si el módulo está activado y les asigna la instancia en el atributo de clase `modulo` (ej. `accionOBS` usa `self.modulo.cambiarEscena(...)` y revisa la conexión en `sePuedeEjecutar`). Las opciones de su archivo de configuración se declaran en `propiedades = [propiedadAccion, ...]` (listas repetibles como impresoras con `tipo=[list]` y `elementos=[...]`); la GUI arma con ellas el formulario de /modulos, así no depende de que el archivo exista. Los módulos con acciones viven en su carpeta: `modulos/<nombre>/modulo<Nombre>.py` (clase `modulo<Nombre>`) + `acciones<Nombre>.py`. Ej: `modulos/obs/moduloOBS.py`.
 
-**Eventos**: un módulo declara `eventos = [eventoModulo(nombre, descripcion, datos)]` y llama `self.emitirEvento(nombre, datos)`; `elGarrobo.dispararEvento` (inyectado en `modulo.funcionEvento`) lee `eventos.md` global en cada evento y ejecuta en hilos aparte las entradas activas cuyo `filtro` coincide, con `{dato}` reemplazado en las opciones. Se editan en la GUI en /eventos (`dispositivos/migui/eventos.py`).
+**Eventos**: un módulo declara `eventos = [eventoModulo(nombre, descripcion, datos)]` y llama `self.emitirEvento(nombre, datos)`; `elGarrobo.dispararEvento` (inyectado en `modulo.funcionEvento`) lee `eventos.md` global en cada evento y ejecuta en hilos aparte las entradas activas cuyo `filtro` coincide, con `{dato}` reemplazado en las opciones. El filtro acepta condiciones (`"> 80"`, `"!= 0"`, ver `cumpleFiltro`); un evento con `periodico=True` (ej. `estado_pc/lectura`) solo ejecuta cuando el filtro empieza a cumplirse. Se editan en la GUI en /eventos (`dispositivos/migui/eventos.py`).
 
 ### Configuración del usuario
 

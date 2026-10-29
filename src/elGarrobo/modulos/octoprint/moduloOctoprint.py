@@ -8,14 +8,14 @@ from elGarrobo.modulos.octoprint.accionesOctoprint import accionCancelarOctoprin
 from elGarrobo.accionesOOP.accionMQTT import accionMQTT
 from elGarrobo.miLibrerias import ConfigurarLogging
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
-from elGarrobo.modulos.modulo import leerMonitoreo, modulo, propiedadesMonitoreo
+from elGarrobo.modulos.modulo import eventoImpresion, eventosImpresion, leerMonitoreo, modulo, propiedadesMonitoreo
 
 logger = ConfigurarLogging(__name__)
 
 
 class moduloOctoprint(modulo):
 
-    nombre = "estadoOctoprint"
+    nombre = "Octoprint"
     modulo = "estado_octoprint"
     acciones = [accionReimprimirOctoprint, accionCancelarOctoprint]
     descripcion = "Módulo para obtener el estado de Octoprint"
@@ -49,6 +49,16 @@ class moduloOctoprint(modulo):
             ],
         )
     ]
+    eventos = eventosImpresion(
+        "octoprint",
+        {
+            "impresora": "ender3",
+            "archivo": "pieza.gcode",
+            "progreso": "100.0",
+            "tiempo_transcurrido": "4980",
+            "tiempo_transcurrido_humano": "1h 23m",
+        },
+    )
 
     def __init__(self, dataModulo: dict) -> None:
         super().__init__(dataModulo)
@@ -59,6 +69,8 @@ class moduloOctoprint(modulo):
 
         impresoras_raw = dataModulo.get("impresoras")
         self.impresoras: list[dict] = impresoras_raw if isinstance(impresoras_raw, list) else []
+        self.fases: dict[str, str] = {}
+        "impresora → fase en la lectura anterior, para avisar al cambiar"
 
     def ejecutar(self) -> None:
         """Inicia un hilo de monitoreo por cada impresora configurada."""
@@ -71,6 +83,8 @@ class moduloOctoprint(modulo):
 
         logger.info(f"Modulo[{self.nombre}] - {len(self.impresoras)} impresora(s) configuradas")
         self.activo = True
+        # Para elegir la impresora del filtro en /eventos
+        moduloOctoprint.valoresDatos = {"impresora": sorted(str(c.get("nombre", "")).strip() for c in self.impresoras)}
         for config in self.impresoras:
             nombre = str(config.get("nombre", "impresora-desconocida")).strip()
             topic = str(config.get("topic", nombre)).strip()
@@ -95,6 +109,8 @@ class moduloOctoprint(modulo):
 
     def _normalizar_estado(self, payload: dict[str, Any]) -> dict[str, str]:
         progreso = payload.get("progress", {}) if isinstance(payload.get("progress"), dict) else {}
+        trabajo = payload.get("job", {}) if isinstance(payload.get("job"), dict) else {}
+        archivo = trabajo.get("file", {}) if isinstance(trabajo.get("file"), dict) else {}
 
         # En OctoPrint, state viene como cadena directa: "Printing", "Paused", "Operational", etc.
         estado_raw = payload.get("state")
@@ -115,6 +131,8 @@ class moduloOctoprint(modulo):
             "tiempo_restante": str(restante_seg),
             "tiempo_transcurrido_humano": self._formatear_tiempo(transcurrido_seg),
             "tiempo_restante_humano": self._formatear_tiempo(restante_seg),
+            "archivo": str(archivo.get("name") or ""),
+            "motivo": str(payload.get("error") or ""),
         }
 
     def _obtener_temperaturas_octoprint(self, nombre: str, url: str, token: str, silenciar_error: bool = False) -> Optional[dict[str, str]]:
@@ -262,6 +280,7 @@ class moduloOctoprint(modulo):
                         f"Transcurrido: {estadoActual['tiempo_transcurrido_humano']} | "
                         f"Restante: {estadoActual['tiempo_restante_humano']}"
                     )
+                    self._avisarCambio(nombre, topic, estadoActual)
 
                 temperaturas = self._obtener_temperaturas_octoprint(nombre, url, token, silenciar_error)
                 if temperaturas:
@@ -284,6 +303,34 @@ class moduloOctoprint(modulo):
                     logger.error(f"EstadoOctoprint[{nombre}] - Error en monitoreo: {error}")
 
             time.sleep(intervalo_error if errores_consecutivos >= limite_errores_log else intervalo)
+
+    @staticmethod
+    def _fase(estado: str, progreso: float, anterior: Optional[str]) -> str:
+        """Fase de FASES_IMPRESION según el texto de estado de OctoPrint (Printing, Pausing, Cancelling, Error...)"""
+        texto = estado.lower()
+        if "cancel" in texto:
+            return "cancelada"
+        if "paus" in texto:
+            return "pausada"
+        if "error" in texto:
+            return "error"
+        if "printing" in texto or "resuming" in texto or "starting" in texto:
+            return "imprimiendo"
+        if "operational" in texto and anterior in ("imprimiendo", "pausada"):
+            # OctoPrint no tiene estado de terminada: vuelve a Operational; sin llegar al 100 % se canceló
+            return "terminada" if progreso >= 99.9 else "cancelada"
+        return "inactiva"
+
+    def _avisarCambio(self, nombre: str, topic: str, estadoActual: dict[str, str]) -> None:
+        """Emite octoprint/<evento> si la impresora cambió de fase desde la lectura anterior"""
+        anterior = self.fases.get(nombre)
+        fase = self._fase(estadoActual["estado"], float(estadoActual["progreso"]), anterior)
+        evento = eventoImpresion(anterior, fase)
+        self.fases[nombre] = fase
+        if evento:
+            logger.info(f"EstadoOctoprint[{nombre}] - Evento {evento}")
+            self._publicar(topic, "eventos", evento)
+            self.emitirEvento(f"octoprint/{evento}", {"impresora": nombre, **estadoActual})
 
     def _formatear_tiempo(self, segundos: int) -> str:
         if segundos <= 0:

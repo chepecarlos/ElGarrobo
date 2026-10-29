@@ -100,3 +100,4 @@ class TestEstadoPc:
 
         assert modulo.activo is True
         logger_falso.error.assert_called_once()
+

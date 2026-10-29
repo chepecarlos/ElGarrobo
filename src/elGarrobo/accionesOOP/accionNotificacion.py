@@ -14,6 +14,7 @@ class accionNotificacion(accion):
 
     nombre = "Notificación"
     comando = "notificacion"
+    categoria = "Ventanas y sistema"
     descripcion = "Muestra un mensaje de escritorio"
 
     def __init__(self) -> None:

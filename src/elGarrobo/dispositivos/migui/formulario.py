@@ -95,6 +95,7 @@ class formularioAccion:
                 self.listaNombreAcciones.append(nombreAccion)
 
             self.editorAcción = ui.select(options=self.listaNombreAcciones, with_input=True, label="Acción", on_change=self.mostrarOpciones).classes("w-full").mark("editorAcción")
+            self.pasos.catalogo.agregarBoton(self.editorAcción)
             self.editorDescripcion = ui.label("").classes(f"w-full bg-{tema.colorTecla} p-2 text-white rounded-lg")
             self.editorDescripcion.visible = False
             self.editorPropiedades = ui.column().classes("w-full")

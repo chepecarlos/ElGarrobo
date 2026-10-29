@@ -14,6 +14,7 @@ class accionTeclas(accion):
 
     nombre: str = "Teclas"
     comando: str = "teclas"
+    categoria = "Teclado y ratón"
     descripcion: str = "Presiona una combinación de teclas"
 
     propiedadTeclas: propiedadAccion = propiedadAccion(

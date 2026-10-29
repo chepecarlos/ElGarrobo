@@ -26,6 +26,8 @@ class accion:
     "Identificador de la acción"
     descripcion: str
     "Descripción de la acción"
+    categoria: str = "Otros"
+    "Grupo en el panel de acciones de la GUI; las de un módulo usan el nombre del módulo"
     listaPropiedades: list[propiedadAccion] = []
     "Lista Propiedad para ejecutar la acciones"
     listaValores: list[valoresAcciones] = list()

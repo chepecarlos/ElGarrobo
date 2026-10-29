@@ -15,6 +15,7 @@ class accionOS(accion):
 
     nombre = "Comando OS"
     comando = "os"
+    categoria = "Ventanas y sistema"
     descripcion = "Ejecuta comando de terminal"
 
     def __init__(self) -> None:

@@ -12,6 +12,7 @@ class accionSalir(accion):
 
     nombre = "Salir"
     comando = "salir"
+    categoria = "ElGarrobo"
     descripcion = "Cierra el programa ElGarrobo"
 
     def __init__(self) -> None:

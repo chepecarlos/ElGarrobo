@@ -421,11 +421,13 @@ class elGarrobo(object):
         if estadoEvento == "presionado":
             logger.info(f"Evento[No asignado] {NombreEvento}[{Evento['key']}]")
 
-    def dispararEvento(self, nombre: str, datos: dict) -> None:
+    def dispararEvento(self, nombre: str, datos: dict, periodico: bool = False) -> None:
         """Ejecuta las acciones de eventos.md del evento, cada una en su hilo: una macro lenta no frena al módulo"""
-        # Se lee en cada evento (son pocos): lo editado en /eventos aplica sin reiniciar
-        acciones = accionesEvento(leerData(ARCHIVO_EVENTOS) or [], nombre, datos)
-        logger.info(f"Evento[{nombre}] {len(acciones)} acción(es) - {datos}")
+        # Se lee en cada evento: lo editado en /eventos aplica sin reiniciar
+        acciones = accionesEvento(leerData(ARCHIVO_EVENTOS) or [], nombre, datos, periodico)
+        if acciones or not periodico:
+            # Los periódicos llegan cada pocos segundos: solo se registran si ejecutan algo
+            logger.info(f"Evento[{nombre}] {len(acciones)} acción(es) - {datos}")
         for accionEvento in acciones:
             hilo = threading.Thread(
                 target=self.ejecutarAcción, args=(accionEvento,), daemon=True, name=f"evento-{nombre}"

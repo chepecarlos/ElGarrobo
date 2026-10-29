@@ -8,16 +8,25 @@ from elGarrobo.modulos.klipper.accionesKlipper import accionCancelarKlipper, acc
 from elGarrobo.accionesOOP.accionMQTT import accionMQTT
 from elGarrobo.miLibrerias import ConfigurarLogging
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
-from elGarrobo.modulos.modulo import leerMonitoreo, modulo, propiedadesMonitoreo
+from elGarrobo.modulos.modulo import eventoImpresion, eventosImpresion, leerMonitoreo, modulo, propiedadesMonitoreo
 
 logger = ConfigurarLogging(__name__)
 
 _OBJETOS_QUERY = {"print_stats": "", "virtual_sdcard": "", "toolhead": "", "extruder": "", "heater_bed": ""}
 
+FASES_KLIPPER = {
+    "printing": "imprimiendo",
+    "paused": "pausada",
+    "complete": "terminada",
+    "cancelled": "cancelada",
+    "error": "error",
+}
+"print_stats.state → fase de FASES_IMPRESION; standby y otros son 'inactiva'"
+
 
 class moduloKlipper(modulo):
 
-    nombre = "estadoKlipper"
+    nombre = "Klipper"
     modulo = "estado_klipper"
     acciones = [accionReimprimirKlipper, accionCancelarKlipper]
     descripcion = "Módulo para obtener el estado de una impresora Klipper (Moonraker)"
@@ -43,6 +52,18 @@ class moduloKlipper(modulo):
             ],
         )
     ]
+    eventos = eventosImpresion(
+        "klipper",
+        {
+            "impresora": "ender3",
+            "archivo": "pieza.gcode",
+            "progreso": "100.0",
+            "capa_actual": "120",
+            "capa_total": "120",
+            "tiempo_transcurrido": "4980",
+            "tiempo_impresion": "1h 23m",
+        },
+    )
 
     def __init__(self, dataModulo: dict) -> None:
         super().__init__(dataModulo)
@@ -53,6 +74,8 @@ class moduloKlipper(modulo):
 
         impresoras_raw = dataModulo.get("impresoras")
         self.impresoras: list[dict] = impresoras_raw if isinstance(impresoras_raw, list) else []
+        self.fases: dict[str, str] = {}
+        "impresora → fase en la lectura anterior, para avisar al cambiar"
 
     def ejecutar(self) -> None:
         """Inicia un hilo de monitoreo por cada impresora configurada."""
@@ -65,6 +88,8 @@ class moduloKlipper(modulo):
 
         logger.info(f"Modulo[{self.nombre}] - {len(self.impresoras)} impresora(s) configuradas")
         self.activo = True
+        # Para elegir la impresora del filtro en /eventos
+        moduloKlipper.valoresDatos = {"impresora": sorted(str(c.get("nombre", "")).strip() for c in self.impresoras)}
         for config in self.impresoras:
             nombre = str(config.get("nombre", "impresora-desconocida")).strip()
             topic = str(config.get("topic", nombre)).strip()
@@ -110,6 +135,7 @@ class moduloKlipper(modulo):
             "tiempo_restante": str(restante_seg),
             "tiempo_impresion": self._formatear_tiempo(transcurrido_seg),
             "tiempo_restante_humano": self._formatear_tiempo(restante_seg),
+            "motivo": str(print_stats.get("message") or ""),
         }
 
     def _normalizar_temperaturas(self, status: dict[str, Any]) -> dict[str, str]:
@@ -187,6 +213,8 @@ class moduloKlipper(modulo):
                     for sub_topic, valor in temperaturas.items():
                         self._publicar(topic, f"temperatura/{sub_topic}", valor)
 
+                    self._avisarCambio(nombre, topic, estadoActual)
+
                     logger.info(
                         f"EstadoKlipper[{nombre}] - "
                         f"Estado: {estadoActual['estado']} | "
@@ -210,6 +238,16 @@ class moduloKlipper(modulo):
                     logger.error(f"EstadoKlipper[{nombre}] - Error en monitoreo: {error}")
 
             time.sleep(intervalo_error if errores_consecutivos >= limite_errores_log else intervalo)
+
+    def _avisarCambio(self, nombre: str, topic: str, estadoActual: dict[str, str]) -> None:
+        """Emite klipper/<evento> si la impresora cambió de fase desde la lectura anterior"""
+        fase = FASES_KLIPPER.get(estadoActual["estado"], "inactiva")
+        evento = eventoImpresion(self.fases.get(nombre), fase)
+        self.fases[nombre] = fase
+        if evento:
+            logger.info(f"EstadoKlipper[{nombre}] - Evento {evento}")
+            self._publicar(topic, "eventos", evento)
+            self.emitirEvento(f"klipper/{evento}", {"impresora": nombre, **estadoActual})
 
     def _formatear_tiempo(self, segundos: int) -> str:
         if segundos <= 0:

@@ -13,6 +13,7 @@ class accionCerrarVentana(accion):
 
     nombre = "Cerrar Ventana"
     comando = "cerrar_ventana"
+    categoria = "Ventanas y sistema"
     descripcion = "Cierra la ventana con cursor"
 
     def __init__(self) -> None:

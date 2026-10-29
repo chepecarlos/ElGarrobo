@@ -45,6 +45,7 @@ body.body--dark { --color-acento: #5eead4; --color-foco: #5eead4; --color-error-
 .aviso-ruta .q-field__messages { color: var(--color-aviso-texto); }
 .q-header { --color-acento: #5eead4; --color-foco: #5eead4; }
 .texto-acento { color: var(--color-acento); }
+.texto-aviso { color: var(--color-aviso-texto); }
 /* primary y negative (ver COLORES_QUASAR) son fondos con texto blanco; como texto sobre el fondo oscuro no llegan a 4.5:1.
    En campos, menús y botones planos se usa el acento del tema para la etiqueta, la opción elegida y los errores */
 .q-field, .q-menu, .q-btn--flat { --q-primary: var(--color-foco); }

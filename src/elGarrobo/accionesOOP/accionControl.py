@@ -14,6 +14,7 @@ class accionControl(accion):
 
     nombre = "Control MQTT"
     comando = "control"
+    categoria = "Mensajes y red"
     descripcion = "Controla la PC a distancia"
 
     def __init__(self) -> None:

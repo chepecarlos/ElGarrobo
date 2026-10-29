@@ -12,6 +12,7 @@ class accionPresionar(accion):
 
     nombre = "Presiona"
     comando = "presionar"
+    categoria = "Teclado y ratón"
     descripcion = "Ejecuta una acción al presionar la tecla y otra al soltarla"
 
     def __init__(self) -> None:

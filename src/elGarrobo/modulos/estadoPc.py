@@ -7,14 +7,14 @@ import psutil
 from elGarrobo.accionesOOP.accionMQTT import accionMQTT
 from elGarrobo.miLibrerias import ConfigurarLogging
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
-from elGarrobo.modulos.modulo import modulo
+from elGarrobo.modulos.modulo import eventoModulo, modulo
 
 logger = ConfigurarLogging(__name__)
 
 
 class estadoPc(modulo):
 
-    nombre = "estadoPc"
+    nombre = "Estado PC"
     modulo = "estado_pc"
     descripcion = "Módulo para obtener el estado del PC"
 
@@ -35,6 +35,14 @@ class estadoPc(modulo):
             descripcion="Se usa en los topics MQTT: estado_pc/<nombre>/cpu",
             ejemplo="mi-pc",
             defecto=nombrePC,
+        )
+    ]
+    eventos = [
+        eventoModulo(
+            "estado_pc/lectura",
+            "Uso de CPU y RAM",
+            {"pc": "mi-pc", "cpu": "12.5", "ram": "85.3"},
+            periodico=True,
         )
     ]
 
@@ -64,6 +72,8 @@ class estadoPc(modulo):
         logger.info(f"Estado[{self.nombrePC}] - Publicando estado de PC[{self.nombrePC}] por MQTT")
 
         self.activo = True
+        # Para elegir este PC en el filtro de /eventos
+        estadoPc.valoresDatos = {"pc": [self.nombrePC]}
         self.hiloMonitoreo = threading.Thread(target=self._monitorear_recursos, daemon=True)
         self.hiloMonitoreo.start()
         logger.info(f"Modulo[{self.nombre}] - Monitoreo iniciado")
@@ -94,6 +104,7 @@ class estadoPc(modulo):
                 accionEnviar.ejecutar()
 
                 logger.info(f"Estado[{self.nombrePC}] - CPU: {cpu}% | Memoria: {memoria}%")
+                self.emitirEvento("estado_pc/lectura", {"pc": self.nombrePC, "cpu": str(cpu), "ram": str(memoria)})
                 time.sleep(10)
             except Exception as e:
                 logger.error(f"Estado[{self.nombrePC}] - Error en monitoreo: {e}")

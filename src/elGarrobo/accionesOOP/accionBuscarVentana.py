@@ -13,6 +13,7 @@ class accionBuscarVentana(accion):
 
     nombre = "Buscar Ventana"
     comando = "mostrar_ventana"
+    categoria = "Ventanas y sistema"
     descripcion = "Buscar ventana con un nombre"
 
     def __init__(self) -> None:

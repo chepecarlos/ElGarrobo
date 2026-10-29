@@ -32,7 +32,7 @@ EVENTOS_ESTADO = {
 
 class moduloFdmMonster(modulo):
 
-    nombre = "estadoFdmMonster"
+    nombre = "FDM Monster"
     modulo = "estado_fdm_monster"
     acciones = [accionImprimirColaFDM]
     descripcion = "Módulo para obtener el estado de las impresoras de FDM Monster"
@@ -361,8 +361,9 @@ class moduloFdmMonster(modulo):
 
         while self.activo:
             silenciar_error = errores_consecutivos >= limite_errores_log
+            nueva = sesion is None
             try:
-                if sesion is None:
+                if nueva:
                     sesion = self._iniciar_sesion(api)
                 self._consultar_impresoras(sesion, api)
                 self._revisar_trabajos(sesion, api)
@@ -372,8 +373,13 @@ class moduloFdmMonster(modulo):
                 errores_consecutivos = 0
 
             except Exception as error:
-                # ponytail: cualquier error (token vencido incluido) fuerza un nuevo login en el siguiente ciclo
+                # Cualquier error fuerza un nuevo login
                 sesion = None
+                respuesta = getattr(error, "response", None)
+                if not nueva and getattr(respuesta, "status_code", None) == 401:
+                    # El token de FDM Monster vence cada hora: login de nuevo ya, sin contarlo como error
+                    logger.debug(f"Modulo[{self.nombre}] - Token vencido, iniciando sesión de nuevo")
+                    continue
                 errores_consecutivos += 1
                 if not silenciar_error:
                     logger.error(f"Modulo[{self.nombre}] - Error en monitoreo: {error}")

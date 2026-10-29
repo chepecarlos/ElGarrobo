@@ -12,6 +12,7 @@ class accionTelegram(accion):
 
     nombre = "TelegramBot"
     comando = "telegram"
+    categoria = "Mensajes y red"
     descripcion = "Envia un mensaje por TelegramBot"
 
     def __init__(self) -> None:

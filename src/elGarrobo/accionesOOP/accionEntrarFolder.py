@@ -12,6 +12,7 @@ class accionEntrarFolder(accion):
 
     nombre = "Entrar folder"
     comando = "entrar_folder"
+    categoria = "Folders y páginas"
     descripcion = "Entrar en un folder y cargar acciones por Dispositivo"
 
     def __init__(self) -> None:

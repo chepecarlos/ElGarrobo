@@ -8,6 +8,7 @@ from nicegui import ui
 from elGarrobo.accionesOOP import accion
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.dispositivos.migui import tema
+from elGarrobo.dispositivos.migui.catalogo import catalogoAcciones
 from elGarrobo.dispositivos.migui.editores import (
     avisarError,
     cargarOpciones,
@@ -44,6 +45,8 @@ class editorPasos:
         self.editorAcción: ui.select = None
         self.propiedades: ui.column = None
         self.opciones: dict[str, ui.element] = {}
+        self.catalogo = catalogoAcciones(listaClasesAcciones)
+        "Panel para buscar acciones, lo reusan el formulario y /eventos"
 
         with ui.dialog() as self.dialogo, ui.card().classes("w-full max-w-2xl"):
             encabezado(ui.label("Pasos de la macro").classes("text-lg"), 2)
@@ -126,6 +129,7 @@ class editorPasos:
                 .classes("w-full")
                 .mark("editorAcciónPaso")
             )
+            self.catalogo.agregarBoton(self.editorAcción)
             self.propiedades = ui.column().classes("w-full")
             with ui.row():
                 ui.button("Guardar paso", icon="check", color=tema.colorOscuro, on_click=self.guardar).mark("botonGuardarPaso")

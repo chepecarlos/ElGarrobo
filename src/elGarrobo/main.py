@@ -141,13 +141,13 @@ def modulos_info() -> None:
 
 @modulos_app.command("activar")
 def modulos_activar(nombre: str) -> None:
-    """Activa un módulo por su nombre o clave (ej: estadoPc, estado_pc)."""
+    """Activa un módulo por su nombre o clave (ej: "Estado PC", estado_pc)."""
     _cambiar_estado("modulos", cargarModulos, "Módulo", nombre, True)
 
 
 @modulos_app.command("desactivar")
 def modulos_desactivar(nombre: str) -> None:
-    """Desactiva un módulo por su nombre o clave (ej: estadoPc, estado_pc)."""
+    """Desactiva un módulo por su nombre o clave (ej: "Estado PC", estado_pc)."""
     _cambiar_estado("modulos", cargarModulos, "Módulo", nombre, False)
 
 

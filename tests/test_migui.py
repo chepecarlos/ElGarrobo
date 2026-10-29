@@ -649,7 +649,7 @@ class TestConfiguracionModulos:
         await user.should_see("guardado; se aplica al reiniciar ElGarrobo")
         await user.should_see(marker="reiniciar-pendiente")
         await user.should_see(marker="pendiente-estado_pc"), "la etiqueta del módulo también marca sus opciones"
-        assert gui.pendientesReinicio == {"modulos/estado_pc.md": "opciones de estadoPc"}
+        assert gui.pendientesReinicio == {"modulos/estado_pc.md": "opciones de Estado PC"}
         assert archivos["modulos/estado_pc.md"] == {"nombre_pc": "ryuk"}
 
     async def test_edita_agrega_y_quita_impresoras(self, user: User, gui: miGui, archivos: dict):
@@ -1197,6 +1197,20 @@ class TestAccionMacro:
 
 
 
+class TestCatalogoAcciones:
+    async def test_elegir_desde_el_panel(self, user: User, gui: miGui):
+        await user.open("/")
+        user.find(marker="botonCatalogo").click()
+        await user.should_see("Teclado y ratón")
+        # OBS no está en las acciones registradas: sale con el aviso y no se puede elegir
+        await user.should_see("Activa el módulo OBS en Módulos para usarla")
+        user.find(marker="catalogo-buscar").type("espera")
+        await user.should_not_see(marker="catalogo-teclas")
+        user.find(marker="catalogo-delay").click()
+        assert user.find(marker="editorAcción").elements.pop().value == "Delay"
+        await user.should_see(marker="opción-Tiempo")
+
+
 class TestPropiedadesFolder:
     async def test_crear_editar_y_quitar(self, user: User, guiPedal: miGui, pedal: MiPedal):
         await user.open("/")
@@ -1723,6 +1737,21 @@ class TestEventos:
         user.find(marker="evento-guardar").click()
         await user.should_see("Evento guardado")
         assert archivos["eventos"][1]["filtro"] == {"impresora": "Prusa"}
+
+    async def test_filtro_con_condicion_en_evento_periodico(self, user: User, gui: miGui, archivos: dict):
+        # Un número ya usado no convierte el campo en lista: ahí no se podía escribir > 80
+        archivos["eventos"] = [{"evento": "estado_pc/lectura", "filtro": {"ram": "90"}, "accion": "escribir"}]
+        await user.open("/eventos")
+        user.find(marker="evento-agregar").click()
+        with user:
+            self.elemento(user, "evento-evento").value = "estado_pc/lectura"
+            self.elemento(user, "evento-accion").value = "Escribir texto"
+        await user.should_see("cuando el filtro empieza a cumplirse")
+        user.find(marker="evento-filtro-ram").type("> 80")
+        user.find(marker="evento-opción-Texto").type("RAM al {ram}%")
+        user.find(marker="evento-guardar").click()
+        assert archivos["eventos"][1]["filtro"] == {"ram": "> 80"}
+        await user.should_see("ram > 80 → Escribir texto")
 
     async def test_activar_probar_y_conservar_claves_extra(self, user: User, gui: miGui, archivos: dict):
         archivos["eventos"] = [{"evento": "fdm_monster/impresion_error", "accion": "escribir", "opciones": {"texto": "{impresora}: {motivo}"}, "extra": 1}]

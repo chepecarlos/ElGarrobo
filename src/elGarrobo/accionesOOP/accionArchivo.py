@@ -17,6 +17,7 @@ class accionEscribirArchivo(accion):
 
     nombre = "Escribir Archivo"
     comando = "escribir_archivo"
+    categoria = "Macros y datos"
     descripcion = "Escribe información en un Archivo"
 
     def __init__(self) -> None:
@@ -79,6 +80,7 @@ class accionLeerValor(accion):
 
     nombre = "Leer Valor"
     comando = "leer_valor"
+    categoria = "Macros y datos"
     descripcion = "Lee información en un Archivo y devuelve la data a siguiente accion"
 
     def __init__(self) -> None:

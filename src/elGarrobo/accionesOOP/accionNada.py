@@ -8,6 +8,7 @@ class accionNada(accion):
 
     nombre = "Nada"
     comando = "nada"
+    categoria = "ElGarrobo"
     descripcion = "No hace nada, útil para botones que solo muestran texto o estado"
 
     def __init__(self) -> None:

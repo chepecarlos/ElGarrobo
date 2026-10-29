@@ -13,6 +13,7 @@ class accionEscribirTexto(accion):
 
     nombre = "Escribir texto"
     comando = "escribir"
+    categoria = "Teclado y ratón"
     descripcion = "Escribe un texto como un teclado"
 
     def __init__(self) -> None:

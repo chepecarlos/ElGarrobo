@@ -179,6 +179,7 @@ class accionListaCheckBox(accion):
 
     nombre = "ListaCheckBox"
     comando = "lista_checkbox"
+    categoria = "Macros y datos"
     descripcion = "Maneja una lista de checkboxes"
 
     clientesRegistrados: dict = {}

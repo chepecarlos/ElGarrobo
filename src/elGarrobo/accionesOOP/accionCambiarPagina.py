@@ -12,6 +12,7 @@ class accionSiguientePagina(accion):
 
     nombre = "Siguiente Pagina"
     comando = "siguiente_pagina"
+    categoria = "Folders y páginas"
     descripcion = "Siguiente pagina en Dispositivos StreamDeck"
 
     def __init__(self) -> None:
@@ -32,6 +33,7 @@ class accionAnteriorPagina(accion):
 
     nombre = "Anterior Pagina"
     comando = "anterior_pagina"
+    categoria = "Folders y páginas"
     descripcion = "Anterior pagina en Dispositivos StreamDeck"
 
     def __init__(self) -> None:
@@ -52,6 +54,7 @@ class accionActualizarPagina(accion):
 
     nombre = "Actualiza Pagina"
     comando = "actualizar_pagina"
+    categoria = "Folders y páginas"
     descripcion = "Actualiza pagina en Dispositivos StreamDeck"
 
     def __init__(self) -> None:

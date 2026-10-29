@@ -15,6 +15,7 @@ class accionVolumen(accion):
 
     nombre = "Volumen"
     comando = "volumen"
+    categoria = "Sonido"
     descripcion = "Cambia Volumen dispositivo virtual de pulse"
 
     archivoPulse = "data/pulse.md"
@@ -125,6 +126,7 @@ class accionMute(accion):
 
     nombre = "Mutear Dispositivo"
     comando = "mute"
+    categoria = "Sonido"
     descripcion = "Silencia y Activa el sonido de un dispositivo Pulse Audio"
 
     propiedadDispositivo: propiedadAccion = propiedadAccion(
@@ -174,6 +176,7 @@ class accionSalvarPulse(accion):
 
     nombre = "Salvar PulseAudio"
     comando = "salvar_audio"
+    categoria = "Sonido"
     descripcion = "Salva información de audio virtuales"
 
     archivoPulse = "data/pulse.md"

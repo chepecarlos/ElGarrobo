@@ -7,7 +7,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from elGarrobo.modulos.fdmMonster.moduloFdmMonster import moduloFdmMonster
-from elGarrobo.modulos.modulo import accionesEvento, leerMonitoreo, modulo, propiedadesMonitoreo, reemplazarDatos
+from elGarrobo.modulos.modulo import accionesEvento, cumpleFiltro, leerMonitoreo, modulo, propiedadesMonitoreo, reemplazarDatos
 
 
 def test_leer_monitoreo_usa_defectos_de_las_propiedades():
@@ -40,6 +40,22 @@ def test_acciones_evento_filtra_por_evento_activo_y_filtro():
     acciones = accionesEvento(entradas, "x/fin", {"impresora": "Ender", "progreso": "100"})
     assert [a["accion"] for a in acciones] == ["a", "e"], "el filtro compara como texto: 100 del .md = '100' del módulo"
     assert acciones[0]["opciones"]["texto"] == "Ender"
+
+
+def test_cumple_filtro_con_condiciones():
+    assert cumpleFiltro("> 80", "85.3") and not cumpleFiltro("> 80", "80")
+    assert cumpleFiltro(">=80", 80) and cumpleFiltro("< 20", "3") and cumpleFiltro("!= 0", "2")
+    assert cumpleFiltro("Ender", "Ender") and not cumpleFiltro("Ender", "Prusa"), "sin condición es igualdad"
+    assert cumpleFiltro("90", "90.0") and cumpleFiltro(100, "100"), "igualdad de números como número"
+    assert cumpleFiltro("!= Ender", "Prusa") and not cumpleFiltro("> 80", "Ender"), "texto solo con = y !="
+    assert not cumpleFiltro("> 80", None)
+
+
+def test_periodico_solo_al_empezar_a_cumplirse(monkeypatch):
+    monkeypatch.setattr(sys.modules["elGarrobo.modulos.modulo"], "filtrosCumplidos", set())
+    entradas = [{"evento": "pc/lectura", "filtro": {"ram": "> 80"}, "accion": "a"}, {"evento": "pc/lectura", "filtro": {"ram": "< 75"}, "accion": "b"}]
+    disparadas = [[e["accion"] for e in accionesEvento(entradas, "pc/lectura", {"ram": ram}, periodico=True)] for ram in (50, 85, 90, 70, 81)]
+    assert disparadas == [["b"], ["a"], [], ["b"], ["a"]]
 
 
 def test_disparar_evento_ejecuta_cada_accion(monkeypatch):
@@ -90,7 +106,7 @@ class TestEventosFdmMonster:
 
         monkeypatch.setattr(fdm, "_obtener_json", obtener)
         monkeypatch.setattr(fdm, "_publicar", MagicMock())
-        monkeypatch.setattr(modulo, "funcionEvento", lambda nombre, datos: fdm.avisados.append((nombre, datos)))
+        monkeypatch.setattr(modulo, "funcionEvento", lambda nombre, datos, periodico: fdm.avisados.append((nombre, datos)))
         return fdm
 
     @staticmethod
@@ -144,3 +160,53 @@ class TestEventosFdmMonster:
             fdm._consultar_impresoras(None, self.API)
         assert [d["estado"] for _, d in fdm.avisados] == ["Pausing"], "la segunda pausa cae en la espera de repetidos"
         assert moduloFdmMonster.valoresDatos == {"impresora": ["Ender"]}, "para elegirla en el filtro de /eventos"
+
+
+class TestEventosImpresoras:
+    """Klipper y Octoprint avisan al cambiar de fase entre lecturas"""
+
+    @staticmethod
+    def avisos(modulo, monkeypatch, estados: list[dict]) -> list[str]:
+        avisados = []
+        monkeypatch.setattr(modulo, "emitirEvento", lambda nombre, datos: avisados.append(nombre))
+        monkeypatch.setattr(modulo, "_publicar", lambda *a: None)
+        for estado in estados:
+            modulo._avisarCambio("ender3", "ender3", {"progreso": "0.0", **estado})
+        return avisados
+
+    def test_klipper(self, monkeypatch):
+        from elGarrobo.modulos.klipper.moduloKlipper import moduloKlipper
+
+        estados = ["complete", "standby", "printing", "paused", "printing", "complete", "complete", "printing", "error"]
+        avisados = self.avisos(moduloKlipper({}), monkeypatch, [{"estado": e} for e in estados])
+        assert avisados == [
+            "klipper/impresion_iniciada",
+            "klipper/impresion_pausada",
+            "klipper/impresion_terminada",
+            "klipper/impresion_iniciada",
+            "klipper/impresion_error",
+        ], "la primera lectura no avisa y reanudar la pausa no es inicio"
+
+    def test_octoprint(self, monkeypatch):
+        from elGarrobo.modulos.octoprint.moduloOctoprint import moduloOctoprint
+
+        lecturas = [
+            ("Operational", "0"),
+            ("Printing", "10"),
+            ("Operational", "100"),
+            ("Operational", "100"),
+            ("Printing", "5"),
+            ("Cancelling", "40"),
+            ("Operational", "40"),
+            ("Printing", "5"),
+            ("Operational", "40"),
+        ]
+        avisados = self.avisos(moduloOctoprint({}), monkeypatch, [{"estado": e, "progreso": p} for e, p in lecturas])
+        assert avisados == [
+            "octoprint/impresion_iniciada",
+            "octoprint/impresion_terminada",
+            "octoprint/impresion_iniciada",
+            "octoprint/impresion_cancelada",
+            "octoprint/impresion_iniciada",
+            "octoprint/impresion_cancelada",
+        ], "sin estado de terminada: Operational tras imprimir es terminada al 100 % o cancelada"

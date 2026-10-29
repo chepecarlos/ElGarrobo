@@ -12,6 +12,7 @@ class accionMacro(accion):
 
     nombre = "Macro"
     comando = "macro"
+    categoria = "Macros y datos"
     descripcion = "Ejecuta una lista de acciones una tras otra"
     atributoLista = "acciones"
 

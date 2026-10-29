@@ -16,6 +16,7 @@ class accionCopiarPapelera(accion):
 
     nombre = "Copiar al portapapeles"
     comando = "copiar"
+    categoria = "Teclado y ratón"
     descripcion = "Copia el texto seleccionado al portapapeles"
 
     def __init__(self) -> None:
@@ -38,6 +39,7 @@ class accionPegarTexto(accion):
 
     nombre = "Pegar texto"
     comando = "pegar"
+    categoria = "Teclado y ratón"
     descripcion = "Copia un texto al portapapeles y lo pega con ctrl+v"
 
     def __init__(self) -> None:

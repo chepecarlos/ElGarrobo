@@ -12,6 +12,7 @@ class accionRegresarFolder(accion):
 
     nombre = "Regresar Folder"
     comando = "regresar_folder"
+    categoria = "Folders y páginas"
     descripcion = "Sube un nivel los folder y carga las acciones por Dispositivos"
 
     def __init__(self) -> None:

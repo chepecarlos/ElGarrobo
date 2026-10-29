@@ -32,6 +32,22 @@ def catalogoEventos() -> dict:
     return {evento.nombre: (clase, evento) for clase in cargarModulos() for evento in clase.eventos}
 
 
+def condicion(valor) -> str:
+    """Filtro como se lee en la lista: '> 80' queda igual, un valor solo es '= valor'"""
+    texto = str(valor).strip()
+    return texto if texto[:1] in ("<", ">", "=", "!") else f"= {texto}"
+
+
+def esNumeroOCondicion(texto: str) -> bool:
+    if texto[:1] in ("<", ">", "=", "!"):
+        return True
+    try:
+        float(texto)
+        return True
+    except ValueError:
+        return False
+
+
 def mostrarEventos(listaClasesAcciones: dict, ejecutarAcción) -> None:
     """Lista de eventos agrupada por módulo con activar, probar, editar y borrar, y el diálogo para editarlos
 
@@ -67,10 +83,13 @@ def mostrarEventos(listaClasesAcciones: dict, ejecutarAcción) -> None:
         editorEvento.classes("w-full").mark("evento-evento")
         variables = ui.label("").classes("text-caption").mark("evento-variables")
         with ui.expansion("Filtro (opcional)", icon="filter_alt").classes("w-full"):
-            ui.label("Solo se ejecuta si el dato es igual al elegido; vacío acepta cualquiera").classes("text-caption")
+            ayuda = "Solo se ejecuta si el dato es igual al elegido, o con números: > 80, >= 80, < 20, != 0"
+            ui.label(f"{ayuda}. Vacío acepta cualquiera").classes("text-caption")
+            periodico = ui.label("").classes("text-caption").mark("evento-periodico")
             columnaFiltro = ui.column().classes("w-full")
         editorAcción = ui.select(sorted(comandos), with_input=True, label="* Acción", on_change=lambda: mostrarOpciones(None))
         editorAcción.classes("w-full").mark("evento-accion")
+        pasos.catalogo.agregarBoton(editorAcción)
         columnaOpciones = ui.column().classes("w-full")
         with ui.row():
             ui.button("Cancelar", on_click=dialogo.close).props("flat")
@@ -83,20 +102,23 @@ def mostrarEventos(listaClasesAcciones: dict, ejecutarAcción) -> None:
         clase, evento = catalogo.get(editorEvento.value, (None, None))
         datos = evento.datos if evento else {}
         variables.text = ("Variables para las opciones: " + " ".join(f"{{{dato}}}" for dato in datos)) if datos else ""
+        esPeriodico = evento is not None and evento.periodico
+        periodico.text = "Llega en cada lectura: la acción se ejecuta cuando el filtro empieza a cumplirse" if esPeriodico else ""
         with columnaFiltro:
             for dato, ejemplo in datos.items():
                 valor = str(filtro.get(dato, ""))
                 # Lo que vio el módulo al correr y lo ya usado en otros eventos (ej. una impresora apagada)
                 conocidos = {*clase.valoresDatos.get(dato, []), valor}
                 conocidos |= {str(e["filtro"][dato]) for e in entradas if dato in (e.get("filtro") or {})}
-                conocidos.discard("")
+                # Solo nombres: un número o una condición (> 90) se escribe libre en un campo de texto
+                conocidos = {c for c in conocidos if c and not esNumeroOCondicion(c)}
                 if conocidos:
                     editor = ui.select(
                         sorted(conocidos), label=dato, value=valor or None, with_input=True, new_value_mode="add-unique", clearable=True
                     )
                     editor.props["hint"] = "Elige de la lista o escribe otro y presiona Enter"
                 else:
-                    editor = ui.input(dato, value=valor, placeholder=f"ej. {ejemplo}")
+                    editor = ui.input(dato, value=valor, placeholder=f"ej. {'> ' if esPeriodico else ''}{ejemplo}")
                 editando["filtro"][dato] = editor.classes("w-full").mark(f"evento-filtro-{dato}")
 
     def mostrarOpciones(opciones: dict | list | None) -> None:
@@ -195,7 +217,7 @@ def mostrarEventos(listaClasesAcciones: dict, ejecutarAcción) -> None:
         guardarArchivo()
 
     def resumen(entrada: dict) -> str:
-        filtro = ", ".join(f"{dato} = {valor}" for dato, valor in (entrada.get("filtro") or {}).items()) or "siempre"
+        filtro = ", ".join(f"{dato} {condicion(v)}" for dato, v in (entrada.get("filtro") or {}).items()) or "siempre"
         comando = entrada.get("accion")
         return f"{filtro} → {nombresAcciones.get(comando, comando)}"
 

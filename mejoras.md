@@ -58,7 +58,7 @@
 - [ ] **[P3] Celular**: con el StreamDeck Plus la barra de herramientas pasa a 3 filas por el botón de ordenar; si estorba, `max-sm:hidden`.
 - [ ] **[P3]** `bind_enabled_from` habilita Agregar al activar el tipo aunque no carga hasta reiniciar (contradice el comentario de `configuracion.py`); ícono de lápiz de Quasar en el paso "Buscar"; `colorActivo` (naranja) en la tarjeta elegida significa "herramienta encendida" en Acciones; sin `truncate` en expansiones con nombres largos.
 - [ ] **[P3] Diagnóstico de permisos**: un teclado sin permiso de `/dev/input` sale como "(desconectado)" y `escucharTeclado` se traga el `OSError` (`agregar.py:24-27`); decir "sin permiso: agrega tu usuario al grupo input".
-- [ ] **[P3] Copy**: "aparato" vs "dispositivo" sin explicar; "Interfaz web/gráfica (GUI)" redundante; "macro pad" → "panel de macros"; nombres camelCase visibles en /modulos (`estadoPc`, `estadoKlipper`).
+- [ ] **[P3] Copy**: "aparato" vs "dispositivo" sin explicar; "Interfaz web/gráfica (GUI)" redundante; "macro pad" → "panel de macros". (Hecho 2026-10-29: nombres de módulos legibles: `FDM Monster`, `Klipper`, `Octoprint`, `Estado PC`.)
 
 ## Ícono en la barra de estado (`bandeja.py`)
 
@@ -93,10 +93,15 @@ Notas de FDM Monster (2.0.10):
 Pendiente:
 - [ ] **Ventana de 20 trabajos**: si entre dos consultas aparecen más de 20 trabajos nuevos, los más viejos de esos no avisan (marcado con `ponytail:`).
 - [ ] **Cajón inicial en macros**: acordado que el cajón empiece con los datos del evento; no se hizo porque `{dato}` ya se reemplaza en los pasos. Hacerlo si alguna acción necesita el dato como valor completo vía `solisita`.
-- [ ] **Condiciones en el filtro** (ej. `progreso > 50`); hoy solo igualdad.
-- [ ] **Otras fuentes**: `obs/grabacion_iniciada` (desde `on_record_state_changed`), Klipper/Octoprint, `mqtt/<topic>`, `elgarrobo/inicio`.
+- [x] **Condiciones en el filtro** (2026-10-29): `> 80`, `>= 80`, `< 20`, `<= 20`, `!= 0`, `= x` (`cumpleFiltro` en `modulo.py`); sin operador es igualdad. Comparan como número; con texto solo `=`/`!=`. A mano en eventos.md van entre comillas (`ram: "> 80"`, YAML lee `>` como bloque).
+  - Eventos con `periodico=True` (`eventoModulo`): la acción se ejecuta solo cuando el filtro **empieza** a cumplirse, no en cada lectura (`filtrosCumplidos`). Para avisar al bajar se crea otra entrada (ej. `ram: "< 75"`).
+  - [ ] Si el valor ronda el límite (80.1 / 79.9) avisa en cada cruce; agregar espera mínima si molesta.
+  - [ ] Una sola fuente por evento periódico: con varias (ej. varias impresoras) la clave de `filtrosCumplidos` debe incluir la fuente.
+- [x] **Estado PC** (2026-10-29): evento periódico `estado_pc/lectura` (cada 10 s) con `{pc}`, `{cpu}`, `{ram}`; se filtra con condición, ej. `ram: "> 80"`.
+- [x] **Klipper y Octoprint** (2026-10-29): `klipper/…` y `octoprint/…` (iniciada, terminada, cancelada, error, pausada) al cambiar de fase entre lecturas (`eventoImpresion` en `modulo.py`), publicados también en `estado_<modulo>/<topic>/eventos`. OctoPrint no tiene estado terminada: Operational tras imprimir es terminada si llegó a 99.9 %, si no cancelada. Sin limitador de repetidos ni duración mínima (eso era por los fantasmas de PrusaLink en FDM Monster).
+- [ ] **Otras fuentes**: `obs/grabacion_iniciada` (desde `on_record_state_changed`), `mqtt/<topic>`, `elgarrobo/inicio`.
 - [x] **Filtro como lista** (2026-10-29): `modulo.valoresDatos` (FDM Monster lo llena con las impresoras habilitadas en cada consulta) + los ya usados en eventos.md; se puede escribir otro. Solo se llena con el módulo corriendo.
-- [ ] **GUI**: historial de últimos eventos recibidos; el grupo muestra el nombre camelCase del módulo (`estadoFdmMonster`, ver Copy en la auditoría).
+- [ ] **GUI**: historial de últimos eventos recibidos.
 - [ ] **Voz** (futuro): migrar `textovoz` (`pyttsx3`) del paquete legacy `acciones/` a OOP; los eventos la usan sin cambios gracias a `{dato}`.
 
 ## Código

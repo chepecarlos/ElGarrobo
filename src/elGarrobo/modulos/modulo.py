@@ -1,3 +1,5 @@
+import json
+import operator
 import re
 from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
@@ -9,6 +11,28 @@ from elGarrobo.accionesOOP.herramientas.valoresAccion import valoresAcciones
 ARCHIVO_EVENTOS = "eventos"
 "Archivo global (no por perfil) con las acciones que se disparan con los eventos de los módulos"
 
+OPERADORES = {
+    ">=": operator.ge,
+    "<=": operator.le,
+    "!=": operator.ne,
+    ">": operator.gt,
+    "<": operator.lt,
+    "=": operator.eq,
+}
+"Condiciones del filtro (ej. '> 80'); los de dos caracteres primero para que '>=' no se lea como '>'"
+
+filtrosCumplidos: set[str] = set()
+"Entradas de eventos periódicos que cumplían el filtro en la lectura anterior"
+
+FASES_IMPRESION = {
+    "imprimiendo": ("impresion_iniciada", "Una impresora empezó a imprimir"),
+    "terminada": ("impresion_terminada", "Una impresora terminó de imprimir"),
+    "cancelada": ("impresion_cancelada", "Se canceló una impresión"),
+    "error": ("impresion_error", "Una impresión falló"),
+    "pausada": ("impresion_pausada", "Una impresora pausó la impresión"),
+}
+"Fase de una impresora (como la traduce cada módulo) → (evento, descripción); 'inactiva' no avisa"
+
 
 @dataclass
 class eventoModulo:
@@ -19,6 +43,8 @@ class eventoModulo:
     descripcion: str
     datos: dict[str, str] = field(default_factory=dict)
     "Dato → valor de ejemplo; se usan como {dato} en las opciones y Probar en la GUI manda los de ejemplo"
+    periodico: bool = False
+    "Llega en cada lectura (ej. RAM cada 10 s): las acciones se ejecutan solo cuando el filtro empieza a cumplirse"
 
 
 class modulo:
@@ -42,7 +68,7 @@ class modulo:
     valoresDatos: dict[str, list[str]] = {}
     """Dato → valores reales vistos al correr (ej. nombres de impresoras); la GUI los ofrece en el filtro.
     Se asigna en la clase hija (no se modifica este dict, es compartido)"""
-    funcionEvento: Optional[Callable[[str, dict], None]] = None
+    funcionEvento: Optional[Callable[[str, dict, bool], None]] = None
     """Inyectada por elGarrobo: ejecuta las acciones de eventos.md del evento"""
 
     def __init__(self, dataModulo: dict) -> None:
@@ -61,7 +87,8 @@ class modulo:
         """Avisa un evento (ej. fdm_monster/impresion_terminada); el módulo no sabe qué acciones tiene asignadas"""
         # modulo y no self: los hijos usan el atributo `modulo` para su clave en modulos.md
         if modulo.funcionEvento is not None:
-            modulo.funcionEvento(nombre, datos)
+            periodico = any(evento.periodico for evento in self.eventos if evento.nombre == nombre)
+            modulo.funcionEvento(nombre, datos, periodico)
 
 
 def reemplazarDatos(valor: Any, datos: dict[str, Any]) -> Any:
@@ -81,17 +108,59 @@ def reemplazarDatos(valor: Any, datos: dict[str, Any]) -> Any:
     return valor
 
 
-def accionesEvento(entradas: list, nombre: str, datos: dict[str, Any]) -> list[dict]:
-    """Entradas de eventos.md activas del evento cuyo filtro coincide, con los {dato} reemplazados"""
+def eventosImpresion(prefijo: str, datos: dict[str, str]) -> list[eventoModulo]:
+    """Catálogo de eventos de impresión de un módulo (ej. klipper/impresion_terminada); el de error agrega {motivo}"""
+    motivo = {"motivo": "Heater extruder not heating"}
+    return [
+        eventoModulo(f"{prefijo}/{evento}", descripcion, datos | (motivo if fase == "error" else {}))
+        for fase, (evento, descripcion) in FASES_IMPRESION.items()
+    ]
+
+
+def eventoImpresion(anterior: Optional[str], actual: str) -> Optional[str]:
+    """Evento al cambiar de fase; None en la primera lectura (no se sabe qué pasó antes), sin cambio o al reanudar"""
+    if anterior is None or anterior == actual or (anterior == "pausada" and actual == "imprimiendo"):
+        return None
+    return FASES_IMPRESION.get(actual, (None, None))[0]
+
+
+def cumpleFiltro(esperado: Any, valor: Any) -> bool:
+    """Si el dato cumple lo del filtro: '> 80', '>= 80', '< 20', '<= 20', '!= 0', '= x' o el valor solo (igualdad)
+
+    Se compara como número (90 = 90.0); si alguno no es número, solo = y != comparan como texto
+    """
+    texto = str(esperado).strip()
+    simbolo = next((simbolo for simbolo in OPERADORES if texto.startswith(simbolo)), "=")
+    objetivo = texto.removeprefix(simbolo).strip()
+    comparar = OPERADORES[simbolo]
+    try:
+        return comparar(float(valor), float(objetivo))
+    except (TypeError, ValueError):
+        return simbolo in ("=", "!=") and comparar(str(valor), objetivo)
+
+
+def accionesEvento(entradas: list, nombre: str, datos: dict[str, Any], periodico: bool = False) -> list[dict]:
+    """Entradas de eventos.md activas del evento cuyo filtro se cumple, con los {dato} reemplazados
+
+    Si el evento es periódico solo las que empiezan a cumplirlo: ram > 80 avisa al pasar de 80, no en cada lectura
+    """
     acciones = []
     for entrada in entradas:
-        if not isinstance(entrada, dict) or entrada.get("evento") != nombre or entrada.get("activo") is False:
+        if not isinstance(entrada, dict) or entrada.get("evento") != nombre:
             continue
-        # ponytail: solo igualdad; condiciones (ej. progreso > 50) quedan en mejoras.md
         filtro = entrada.get("filtro") or {}
-        if any(str(datos.get(clave)) != str(valor) for clave, valor in filtro.items()):
-            continue
-        acciones.append(reemplazarDatos(entrada, datos))
+        cumple = entrada.get("activo") is not False and all(cumpleFiltro(v, datos.get(k)) for k, v in filtro.items())
+        if periodico:
+            # ponytail: una sola fuente por evento periódico (un PC); con varias, la clave también llevaría la fuente
+            clave = json.dumps(entrada, sort_keys=True, default=str)
+            antes = clave in filtrosCumplidos
+            if cumple:
+                filtrosCumplidos.add(clave)
+            else:
+                filtrosCumplidos.discard(clave)
+            cumple = cumple and not antes
+        if cumple:
+            acciones.append(reemplazarDatos(entrada, datos))
     return acciones
 
 

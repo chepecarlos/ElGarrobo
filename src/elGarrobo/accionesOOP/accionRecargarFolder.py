@@ -12,6 +12,7 @@ class accionRecargarFolder(accion):
 
     nombre = "Recargar Acciones"
     comando = "reiniciar_data"
+    categoria = "Folders y páginas"
     descripcion = "Recarga las acciones desde el folder actual"
 
     def __init__(self) -> None:
