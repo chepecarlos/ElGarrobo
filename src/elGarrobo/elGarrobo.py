@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import threading
 from typing import Any
 
 from elGarrobo import miLibrerias
@@ -34,6 +35,7 @@ from .miLibrerias import (
     obtenerArchivoPaquete,
 )
 from .modulos import cargarModulos, modulo
+from .modulos.modulo import ARCHIVO_EVENTOS, accionesEvento
 from .modulos.obs.moduloOBS import moduloOBS
 
 logger = ConfigurarLogging(__name__)
@@ -231,6 +233,7 @@ class elGarrobo(object):
         clasesModulos = cargarModulos()
 
         self.listaModulos = []
+        modulo.funcionEvento = self.dispararEvento
 
         for moduloClase in clasesModulos:
 
@@ -416,6 +419,17 @@ class elGarrobo(object):
         estadoEvento = Evento.get("estado")
         if estadoEvento == "presionado":
             logger.info(f"Evento[No asignado] {NombreEvento}[{Evento['key']}]")
+
+    def dispararEvento(self, nombre: str, datos: dict) -> None:
+        """Ejecuta las acciones de eventos.md del evento, cada una en su hilo: una macro lenta no frena al módulo"""
+        # Se lee en cada evento (son pocos): lo editado en /eventos aplica sin reiniciar
+        acciones = accionesEvento(leerData(ARCHIVO_EVENTOS) or [], nombre, datos)
+        logger.info(f"Evento[{nombre}] {len(acciones)} acción(es) - {datos}")
+        for accionEvento in acciones:
+            hilo = threading.Thread(
+                target=self.ejecutarAcción, args=(accionEvento,), daemon=True, name=f"evento-{nombre}"
+            )
+            hilo.start()
 
     def EjecutandoEvento(self, evento, estado):
 

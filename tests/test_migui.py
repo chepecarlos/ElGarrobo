@@ -23,7 +23,7 @@ from elGarrobo.dispositivos.mimqtt.mi_mqtt import MiMQTT
 from elGarrobo.dispositivos.mipedal.mi_pedal import MiPedal
 from elGarrobo.dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro, folderDistribuciones
 from elGarrobo.dispositivos.migui import migui as moduloMiGui
-from elGarrobo.dispositivos.migui import configuracion, tema, vistas
+from elGarrobo.dispositivos.migui import configuracion, eventos, tema, vistas
 from elGarrobo.dispositivos.migui import teclas as moduloTeclas
 from elGarrobo.dispositivos.migui.migui import miGui
 
@@ -1666,3 +1666,53 @@ def test_buscar_puerto_libre_salta_ocupado():
         ocupado.listen()
         puerto = ocupado.getsockname()[1]
         assert moduloMiGui.buscarPuertoLibre(puerto) != puerto
+
+
+class TestEventos:
+    @pytest.fixture
+    def archivos(self, monkeypatch) -> dict:
+        """eventos.md y modulos.md en memoria: lo que se guarda queda en el dict"""
+        archivos = {"eventos": [], "modulos": {"estado_fdm_monster": True}}
+        monkeypatch.setattr(eventos, "leerData", lambda archivo: archivos.get(archivo))
+        monkeypatch.setattr(eventos, "SalvarArchivo", lambda archivo, data: archivos.update({archivo: data}))
+        return archivos
+
+    @staticmethod
+    def elemento(user: User, marca: str) -> ui.element:
+        return next(iter(user.find(marker=marca).elements))
+
+    async def test_agrega_evento_con_filtro_y_variables(self, user: User, gui: miGui, archivos: dict):
+        await user.open("/eventos")
+        await user.should_see(marker="eventos-vacio")
+        user.find(marker="evento-agregar").click()
+        with user:
+            self.elemento(user, "evento-evento").value = "fdm_monster/impresion_terminada"
+            self.elemento(user, "evento-accion").value = "Escribir texto"
+        await user.should_see("{impresora}")
+        user.find(marker="evento-filtro-impresora").type("Ender")
+        user.find(marker="evento-opción-Texto").type("{impresora} terminó")
+        user.find(marker="evento-guardar").click()
+
+        await user.should_see("Evento guardado")
+        assert archivos["eventos"] == [
+            {"evento": "fdm_monster/impresion_terminada", "filtro": {"impresora": "Ender"}, "accion": "escribir", "opciones": {"texto": "{impresora} terminó"}}
+        ]
+        await user.should_see("impresora = Ender → Escribir texto")
+
+    async def test_activar_probar_y_conservar_claves_extra(self, user: User, gui: miGui, archivos: dict):
+        archivos["eventos"] = [{"evento": "fdm_monster/impresion_error", "accion": "escribir", "opciones": {"texto": "{impresora}: {motivo}"}, "extra": 1}]
+        gui.ejecutarAcción = MagicMock()
+        await user.open("/eventos")
+
+        user.find(marker="evento-probar-0").click()
+        gui.ejecutarAcción.assert_called_once()
+        assert gui.ejecutarAcción.call_args.args[0]["opciones"]["texto"] == "CoreOne: Print submission failed: timeout of 30000ms exceeded"
+
+        user.find(marker="evento-activo-0").click()
+        assert archivos["eventos"][0]["activo"] is False
+
+        user.find(marker="evento-editar-0").click()
+        user.find(marker="evento-nombre").type("Aviso error")
+        user.find(marker="evento-guardar").click()
+        await user.should_see("Aviso error")
+        assert archivos["eventos"][0] == {"nombre": "Aviso error", "evento": "fdm_monster/impresion_error", "activo": False, "extra": 1, "accion": "escribir", "opciones": {"texto": "{impresora}: {motivo}"}}

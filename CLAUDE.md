@@ -75,6 +75,8 @@ Integraciones de fondo (OBS, estado PC, Octoprint, MQTT estado). Heredan de `mod
 
 Un módulo agrega sus propias acciones con `acciones = [claseAccion, ...]`; `IniciarAcciones()` las registra solo si el módulo está activado y les asigna la instancia en el atributo de clase `modulo` (ej. `accionOBS` usa `self.modulo.cambiarEscena(...)` y revisa la conexión en `sePuedeEjecutar`). Las opciones de su archivo de configuración se declaran en `propiedades = [propiedadAccion, ...]` (listas repetibles como impresoras con `tipo=[list]` y `elementos=[...]`); la GUI arma con ellas el formulario de /modulos, así no depende de que el archivo exista. Los módulos con acciones viven en su carpeta: `modulos/<nombre>/modulo<Nombre>.py` (clase `modulo<Nombre>`) + `acciones<Nombre>.py`. Ej: `modulos/obs/moduloOBS.py`.
 
+**Eventos**: un módulo declara `eventos = [eventoModulo(nombre, descripcion, datos)]` y llama `self.emitirEvento(nombre, datos)`; `elGarrobo.dispararEvento` (inyectado en `modulo.funcionEvento`) lee `eventos.md` global en cada evento y ejecuta en hilos aparte las entradas activas cuyo `filtro` coincide, con `{dato}` reemplazado en las opciones. Se editan en la GUI en /eventos (`dispositivos/migui/eventos.py`).
+
 ### Configuración del usuario
 
 Los archivos de configuración son `.md` con frontmatter YAML o `.json`. Viven en el folder devuelto por `miLibrerias.ObtenerFolderConfig()`. El archivo `modulos.md` es el punto de entrada: habilita/deshabilita cada dispositivo y módulo.

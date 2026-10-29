@@ -111,6 +111,11 @@ class TestAccionBase:
         with patch("elGarrobo.accionesOOP.accion.ObtenerFolderConfig", return_value=str(tmp_path)):
             assert nueva.calcularRuta("a.md") == str((tmp_path / "default" / "a.md").resolve())
             assert nueva.calcularRuta("/b/a.md") == str((tmp_path / "default" / "b" / "a.md").resolve())
+            # Ruta completa del sistema que existe: se usa tal cual, no se pega dentro del perfil
+            sonido = tmp_path / "sonidos" / "chan.wav"
+            sonido.parent.mkdir()
+            sonido.touch()
+            assert nueva.calcularRuta(str(sonido)) == str(sonido.resolve())
 
     def test_str(self):
         assert "Prueba" in str(crearAccion())

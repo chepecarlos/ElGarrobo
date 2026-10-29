@@ -68,6 +68,36 @@
 - [ ] **Reiniciar en modo depuración (`-d`)**: hoy el `ExecStart` del servicio es fijo; habría que pasarlo por una variable de entorno (`systemctl --user set-environment`) o un drop-in.
 - [ ] **Logo propio**: reemplazar los íconos genéricos del tema (`input-keyboard` en el lanzador, `media-playback-*`/`dialog-error` por estado en `ESTADOS`).
 
+## Eventos (v1 implementada 2026-10-28)
+
+Disparar acciones cuando pasa algo en un módulo (ej. una impresora termina). Se editan en la GUI (/eventos) o a mano en `eventos.md` global (junto a `modulos.md`, no por perfil); se lee en cada evento, así los cambios aplican sin reiniciar.
+
+```yaml
+- nombre: Aviso fin impresión     # opcional
+  evento: fdm_monster/impresion_terminada
+  filtro:
+    impresora: CoreOne Maomao     # opcional, solo igualdad exacta
+  activo: false                   # opcional, solo se escribe al apagarlo
+  accion: notificacion
+  opciones:
+    texto: "{impresora} terminó {archivo} en {tiempo_transcurrido_humano}"
+```
+
+Hecho: `modulo.emitirEvento` + catálogo `eventos = [eventoModulo(...)]` (`modulo.py`), `elGarrobo.dispararEvento` (un hilo por acción), `{dato}` reemplazado solo con los datos del evento (también en pasos de macro), eventos de FDM Monster (iniciada, terminada, cancelada, error, pausada) también publicados en `estado_fdm_monster/<impresora>/eventos`, página /eventos (activar, probar con datos de ejemplo, editar, borrar).
+
+Notas de FDM Monster (2.0.10):
+- Fuente: `print-jobs/search-paged?page=1&pageSize=20`. **No usar** `print-jobs/search` (todo el historial, ~75 MB). La página trae primero los que imprimen y luego los más nuevos; un trabajo que termina sale de la página y se consulta solo con `print-jobs/<id>` (su respuesta incluye el `apiKey` de la impresora: no loguearla).
+- `FAILED` + `statusReason: Cancelled` es una cancelación; otro motivo es error. `progress` no es confiable (la MK4s marca 100 mientras imprime).
+- PrusaLink crea trabajos fantasma de milisegundos (~48 mil): se filtran con `duracion_minima_segundos` (30). `espera_repetidos_segundos` (60) evita repetir el mismo evento en la misma impresora.
+
+Pendiente:
+- [ ] **Ventana de 20 trabajos**: si entre dos consultas aparecen más de 20 trabajos nuevos, los más viejos de esos no avisan (marcado con `ponytail:`).
+- [ ] **Cajón inicial en macros**: acordado que el cajón empiece con los datos del evento; no se hizo porque `{dato}` ya se reemplaza en los pasos. Hacerlo si alguna acción necesita el dato como valor completo vía `solisita`.
+- [ ] **Condiciones en el filtro** (ej. `progreso > 50`); hoy solo igualdad.
+- [ ] **Otras fuentes**: `obs/grabacion_iniciada` (desde `on_record_state_changed`), Klipper/Octoprint, `mqtt/<topic>`, `elgarrobo/inicio`.
+- [ ] **GUI**: historial de últimos eventos recibidos; filtro de impresora como lista de nombres reales; el grupo muestra el nombre camelCase del módulo (`estadoFdmMonster`, ver Copy en la auditoría).
+- [ ] **Voz** (futuro): migrar `textovoz` (`pyttsx3`) del paquete legacy `acciones/` a OOP; los eventos la usan sin cambios gracias a `{dato}`.
+
 ## Código
 
 - [ ] **Interfaz tipo dict de `dataAccion`** (`get`, `[]`, `in`, `items`): quitarla cuando los dispositivos usen los campos directamente (marcada con `ponytail:` en `dataAccion.py`).

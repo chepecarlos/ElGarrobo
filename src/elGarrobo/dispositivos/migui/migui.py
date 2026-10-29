@@ -7,7 +7,7 @@ from nicegui import app, ui
 
 from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
-from elGarrobo.dispositivos.migui import configuracion, tema
+from elGarrobo.dispositivos.migui import configuracion, eventos, tema
 from elGarrobo.dispositivos.migui.dialogos import crearDialogoConfirmacion, crearDialogoReiniciar
 from elGarrobo.dispositivos.migui.editores import encabezado
 from elGarrobo.dispositivos.migui.formulario import formularioAccion
@@ -177,6 +177,11 @@ class miGui(dispositivo):
             # Sin la GUI: apagarla desde aquí dejaba la página sin forma de volver; se enciende con elgarrobo -g
             tipos = [c for c in cargarDispositivos() if c is not miGui]
             configuracion.mostrarListaActivables("Dispositivos", "dispositivos", tipos, aviso, self)
+            self.estructura()
+
+        @ui.page("/eventos")
+        def paginaEventos():
+            eventos.mostrarEventos(self.listaClasesAcciones, self.ejecutarAcción)
             self.estructura()
 
         @ui.page("/configurar")
@@ -377,6 +382,7 @@ class miGui(dispositivo):
                             ui.menu_item("Acciones", on_click=lambda: ui.navigate.to("/")).mark("menu-Acciones")
                             ui.menu_item("Módulos", on_click=lambda: ui.navigate.to("/modulos")).mark("menu-Módulos")
                             ui.menu_item("Dispositivos", on_click=lambda: ui.navigate.to("/dispositivos")).mark("menu-Dispositivos")
+                            ui.menu_item("Eventos", on_click=lambda: ui.navigate.to("/eventos")).mark("menu-Eventos")
                             ui.menu_item("Configurar", on_click=lambda: ui.navigate.to("/configurar")).mark("menu-Configurar")
                             ui.menu_item("Acerca de", on_click=dialogoAcercaDe.open).mark("menu-AcercaDe")
                             ui.separator()

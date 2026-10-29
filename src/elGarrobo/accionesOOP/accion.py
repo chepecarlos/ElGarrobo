@@ -174,7 +174,8 @@ class accion:
         """Calcula la ruta completa a un archivo o carpeta
 
         Args:
-            ruta (str): Ruta relativa al perfil de usuario
+            ruta (str): Ruta relativa al perfil de usuario; con / inicial desde la raíz del perfil, salvo que sea
+                una ruta completa del sistema que existe
 
         Returns:
             str: Ruta completa al archivo o carpeta
@@ -186,7 +187,10 @@ class accion:
 
         folderPerfil = Path(folderConfig / folderPerfil)
 
-        if ruta.startswith("/"):
+        if ruta.startswith("/") and Path(ruta).exists():
+            # Ruta completa del sistema (ej. pegada desde el explorador de archivos)
+            rutaCalculada = Path(ruta)
+        elif ruta.startswith("/"):
             rutaCalculada = folderPerfil / ruta.lstrip("/")
         else:
             rutaCalculada = folderPerfil / folderActual / ruta

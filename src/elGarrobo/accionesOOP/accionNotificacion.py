@@ -12,7 +12,7 @@ Logger = ConfigurarLogging(__name__)
 class accionNotificacion(accion):
     """Muestra un mensaje de escritorio"""
 
-    nombre = "Notificacion"
+    nombre = "Notificación"
     comando = "notificacion"
     descripcion = "Muestra un mensaje de escritorio"
 
