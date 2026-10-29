@@ -119,18 +119,8 @@ class accionReproducir(accion):
             defecto=0,
         )
 
-        propiedadFolder = propiedadAccion(
-            nombre="Folder",
-            tipo=str,
-            obligatorio=False,
-            atributo="folder",
-            descripcion="Si en ruta absoluta, decir donde esta el pista de audio",
-            ejemplo="/home/chepecarlos/sonidos",
-        )
-
         self.agregarPropiedad(propiedadArchivo)
         self.agregarPropiedad(propiedadGanancia)
-        self.agregarPropiedad(propiedadFolder)
 
         self.funcion = self.reproducir
 
@@ -143,7 +133,6 @@ class accionReproducir(accion):
 
         archivo: str = self.obtenerValor("archivo")
         ganancia: int = self.obtenerValor("ganancia")
-        folder: str = self.obtenerValor("folder")
 
         rutaArchivo = self.calcularRuta(archivo)
 
