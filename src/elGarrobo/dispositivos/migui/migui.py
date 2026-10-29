@@ -85,7 +85,8 @@ class miGui(dispositivo):
         "elGarrobo.quitarDispositivo: desconecta un aparato por nombre"
         self.ejecutaEvento: callable = None
         self.pestañas: pestañasDispositivos = None
-        self.teclasPresionadas: dict[int, dataAccion] = {}
+        self.teclasPresionadas: dict[int, tuple[dataAccion, str]] = {}
+        "Teclas hundidas en modo Usar: (acción, folder de su dispositivo) para soltarlas igual"
         "id → acción presionada en modo Usar, para mandar soltar una sola vez"
         self.modoUsar: bool = False
         self.nombreTema: str = tema.TEMA_DEFECTO
@@ -240,12 +241,13 @@ class miGui(dispositivo):
 
     def soltarTecla(self, acción: dataAccion, dispositivo: dispositivo) -> None:
         """Manda soltar solo si la tecla estaba presionada (pointerleave llega aunque no se haya presionado)"""
-        if self.teclasPresionadas.pop(id(acción), None) is None:
+        presionada = self.teclasPresionadas.pop(id(acción), None)
+        if presionada is None:
             return
-        self.buscarAccion(acción, self.estadoTecla.LIBERADA)
+        self.buscarAccion(acción, self.estadoTecla.LIBERADA, presionada[1])
 
     def soltarTodas(self) -> None:
-        for acción in list(self.teclasPresionadas.values()):
+        for acción, _ in list(self.teclasPresionadas.values()):
             self.soltarTecla(acción, None)
 
     def presionarTecla(self, acción: dataAccion, dispositivo: dispositivo) -> None:
@@ -253,10 +255,11 @@ class miGui(dispositivo):
         # Mantener Enter/Espacio repite keydown: se ejecuta una sola vez hasta soltar
         if id(acción) in self.teclasPresionadas:
             return
-        self.teclasPresionadas[id(acción)] = acción
+        folder = dispositivo.folderActual
+        self.teclasPresionadas[id(acción)] = (acción, folder)
         nombre = acción.get("nombre") or str(acción.get("key"))
         try:
-            self.buscarAccion(acción, self.estadoTecla.PRESIONADA)
+            self.buscarAccion(acción, self.estadoTecla.PRESIONADA, folder)
         except Exception as error:
             self.teclasPresionadas.pop(id(acción), None)
             logger.warning(f"Ejecutar[Error] {dispositivo.nombre}[{acción.get('key')}] {error}")
@@ -464,17 +467,19 @@ class miGui(dispositivo):
         if self.pestañas is not None:
             self.pestañas.actualizarPestaña(dispositivo)
 
-    def probarAcción(self, acción: dataAccion) -> None:
-        """Botón ▶: presiona y suelta seguido, para que acciones como Presiona no queden a medias"""
-        self.buscarAccion(acción, self.estadoTecla.PRESIONADA)
-        self.buscarAccion(acción, self.estadoTecla.LIBERADA)
+    def probarAcción(self, acción: dataAccion, dispositivoAcción: dispositivo | None = None) -> None:
+        """Botón ▶: presiona y suelta seguido, para que acciones como Presiona no queden a medias
 
-    def buscarAccion(self, acción: dict, estado):
+        Con dispositivoAcción las rutas ./x se buscan en su folder actual, como al presionar su tecla
+        """
+        folder = (dispositivoAcción or self).folderActual
+        self.buscarAccion(acción, self.estadoTecla.PRESIONADA, folder)
+        self.buscarAccion(acción, self.estadoTecla.LIBERADA, folder)
+
+    def buscarAccion(self, acción: dict, estado, folder: str | None = None):
         logger.info(f"Evento[{acción.get('nombre')}] {self.nombre}[{acción.get('key')}-{estado.name}]")
-        if estado == self.estadoTecla.LIBERADA:
-            self.ejecutarAcción(acción, False)
-        else:
-            self.ejecutarAcción(acción)
+        folder = self.folderActual if folder is None else folder
+        self.ejecutarAcción(acción, estado != self.estadoTecla.LIBERADA, 1, folder)
 
     def borrarAcción(self, accion, dispositivo: dispositivo):
         dispositivo.listaAcciones.remove(accion)

@@ -22,6 +22,7 @@ from .accionesOOP import (
     accionSiguientePagina,
     cargarClasesAcciones,
 )
+from .accionesOOP.accion import folderEjecución
 from .accionesOOP.herramientas.valoresAccion import valoresAcciones
 from .dispositivos import cargarDispositivos, dispositivo
 from .dispositivos.mideck.mi_streamdeck import MiStreamDeck
@@ -447,13 +448,23 @@ class elGarrobo(object):
         #     if accion == "presionar" or estado == "presionado":
         #         self.ejecutarAcción(evento)
 
-    def ejecutarAcción(self, accionActual: dict, estado: bool = True, fuerza: int = 1) -> Any:
+    def ejecutarAcción(
+        self, accionActual: dict, estado: bool = True, fuerza: int = 1, folder: str | None = None
+    ) -> Any:
         """Ejecuta una acción según el comando y las opciones proporcionadas.
 
         Args:
-            accion (dick):
+            accionActual (dict):
             estado (bool, opcional):
+            folder (str, opcional): folder del dispositivo que la ejecuta, para las rutas relativas (./x)
         """
+        if folder is not None:
+            token = folderEjecución.set(str(folder))
+            try:
+                return self.ejecutarAcción(accionActual, estado, fuerza)
+            finally:
+                folderEjecución.reset(token)
+
         comandoAccion: str = accionActual.get("accion")
 
         if comandoAccion is None:

@@ -104,7 +104,7 @@ class accionReproducir(accion):
             tipo=str,
             obligatorio=True,
             atributo="archivo",
-            descripcion="Pista a reproducir; /sonidos/x.wav es desde la raíz del perfil",
+            descripcion="Pista a reproducir; /sonidos/x.wav desde la raíz del perfil, ./x.wav desde el folder de la tecla",
             ejemplo="/sonidos/chan.wav",
             ruta=True,
         )

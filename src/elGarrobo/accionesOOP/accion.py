@@ -1,5 +1,6 @@
 "Clase Base que manera las propiedad y si se puede ejecución"
 
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Any, Callable, Optional
 
@@ -9,6 +10,9 @@ from .herramientas.propiedadAccion import propiedadAccion
 from .herramientas.valoresAccion import valoresAcciones
 
 logger = ConfigurarLogging(__name__)
+
+folderEjecución: ContextVar[str] = ContextVar("folderEjecución", default="/")
+"Folder del dispositivo que ejecuta la acción; las acciones anidadas (macros) lo heredan en el mismo hilo"
 
 
 class accion:
@@ -171,22 +175,20 @@ class accion:
         return default
 
     @staticmethod
-    def calcularRuta(ruta: str, perfil: str = "default") -> str:
+    def calcularRuta(ruta: str, perfil: str = "default", folder: str | None = None) -> str:
         """Calcula la ruta completa a un archivo o carpeta
 
         Args:
-            ruta (str): Ruta relativa al perfil de usuario; con / inicial desde la raíz del perfil, salvo que sea
-                una ruta completa del sistema que existe (también con ~)
+            ruta (str): con / inicial desde la raíz del perfil, salvo que sea una ruta completa del sistema
+                que existe (también con ~); sin / (o con ./) desde el folder del dispositivo que la ejecuta
+            folder (str, opcional): folder del dispositivo dentro del perfil; por defecto el de folderEjecución
 
         Returns:
             str: Ruta completa al archivo o carpeta
         """
-        folderConfig: Path = Path(ObtenerFolderConfig())
-        folderPerfil: Path = folderConfig / perfil
-        folderActual: Path = Path(".")
-        rutaCalculada: Path = None
-
-        folderPerfil = Path(folderConfig / folderPerfil)
+        folderPerfil: Path = Path(ObtenerFolderConfig()) / perfil
+        if folder is None:
+            folder = folderEjecución.get()
         ruta = str(Path(ruta).expanduser())
 
         if ruta.startswith("/") and Path(ruta).exists():
@@ -195,7 +197,7 @@ class accion:
         elif ruta.startswith("/"):
             rutaCalculada = folderPerfil / ruta.lstrip("/")
         else:
-            rutaCalculada = folderPerfil / folderActual / ruta
+            rutaCalculada = folderPerfil / str(folder).lstrip("/") / ruta
 
         return str(rutaCalculada.resolve())
 

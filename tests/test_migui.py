@@ -333,7 +333,9 @@ class TestPaginaAcciones:
 
         gui.ejecutarAcción = MagicMock()
         user.find(marker="botonEjecutar").click()
-        assert gui.ejecutarAcción.call_args_list == [((acción,),), ((acción, False),)], "presiona y suelta"
+        f = deck.folderActual
+        presiona, suelta = ((acción, True, 1, f),), ((acción, False, 1, f),)
+        assert gui.ejecutarAcción.call_args_list == [presiona, suelta], "presiona y suelta"
 
         user.find(marker="botonBorrar").click()
         assert acción not in deck.listaAcciones and len(deck.listaAcciones) == cantidad - 1
@@ -397,8 +399,9 @@ class TestPaginaAcciones:
     async def test_ejecutar_accion(self, user: User, gui: miGui, deck: dispositivoFalso):
         gui.ejecutarAcción = MagicMock()
         await user.open("/")
+        deck.folderActual = "/ide"
         user.find(marker="ejecutar-deck-2").click()
-        assert gui.ejecutarAcción.call_args_list[0] == ((deck.listaAcciones[1],),)
+        assert gui.ejecutarAcción.call_args_list[0] == ((deck.listaAcciones[1], True, 1, "/ide"),), "./x en su folder"
 
 
 class TestFormularioSeguro:
@@ -453,7 +456,8 @@ class TestFormularioSeguro:
         with user:
             gui.soltarTodas()
             gui.soltarTodas()
-        assert gui.ejecutarAcción.call_args_list == [((deck.listaAcciones[0],),), ((deck.listaAcciones[0], False),)]
+        uno, f = deck.listaAcciones[0], deck.folderActual
+        assert gui.ejecutarAcción.call_args_list == [((uno, True, 1, f),), ((uno, False, 1, f),)]
 
 
 class TestPestañas:
@@ -908,7 +912,7 @@ class TestModoUsar:
         await user.should_not_see(marker="propiedadesFolder-pedal")
 
         user.find(marker="tecla-pedal-1").trigger("pointerdown")
-        guiPedal.ejecutarAcción.assert_called_once_with(pedal.listaAcciones[0])
+        guiPedal.ejecutarAcción.assert_called_once_with(pedal.listaAcciones[0], True, 1, pedal.folderActual)
         assert guiPedal.formulario.editoresData["nombre"].value == "", "en Usar no abre el formulario"
         await user.should_see(marker="ultimaAcción")
         assert guiPedal.ultimaLabel.text == "Uno"
@@ -928,8 +932,9 @@ class TestModoUsar:
         with user:
             gui.cambiarModo(True)
         await user.should_not_see(marker="editar-deck-1")
+        deck.folderActual = "/ide"
         user.find(marker="tecla-deck-2").trigger("pointerdown")
-        gui.ejecutarAcción.assert_called_once_with(deck.listaAcciones[1])
+        gui.ejecutarAcción.assert_called_once_with(deck.listaAcciones[1], True, 1, "/ide")
 
     async def test_error_al_ejecutar_avisa(self, user: User, gui: miGui, deck: dispositivoFalso):
         gui.ejecutarAcción = MagicMock(side_effect=RuntimeError("sin OBS"))
@@ -951,7 +956,9 @@ class TestModoUsar:
         tecla.trigger("keydown.enter").trigger("keydown.enter")
         tecla.trigger("keyup.enter").trigger("pointerleave")
         uno = pedal.listaAcciones[0]
-        assert guiPedal.ejecutarAcción.call_args_list == [((uno,),), ((uno, False),)], "una vez presionar y una vez soltar"
+        f = pedal.folderActual
+        presiona, suelta = ((uno, True, 1, f),), ((uno, False, 1, f),)
+        assert guiPedal.ejecutarAcción.call_args_list == [presiona, suelta], "una vez presionar y una vez soltar"
 
 
 
@@ -1021,7 +1028,7 @@ class TestStreamDeckPlus:
             guiPlus.cambiarModo(True)
         await user.should_not_see(marker="tecla-plus-touchscreen_2"), "en Usar no hay zona para agregar"
         user.find(marker="tecla-plus-dial_1").trigger("pointerdown")
-        guiPlus.ejecutarAcción.assert_called_once_with(plus.listaAcciones[1])
+        guiPlus.ejecutarAcción.assert_called_once_with(plus.listaAcciones[1], True, 1, plus.folderActual)
         assert not next(iter(user.find(marker="tecla-plus-dial_2").elements)).enabled, "perilla sin acción apagada"
 
 
@@ -1731,3 +1738,12 @@ async def test_avisa_ruta_que_no_existe(user: User, gui: miGui, tmp_path):
     user.find(marker="opción-Archivo").clear().type(str(sonido))
     assert "aviso-ruta" not in editor.classes, "existe: vuelve la ayuda normal"
     assert editor.props["hint"].startswith("Pista a reproducir")
+
+
+async def test_aviso_ruta_relativa_usa_el_folder_que_se_edita(user: User, gui: miGui, deck: dispositivoFalso):
+    deck.folderActual = "/ide"
+    await user.open("/")
+    user.find(marker=f"editar-deck-{deck.listaAcciones[0].key}").click()
+    await llenarFormulario(user, acción="Reproducir Sonido", Archivo="./x.wav")
+    editor = next(iter(user.find(marker="opción-Archivo").elements))
+    assert editor.props["hint"].endswith("/default/ide/x.wav")

@@ -43,7 +43,7 @@ class dispositivo:
     "Ruta virtual de donde se encuentra dispositivo"
     archivo: str
     "Archivos por folder donde se cargara la acciones"
-    ejecutarAcción: Callable[[dict, bool, int], Any] | None = None
+    ejecutarAcción: Callable[[dict, bool, int, str], Any] | None = None
     "Función que se llama para ejecutar una acción"
     conectado: bool = False
     "El dispositivo esta listo para usarse"
@@ -336,7 +336,7 @@ class dispositivo:
                 if self.ejecutarAcción is not None:
                     if estado:
                         print(f"Ejecutando acción: {acción}")
-                        self.ejecutarAcción(acción)
+                        self.ejecutarAcción(acción, True, 1, self.folderActual)
                 return
         if estado:
             print(f"No se encontró {keyAcción}-{self.nombre}")
@@ -403,10 +403,10 @@ class dispositivo:
                         logger.info(f"Evento[{acción.get('nombre')}] {self.nombre}[{tecla}-{estado.name}]x{fuerza}")
                     else:
                         logger.info(f"Evento[{acción.get('nombre')}] {self.nombre}[{tecla}-{estado.name}]")
-                    self.ejecutarAcción(acción, True, fuerza)
+                    self.ejecutarAcción(acción, True, fuerza, self.folderActual)
                     return
                 elif estado == self.estadoTecla.LIBERADA:
-                    self.ejecutarAcción(acción, False, fuerza)
+                    self.ejecutarAcción(acción, False, fuerza, self.folderActual)
                     return
         if estado == self.estadoTecla.PRESIONADA:
             if fuerza > 1:
@@ -414,7 +414,7 @@ class dispositivo:
             else:
                 logger.info(f"Evento[No asignado] {self.nombre}[{tecla}]")
 
-    def configurarFuncionAccion(self, funcionAccion: Callable[[dict, bool, int], Any]) -> None:
+    def configurarFuncionAccion(self, funcionAccion: Callable[[dict, bool, int, str], Any]) -> None:
         """Asigna la función que ejecuta acciones cuando el dispositivo recibe un evento.
 
         Todos los dispositivos (teclado, MQTT, GUI, etc.) llaman a esta función
@@ -422,10 +422,11 @@ class dispositivo:
         sistema central lo procese.
 
         Args:
-            funcionAccion: Función con firma ``(accion: dict, estado: bool, fuerza: int) -> Any``.
+            funcionAccion: Función con firma ``(accion: dict, estado: bool, fuerza: int, folder: str) -> Any``.
                 - accion:  dict con al menos ``"accion"`` y opcionalmente ``"opciones"``, ``"key"``, ``"nombre"``.
                 - estado:  True si el evento es de presión/activación, False si es de liberación.
                 - fuerza:  Multiplicador de intensidad (por defecto 1).
+                - folder:  folder actual del dispositivo, para las rutas relativas (./x) de la acción.
         """
         self.ejecutarAcción = funcionAccion
 

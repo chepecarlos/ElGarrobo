@@ -1,5 +1,7 @@
 "Acción que abre una ventana con nemo"
 
+import shlex
+
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 from .accion import accion, propiedadAccion
@@ -12,9 +14,9 @@ logger = ConfigurarLogging(__name__)
 class accionFolder(accion):
     "Acción que abre una ventana"
 
-    nombre = "Abri Folder"
+    nombre = "Abrir folder"
     comando = "folder"
-    descripcion = "Abre un Ventana folder"
+    descripcion = "Abre una ventana del folder en Nemo"
 
     propiedadRuta: propiedadAccion = propiedadAccion(
         nombre="Folder",
@@ -36,9 +38,9 @@ class accionFolder(accion):
         "@private Función a ejecutarse"
 
     def abrirFolder(self):
-        ruta = self.obtenerValor("ruta")
+        ruta = self.calcularRuta(self.obtenerValor("ruta"))
         logger.info(f"Abrir[{ruta}]")
-        ruta = f"nemo {ruta} &"
+        ruta = f"nemo {shlex.quote(ruta)} &"
         accion = accionOS()
         accion.configurar({"comando": ruta})
         accion.ejecutar()

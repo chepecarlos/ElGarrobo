@@ -659,6 +659,6 @@ class pestañasDispositivos:
                 # Una sola celda de la grilla para los tres botones
                 with ui.row().classes("no-wrap gap-1 items-center"):
                     with ui.button_group().props("rounded"):
-                        nombrar(ui.button(icon="play_arrow", color=tema.colorBotones, on_click=lambda a=acciónActual: self.probarAcción(a)).mark(f"ejecutar-{marca}"), f"Probar {nombreAcción}")
+                        nombrar(ui.button(icon="play_arrow", color=tema.colorBotones, on_click=lambda a=acciónActual, d=dispositivo: self.probarAcción(a, d)).mark(f"ejecutar-{marca}"), f"Probar {nombreAcción}")
                         nombrar(ui.button(icon="edit", color=tema.colorBotones, on_click=lambda a=acciónActual: self.formulario.siNoHayCambios(lambda: self.formulario.seleccionarAcción(a, dispositivo))).mark(f"editar-{marca}"), f"Editar {nombreAcción}")
                     nombrar(ui.button(icon="delete", color=tema.colorPeligro, on_click=lambda a=acciónActual, d=dispositivo: self.borrarConDeshacer(a, d)).props("flat round").mark(f"borrar-{marca}"), f"Borrar {nombreAcción}")

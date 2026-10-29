@@ -7,6 +7,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from elGarrobo.accionesOOP import accion, accionDelay, accionMacro, cargarClasesAcciones
+from elGarrobo.accionesOOP.accion import folderEjecución
 from elGarrobo.modulos import cargarModulos
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.accionesOOP.herramientas.valoresAccion import valoresAcciones
@@ -116,6 +117,16 @@ class TestAccionBase:
             sonido.parent.mkdir()
             sonido.touch()
             assert nueva.calcularRuta(str(sonido)) == str(sonido.resolve())
+            # Sin / o con ./: desde el folder del dispositivo que la ejecuta
+            enFolder = str((tmp_path / "default" / "ide" / "x.wav").resolve())
+            assert nueva.calcularRuta("./x.wav", folder="/ide") == enFolder
+            assert nueva.calcularRuta("x.wav", folder="ide") == enFolder
+            assert nueva.calcularRuta("/x.wav", folder="/ide") == str((tmp_path / "default" / "x.wav").resolve())
+            token = folderEjecución.set("/ide")
+            try:
+                assert nueva.calcularRuta("./x.wav") == enFolder, "sin folder usa el del dispositivo que ejecuta"
+            finally:
+                folderEjecución.reset(token)
 
     def test_str(self):
         assert "Prueba" in str(crearAccion())

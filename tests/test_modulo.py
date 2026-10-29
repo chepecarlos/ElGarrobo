@@ -54,6 +54,26 @@ def test_disparar_evento_ejecuta_cada_accion(monkeypatch):
     assert sorted(llamada.args[0]["accion"] for llamada in app.ejecutarAcción.call_args_list) == ["a", "b"]
 
 
+
+def test_ejecutar_accion_pasa_el_folder_a_las_anidadas():
+    from elGarrobo import elGarrobo as moduloElGarrobo
+    from elGarrobo.accionesOOP.accion import accion, folderEjecución
+
+    vistos = []
+
+    class accionVer(accion):
+        def __init__(self):
+            super().__init__("Ver", "ver", "")
+            self.funcion = lambda: vistos.append(folderEjecución.get())
+
+    app = moduloElGarrobo.elGarrobo.__new__(moduloElGarrobo.elGarrobo)
+    app.listaClasesAcciones = {"ver": accionVer}
+    app.ModuloMonitorESP = False
+    app.ejecutarAcción({"accion": "ver"}, True, 1, "/ide")
+    app.ejecutarAcción({"accion": "ver"})
+    assert vistos == ["/ide", "/"], "se restaura al terminar"
+
+
 class TestEventosFdmMonster:
     API = "http://fdm/api/v2"
 

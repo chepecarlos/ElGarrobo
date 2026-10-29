@@ -103,7 +103,8 @@ def avisarRutaFaltante(editor: ui.element) -> None:
 
     Aviso y no error: se puede guardar igual (ej. el archivo se copia después)
     """
-    rutaCompleta = accion.calcularRuta(editor.value) if editor.value else None
+    folder = getattr(editor, "folderRuta", None) or "/"
+    rutaCompleta = accion.calcularRuta(editor.value, folder=folder) if editor.value else None
     if rutaCompleta is not None and not Path(rutaCompleta).exists():
         editor.props["hint"] = f"No existe: {rutaCompleta}"
         editor.classes(add="aviso-ruta")

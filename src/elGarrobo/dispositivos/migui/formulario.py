@@ -233,6 +233,8 @@ class formularioAccion:
                 for propiedad in acciónTmp.listaPropiedades:
                     nombre: str = propiedad.nombre
                     editor = crearEditor(propiedad, f"opción-{nombre}")
+                    # El aviso de ruta busca ./x en el folder que se edita, igual que al ejecutarla
+                    editor.folderRuta = getattr(self.dispositivoEditar, "folderActual", None)
                     tipoAnterior, valorAnterior = valoresAnteriores.get(nombre, (None, None))
                     if valorAnterior and tipoAnterior == editor.tipoEditor:
                         editor.value = valorAnterior
@@ -358,7 +360,7 @@ class formularioAccion:
         acción, dispositivo = self.accionEditar, self.dispositivoEditar
         # Se revisa antes: si el folder existe el dispositivo entra y la ruta relativa ya no sirve
         faltaFolder = self.folderFaltante(acción, dispositivo)
-        self.probarAcción(acción)
+        self.probarAcción(acción, dispositivo)
         if faltaFolder:
             self.ofrecerCrearFolder(acción, dispositivo)
 

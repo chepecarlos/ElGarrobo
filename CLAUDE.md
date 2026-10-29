@@ -53,7 +53,7 @@ El formateador de código es **Black** con `line-length = 119`.
 
 Heredan de `accion` (clase base en `accion.py`). Cada acción define:
 - `nombre`, `comando` (string clave), `descripcion`
-- `listaPropiedades`: lista de `propiedadAccion` con nombre, tipo y si es obligatoria. Para propiedades `str` de varias líneas (ej. `texto` en `accionEscribirTexto`) usar `multilinea=True` para que la GUI muestre un `textarea` en vez de un `input`. Para archivos o folders que la acción busca con `accion.calcularRuta` usar `ruta=True`: la GUI avisa en ámbar (sin impedir guardar) si no existe
+- `listaPropiedades`: lista de `propiedadAccion` con nombre, tipo y si es obligatoria. Para propiedades `str` de varias líneas (ej. `texto` en `accionEscribirTexto`) usar `multilinea=True` para que la GUI muestre un `textarea` en vez de un `input`. Para archivos o folders que la acción busca con `accion.calcularRuta` usar `ruta=True`: la GUI avisa en ámbar (sin impedir guardar) si no existe. Rutas: `/x` desde la raíz del perfil (o ruta completa del sistema si existe), `./x` o `x` desde el folder del dispositivo que ejecuta la acción (`folderEjecución`, que pasa `ejecutarAcción(..., folder)` y heredan las macros)
 - `configurar(dict)` → valida y llena `listaValores`
 - `ejecutar()` → verifica propiedades y llama a `funcion` o `funcionExterna`
 
