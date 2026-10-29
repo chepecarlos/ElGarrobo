@@ -104,8 +104,9 @@ class accionReproducir(accion):
             tipo=str,
             obligatorio=True,
             atributo="archivo",
-            descripcion="pista a reproducir",
-            ejemplo="sonido.mp4",
+            descripcion="Pista a reproducir; /sonidos/x.wav es desde la raíz del perfil",
+            ejemplo="/sonidos/chan.wav",
+            ruta=True,
         )
 
         propiedadGanancia = propiedadAccion(

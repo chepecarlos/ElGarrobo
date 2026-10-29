@@ -1716,3 +1716,18 @@ class TestEventos:
         user.find(marker="evento-guardar").click()
         await user.should_see("Aviso error")
         assert archivos["eventos"][0] == {"nombre": "Aviso error", "evento": "fdm_monster/impresion_error", "activo": False, "extra": 1, "accion": "escribir", "opciones": {"texto": "{impresora}: {motivo}"}}
+
+
+async def test_avisa_ruta_que_no_existe(user: User, gui: miGui, tmp_path):
+    await user.open("/")
+    await llenarFormulario(user, acción="Reproducir Sonido", Archivo=str(tmp_path / "no-existe.wav"))
+    editor = next(iter(user.find(marker="opción-Archivo").elements))
+    # Muestra dónde la busca la acción: una ruta completa que no existe se busca dentro del perfil
+    assert editor.props["hint"].startswith("No existe: ") and editor.props["hint"].endswith("/default" + str(tmp_path / "no-existe.wav"))
+    assert "aviso-ruta" in editor.classes
+
+    sonido = tmp_path / "chan.wav"
+    sonido.touch()
+    user.find(marker="opción-Archivo").clear().type(str(sonido))
+    assert "aviso-ruta" not in editor.classes, "existe: vuelve la ayuda normal"
+    assert editor.props["hint"].startswith("Pista a reproducir")

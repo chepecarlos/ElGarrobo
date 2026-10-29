@@ -4,6 +4,7 @@ Los usan el formulario de acciones, los pasos de macro y la configuración de m�
 """
 
 import logging
+from pathlib import Path
 
 import yaml
 from nicegui import ui
@@ -49,6 +50,8 @@ def crearEditor(propiedad: propiedadAccion, marca: str) -> ui.element:
         if ayuda:
             editor.props["hint"] = ayuda
         editor.on_value_change(lambda _, e=editor: marcarError(e, None))
+        if propiedad.ruta:
+            editor.on_value_change(lambda _, e=editor: avisarRutaFaltante(e))
     editor.propiedad = propiedad
     editor.tipoEditor = tipo
     return editor.classes("w-full").mark(marca)
@@ -93,6 +96,21 @@ def leerValor(editor: ui.element):
             raise ValueError(f"{propiedad.nombre}: debe ser {tipos} en YAML")
         return dato
     return valor
+
+
+def avisarRutaFaltante(editor: ui.element) -> None:
+    """Aviso en ámbar bajo el campo si la ruta no existe, buscada igual que en la acción
+
+    Aviso y no error: se puede guardar igual (ej. el archivo se copia después)
+    """
+    rutaCompleta = accion.calcularRuta(editor.value) if editor.value else None
+    if rutaCompleta is not None and not Path(rutaCompleta).exists():
+        editor.props["hint"] = f"No existe: {rutaCompleta}"
+        editor.classes(add="aviso-ruta")
+    else:
+        editor.props["hint"] = editor.propiedad.descripcion or ""
+        editor.classes(remove="aviso-ruta")
+    editor.update()
 
 
 def nombrar(elemento: ui.element, texto: str) -> ui.element:

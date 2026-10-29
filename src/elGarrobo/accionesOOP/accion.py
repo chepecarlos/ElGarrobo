@@ -170,12 +170,13 @@ class accion:
 
         return default
 
-    def calcularRuta(self, ruta: str, perfil: str = "default") -> str:
+    @staticmethod
+    def calcularRuta(ruta: str, perfil: str = "default") -> str:
         """Calcula la ruta completa a un archivo o carpeta
 
         Args:
             ruta (str): Ruta relativa al perfil de usuario; con / inicial desde la raíz del perfil, salvo que sea
-                una ruta completa del sistema que existe
+                una ruta completa del sistema que existe (también con ~)
 
         Returns:
             str: Ruta completa al archivo o carpeta
@@ -186,6 +187,7 @@ class accion:
         rutaCalculada: Path = None
 
         folderPerfil = Path(folderConfig / folderPerfil)
+        ruta = str(Path(ruta).expanduser())
 
         if ruta.startswith("/") and Path(ruta).exists():
             # Ruta completa del sistema (ej. pegada desde el explorador de archivos)

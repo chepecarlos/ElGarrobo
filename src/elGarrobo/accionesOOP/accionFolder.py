@@ -21,8 +21,9 @@ class accionFolder(accion):
         tipo=str,
         obligatorio=True,
         atributo="ruta",
-        descripcion="ruta a abri en Nemo",
+        descripcion="Ruta a abrir en Nemo",
         ejemplo="/home/usuario",
+        ruta=True,
     )
 
     def __init__(self) -> None:

@@ -21,6 +21,8 @@ class propiedadAccion:
     defecto: Optional[Any] = None
     multilinea: bool = False
     "Solo para tipo str: si es True la GUI muestra un área de texto de varias líneas en vez de un input de una línea"
+    ruta: bool = False
+    "Solo para tipo str: archivo o folder que la acción busca con accion.calcularRuta; la GUI avisa si no existe"
     elementos: Optional[list[propiedadAccion]] = None
     "Solo para tipo list: propiedades de cada elemento, la GUI permite agregar y quitar elementos (ej. impresoras)"
 

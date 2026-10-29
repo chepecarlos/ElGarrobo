@@ -39,8 +39,10 @@ CSS_BOTONERA = """
    (texto de acento, etiqueta de campos y contorno con teclado) y el texto de error.
    Tema claro sobre blanco: teal-700 5.5:1 y red-700 6.5:1. Tema oscuro (body--dark de Quasar): teal-300 12.7:1 y red-400 6.8:1.
    La cabecera es teal-900 en los dos temas: ahí siempre van los claros (teal-700 daría 1.7:1) */
-:root { --color-carcasa: #0b1716; --color-acento: #0f766e; --color-foco: #0f766e; --color-error-texto: #b91c1c; }
-body.body--dark { --color-acento: #5eead4; --color-foco: #5eead4; --color-error-texto: #f87171; }
+:root { --color-carcasa: #0b1716; --color-acento: #0f766e; --color-foco: #0f766e; --color-error-texto: #b91c1c; --color-aviso-texto: #92400e; }
+body.body--dark { --color-acento: #5eead4; --color-foco: #5eead4; --color-error-texto: #f87171; --color-aviso-texto: #fcd34d; }
+/* Aviso que no impide guardar (ej. ruta que no existe): ámbar, amber-800 7:1 sobre blanco y amber-300 sobre oscuro */
+.aviso-ruta .q-field__messages { color: var(--color-aviso-texto); }
 .q-header { --color-acento: #5eead4; --color-foco: #5eead4; }
 .texto-acento { color: var(--color-acento); }
 /* primary y negative (ver COLORES_QUASAR) son fondos con texto blanco; como texto sobre el fondo oscuro no llegan a 4.5:1.
