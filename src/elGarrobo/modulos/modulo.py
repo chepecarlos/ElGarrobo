@@ -124,6 +124,26 @@ def eventoImpresion(anterior: Optional[str], actual: str) -> Optional[str]:
     return FASES_IMPRESION.get(actual, (None, None))[0]
 
 
+def faseOctoPrint(estado: str, progreso: float, anterior: Optional[str]) -> str:
+    """Fase de FASES_IMPRESION según el texto de estado de OctoPrint (Printing, Pausing, Cancelling, Error...)
+
+    También lo usa FDM Monster, que reenvía el estado en formato OctoPrint
+    """
+    texto = estado.lower()
+    if "cancel" in texto:
+        return "cancelada"
+    if "paus" in texto:
+        return "pausada"
+    if "error" in texto:
+        return "error"
+    if any(palabra in texto for palabra in ("printing", "resuming", "starting", "finishing")):
+        return "imprimiendo"
+    if "operational" in texto and anterior in ("imprimiendo", "pausada"):
+        # OctoPrint no tiene estado de terminada: vuelve a Operational; sin llegar al 100 % se canceló
+        return "terminada" if progreso >= 99.9 else "cancelada"
+    return "inactiva"
+
+
 def cumpleFiltro(esperado: Any, valor: Any) -> bool:
     """Si el dato cumple lo del filtro: '> 80', '>= 80', '< 20', '<= 20', '!= 0', '= x' o el valor solo (igualdad)
 

@@ -8,7 +8,14 @@ from elGarrobo.modulos.octoprint.accionesOctoprint import accionCancelarOctoprin
 from elGarrobo.accionesOOP.accionMQTT import accionMQTT
 from elGarrobo.miLibrerias import ConfigurarLogging
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
-from elGarrobo.modulos.modulo import eventoImpresion, eventosImpresion, leerMonitoreo, modulo, propiedadesMonitoreo
+from elGarrobo.modulos.modulo import (
+    eventoImpresion,
+    eventosImpresion,
+    faseOctoPrint,
+    leerMonitoreo,
+    modulo,
+    propiedadesMonitoreo,
+)
 
 logger = ConfigurarLogging(__name__)
 
@@ -304,27 +311,10 @@ class moduloOctoprint(modulo):
 
             time.sleep(intervalo_error if errores_consecutivos >= limite_errores_log else intervalo)
 
-    @staticmethod
-    def _fase(estado: str, progreso: float, anterior: Optional[str]) -> str:
-        """Fase de FASES_IMPRESION según el texto de estado de OctoPrint (Printing, Pausing, Cancelling, Error...)"""
-        texto = estado.lower()
-        if "cancel" in texto:
-            return "cancelada"
-        if "paus" in texto:
-            return "pausada"
-        if "error" in texto:
-            return "error"
-        if "printing" in texto or "resuming" in texto or "starting" in texto:
-            return "imprimiendo"
-        if "operational" in texto and anterior in ("imprimiendo", "pausada"):
-            # OctoPrint no tiene estado de terminada: vuelve a Operational; sin llegar al 100 % se canceló
-            return "terminada" if progreso >= 99.9 else "cancelada"
-        return "inactiva"
-
     def _avisarCambio(self, nombre: str, topic: str, estadoActual: dict[str, str]) -> None:
         """Emite octoprint/<evento> si la impresora cambió de fase desde la lectura anterior"""
         anterior = self.fases.get(nombre)
-        fase = self._fase(estadoActual["estado"], float(estadoActual["progreso"]), anterior)
+        fase = faseOctoPrint(estadoActual["estado"], float(estadoActual["progreso"]), anterior)
         evento = eventoImpresion(anterior, fase)
         self.fases[nombre] = fase
         if evento:

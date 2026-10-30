@@ -10,7 +10,14 @@ from elGarrobo.modulos.fdmMonster.accionesFdmMonster import accionImprimirColaFD
 from elGarrobo.accionesOOP.accionMQTT import accionMQTT
 from elGarrobo.miLibrerias import ConfigurarLogging
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
-from elGarrobo.modulos.modulo import eventoModulo, leerMonitoreo, modulo, propiedadesMonitoreo
+from elGarrobo.modulos.modulo import (
+    eventoImpresion,
+    eventoModulo,
+    faseOctoPrint,
+    leerMonitoreo,
+    modulo,
+    propiedadesMonitoreo,
+)
 
 logger = ConfigurarLogging(__name__)
 
@@ -103,8 +110,8 @@ class moduloFdmMonster(modulo):
         "id → status de los trabajos de la consulta anterior; None hasta la primera, que solo guarda sin avisar"
         self.ultimoTrabajo = 0
         "id más alto visto, para no tomar como nuevo un trabajo viejo que entra a la página"
-        self.pausadas: dict[str, bool] = {}
-        "impresora → si estaba pausada en la consulta anterior"
+        self.fases: dict[str, str] = {}
+        "impresora → fase en la consulta anterior, para avisar pausa y fin por su estado"
         self.ultimosEventos: dict[tuple[str, str], float] = {}
         "(impresora, evento) → cuándo se avisó, para no repetirlo seguido"
         self.duracionMinima = self._leerEntero("duracion_minima_segundos")
@@ -246,11 +253,13 @@ class moduloFdmMonster(modulo):
                 continue
 
             estadoActual = self._normalizar_estado(payload)
-            # "Pausing" y "Paused": avisa una vez al entrar; la primera consulta solo guarda
-            pausada = "paus" in estadoActual["estado"].lower()
-            if pausada and self.pausadas.get(nombre) is False:
-                self._emitir("impresion_pausada", {"impresora": nombre, **estadoActual})
-            self.pausadas[nombre] = pausada
+            # Pausa y fin por el estado: FDM Monster a veces deja el trabajo en PRINTING aunque ya terminó.
+            # Inicio, cancelación y error salen de los trabajos, que traen el motivo; si ambos avisan, _emitir no repite
+            anterior = self.fases.get(nombre)
+            self.fases[nombre] = faseOctoPrint(estadoActual["estado"], float(estadoActual["progreso"]), anterior)
+            evento = eventoImpresion(anterior, self.fases[nombre])
+            if evento in ("impresion_pausada", "impresion_terminada"):
+                self._emitir(evento, {"impresora": nombre, **estadoActual})
             for sub_topic, valor in estadoActual.items():
                 self._publicar(nombre, sub_topic, valor)
             for sub_topic, valor in self._normalizar_temperaturas(payload).items():

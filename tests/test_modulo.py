@@ -150,15 +150,17 @@ class TestEventosFdmMonster:
         assert self.consultar(fdm, self.trabajo(3, "COMPLETED")) == [], "misma impresora antes de 60s"
         assert self.consultar(fdm, self.trabajo(4, "COMPLETED", impresora="Prusa")) == ["impresion_terminada"]
 
-    def test_pausada_avisa_una_vez(self, fdm, monkeypatch):
-        socket = {"current": {"payload": {"state": {"text": "Printing"}}}}
-        respuestas = {"printer/": [{"id": 1, "name": "Ender", "enabled": True}], "print-queue/1": {"count": 0}, "printer/1/socket": socket}
+    def test_pausa_y_fin_por_estado(self, fdm, monkeypatch):
+        payload = {"state": {"text": "Printing"}, "progress": {"completion": 50}}
+        respuestas = {"printer/": [{"id": 1, "name": "Ender", "enabled": True}], "print-queue/1": {"count": 0}, "printer/1/socket": {"current": {"payload": payload}}}
         monkeypatch.setattr(fdm, "_obtener_json", lambda sesion, url: respuestas[url.removeprefix(self.API + "/")])
         monkeypatch.setattr(moduloFdmMonster, "valoresDatos", {})
-        for texto in ("Printing", "Pausing", "Paused", "Printing", "Paused"):
-            socket["current"]["payload"]["state"]["text"] = texto
+        lecturas = [("Printing", 50), ("Pausing", 50), ("Paused", 50), ("Printing", 60), ("Paused", 60), ("Printing", 90), ("Finishing", 100), ("Operational", 100), ("Operational", 100)]
+        for texto, progreso in lecturas:
+            payload["state"]["text"], payload["progress"]["completion"] = texto, progreso
             fdm._consultar_impresoras(None, self.API)
-        assert [d["estado"] for _, d in fdm.avisados] == ["Pausing"], "la segunda pausa cae en la espera de repetidos"
+        avisos = [(nombre.removeprefix("fdm_monster/"), d["estado"]) for nombre, d in fdm.avisados]
+        assert avisos == [("impresion_pausada", "Pausing"), ("impresion_terminada", "Operational")], "la segunda pausa cae en la espera de repetidos; el fin no depende de que FDM Monster cierre el trabajo"
         assert moduloFdmMonster.valoresDatos == {"impresora": ["Ender"]}, "para elegirla en el filtro de /eventos"
 
 
