@@ -5,10 +5,12 @@ import base64
 import io
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
 from nicegui import ui
+from nicegui.elements.upload_files import SmallFileUpload
 from PIL import Image
 from nicegui.testing import User
 from nicegui.testing.user_interaction import UserInteraction
@@ -25,6 +27,7 @@ from elGarrobo.dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro, fo
 from elGarrobo.dispositivos.migui import migui as moduloMiGui
 from elGarrobo.dispositivos.migui import configuracion, eventos, tema, vistas
 from elGarrobo.dispositivos.migui import teclas as moduloTeclas
+from elGarrobo.dispositivos.migui.formulario import valorVacío
 from elGarrobo.dispositivos.migui.migui import miGui
 
 
@@ -751,6 +754,38 @@ class TestEditorApariencia:
         user.find(marker="botonAgregar").click()
         assert deck.listaAcciones[0].tituloOpciones == {"color": "blue"}, "vacío quita el tópico sin tocar las otras opciones"
 
+    async def test_editor_boton_guarda_opciones_del_titulo(self, user: User, gui: miGui, deck: dispositivoFalso):
+        deck.listaAcciones[0].tituloOpciones = {"alinear": "centrado", "fuente": "x.ttf"}
+        await user.open("/")
+        user.find(marker="editar-deck-1").click()
+        assert gui.formulario.editoresTitulo["alinear"].value == "centrado", "valor a mano del .md no se pierde"
+
+        user.find(marker="botonEditarBoton").click()
+        editores = gui.formulario.editoresTitulo
+        # ponytail: el simulador no escribe en color_input ni number
+        editores["color"].value = "#ff0000"
+        editores["borde_color"].value = "white"
+        editores["alinear"].value = "arriba"
+        editores["borde_grosor"].value = 2.0
+        editores["tamanno_maximo"].value = 40.0
+        user.find(marker="botonListoBoton").click()
+        user.find(marker="botonAgregar").click()
+        assert deck.listaAcciones[0].tituloOpciones == {
+            "alinear": "arriba",
+            "fuente": "x.ttf",
+            "color": "#ff0000",
+            "borde_color": "white",
+            "borde_grosor": 2,
+            "tamanno_maximo": 40,
+        }
+
+        user.find(marker="editar-deck-1").click()
+        assert editores["tamanno_maximo"].value == 40
+        for editor in editores.values():
+            editor.value = valorVacío(editor)
+        user.find(marker="botonAgregar").click()
+        assert deck.listaAcciones[0].tituloOpciones == {"fuente": "x.ttf"}, "vacíos se quitan, las claves sin editor quedan"
+
     async def test_vista_previa_dibuja_fondo(self, user: User, gui: miGui, deck: dispositivoFalso):
         await user.open("/")
         user.find(marker="editar-deck-1").click()
@@ -762,6 +797,54 @@ class TestEditorApariencia:
         assert gui.formulario.vistaPrevia.source.convert("RGB").getpixel((1, 1)) == (255, 0, 0)
         assert deck.listaAcciones[0].fondo is None, "la vista previa no guarda"
 
+
+    async def test_subir_imagen_la_copia_al_folder(self, user: User, gui: miGui, deck: dispositivoFalso, monkeypatch, tmp_path):
+        monkeypatch.setattr(sys.modules["elGarrobo.dispositivos.dispositivo"], "ObtenerFolderConfig", lambda: tmp_path)
+        (tmp_path / "default").mkdir()
+        (tmp_path / "default" / "vieja.gif").write_bytes(b"")
+
+        def png(color: str) -> bytes:
+            buffer = io.BytesIO()
+            Image.new("RGB", (8, 8), color).save(buffer, "PNG")
+            return buffer.getvalue()
+
+        def subir(nombre: str, datos: bytes):
+            return gui.formulario.subirImagen(SimpleNamespace(file=SmallFileUpload(nombre, "image/png", datos)))
+
+        await user.open("/")
+        user.find(marker="editar-deck-1").click()
+        user.find(marker="botonEditarBoton").click()
+        assert gui.formulario.editorImagen.options == ["vieja.gif"]
+
+        await subir("../rojo.png", png("red"))
+        assert (tmp_path / "default" / "rojo.png").read_bytes() == png("red"), "solo el nombre, no sale del folder"
+        assert gui.formulario.editorImagen.value == "rojo.png"
+        vista = gui.formulario.vistaPrevia.source
+        assert vista.convert("RGB").getpixel((vista.width // 2, (vista.height - 20) // 2)) == (255, 0, 0), "centrada sobre el título"
+
+        await subir("rojo.png", png("red"))
+        await subir("rojo.png", png("blue"))
+        assert sorted(a.name for a in (tmp_path / "default").iterdir()) == ["rojo-1.png", "rojo.png", "vieja.gif"]
+        assert gui.formulario.editorImagen.value == "rojo-1.png"
+
+        await subir("texto.png", b"no soy imagen")
+        assert not (tmp_path / "default" / "texto.png").exists()
+        assert gui.formulario.editorImagen.value == "rojo-1.png"
+
+        gui.formulario.editorEscala.value = 50
+        user.find(marker="botonListoBoton").click()
+        user.find(marker="botonAgregar").click()
+        assert deck.listaAcciones[0].imagen == "rojo-1.png"
+        assert deck.listaAcciones[0].imagenOpciones == {"escala": 50}
+        user.find(marker="editar-deck-1").click()
+        assert gui.formulario.editorImagen.value == "rojo-1.png"
+        assert gui.formulario.editorEscala.value == 50
+
+        user.find(marker="botonEditarBoton").click()
+        gui.formulario.editorEscala.value = 100
+        user.find(marker="botonListoBoton").click()
+        user.find(marker="botonAgregar").click()
+        assert "escala" not in deck.listaAcciones[0].imagenOpciones, "100% es el valor por defecto, no se guarda"
 
     async def test_editar_carga_fondo_sin_borrarlo(self, user: User, gui: miGui, deck: dispositivoFalso):
         deck.listaAcciones[0].fondo = "#ff8000"

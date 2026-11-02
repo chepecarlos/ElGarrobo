@@ -1,10 +1,13 @@
 """Formulario para agregar o editar la acción de una tecla: datos, acción con sus opciones y apariencia del botón"""
 
 import copy
+import io
 import logging
+from pathlib import Path
 
 import yaml
 from nicegui import ui
+from PIL import Image
 
 from elGarrobo.accionesOOP import accion
 from elGarrobo.dispositivos.dataAccion import dataAccion
@@ -26,6 +29,47 @@ from elGarrobo.dispositivos.migui.teclas import ordenTecla, tamañoTecla, teclaR
 from elGarrobo.miLibrerias import ConfigurarLogging
 
 logger = ConfigurarLogging(__name__, logging.INFO)
+
+extensionesImagen = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"}
+
+
+def imágenesDisponibles(folderPerfil: Path, folder: Path) -> list[str]:
+    """Imágenes del folder (sin /) y de la raíz del perfil (con /), escritas como en la clave imagen del .md"""
+
+    def imágenes(carpeta: Path) -> list[str]:
+        return sorted(a.name for a in carpeta.glob("*") if a.suffix.lower() in extensionesImagen and a.is_file())
+
+    raíz = [] if folder == folderPerfil else [f"/{nombre}" for nombre in imágenes(folderPerfil)]
+    return imágenes(folder) + raíz
+
+
+def valorVacío(editor: ui.element) -> str | None:
+    """Valor de un editor vacío: number y select usan None, los de texto "" (color_input falla con None)"""
+    return None if isinstance(editor, (ui.number, ui.select)) else ""
+
+
+def guardarImagen(folder: Path, nombre: str, datos: bytes) -> str:
+    """Copia una imagen subida al folder y devuelve su nombre ahí
+    Si ya hay otra con ese nombre se guarda como nombre-1.png, si es la misma se reutiliza
+
+    Raises:
+        ValueError: si no tiene extensión de imagen
+        Exception: de PIL si el contenido no es una imagen
+    """
+    # Solo el nombre: "../x.png" no debe escribir fuera del folder
+    archivo = Path(Path(nombre).name)
+    if archivo.suffix.lower() not in extensionesImagen:
+        raise ValueError(f"{nombre} no tiene extensión de imagen")
+    Image.open(io.BytesIO(datos)).verify()
+
+    destino, número = folder / archivo, 1
+    while destino.exists() and destino.read_bytes() != datos:
+        destino = folder / f"{archivo.stem}-{número}{archivo.suffix}"
+        número += 1
+    if not destino.exists():
+        folder.mkdir(parents=True, exist_ok=True)
+        destino.write_bytes(datos)
+    return destino.name
 
 
 class formularioAccion:
@@ -83,7 +127,42 @@ class formularioAccion:
                         self.editorTitulo = ui.input("Título", on_change=self.actualizarVistaPrevia).classes("w-full").props("clearable").mark("editor-titulo")
                         self.editorTituloMQTT = ui.input("Tópico MQTT del título", on_change=self.actualizarVistaPrevia).classes("w-full").props("clearable").mark("editor-titulo-mqtt")
                         self.editorTituloMQTT.props["hint"] = "El valor que llega reemplaza {} en el título, ej. {:.0f}%"
+                        # Vacíos usan el valor del folder o el de dibujoBoton.ponerTexto
+                        colorTexto = ui.color_input("Color del texto", preview=True, on_change=self.actualizarVistaPrevia).classes("w-full").mark("editor-titulo-color")
+                        colorBorde = ui.color_input("Color del borde", preview=True, on_change=self.actualizarVistaPrevia).classes("w-full").mark("editor-titulo-borde-color")
+                        alinear = ui.select({"arriba": "Arriba", "centro": "Centro", "abajo": "Abajo"}, label="Alineación del título", clearable=True, on_change=self.actualizarVistaPrevia)
+                        alinear.classes("w-full").mark("editor-titulo-alinear").props["hint"] = "Vacía: abajo con imagen, al centro sin imagen"
+                        with ui.expansion("Más opciones del título").classes("w-full").props("dense").mark("masOpcionesTitulo"):
+                            grosor = ui.number("Grosor del borde", min=0, precision=0, placeholder="6", on_change=self.actualizarVistaPrevia).classes("w-full").mark("editor-titulo-borde-grosor")
+                            with ui.row().classes("w-full no-wrap gap-2"):
+                                mínimo = ui.number("Letra mínima", min=1, precision=0, on_change=self.actualizarVistaPrevia).classes("flex-1").mark("editor-titulo-tamanno-minimo")
+                                máximo = ui.number("Letra máxima", min=1, precision=0, on_change=self.actualizarVistaPrevia).classes("flex-1").mark("editor-titulo-tamanno-maximo")
+                        self.editoresTitulo: dict[str, ui.element] = {
+                            "mqtt": self.editorTituloMQTT,
+                            "color": colorTexto,
+                            "borde_color": colorBorde,
+                            "alinear": alinear,
+                            "borde_grosor": grosor,
+                            "tamanno_minimo": mínimo,
+                            "tamanno_maximo": máximo,
+                        }
+                        "Clave en titulo_opciones → su editor"
                         self.editorFondo = ui.color_input("Fondo", preview=True, on_change=self.actualizarVistaPrevia).classes("w-full").mark("editor-fondo")
+                        # El navegador no da la ruta del archivo, solo su contenido: se copia al folder actual
+                        # Oculto porque su lista de archivos ocupa mucho, se abre con el botón junto al selector
+                        self.subidorImagen = (
+                            ui.upload(auto_upload=True, max_file_size=20_000_000, on_upload=self.subirImagen, on_rejected=lambda: ui.notify("Imagen muy grande, máximo 20 MB", type="warning"))
+                            .props('accept="image/*"')
+                            .classes("hidden")
+                        )
+                        with ui.row().classes("w-full items-center no-wrap gap-1"):
+                            self.editorImagen = ui.select([], label="Imagen", new_value_mode="add-unique", clearable=True, on_change=self.actualizarVistaPrevia).classes("grow").mark("editor-imagen")
+                            self.editorImagen.props["hint"] = "Sin / en el folder actual, con / desde la raíz del perfil"
+                            botonSubir = ui.button(icon="upload", color=tema.colorOscuro, on_click=lambda: self.subidorImagen.run_method("pickFiles")).props("round").mark("subirImagen")
+                            nombrar(botonSubir, "Subir imagen al folder actual")
+                        with ui.column().classes("w-full gap-0").bind_visibility_from(self.editorImagen, "value", backward=bool):
+                            self.editorEscala = ui.slider(min=10, max=100, step=5, value=100, on_change=self.actualizarVistaPrevia).classes("w-full").mark("editor-escala")
+                            ui.label().bind_text_from(self.editorEscala, "value", backward=lambda valor: f"Tamaño de la imagen: {valor}%").classes("text-sm")
                     self.vistaPrevia = ui.image().classes("w-24 h-24 rounded").props("fit=contain").mark("vistaPrevia")
                 ui.button("Listo", color=tema.colorOscuro, on_click=self.dialogoBoton.close).mark("botonListoBoton")
             ui.button("Editar apariencia", icon="palette", color=tema.colorOscuro, on_click=self.abrirEditorApariencia).classes("w-full").mark("botonEditarBoton")
@@ -252,7 +331,7 @@ class formularioAccion:
 
     def estadoFormulario(self) -> tuple:
         """Foto de los valores del formulario, para saber si hay cambios sin guardar"""
-        editores = [*self.editoresData.values(), self.editorTitulo, self.editorTituloMQTT, self.editorFondo, self.editorAcción, *(self.opcionesEditar or {}).values()]
+        editores = [*self.editoresData.values(), self.editorTitulo, *self.editoresTitulo.values(), self.editorFondo, self.editorImagen, self.editorEscala, self.editorAcción, *(self.opcionesEditar or {}).values()]
         return tuple(str(editor.value) for editor in editores)
 
     def recordarFormulario(self) -> None:
@@ -297,10 +376,44 @@ class formularioAccion:
 
     def abrirEditorApariencia(self) -> None:
         # Sin apariencia todavía: el nombre sirve de título para configurarlo más rápido
-        if not (self.editorTitulo.value or self.editorTituloMQTT.value or self.editorFondo.value):
+        if not (self.editorTitulo.value or self.editorTituloMQTT.value or self.editorFondo.value or self.editorImagen.value):
             self.editorTitulo.value = self.editoresData["nombre"].value or ""
+        # Las imágenes del folder pudieron cambiar desde que se cargó la acción
+        self.mostrarImagen(self.editorImagen.value)
         self.actualizarVistaPrevia()
         self.dialogoBoton.open()
+
+    def foldersImagen(self) -> tuple[Path, Path] | None:
+        """(folder del perfil, folder actual) del dispositivo editado, None si no hay dispositivo"""
+        dispositivoActual = self.dispositivoEditar or self.dispositivoSeleccionado()
+        if dispositivoActual is None:
+            return None
+        folderPerfil = dispositivoActual._folderConfigPerfil()
+        return folderPerfil, folderPerfil / str(dispositivoActual.folderActual).lstrip("/")
+
+    def mostrarImagen(self, imagen: str | None) -> None:
+        """Pone la imagen en el selector con las del folder editado, aunque no esté entre ellas (ej. /pulse/mic.png)"""
+        folders = self.foldersImagen()
+        opciones = imágenesDisponibles(*folders) if folders else []
+        if imagen and imagen not in opciones:
+            opciones.append(imagen)
+        self.editorImagen.set_options(opciones, value=imagen or None)
+
+    async def subirImagen(self, evento) -> None:
+        """Copia la imagen subida al folder actual del dispositivo y la elige para el botón"""
+        self.subidorImagen.reset()
+        folders = self.foldersImagen()
+        if folders is None:
+            ui.notify("Selecciona un dispositivo", type="warning")
+            return
+        try:
+            nombre = guardarImagen(folders[1], evento.file.name, await evento.file.read())
+        except Exception as error:
+            logger.warning(f"Imagen[Error] {evento.file.name} - {error}")
+            ui.notify(f"{evento.file.name} no es una imagen", type="warning")
+            return
+        self.mostrarImagen(nombre)
+        ui.notify(f"Imagen {nombre} copiada a {folders[1]}", type="positive")
 
     def actualizarVistaPrevia(self, *_) -> None:
         """Dibuja el botón con lo que hay en el formulario, sin guardar"""
@@ -327,13 +440,21 @@ class formularioAccion:
         self.vistaPrevia.set_source(imagen)
 
     def aplicarApariencia(self, acción: dataAccion) -> None:
-        """Pasa a la acción el título, tópico MQTT del título y fondo del editor del botón"""
+        """Pasa a la acción el título, sus opciones (titulo_opciones), fondo e imagen del editor del botón"""
         acción.titulo = self.editorTitulo.value or None
         acción.fondo = self.editorFondo.value or None
-        if self.editorTituloMQTT.value:
-            acción.tituloOpciones["mqtt"] = self.editorTituloMQTT.value
+        acción.imagen = self.editorImagen.value or None
+        if self.editorEscala.value < 100:
+            acción.imagenOpciones["escala"] = self.editorEscala.value
         else:
-            acción.tituloOpciones.pop("mqtt", None)
+            acción.imagenOpciones.pop("escala", None)
+        for clave, editor in self.editoresTitulo.items():
+            valor = editor.value
+            if valor in ("", None):
+                acción.tituloOpciones.pop(clave, None)
+            else:
+                # ui.number da float (40.0), en el .md va como entero
+                acción.tituloOpciones[clave] = int(valor) if isinstance(valor, float) else valor
 
     def limpiarFormulario(self):
         """Limpia el formulario de acciones"""
@@ -342,8 +463,11 @@ class formularioAccion:
         for editor in self.editoresData.values():
             editor.value = ""
         self.editorTitulo.value = ""
-        self.editorTituloMQTT.value = ""
+        for editor in self.editoresTitulo.values():
+            editor.value = valorVacío(editor)
         self.editorFondo.value = ""
+        self.editorImagen.set_options([], value=None)
+        self.editorEscala.value = 100
         self.editorAcción.value = ""
         self.editorOpción.value = ""
         self.editorOpción.visible = False
@@ -414,8 +538,15 @@ class formularioAccion:
         for atributo, editor in self.editoresData.items():
             editor.value = accion.get(atributo)
         self.editorTitulo.value = accion.titulo or ""
-        self.editorTituloMQTT.value = accion.tituloOpciones.get("mqtt") or ""
+        for clave, editor in self.editoresTitulo.items():
+            valor = accion.tituloOpciones.get(clave)
+            # Un valor escrito a mano en el .md que no está en el selector se agrega para no perderlo
+            if isinstance(editor, ui.select) and valor is not None and valor not in editor.options:
+                editor.set_options({**editor.options, valor: valor})
+            editor.value = valorVacío(editor) if valor is None else valor
         self.editorFondo.value = accion.fondo or ""
+        self.mostrarImagen(accion.imagen)
+        self.editorEscala.value = accion.imagenOpciones.get("escala", 100)
 
         # Sin esto mostrarOpciones pasaría los valores de la acción editada antes
         self.opcionesEditar = None

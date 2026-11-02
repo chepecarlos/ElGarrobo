@@ -157,7 +157,8 @@ class dibujoBoton:
         colorFondo = (accion.get("imagen_opciones") or {}).get("fondo") or "black"
         imagen = Image.new("RGB", tuple(tamaño), colorFondo)
         icono = cuadro.convert("RGBA")
-        icono.thumbnail(imagen.size, Image.LANCZOS)
+        escala = self.escalaImagen(accion)
+        icono.thumbnail((int(imagen.width * escala), int(imagen.height * escala)), Image.LANCZOS)
         imagen.paste(icono, ((imagen.width - icono.width) // 2, (imagen.height - icono.height) // 2), icono)
         titulo = self.buscarTitulo(accion)
         if titulo:
@@ -173,6 +174,14 @@ class dibujoBoton:
             if valor is not None:
                 return valor
         return default
+
+    def escalaImagen(self, accion) -> float:
+        """Fracción del botón que ocupa la imagen, de imagen_opciones.escala en % (10 a 100) de la acción o del folder"""
+        try:
+            escala = float(self.obtenerPropiedad(accion, "imagen_opciones/escala", 100))
+        except (TypeError, ValueError):
+            escala = 100
+        return min(max(escala, 10), 100) / 100
 
     def fuente(self, tamaño: int) -> ImageFont.FreeTypeFont:
         return cargarFuente(self.archivoFuente or fuenteConfig(), tamaño)
@@ -287,16 +296,20 @@ class dibujoBoton:
             return
 
         DireccionIcono = self.calcularRutaImagen(NombreIcono)
+        alto = Imagen.height
 
         if os.path.exists(DireccionIcono):
             alto = Imagen.height - 20 if "titulo" in accion and not fondo else Imagen.height
-            Icono = iconoEscalado(DireccionIcono, os.path.getmtime(DireccionIcono), (Imagen.width, alto))
+            # La imagen de fondo cubre todo el botón, la escala es solo para el ícono
+            escala = 1 if fondo else self.escalaImagen(accion)
+            Icono = iconoEscalado(DireccionIcono, os.path.getmtime(DireccionIcono), (int(Imagen.width * escala), int(alto * escala)))
         else:
             logger.warning(f"Deck[No Imagen] {NombreIcono} - {DireccionIcono}")
             Icono = Image.new(mode="RGBA", size=(256, 256), color=(153, 153, 255))
             Icono.thumbnail((Imagen.width, Imagen.height), Image.LANCZOS)
 
-        IconoPosicion = ((Imagen.width - Icono.width) // 2, 0)
+        # Centrado en el espacio sobre el título
+        IconoPosicion = ((Imagen.width - Icono.width) // 2, max(alto - Icono.height, 0) // 2)
         Imagen.paste(Icono, IconoPosicion, Icono)
 
     def ponerTexto(self, Imagen, titulo: str, accion, hayImagen: bool = False, cortePalabra: bool = False):
@@ -534,10 +547,17 @@ if __name__ == "__main__":
         # el ícono escalado sale del caché, pero si el archivo cambia se vuelve a leer
         rutaPng = Path(carpeta) / "c.png"
         Image.new("RGB", (10, 10), "red").save(rutaPng)
-        assert dibujo.dibujar(dataAccion(imagen="c.png"), (72, 72)).getpixel((36, 5)) == (255, 0, 0)
+        assert dibujo.dibujar(dataAccion(imagen="c.png"), (72, 72)).getpixel((36, 36)) == (255, 0, 0)
         Image.new("RGB", (10, 10), "blue").save(rutaPng)
         os.utime(rutaPng, (0, os.path.getmtime(rutaPng) + 1))
-        assert dibujo.dibujar(dataAccion(imagen="c.png"), (72, 72)).getpixel((36, 5)) == (0, 0, 255)
+        assert dibujo.dibujar(dataAccion(imagen="c.png"), (72, 72)).getpixel((36, 36)) == (0, 0, 255)
+        # con escala el ícono se achica centrado, también en gif
+        Image.new("RGB", (100, 100), "blue").save(Path(carpeta) / "d.png")
+        chico = dibujo.dibujar(dataAccion(imagen="d.png", imagenOpciones={"escala": 50}), (72, 72))
+        assert chico.getpixel((36, 36)) == (0, 0, 255) and chico.getpixel((36, 5)) != (0, 0, 255)
+        cuadroChico = dibujo.dibujarCuadroGif(dataAccion(imagenOpciones={"escala": 50}), Image.new("RGB", (10, 10), "white"), (72, 72))
+        assert cuadroChico.getpixel((36, 36)) == (255, 255, 255) and cuadroChico.getpixel((36, 5)) == (0, 0, 0)
+        assert dibujo.escalaImagen(dataAccion(imagenOpciones={"escala": "x"})) == 1
         # sin título ni imagen se usa el nombre; con título o imagen no
         assert dibujo.dibujar(dataAccion(nombre="Casa OS"), (72, 72)).tobytes() != dibujo.dibujar(dataAccion(), (72, 72)).tobytes()
         assert dibujo.dibujar(dataAccion(nombre="A", titulo="B"), (72, 72)).tobytes() == dibujo.dibujar(dataAccion(nombre="X", titulo="B"), (72, 72)).tobytes()
