@@ -10,6 +10,7 @@ from nicegui import ui
 from PIL import Image
 
 from elGarrobo.accionesOOP import accion
+from elGarrobo.accionesOOP.accionMQTT import accionMQTT
 from elGarrobo.dispositivos.dataAccion import dataAccion
 from elGarrobo.dispositivos.dispositivo import dispositivo
 from elGarrobo.dispositivos.mideck.mi_streamdeck_plus import MiStreamDeckPlus
@@ -74,6 +75,22 @@ def guardarImagen(folder: Path, nombre: str, datos: bytes) -> str:
     return destino.name
 
 
+def arbolTopics(publicados: dict[str, str], prefijo: str = "") -> list[dict]:
+    """Nodos de ui.tree partiendo los topics por "/": ramas "estado_pc (4 topics)", hojas "cpu = 15.5"; id = topic"""
+    # ponytail: recorre todos los topics en cada nivel, O(n²); sobra para los cientos que publica un garrobo
+    nombres = sorted({topic[len(prefijo) :].split("/")[0] for topic in publicados if topic.startswith(prefijo)})
+    nodos = []
+    for nombre in nombres:
+        topic = prefijo + nombre
+        hijos = arbolTopics(publicados, f"{topic}/")
+        etiqueta = nombre + (f" = {publicados[topic]}" if topic in publicados else "")
+        if hijos:
+            total = sum(otro.startswith(f"{topic}/") for otro in publicados)
+            etiqueta += f" ({total} topic{'s' if total > 1 else ''})"
+        nodos.append({"id": topic, "label": etiqueta, "children": hijos})
+    return nodos
+
+
 class formularioAccion:
     """Formulario de la página de acciones; las pestañas lo usan con seleccionarAcción, nuevaAcciónTecla y siNoHayCambios"""
 
@@ -127,8 +144,11 @@ class formularioAccion:
                 with ui.row().classes("items-start"):
                     with ui.column().classes("w-64"):
                         self.editorTitulo = ui.input("Título", on_change=self.actualizarVistaPrevia).classes("w-full").props("clearable").mark("editor-titulo")
-                        self.editorTituloMQTT = ui.input("Tópico MQTT del título", on_change=self.actualizarVistaPrevia).classes("w-full").props("clearable").mark("editor-titulo-mqtt")
-                        self.editorTituloMQTT.props["hint"] = "El valor que llega reemplaza {} en el título, ej. {:.0f}%"
+                        with ui.row().classes("w-full items-center no-wrap gap-1"):
+                            self.editorTituloMQTT = ui.input("Tópico MQTT del título", on_change=self.cambioTituloMQTT).classes("grow").props("clearable").mark("editor-titulo-mqtt")
+                            botonTopics = ui.button(icon="account_tree", color=tema.colorOscuro, on_click=self.abrirTopics).props("round").mark("verTopics")
+                            nombrar(botonTopics, "Ver los topics que publica ElGarrobo")
+                        self.editorTituloMQTT.props["hint"] = "Sugiere los topics que publica ElGarrobo; el valor reemplaza {} en el título, ej. {:.0f}%"
                         # Vacíos usan el valor del folder o el de dibujoBoton.ponerTexto
                         colorTexto = ui.color_input("Color del texto", preview=True, on_change=self.actualizarVistaPrevia).classes("w-full").mark("editor-titulo-color")
                         colorBorde = ui.color_input("Color del borde", preview=True, on_change=self.actualizarVistaPrevia).classes("w-full").mark("editor-titulo-borde-color")
@@ -167,6 +187,15 @@ class formularioAccion:
                             ui.label().bind_text_from(self.editorEscala, "value", backward=lambda valor: f"Tamaño de la imagen: {valor}%").classes("text-sm")
                     self.vistaPrevia = ui.image().classes("w-24 h-24 rounded").props("fit=contain").mark("vistaPrevia")
                 ui.button("Listo", color=tema.colorOscuro, on_click=self.dialogoBoton.close).mark("botonListoBoton")
+
+            # Árbol de los topics publicados (como MQTT Explorer) para elegir el del título sin saberlo de memoria
+            with ui.dialog() as self.dialogoTopics, ui.card().classes("w-[32rem] max-w-full"):
+                encabezado(ui.label("Topics que publica ElGarrobo").classes("text-lg"), 2)
+                self.buscarTopic = ui.input("Buscar topic o valor", on_change=lambda e: self.mostrarTopics(e.value)).classes("w-full").props("clearable").mark("buscarTopic")
+                self.arbolTopics = ui.tree([], on_select=self.elegirTopic).classes("w-full max-h-96 overflow-auto").mark("arbolTopics")
+                self.arbolTopics.props["no-nodes-label"] = "Ningún topic coincide con la búsqueda"
+                self.sinTopics = ui.label("Todavía no se publica nada; activa un módulo (ej. estado_pc) y espera su primera lectura").classes("text-sm")
+                ui.button("Cerrar", on_click=self.dialogoTopics.close).props("flat")
             ui.button("Editar apariencia", icon="palette", color=tema.colorOscuro, on_click=self.abrirEditorApariencia).classes("w-full").mark("botonEditarBoton")
 
             self.listaNombreAcciones: list[str] = list()
@@ -387,8 +416,45 @@ class formularioAccion:
             self.editorTitulo.value = self.editoresData["nombre"].value or ""
         # Las imágenes del folder pudieron cambiar desde que se cargó la acción
         self.mostrarImagen(self.editorImagen.value)
+        # Sugiere los topics publicados hasta ahora; se puede escribir otro de fuera del garrobo
+        self.editorTituloMQTT.set_autocomplete(sorted(accionMQTT.publicados))
         self.actualizarVistaPrevia()
         self.dialogoBoton.open()
+
+    def cambioTituloMQTT(self, _=None) -> None:
+        """Con topic y sin título pone {} en el título, para que se vea dónde va el valor que llega"""
+        if self.editorTituloMQTT.value and not self.editorTitulo.value:
+            self.editorTitulo.value = "{}"
+        self.actualizarVistaPrevia()
+
+    def abrirTopics(self) -> None:
+        """Muestra el árbol con los topics publicados hasta ahora y su último valor"""
+        self.mostrarTopics(self.buscarTopic.value)
+        self.sinTopics.visible = not accionMQTT.publicados
+        self.dialogoTopics.open()
+
+    def mostrarTopics(self, buscar: str | None) -> None:
+        """Arma el árbol con los topics que tienen el texto en su ruta completa o su valor, con sus ramas abiertas"""
+        # Se filtra aquí y no con el filter de QTree: ese esconde los hijos de una rama que coincide (ej. "maomao")
+        # Cada palabra por separado y en cualquier orden: "jinshi estado" encuentra ".../CoreOne Jinshi/estado"
+        palabras = (buscar or "").lower().split()
+        publicados = {
+            topic: valor
+            for topic, valor in accionMQTT.publicados.items()
+            if all(palabra in f"{topic} = {valor}".lower() for palabra in palabras)
+        }
+        self.arbolTopics.props["nodes"] = arbolTopics(publicados)
+        self.arbolTopics.props["selected"] = None
+        self.arbolTopics.props["expanded"] = []
+        if palabras:
+            self.arbolTopics.expand()
+        self.arbolTopics.update()
+
+    def elegirTopic(self, evento) -> None:
+        """Pone en el título el topic elegido; las ramas que no son topic solo se abren con su flecha"""
+        if evento.value in accionMQTT.publicados:
+            self.editorTituloMQTT.value = evento.value
+            self.dialogoTopics.close()
 
     def foldersImagen(self) -> tuple[Path, Path] | None:
         """(folder del perfil, folder actual) del dispositivo editado, None si no hay dispositivo"""

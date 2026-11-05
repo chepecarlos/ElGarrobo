@@ -245,9 +245,12 @@ class dibujoBoton:
         topicTituloMQTT: str = opciones.get("mqtt", False)
 
         if topicTituloMQTT and isinstance(topicTituloMQTT, str):
-            datoTituloMQTT = self.obtenerTituloMQTT(topicTituloMQTT, titulo)
+            datoTituloMQTT = self.obtenerTituloMQTT(topicTituloMQTT, None)
 
-            if titulo is not None and self.patronTitulo.search(titulo):
+            if datoTituloMQTT is None:
+                # Sin valor todavía (o topic mal escrito): el título queda tal cual, con {} visible
+                pass
+            elif titulo is not None and self.patronTitulo.search(titulo):
                 try:
                     titulo = titulo.format(datoTituloMQTT)
                 except (ValueError, TypeError):
@@ -521,6 +524,10 @@ if __name__ == "__main__":
         dibujo.propiedadFolder = dataAccion(imagenOpciones={"fondo": "#00ff00"}, tituloOpciones={"color": "blue"})
         assert dibujo.dibujar(dataAccion(), (72, 72)).getpixel((1, 1)) == (0, 255, 0)
         assert dibujo.obtenerPropiedad(dataAccion(), "titulo_opciones/color") == "blue"
+
+        # topic sin valor: el título queda igual, no se mete dentro de sí mismo ("{}\nA" → "{}\nA\nA")
+        sinDato = dataAccion(titulo="{}\nA", tituloOpciones={"mqtt": "topic/que/no/existe/"})
+        assert dibujo.buscarTitulo(sinDato) == "{}\nA"
 
         # gif: None para el StreamDeck, primer cuadro para la vista previa
         Image.new("RGB", (10, 10), "white").save(Path(carpeta) / "a.gif")

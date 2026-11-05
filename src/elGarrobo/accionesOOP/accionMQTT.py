@@ -26,6 +26,8 @@ class accionMQTT(accion):
     archivoData = "data/mqtt.md"
     colaDefecto = 100
     "Mensajes máximos en espera por conexión mientras no hay conexión, se cambia con 'cola' en data/mqtt.md"
+    publicados: dict[str, str] = {}
+    "Topic → último mensaje que ElGarrobo publicó desde que arrancó (módulos y acciones), la GUI los sugiere para títulos MQTT"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
@@ -135,3 +137,4 @@ class accionMQTT(accion):
 
         # qos=1 para que paho lo guarde y lo mande al conectar si la conexión todavía no está lista o se cayó
         self.obtenerCliente(servidor, puerto, usuario, contraseña).publish(topic, mensaje, qos=1)
+        accionMQTT.publicados[topic] = str(mensaje)

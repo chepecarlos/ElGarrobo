@@ -754,6 +754,63 @@ class TestEditorApariencia:
         user.find(marker="botonAgregar").click()
         assert deck.listaAcciones[0].tituloOpciones == {"color": "blue"}, "vacío quita el tópico sin tocar las otras opciones"
 
+    async def test_editor_boton_sugiere_topics_publicados(self, user: User, gui: miGui, deck: dispositivoFalso, monkeypatch):
+        from elGarrobo.accionesOOP.accionMQTT import accionMQTT
+
+        monkeypatch.setattr(accionMQTT, "publicados", {"estado_pc/ryuk/cpu": "15.5", "estado_octoprint/maomao/progreso": "22.0"})
+        await user.open("/")
+        user.find(marker="editar-deck-1").click()
+        user.find(marker="botonEditarBoton").click()
+        assert gui.formulario.editorTituloMQTT.props["_autocomplete"] == ["estado_octoprint/maomao/progreso", "estado_pc/ryuk/cpu"]
+
+        user.find(marker="verTopics").click()
+        nodos = gui.formulario.arbolTopics.props["nodes"]
+        assert [nodo["label"] for nodo in nodos] == ["estado_octoprint (1 topic)", "estado_pc (1 topic)"]
+        gui.formulario.buscarTopic.value = "maomao"
+        nodos = gui.formulario.arbolTopics.props["nodes"]
+        assert [nodo["id"] for nodo in nodos] == ["estado_octoprint"]
+        assert nodos[0]["children"][0]["children"][0]["label"] == "progreso = 22.0", "los hijos de la rama que coincide se ven"
+        assert "estado_octoprint/maomao" in gui.formulario.arbolTopics.props["expanded"]
+        gui.formulario.buscarTopic.value = "progreso  MAOMAO"
+        assert [nodo["id"] for nodo in gui.formulario.arbolTopics.props["nodes"]] == ["estado_octoprint"], "varias palabras en cualquier orden"
+        gui.formulario.buscarTopic.value = "maomao cpu"
+        assert gui.formulario.arbolTopics.props["nodes"] == [], "tienen que coincidir todas las palabras"
+        gui.formulario.buscarTopic.value = "15.5"
+        assert [nodo["id"] for nodo in gui.formulario.arbolTopics.props["nodes"]] == ["estado_pc"], "busca por valor"
+        gui.formulario.buscarTopic.value = ""
+        gui.formulario.elegirTopic(SimpleNamespace(value="estado_pc"))
+        assert gui.formulario.editorTituloMQTT.value == "", "una rama que no es topic no se elige"
+        gui.formulario.editorTitulo.value = ""
+        gui.formulario.elegirTopic(SimpleNamespace(value="estado_pc/ryuk/cpu"))
+        assert gui.formulario.editorTituloMQTT.value == "estado_pc/ryuk/cpu"
+        assert gui.formulario.editorTitulo.value == "{}", "sin título se pone {} para el valor del topic"
+
+        gui.formulario.editorTitulo.value = "CPU {}%"
+        gui.formulario.elegirTopic(SimpleNamespace(value="estado_octoprint/maomao/progreso"))
+        assert gui.formulario.editorTitulo.value == "CPU {}%", "un título escrito no se toca"
+
+    def test_arbol_topics(self):
+        from elGarrobo.dispositivos.migui.formulario import arbolTopics
+
+        nodos = arbolTopics({"fdm/MK4s/cola": "0", "fdm/MK4s/estado": "Printing", "fdm/total": "3", "fdm": "x"})
+        assert nodos == [
+            {
+                "id": "fdm",
+                "label": "fdm = x (3 topics)",
+                "children": [
+                    {
+                        "id": "fdm/MK4s",
+                        "label": "MK4s (2 topics)",
+                        "children": [
+                            {"id": "fdm/MK4s/cola", "label": "cola = 0", "children": []},
+                            {"id": "fdm/MK4s/estado", "label": "estado = Printing", "children": []},
+                        ],
+                    },
+                    {"id": "fdm/total", "label": "total = 3", "children": []},
+                ],
+            }
+        ]
+
     async def test_editor_boton_guarda_opciones_del_titulo(self, user: User, gui: miGui, deck: dispositivoFalso):
         deck.listaAcciones[0].tituloOpciones = {"alinear": "centrado", "fuente": "x.ttf"}
         await user.open("/")
