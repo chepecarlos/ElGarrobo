@@ -11,11 +11,10 @@ from rich.console import Console
 from rich.table import Table
 from typing_extensions import Annotated
 
-from configurar.modulo import ConfigurarModulos
 from elGarrobo import miLibrerias, servicio
 from elGarrobo.elGarrobo import elGarrobo
 from elGarrobo.dispositivos import cargarDispositivos
-from elGarrobo.miLibrerias import ConfigurarLogging, ObtenerFolderConfig, SalvarValor, leerData
+from elGarrobo.miLibrerias import ConfigurarLogging, SalvarValor, leerData
 from elGarrobo.modulos import cargarModulos
 
 logger = ConfigurarLogging(__name__)
@@ -41,11 +40,8 @@ def _version_callback(valor: bool) -> None:
 @app.callback(invoke_without_command=True)
 def _cli(
     ctx: typer.Context,
-    configurar: Annotated[
-        bool, typer.Option("--configurar", "-c", help="Sistema configuración del programa")
-    ] = False,
     depuracion: Annotated[bool, typer.Option("--depuracion", "-d", help="Activa la depuración")] = False,
-    gui: Annotated[bool, typer.Option("--gui", "-g", help="Sistema interface gráfica")] = False,
+    gui: Annotated[bool, typer.Option("--gui", "-g", help="Sistema interfaz gráfica")] = False,
     version: Annotated[
         Optional[bool],
         typer.Option("--version", callback=_version_callback, is_eager=True, help="Version del programa"),
@@ -59,9 +55,7 @@ def _cli(
         logger.info("ElGarrobo[Depuración Activa]")
         logger.setLevel("DEBUG")
 
-    if configurar:
-        ConfigurarModulos()
-    elif gui:
+    if gui:
         logger.info("Iniciando la APP Gráfica")
         app = elGarrobo(gui=True)
         _mantenerVivo(app)
@@ -171,7 +165,7 @@ def dispositivos_desactivar(nombre: str) -> None:
 
 @app.command("abrir-gui")
 def abrir_gui() -> None:
-    """Abre la interface web de ElGarrobo en el navegador."""
+    """Abre la interfaz web de ElGarrobo en el navegador."""
     from elGarrobo.accionesOOP.accionAbrirGUI import accionAbrirGUI
 
     accionAbrirGUI().ejecutar()
@@ -190,11 +184,6 @@ def servicio_desinstalar() -> None:
     """Detiene el servicio y borra los archivos creados por `servicio instalar`."""
     for archivo in servicio.desinstalar():
         typer.echo(f"Borrado {archivo}")
-
-
-def configurar() -> None:
-    folderConfig = ObtenerFolderConfig()
-    print(folderConfig)
 
 
 def main() -> None:

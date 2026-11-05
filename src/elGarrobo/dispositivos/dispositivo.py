@@ -45,6 +45,8 @@ class dispositivo:
     "Archivos por folder donde se cargara la acciones"
     ejecutarAcción: Callable[[dict, bool, int, str], Any] | None = None
     "Función que se llama para ejecutar una acción"
+    accionesCambiadas: Callable[[], None] | None = None
+    "Aviso global al actualizar cualquier dispositivo, elGarrobo lo usa para suscribir los títulos MQTT nuevos"
     conectado: bool = False
     "El dispositivo esta listo para usarse"
     folderActual: str | None = None
@@ -433,6 +435,9 @@ class dispositivo:
     def actualizar(self) -> None:
         """Actualiza la imagen del dispositivo"""
         self.recargar = False
+        if callable(dispositivo.accionesCambiadas):
+            # Folder, página o GUI pudieron traer títulos MQTT nuevos
+            dispositivo.accionesCambiadas()
 
     def __str__(self):
         return f"{self.nombre}[{self.tipo}]"

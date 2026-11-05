@@ -97,11 +97,7 @@ class elGarrobo(object):
         if self.ModuloOBS:
             self.CargarOBS()
 
-        if self.ModuloMQTT:
-            for dispositivoActual in self.listaDispositivos:
-                if dispositivoActual.tipo == "mqtt":
-                    dispositivoActual.listaDispositivos = self.listaDispositivos
-                    dispositivoActual.actualizar()
+        self.actualizarTitulosMQTT()
 
         if self.ModuloGui:
             for dispositivoActual in self.listaDispositivos:
@@ -112,9 +108,18 @@ class elGarrobo(object):
                     dispositivoActual.quitarDispositivo = self.quitarDispositivo
                     dispositivoActual.actualizar()
 
+    def actualizarTitulosMQTT(self) -> None:
+        """Suscribe los dispositivos MQTT a los títulos de las acciones cargadas en todos los dispositivos"""
+        for dispositivoActual in self.listaDispositivos:
+            if dispositivoActual.tipo == "mqtt":
+                dispositivoActual.listaDispositivos = self.listaDispositivos
+                dispositivoActual.actualizar()
+
     def iniciarDispositivos(self) -> None:
         """Crea y inicializa los dispositivos que enviar las acciones"""
         MiStreamDeck.iniciarTituloMQTT()
+        # Al cambiar de folder, página o editar en la GUI puede aparecer un título MQTT nuevo
+        dispositivo.accionesCambiadas = self.actualizarTitulosMQTT
         self.dispositivosDisponibles: list[dispositivo] = cargarDispositivos()
 
         for claseDispositivo in self.dispositivosDisponibles:

@@ -36,7 +36,6 @@ make extras
 elgarrobo           # modo normal
 elgarrobo -d        # con depuración
 elgarrobo -g        # con GUI
-elgarrobo -c        # modo configuración interactiva
 ```
 
 El formateador de código es **Black** con `line-length = 119`.

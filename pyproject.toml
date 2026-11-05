@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 name = "elgarrobo"
 description = "Herramienta Macros de chepecarlos"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 authors = [{ name = "ChepeCarlos", email = "chepecarlos@chepecarlos.com" }]
 # license = { file = "LICENSE" }
 dynamic = ["version", "dependencies"]
