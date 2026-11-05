@@ -4,7 +4,6 @@ from .archivos import escribirValor, escribirValores
 from .emular_teclado import comandoPegar, comandoPortapapeles
 from .operaciones import OperacionConstrain, operacionAsignar, operacionConcatenar
 from .textbox import VentanaTexto
-from .textovoz import TextoVoz
 
 
 def CargarAcciones():
@@ -29,7 +28,6 @@ def CargarAcciones():
         # Audio
         # "reproducion": Reproducir,
         # "detener_reproducion": PararReproducion,
-        "textovoz": TextoVoz,
         # Archivos
         # "leer_valor": leerValor,
         "escribir_valor": escribirValor,

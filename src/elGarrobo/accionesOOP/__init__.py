@@ -18,6 +18,7 @@
 - Controla la PC a distancia: [accionControl](./accionesOOP/accionControl)
 - Reproduce una pista de audio: [accionReproducir](./accionesOOP/accionSonidos)
 - Para todas las reproducciones: [accionPararReproducciones](./accionesOOP/accionSonidos)
+- Lee un texto en voz alta: [accionTextoVoz](./accionesOOP/accionTextoVoz)
 - Ejecuta accion preciosa y otra se suelta: [accionPresionar](./accionesOOP/accionPresionar)
 - Escribir archivo[accionEscribirArchivo](./accionesOOP/accionArchivo)
 - Lee un valor de un archivo[accionLeerValor](./accionesOOP/accionArchivo)
@@ -74,6 +75,7 @@ from .accionSalir import accionSalir
 from .accionSonidos import accionPararReproducciones, accionReproducir
 from .accionTeclas import accionTeclas
 from .accionTelegram import accionTelegram
+from .accionTextoVoz import accionTextoVoz
 
 
 def cargarClasesAcciones() -> dict[str, type["accion"]]:
@@ -120,4 +122,5 @@ def cargarClasesAcciones() -> dict[str, type["accion"]]:
         "volumen": accionVolumen,
         "salvar_audio": accionSalvarPulse,
         "mute": accionMute,
+        "textovoz": accionTextoVoz,
     }

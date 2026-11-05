@@ -2,7 +2,7 @@ PyYAML
 typer
 PyAutoGUI
 pydub
-pyttsx3
+piper-tts
 evdev
 requests
 pillow

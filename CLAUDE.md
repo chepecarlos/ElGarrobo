@@ -101,7 +101,7 @@ El código tiene bastantes errores de ortografía en español (nombres de clases
 
 Pendientes detectados (no corregidos, requieren decidir si romper compatibilidad):
 - `elGarrobo.py` (`solisitaMacro`): claves de macro `"solisita"` / `"solisita_cambiar"` → deberían ser `"solicita"` / `"solicita_cambiar"`.
-- `src/elGarrobo/acciones/` (paquete legacy no-OOP, no se importa desde ningún lado): mismos typos, ignorado porque parece código muerto.
+- `src/elGarrobo/acciones/` (paquete legacy no-OOP, se importa en `elGarrobo.py` con `CargarAcciones()`): mismos typos; pendiente migrar a OOP lo que se usa (ver `mejoras.md`).
 
 Corregidos (código + configs de usuario en `~/dotfile/.config/elgarrobo/default/*.md` actualizados en el mismo cambio):
 - `accionCambiarPagina.py`: `accionSiquientePagina` / `comando = "siquiente_pagina"` → `accionSiguientePagina` / `"siguiente_pagina"` (también `imagen_base.siguiente_pagina` y `base/siguiente.png`).

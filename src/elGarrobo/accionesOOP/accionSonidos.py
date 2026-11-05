@@ -86,7 +86,11 @@ class miReproductor:
             pass
 
     def is_playing(self):
-        return bool(self.stream.active)
+        try:
+            return bool(self.stream.active)
+        except sd.PortAudioError:
+            # El monitor ya cerró el stream al terminar
+            return False
 
 
 class accionReproducir(accion):
@@ -129,9 +133,6 @@ class accionReproducir(accion):
         """
         Crear un subproceso para Reproducción.
         """
-        global listaSonidos
-        global _listaSonidosBloqueo
-
         archivo: str = self.obtenerValor("archivo")
         ganancia: int = self.obtenerValor("ganancia")
 
@@ -150,30 +151,34 @@ class accionReproducir(accion):
                 factor = 10 ** (ganancia / 20.0)
                 data = np.clip(data * factor, -1.0, 1.0).astype("float32", copy=False)
 
-            player = miReproductor(data, sr, logger=logger).start()
-
-            with _listaSonidosBloqueo:
-                listaSonidos.append(player)
-
-            def _monitor(playerInterno):
-                try:
-                    while playerInterno.is_playing():
-                        time.sleep(0.1)
-                finally:
-                    with _listaSonidosBloqueo:
-                        try:
-                            playerInterno.stop()
-                            listaSonidos.remove(playerInterno)
-                            logger.info(f"Reproducción finalizada [{rutaArchivo}]")
-                        except ValueError:
-                            pass
-
-            t = threading.Thread(target=_monitor, args=(player,), daemon=True)
-            t.start()
-
+            reproducirAudio(data, sr, rutaArchivo)
             logger.info(f"Reproduciendo [{rutaArchivo}] (no bloqueante)")
         except Exception as e:
             logger.error(f"Error al reproducir {rutaArchivo}: {e}")
+
+
+def reproducirAudio(data: np.ndarray, samplerate: int, nombre: str) -> miReproductor:
+    """Reproduce audio sin bloquear; queda en listaSonidos para que detener_reproduccion lo pueda parar"""
+    player = miReproductor(data, samplerate, logger=logger).start()
+
+    with _listaSonidosBloqueo:
+        listaSonidos.append(player)
+
+    def _monitor(playerInterno):
+        try:
+            while playerInterno.is_playing():
+                time.sleep(0.1)
+        finally:
+            with _listaSonidosBloqueo:
+                try:
+                    playerInterno.stop()
+                    listaSonidos.remove(playerInterno)
+                    logger.info(f"Reproducción finalizada [{nombre}]")
+                except ValueError:
+                    pass
+
+    threading.Thread(target=_monitor, args=(player,), daemon=True).start()
+    return player
 
 
 class accionPararReproducciones(accion):

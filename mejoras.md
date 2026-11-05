@@ -102,7 +102,7 @@ Pendiente:
 - [ ] **Otras fuentes**: `obs/grabacion_iniciada` (desde `on_record_state_changed`), `mqtt/<topic>`, `elgarrobo/inicio`.
 - [x] **Filtro como lista** (2026-10-29): `modulo.valoresDatos` (FDM Monster lo llena con las impresoras habilitadas en cada consulta) + los ya usados en eventos.md; se puede escribir otro. Solo se llena con el módulo corriendo.
 - [ ] **GUI**: historial de últimos eventos recibidos.
-- [ ] **Voz** (futuro): migrar `textovoz` (`pyttsx3`) del paquete legacy `acciones/` a OOP; los eventos la usan sin cambios gracias a `{dato}`.
+- [x] **Voz** (2026-11-03): `textovoz` migrada a OOP (`accionTextoVoz`) con Piper en vez de `pyttsx3`; voz por defecto `es_ES-davefx-medium`, se baja a `~/.local/share/elgarrobo/voces/`. Demo de voces en `demo/demoTextoVoz/`.
 
 ## Código
 
@@ -114,7 +114,7 @@ Pendiente:
 Ordenado de mayor a menor recorte.
 
 - [ ] **`src/configurar/` + flag `-c/--configurar`**: lee `modulos/configurar.json` y `modulos.json`, pero la config actual es `modulos.md` / `dispositivos.md`. Borrar el paquete y la opción en `main.py` si ya no se usa (incluye la clase `color` con códigos ANSI).
-- [ ] **Paquete legacy `acciones/`** (~396 líneas, ~20 comentadas en `CargarAcciones()`): sí se importa en `elGarrobo.py:8` y aporta `pegar`, `portapapeles`, `textovoz`, `contrain`, `concatenar`, `asignar`, `escribir_valor(es)`, `ventana_texto`. Migrar a OOP solo los que se usan y borrar el resto (se van `pyttsx3` y `pyperclip`). Corregir la nota del CLAUDE.md que dice que no se importa.
+- [ ] **Paquete legacy `acciones/`** (~396 líneas, ~20 comentadas en `CargarAcciones()`): sí se importa en `elGarrobo.py:8` y aporta `pegar`, `portapapeles`, `contrain`, `concatenar`, `asignar`, `escribir_valor(es)`, `ventana_texto`. Migrar a OOP solo los que se usan y borrar el resto (se va `pyperclip`). Corregir la nota del CLAUDE.md que dice que no se importa.
 - [ ] **Métodos sin llamadas en `elGarrobo.py`**: `CargarAcciones(self, Dispositivo, Data)`, `LimpiarDeck` y `BuscarDentroFolder` (solo se llama a sí mismo).
 - [ ] **`ModuloMQTTEstado` + `modulos/mqtt_estado.py`**: el flag nunca se lee y el módulo es un stub (`EnviarAccionMQTT(): pass`). Borrar.
 - [ ] **Código comentado**: bloque `ModuloGui`/`agregarAcciones` y `cargarFolder` en `IniciarAcciones`; ~65 líneas comentadas en `migui.py` y ~49 en `elGarrobo.py`. Git guarda la historia.
