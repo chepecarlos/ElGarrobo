@@ -2,14 +2,11 @@
 
 import requests
 
-from elGarrobo.accionesOOP.accion import accion, propiedadAccion
-from elGarrobo.accionesOOP.accionNotificacion import accionNotificacion
-from elGarrobo.miLibrerias import ConfigurarLogging
-
-Logger = ConfigurarLogging(__name__)
+from elGarrobo.accionesOOP.accion import propiedadAccion
+from elGarrobo.modulos.modulo import accionImpresora
 
 
-class accionImprimirColaFDM(accion):
+class accionImprimirColaFDM(accionImpresora):
     """Manda a imprimir el siguiente trabajo en la cola de una impresora de FDM Monster"""
 
     nombre = "Imprimir cola FDM Monster"
@@ -17,65 +14,40 @@ class accionImprimirColaFDM(accion):
     descripcion = "Manda a imprimir el siguiente trabajo en la cola de una impresora de FDM Monster"
 
     def __init__(self) -> None:
-        super().__init__(self.nombre, self.comando, self.descripcion)
-
-        self.agregarPropiedad(
+        conexion = [
             propiedadAccion(
                 nombre="URL",
                 atributo="url",
                 tipo=[str],
-                obligatorio=True,
-                descripcion="URL de FDM Monster",
+                descripcion="URL de FDM Monster, si no se usa el servidor del módulo",
                 ejemplo="http://192.168.50.200:4000",
-            )
-        )
-        self.agregarPropiedad(
-            propiedadAccion(
-                nombre="Usuario",
-                atributo="usuario",
-                tipo=[str],
-                obligatorio=True,
-                descripcion="Usuario de FDM Monster",
-                ejemplo="admin",
-            )
-        )
-        self.agregarPropiedad(
-            propiedadAccion(
-                nombre="Clave",
-                atributo="clave",
-                tipo=[str],
-                obligatorio=True,
-                descripcion="Contraseña de FDM Monster",
-                ejemplo="1234",
-            )
-        )
-        self.agregarPropiedad(
-            propiedadAccion(
-                nombre="Impresora",
-                atributo="impresora",
-                tipo=[str],
-                obligatorio=True,
-                descripcion="Nombre de la impresora en FDM Monster",
-                ejemplo="MK4s",
-            )
-        )
-
+            ),
+            propiedadAccion(nombre="Usuario", atributo="usuario", tipo=[str], descripcion="Usuario de FDM Monster", ejemplo="admin"),
+            propiedadAccion(nombre="Clave", atributo="clave", tipo=[str], descripcion="Contraseña de FDM Monster", ejemplo="1234"),
+        ]
+        super().__init__(conexion, "Nombre de la impresora en el servidor de FDM Monster del módulo")
         self.funcion = self.imprimirSiguiente
 
-    def notificar(self, texto: str) -> None:
-        notificación = accionNotificacion()
-        notificación.configurar({"texto": texto})
-        notificación.ejecutar()
+    def nombresImpresoras(self) -> list[str]:
+        # Las impresoras están en el servidor, el módulo guarda las que vio en la última consulta
+        return list(getattr(self.modulo, "valoresDatos", {}).get("impresora", []))
+
+    def datosModulo(self, nombre: str) -> dict:
+        # Un solo servidor para todas las impresoras: url, usuario y clave del módulo
+        return getattr(self.modulo, "config", None) or {}
 
     def imprimirSiguiente(self):
         """Busca la impresora por nombre y manda el siguiente trabajo de su cola"""
-        api = f"{str(self.obtenerValor('url')).strip().rstrip('/')}/api/v2"
-        nombre = str(self.obtenerValor("impresora")).strip()
+        valores = self.conexion("impresora", "url", "usuario")
+        if valores is None:
+            return
+        api = f"{str(valores['url']).strip().rstrip('/')}/api/v2"
+        nombre = valores["impresora"]
 
         try:
             login = requests.post(
                 f"{api}/auth/login",
-                json={"username": self.obtenerValor("usuario"), "password": self.obtenerValor("clave")},
+                json={"username": valores["usuario"], "password": valores["clave"]},
                 timeout=10,
             )
             login.raise_for_status()
@@ -95,10 +67,8 @@ class accionImprimirColaFDM(accion):
                 return
 
             sesion.post(f"{api}/print-queue/{impresora['id']}/submit/{trabajo['id']}", timeout=30).raise_for_status()
-            Logger.info(f"FDM[OK] {nombre} imprimiendo {trabajo['fileName']}")
             self.notificar(f"FDM {nombre} imprimiendo: {trabajo['fileName']}")
 
         except requests.RequestException as error:
             detalle = (getattr(error.response, "text", "") or str(error)).strip()[:300]
-            Logger.error(f"FDM[Error] {nombre}: {detalle}")
             self.notificar(f"FDM[Error] {nombre}: {detalle}")

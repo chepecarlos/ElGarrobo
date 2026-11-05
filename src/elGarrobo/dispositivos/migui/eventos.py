@@ -12,6 +12,7 @@ from elGarrobo.dispositivos.migui.editores import (
     avisarError,
     cargarOpciones,
     crearEditor,
+    enlazarOcultos,
     encabezado,
     leerOpciones,
     nombrar,
@@ -141,6 +142,7 @@ def mostrarEventos(listaClasesAcciones: dict, ejecutarAcción) -> None:
                 editando["opciones"][propiedad.nombre] = editor
                 if propiedad.atributo == objetoAcción.atributoLista:
                     ui.button("Editar pasos", icon="view_list", color=tema.colorOscuro, on_click=lambda e=editor: pasos.abrir(e)).classes("w-full")
+            enlazarOcultos(editando["opciones"])
         if opciones:
             cargarOpciones(editando["opciones"], claseAcción, opciones)
 

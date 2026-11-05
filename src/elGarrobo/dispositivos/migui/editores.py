@@ -41,10 +41,14 @@ def crearEditor(propiedad: propiedadAccion, marca: str) -> ui.element:
             editor = ui.number(label=etiqueta, placeholder=propiedad.ejemplo, precision=None if float in propiedad.tipo else 0)
         elif tipo == "yaml" or propiedad.multilinea:
             editor = ui.textarea(label=etiqueta, placeholder=propiedad.ejemplo)
+        elif propiedad.sugerencias is not None:
+            editor = ui.select(list(propiedad.sugerencias), label=etiqueta, with_input=True, new_value_mode="add-unique", clearable=True)
         else:
             editor = ui.input(label=etiqueta, placeholder=propiedad.ejemplo)
         # La ayuda queda visible debajo del campo, no en un aviso que desaparece
         ayuda = propiedad.descripcion or ""
+        if propiedad.sugerencias is not None:
+            ayuda = f"{ayuda}. Elige de la lista o escribe otro y presiona Enter".lstrip(". ")
         if tipo == "yaml":
             ayuda = f"{ayuda} (en YAML)".strip()
         if ayuda:
@@ -55,6 +59,23 @@ def crearEditor(propiedad: propiedadAccion, marca: str) -> ui.element:
     editor.propiedad = propiedad
     editor.tipoEditor = tipo
     return editor.classes("w-full").mark(marca)
+
+
+def enlazarOcultos(editores: dict[str, ui.element]) -> None:
+    """Oculta los campos de `propiedad.ocultar` mientras se elija una sugerencia (ej. url y token de una impresora del módulo)"""
+    porAtributo = {editor.propiedad.atributo: editor for editor in editores.values()}
+    for editor in editores.values():
+        ocultos = [porAtributo[atributo] for atributo in editor.propiedad.ocultar or [] if atributo in porAtributo]
+        if not ocultos:
+            continue
+
+        def actualizar(_=None, editor=editor, ocultos=ocultos) -> None:
+            visible = editor.value not in (editor.propiedad.sugerencias or [])
+            for oculto in ocultos:
+                oculto.visible = visible
+
+        editor.on_value_change(actualizar)
+        actualizar()
 
 
 def ponerValor(editor: ui.element, valor) -> None:
@@ -72,6 +93,9 @@ def ponerValor(editor: ui.element, valor) -> None:
     elif tipo == "bool":
         editor.value = bool(valor)
     else:
+        if isinstance(editor, ui.select) and valor not in (None, "") and valor not in editor.options:
+            # Ej: una impresora que ya no está en el módulo; el select no acepta valores fuera de la lista
+            editor.set_options([*editor.options, valor])
         editor.value = valor
 
 
@@ -147,6 +171,9 @@ def leerOpciones(editores: dict[str, ui.element], claseAcción: type[accion] | N
     """Opciones con el tipo de cada propiedad; marca el campo y lanza ValueError si alguno no es válido"""
     opciones = dict()
     for editor in editores.values():
+        if not editor.visible:
+            # Lo da otro campo (ej. la impresora elegida trae url y token)
+            continue
         propiedad: propiedadAccion = editor.propiedad
         try:
             valor = leerValor(editor)

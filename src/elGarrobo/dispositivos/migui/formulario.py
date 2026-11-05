@@ -19,10 +19,12 @@ from elGarrobo.dispositivos.migui.editores import (
     avisarError,
     cargarOpciones,
     crearEditor,
+    enlazarOcultos,
     encabezado,
     leerOpciones,
     marcarError,
     nombrar,
+    ponerValor,
 )
 from elGarrobo.dispositivos.migui.pasos import editorPasos
 from elGarrobo.dispositivos.migui.teclas import ordenTecla, tamañoTecla, teclaRepetida
@@ -317,10 +319,15 @@ class formularioAccion:
                     editor.folderRuta = getattr(self.dispositivoEditar, "folderActual", None)
                     tipoAnterior, valorAnterior = valoresAnteriores.get(nombre, (None, None))
                     if valorAnterior and tipoAnterior == editor.tipoEditor:
-                        editor.value = valorAnterior
+                        # El texto YAML ya está armado; los demás por ponerValor (un select no acepta valores fuera de su lista)
+                        if editor.tipoEditor == "yaml":
+                            editor.value = valorAnterior
+                        else:
+                            ponerValor(editor, valorAnterior)
                     self.opcionesEditar[nombre] = editor
                     if propiedad.atributo == acciónTmp.atributoLista:
                         ui.button("Editar pasos", icon="view_list", color=tema.colorOscuro, on_click=lambda e=editor: self.pasos.abrir(e)).classes("w-full").mark("botonEditarPasos")
+                enlazarOcultos(self.opcionesEditar)
             return
 
         logger.warning(f"No hay opciones para: {accionSeleccionada}")

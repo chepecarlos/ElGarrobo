@@ -212,3 +212,89 @@ class TestEventosImpresoras:
             "octoprint/impresion_iniciada",
             "octoprint/impresion_cancelada",
         ], "sin estado de terminada: Operational tras imprimir es terminada al 100 % o cancelada"
+
+
+
+@pytest.fixture
+def avisos(monkeypatch) -> list[str]:
+    from elGarrobo.modulos.modulo import accionImpresora
+
+    avisos = []
+    monkeypatch.setattr(accionImpresora, "notificar", lambda self, texto: avisos.append(texto))
+    return avisos
+
+
+def test_octoprint_toma_url_y_token_de_la_impresora_del_modulo(monkeypatch, avisos):
+    from elGarrobo.modulos.octoprint import accionesOctoprint
+    from elGarrobo.modulos.octoprint.moduloOctoprint import moduloOctoprint
+
+    impresoras = [{"nombre": "Ender3", "url": "http://ender", "token": "abc"}, {"nombre": "mk4", "url": "http://mk4", "token": "x"}]
+    monkeypatch.setattr(accionesOctoprint.accionOctoprint, "modulo", moduloOctoprint({"impresoras": impresoras}))
+    post = MagicMock(return_value=MagicMock(status_code=204))
+    monkeypatch.setattr(accionesOctoprint.requests, "post", post)
+
+    def ejecutar(clase, opciones):
+        post.reset_mock()
+        objeto = clase()
+        objeto.configurar(opciones)
+        objeto.ejecutar()
+        return post.call_args
+
+    impresora = accionesOctoprint.accionReimprimirOctoprint().listaPropiedades[0]
+    assert (impresora.sugerencias, impresora.ocultar) == (["Ender3", "mk4"], ["url", "token"]), "la GUI ofrece las del módulo"
+
+    llamada = ejecutar(accionesOctoprint.accionReimprimirOctoprint, {"impresora": "ender3"})
+    assert llamada.args[0] == "http://ender/api/job" and llamada.kwargs["headers"]["X-Api-Key"] == "abc"
+    assert llamada.kwargs["json"] == {"command": "restart"}
+
+    llamada = ejecutar(accionesOctoprint.accionCancelarOctoprint, {"impresora": "mk4"})
+    assert llamada.args[0] == "http://mk4/api/job" and llamada.kwargs["json"] == {"command": "cancel"}
+
+    assert ejecutar(accionesOctoprint.accionCancelarOctoprint, {"impresora": "otra"}) is None
+    assert "No existe la impresora otra" in avisos[-1], "sin url/token no manda nada"
+
+    llamada = ejecutar(accionesOctoprint.accionReimprimirOctoprint, {"url": "http://manual", "token": "t"})
+    assert llamada.args[0] == "http://manual/api/job", "sin impresora sigue funcionando con url y token a mano"
+
+
+def test_klipper_toma_url_de_la_impresora_del_modulo(monkeypatch, avisos):
+    from elGarrobo.modulos.klipper import accionesKlipper
+    from elGarrobo.modulos.klipper.moduloKlipper import moduloKlipper
+
+    monkeypatch.setattr(accionesKlipper.accionKlipper, "modulo", moduloKlipper({"impresoras": [{"nombre": "voron", "url": "http://voron:7125"}]}))
+    post = MagicMock(return_value=MagicMock(status_code=204))
+    monkeypatch.setattr(accionesKlipper.requests, "post", post)
+
+    cancelar = accionesKlipper.accionCancelarKlipper()
+    assert cancelar.listaPropiedades[0].sugerencias == ["voron"]
+    cancelar.configurar({"impresora": "Voron"})
+    cancelar.ejecutar()
+    assert post.call_args.args[0] == "http://voron:7125/printer/print/cancel"
+    assert post.call_args.kwargs["headers"] == {}, "sin token en el módulo no manda X-Api-Key"
+    assert avisos == ["Klipper[OK] Cancelación enviada a Voron"]
+
+
+def test_fdm_usa_el_servidor_del_modulo_y_sus_impresoras(monkeypatch, avisos):
+    from elGarrobo.modulos.fdmMonster import accionesFdmMonster
+
+    servidor = moduloFdmMonster({"url": "http://fdm:4000", "usuario": "admin", "clave": "1234"})
+    monkeypatch.setattr(servidor, "valoresDatos", {"impresora": ["CoreOne", "MK4s"]})
+    monkeypatch.setattr(accionesFdmMonster.accionImprimirColaFDM, "modulo", servidor)
+    login = MagicMock(return_value=MagicMock(json=lambda: {"token": "jwt"}))
+    monkeypatch.setattr(accionesFdmMonster.requests, "post", login)
+    sesion = MagicMock()
+    sesion.get.side_effect = [
+        MagicMock(json=lambda: [{"name": "MK4s", "id": 7}]),
+        MagicMock(json=lambda: {"nextJob": {"id": 3, "fileName": "pieza.gcode"}}),
+    ]
+    monkeypatch.setattr(accionesFdmMonster.requests, "Session", lambda: sesion)
+
+    imprimir = accionesFdmMonster.accionImprimirColaFDM()
+    impresora = imprimir.listaPropiedades[0]
+    assert (impresora.sugerencias, impresora.ocultar) == (["CoreOne", "MK4s"], ["url", "usuario", "clave"])
+    imprimir.configurar({"impresora": "mk4s"})
+    imprimir.ejecutar()
+    assert login.call_args.args[0] == "http://fdm:4000/api/v2/auth/login"
+    assert login.call_args.kwargs["json"] == {"username": "admin", "password": "1234"}
+    assert sesion.post.call_args.args[0] == "http://fdm:4000/api/v2/print-queue/7/submit/3"
+    assert avisos == ["FDM MK4s imprimiendo: pieza.gcode"]

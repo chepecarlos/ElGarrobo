@@ -2,163 +2,84 @@
 
 import requests
 
-from elGarrobo.accionesOOP.accion import accion, propiedadAccion
-from elGarrobo.accionesOOP.accionNotificacion import accionNotificacion
-from elGarrobo.miLibrerias import ConfigurarLogging
-
-Logger = ConfigurarLogging(__name__)
+from elGarrobo.accionesOOP.accion import propiedadAccion
+from elGarrobo.modulos.modulo import accionImpresora
 
 
-class accionCancelarOctoprint(accion):
+def conexionOctoprint() -> list[propiedadAccion]:
+    """URL y token, solo si la impresora no está en el módulo"""
+    return [
+        propiedadAccion(
+            nombre="URL",
+            atributo="url",
+            tipo=[str],
+            descripcion="URL de Octoprint, si la impresora no está en el módulo",
+            ejemplo="http://octoprint.local",
+        ),
+        propiedadAccion(
+            nombre="Token",
+            atributo="token",
+            tipo=[str],
+            descripcion="API key de Octoprint, si la impresora no está en el módulo",
+            ejemplo="1234567890abcdef",
+        ),
+    ]
+
+
+class accionOctoprint(accionImpresora):
+    """Manda un comando a /api/job de Octoprint"""
+
+    def __init__(self) -> None:
+        super().__init__(conexionOctoprint(), "Impresora del módulo Octoprint, toma su URL y token")
+
+    def enviarComando(self, comandos: list[str], texto: str) -> None:
+        """Prueba los comandos en orden mientras Octoprint responda 409 (no aplica en el estado actual)"""
+        valores = self.conexion("url", "token")
+        if valores is None:
+            return
+        base_url = str(valores["url"]).strip().rstrip("/")
+        # Si ya llega /api/job no lo duplicamos.
+        endpoint = base_url if base_url.endswith("/api/job") else f"{base_url}/api/job"
+        headers = {"X-Api-Key": str(valores["token"]).strip(), "Content-Type": "application/json"}
+        destino = valores["impresora"] or endpoint
+
+        try:
+            for comando in comandos:
+                response = requests.post(endpoint, headers=headers, json={"command": comando}, timeout=10)
+                if response.status_code != 409:
+                    break
+
+            if response.status_code in [200, 204]:
+                self.notificar(f"Octoprint[OK] {texto} en {destino}")
+                return
+
+            detalle = (response.text or "").strip()[:300]
+            self.notificar(f"Octoprint[Error] HTTP {response.status_code} en {destino}. Respuesta: {detalle}")
+
+        except requests.RequestException as error:
+            self.notificar(f"Octoprint[Error] No se pudo conectar a {destino}: {error}")
+
+
+class accionCancelarOctoprint(accionOctoprint):
     """Cancela una impresión en Octoprint"""
 
     nombre = "Cancelar Octoprint"
     comando = "cancelar_octoprint"
-    descripcion = "Cancela una impresión en Octoprint"
+    descripcion = "Cancela la impresión en Octoprint, de una impresora del módulo o con URL y token"
 
     def __init__(self) -> None:
-        super().__init__(self.nombre, self.comando, self.descripcion)
-
-        propiedadURL = propiedadAccion(
-            nombre="URL",
-            atributo="url",
-            tipo=[str],
-            obligatorio=True,
-            descripcion="URL de Octoprint",
-            ejemplo="http://octoprint.local",
-        )
-
-        propiedadToken = propiedadAccion(
-            nombre="Token",
-            atributo="token",
-            tipo=[str],
-            obligatorio=True,
-            descripcion="Token de acceso a Octoprint",
-            ejemplo="1234567890abcdef",
-        )
-
-        self.agregarPropiedad(propiedadURL)
-        self.agregarPropiedad(propiedadToken)
-
-        self.funcion = self.cancelarImpresion
-
-    def cancelarImpresion(self):
-        """Cancela una impresión en Octoprint"""
-        url = str(self.obtenerValor("url")).strip()
-        token = str(self.obtenerValor("token")).strip()
-
-        base_url = url.rstrip("/")
-        endpoint = base_url if base_url.endswith("/api/job") else f"{base_url}/api/job"
-
-        headers = {"X-Api-Key": token, "Content-Type": "application/json"}
-        data = {"command": "cancel"}
-
-        try:
-            response = requests.post(endpoint, headers=headers, json=data, timeout=10)
-
-            if response.status_code in [200, 204]:
-                Logger.info(f"Octoprint[OK] Cancelación enviada a {endpoint}")
-                notificación = accionNotificacion()
-                notificación.configurar({"texto": f"Octoprint[OK] Impresión cancelada en {endpoint}"})
-                notificación.ejecutar()
-                return
-
-            detalle = (response.text or "").strip()
-            if len(detalle) > 300:
-                detalle = f"{detalle[:300]}..."
-            Logger.error(f"Octoprint[Error] HTTP {response.status_code} en {endpoint}. Respuesta: {detalle}")
-
-            notificación = accionNotificacion()
-            notificación.configurar({"texto": f"Octoprint[Error] HTTP {response.status_code} en {endpoint}. Respuesta: {detalle}"})
-            notificación.ejecutar()
-
-        except requests.RequestException as error:
-            Logger.error(f"Octoprint[Error] No se pudo conectar a {endpoint}: {error}")
-
-            notificación = accionNotificacion()
-            notificación.configurar({"texto": f"Octoprint[Error] No se pudo conectar a {endpoint}: {error}"})
-            notificación.ejecutar()
+        super().__init__()
+        self.funcion = lambda: self.enviarComando(["cancel"], "Impresión cancelada")
 
 
-class accionReimprimirOctoprint(accion):
+class accionReimprimirOctoprint(accionOctoprint):
     """Reimprime un trabajo en Octoprint"""
 
     nombre = "Reimprimir Octoprint"
     comando = "reimprimir_octoprint"
-    descripcion = "Reimprime un trabajo en Octoprint"
+    descripcion = "Reimprime el último trabajo en Octoprint, de una impresora del módulo o con URL y token"
 
     def __init__(self) -> None:
-        super().__init__(self.nombre, self.comando, self.descripcion)
-
-        propiedadURL = propiedadAccion(
-            nombre="URL",
-            atributo="url",
-            tipo=[str],
-            obligatorio=True,
-            descripcion="URL del trabajo a reimprimir",
-            ejemplo="http://octoprint.local",
-        )
-
-        propiedadToken = propiedadAccion(
-            nombre="Token",
-            atributo="token",
-            tipo=[str],
-            obligatorio=True,
-            descripcion="Token de acceso a Octoprint",
-            ejemplo="1234567890abcdef",
-        )
-
-        self.agregarPropiedad(propiedadURL)
-        self.agregarPropiedad(propiedadToken)
-
-        self.funcion = self.reimprimirTrabajo
-
-    def reimprimirTrabajo(self):
-        """Reimprime un trabajo en Octoprint"""
-        url = str(self.obtenerValor("url")).strip()
-        token = str(self.obtenerValor("token")).strip()
-
-        # Si ya llega /api/job no lo duplicamos.
-        base_url = url.rstrip("/")
-        endpoint = base_url if base_url.endswith("/api/job") else f"{base_url}/api/job"
-
-        headers = {"X-Api-Key": token, "Content-Type": "application/json"}
-        # El comando 'restart' reinicia el archivo cargado; si no aplica, hacemos fallback a 'start'.
-        data = {"command": "restart"}
-
-        try:
-            response = requests.post(endpoint, headers=headers, json=data, timeout=10)
-
-            if response.status_code in [200, 204]:
-                Logger.info(f"Octoprint[OK] Reimpresión enviada a {endpoint}")
-                notificación = accionNotificacion()
-                notificación.configurar({"texto": f"Octoprint[OK] Reimpresión enviada a {endpoint}"})
-                notificación.ejecutar()
-                return
-
-            if response.status_code == 409:
-                data = {"command": "start"}
-                response = requests.post(endpoint, headers=headers, json=data, timeout=10)
-                if response.status_code in [200, 204]:
-                    Logger.info(f"Octoprint[OK] Se inició impresión con fallback 'start' en {endpoint}")
-
-                    notificación = accionNotificacion()
-                    notificación.configurar({"texto": f"Octoprint[OK] Reimpresión enviada a {endpoint}"})
-                    notificación.ejecutar()
-                    return
-
-            detalle = (response.text or "").strip()
-            if len(detalle) > 300:
-                detalle = f"{detalle[:300]}..."
-            Logger.error(f"Octoprint[Error] HTTP {response.status_code} en {endpoint}. Respuesta: {detalle}")
-
-            notificación = accionNotificacion()
-            notificación.configurar({"texto": f"Octoprint[Error] HTTP {response.status_code} en {endpoint}. Respuesta: {detalle}"})
-            notificación.ejecutar()
-
-        except requests.RequestException as error:
-            Logger.error(f"Octoprint[Error] No se pudo conectar a {endpoint}: {error}")
-
-            notificación = accionNotificacion()
-            notificación.configurar({"texto": f"Octoprint[Error] No se pudo conectar a {endpoint}: {error}"})
-            notificación.ejecutar()
+        super().__init__()
+        # 'restart' reinicia el archivo cargado; si no aplica (409) se prueba 'start'
+        self.funcion = lambda: self.enviarComando(["restart", "start"], "Reimpresión enviada")

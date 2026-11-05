@@ -1228,6 +1228,30 @@ class TestAccionSinClase:
         assert (azar.nombre, azar.accion, azar.opciones) == ("Azar 2", "random", pasos)
 
 
+class TestImpresoraDelModulo:
+    async def test_impresora_del_modulo_oculta_y_no_guarda_url_ni_token(self, user: User, gui: miGui, deck: dispositivoFalso, monkeypatch):
+        from elGarrobo.modulos.octoprint.accionesOctoprint import accionReimprimirOctoprint
+        from elGarrobo.modulos.octoprint.moduloOctoprint import moduloOctoprint
+
+        impresoras = [{"nombre": "MK4s", "url": "http://mk4", "token": "abc"}]
+        monkeypatch.setattr(accionReimprimirOctoprint, "modulo", moduloOctoprint({"impresoras": impresoras}))
+        gui.listaClasesAcciones["reimprimir_octoprint"] = accionReimprimirOctoprint
+        opciones = {"impresora": "MK4s", "url": "http://viejo", "token": "viejo"}
+        deck.listaAcciones.append(dataAccion.desdeDict({"nombre": "Otra vez", "key": 9, "accion": "reimprimir_octoprint", "opciones": opciones}))
+        await user.open("/")
+        user.find(marker="editar-deck-9").click()
+
+        editores = gui.formulario.opcionesEditar
+        assert not editores["URL"].visible and not editores["Token"].visible, "la impresora del módulo ya trae url y token"
+        editores["Impresora"].value = "manual"
+        assert editores["URL"].visible, "una impresora que no está en el módulo necesita url y token"
+        editores["Impresora"].value = "MK4s"
+
+        user.find(marker="botonAgregar").click()
+        await user.should_see("guardada en deck, tecla 9")
+        assert deck.listaAcciones[-1].opciones == {"impresora": "MK4s"}
+
+
 class TestAccionMacro:
     async def test_editar_macro_conserva_pasos_como_lista(self, user: User, gui: miGui, deck: dispositivoFalso):
         pasos = [{"accion": "teclas", "opciones": {"teclas": ["s"]}}]

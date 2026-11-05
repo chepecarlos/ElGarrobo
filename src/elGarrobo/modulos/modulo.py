@@ -5,8 +5,12 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
 from elGarrobo.accionesOOP.accion import accion
+from elGarrobo.accionesOOP.accionNotificacion import accionNotificacion
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
 from elGarrobo.accionesOOP.herramientas.valoresAccion import valoresAcciones
+from elGarrobo.miLibrerias import ConfigurarLogging
+
+logger = ConfigurarLogging(__name__)
 
 ARCHIVO_EVENTOS = "eventos"
 "Archivo global (no por perfil) con las acciones que se disparan con los eventos de los módulos"
@@ -89,6 +93,65 @@ class modulo:
         if modulo.funcionEvento is not None:
             periodico = any(evento.periodico for evento in self.eventos if evento.nombre == nombre)
             modulo.funcionEvento(nombre, datos, periodico)
+
+
+class accionImpresora(accion):
+    """Acción sobre una impresora de un módulo (Octoprint, Klipper, FDM Monster)
+
+    Se elige la impresora por nombre y lo que falte (url, token...) se toma del módulo; los campos de
+    conexión solo aparecen en la GUI si la impresora no es una del módulo
+    """
+
+    modulo: Optional[modulo] = None
+    "Instancia del módulo, la asigna IniciarAcciones si el módulo está activado"
+
+    def __init__(self, conexion: list[propiedadAccion], descripcionImpresora: str) -> None:
+        super().__init__(self.nombre, self.comando, self.descripcion)
+        self.agregarPropiedad(
+            propiedadAccion(
+                nombre="Impresora",
+                atributo="impresora",
+                tipo=[str],
+                descripcion=descripcionImpresora,
+                ejemplo="ender3",
+                sugerencias=self.nombresImpresoras(),
+                ocultar=[propiedad.atributo for propiedad in conexion],
+            )
+        )
+        for propiedad in conexion:
+            self.agregarPropiedad(propiedad)
+
+    def nombresImpresoras(self) -> list[str]:
+        """Impresoras que la GUI ofrece; por defecto las de la lista `impresoras` del módulo"""
+        impresoras = getattr(self.modulo, "impresoras", None) or []
+        return sorted(str(i.get("nombre", "")).strip() for i in impresoras if i.get("nombre"))
+
+    def datosModulo(self, nombre: str) -> dict:
+        """Config de la impresora en el módulo por nombre (sin importar mayúsculas), {} si no está"""
+        impresoras = getattr(self.modulo, "impresoras", None) or []
+        return next((i for i in impresoras if str(i.get("nombre", "")).strip().lower() == nombre.lower()), {})
+
+    def conexion(self, *requeridos: str) -> Optional[dict]:
+        """Valores de la acción completados con los del módulo; None (y avisa) si falta alguno de `requeridos`"""
+        nombre = str(self.obtenerValor("impresora") or "").strip()
+        datos = self.datosModulo(nombre) if nombre else {}
+        valores = {p.atributo: self.obtenerValor(p.atributo) or datos.get(p.atributo) for p in self.listaPropiedades}
+        valores["impresora"] = nombre
+        faltan = [atributo for atributo in requeridos if not valores.get(atributo)]
+        if not faltan:
+            return valores
+        if nombre and not datos:
+            self.notificar(f"{self.nombre}[Error] No existe la impresora {nombre} en el módulo")
+        else:
+            self.notificar(f"{self.nombre}[Error] Falta {', '.join(faltan)}")
+        return None
+
+    def notificar(self, texto: str) -> None:
+        """Log y notificación de escritorio"""
+        (logger.error if "[Error]" in texto else logger.info)(texto)
+        notificación = accionNotificacion()
+        notificación.configurar({"texto": texto})
+        notificación.ejecutar()
 
 
 def reemplazarDatos(valor: Any, datos: dict[str, Any]) -> Any:

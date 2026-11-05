@@ -13,6 +13,7 @@ from elGarrobo.dispositivos.migui.editores import (
     avisarError,
     cargarOpciones,
     crearEditor,
+    enlazarOcultos,
     encabezado,
     leerOpciones,
     leerValor,
@@ -151,6 +152,7 @@ class editorPasos:
                 ponerValor(self.opciones[propiedad.nombre], opciones)
                 return
             self.opciones = {propiedad.nombre: crearEditor(propiedad, f"opción-paso-{propiedad.nombre}") for propiedad in claseAcción().listaPropiedades}
+            enlazarOcultos(self.opciones)
         if opciones:
             cargarOpciones(self.opciones, claseAcción, opciones)
 
