@@ -1261,6 +1261,8 @@ class TestAccionMacro:
 
         assert gui.formulario.editorAcción.value == "Macro"
         assert "teclas" in gui.formulario.opcionesEditar["Acciones"].value
+        assert "hidden" in gui.formulario.opcionesEditar["Acciones"].classes, "los pasos se editan en bloques, no en YAML"
+        await user.should_see("Editar pasos (1)")
 
         user.find(marker="editor-nombre").clear().type("Macro 2")
         user.find(marker="botonAgregar").click()

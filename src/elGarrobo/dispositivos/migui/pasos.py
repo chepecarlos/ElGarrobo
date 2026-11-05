@@ -58,6 +58,22 @@ class editorPasos:
                 ui.button("Cancelar", on_click=self.dialogo.close).props("flat")
                 ui.button("Listo", icon="check", color=tema.colorOscuro, on_click=self.terminar).mark("botonListoPasos")
 
+    def agregarBoton(self, editor: ui.element, marca: str = "botonEditarPasos") -> ui.button:
+        """Botón "Editar pasos (N)" en lugar del YAML de la macro, que queda escondido y es lo que guarda el formulario"""
+        editor.classes("hidden")
+        boton = ui.button(icon="view_list", color=tema.colorOscuro, on_click=lambda: self.abrir(editor)).classes("w-full").mark(marca)
+
+        def contar(_=None) -> None:
+            try:
+                pasos = leerValor(editor) or []
+            except ValueError:
+                pasos = []
+            boton.text = f"Editar pasos ({len(pasos)})"
+
+        editor.on_value_change(contar)
+        contar()
+        return boton
+
     def abrir(self, editor: ui.element) -> None:
         """Abre los pasos del editor YAML de la macro como bloques"""
         try:

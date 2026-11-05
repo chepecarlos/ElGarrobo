@@ -141,7 +141,7 @@ def mostrarEventos(listaClasesAcciones: dict, ejecutarAcción) -> None:
                 editor = crearEditor(propiedad, f"evento-opción-{propiedad.nombre}")
                 editando["opciones"][propiedad.nombre] = editor
                 if propiedad.atributo == objetoAcción.atributoLista:
-                    ui.button("Editar pasos", icon="view_list", color=tema.colorOscuro, on_click=lambda e=editor: pasos.abrir(e)).classes("w-full")
+                    pasos.agregarBoton(editor, "evento-botonEditarPasos")
             enlazarOcultos(editando["opciones"])
         if opciones:
             cargarOpciones(editando["opciones"], claseAcción, opciones)

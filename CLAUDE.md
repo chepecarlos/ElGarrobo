@@ -64,7 +64,7 @@ Algunas acciones (como `accionSalir`, `accionEntrarFolder`) reciben su lógica m
 
 **2. Dispositivos** (`src/elGarrobo/dispositivos/`)
 
-Heredan de `dispositivo` (clase base en `dispositivo.py`). Leen archivos de configuración `.md` o `.json` desde el folder de perfil del usuario (`ObtenerFolderConfig()/<perfil>/`). Cuando el usuario presiona una tecla, llaman a `ejecutarAcción(accionData, estado, fuerza)` que elGarrobo inyecta en `configurarFuncionAccion()`.
+Heredan de `dispositivo` (clase base en `dispositivo.py`). Leen archivos de configuración `.md` o `.json` desde el folder de perfil del usuario (`ObtenerFolderConfig()/<perfil>/`). Cuando el usuario presiona una tecla, llaman a `ejecutarAcción(accionData, estado, fuerza)` que elGarrobo inyecta en `configurarFuncionAccion()` (es `elGarrobo.ejecutarTecla`: las acciones con `enHilo = True`, el defecto, corren en su propio hilo; las de folders, páginas, salir y presionar tienen `enHilo = False` y siguen en el hilo del dispositivo).
 
 Dispositivos disponibles: `MiTecladoMacro`, `MiPedal`, `MiDeckCombinado`, `MiMQTT`, `miGui`.
 
@@ -87,6 +87,8 @@ Cada dispositivo tiene su propio archivo de acciones. Cada entrada de acción ti
 ### Macros
 
 Las macros encadenan acciones secuencialmente. El "cajón" (`cajon: dict`) pasa datos entre pasos: `macro_opciones.solisita` extrae un valor del cajón y `macro_opciones.respuesta` guarda el resultado de una acción para el siguiente paso.
+
+En la GUI los pasos se editan en bloques (`dispositivos/migui/pasos.py`, botón "Editar pasos (N)"); el YAML de la macro queda escondido. Un paso `confirmar` (`accionConfirmar`) muestra una ventana Sí / No con tkinter; si se responde No (o se acaba el `tiempo`) `AccionesMacros` no ejecuta los pasos siguientes.
 
 ### Submodulo miLibrerias
 

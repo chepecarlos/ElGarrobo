@@ -11,6 +11,7 @@ from .accionesOOP import (
     accion,
     accionActualizarPagina,
     accionAnteriorPagina,
+    accionConfirmar,
     accionEntrarFolder,
     accionMacro,
     accionPresionar,
@@ -129,8 +130,8 @@ class elGarrobo(object):
             )
 
     def iniciarDispositivo(self, dispositivoActual: dispositivo) -> None:
-        """Le pasa ejecutarAcción y el perfil, carga su folder raíz y lo conecta"""
-        dispositivoActual.configurarFuncionAccion(self.ejecutarAcción)
+        """Le pasa ejecutarTecla y el perfil, carga su folder raíz y lo conecta"""
+        dispositivoActual.configurarFuncionAccion(self.ejecutarTecla)
         dispositivoActual.asignarPerfil(self.folderPerfil)
         if dispositivoActual.activado and not dispositivoActual.conectado:
             dispositivoActual.cargarAccionesFolder("/")
@@ -450,6 +451,22 @@ class elGarrobo(object):
         #     if accion == "presionar" or estado == "presionado":
         #         self.ejecutarAcción(evento)
 
+    def ejecutarTecla(self, accionActual: dict, estado: bool = True, fuerza: int = 1, folder: str | None = None) -> Any:
+        """Lo que llaman los dispositivos: cada acción con `enHilo` corre en su propio hilo para no frenar las demás teclas
+
+        Las de estado central (folders, páginas, presionar/soltar) siguen en el hilo del dispositivo, en orden
+        """
+        claseAccion = self.listaClasesAcciones.get(accionActual.get("accion"))
+        if not estado or not getattr(claseAccion, "enHilo", False):
+            return self.ejecutarAcción(accionActual, estado, fuerza, folder)
+        # ponytail: un hilo por tecla sin límite; si se presiona muy seguido una acción lenta, se juntan varios
+        threading.Thread(
+            target=self.ejecutarAcción,
+            args=(accionActual, estado, fuerza, folder),
+            daemon=True,
+            name=f"accion-{accionActual.get('accion')}",
+        ).start()
+
     def ejecutarAcción(
         self, accionActual: dict, estado: bool = True, fuerza: int = 1, folder: str | None = None
     ) -> Any:
@@ -575,6 +592,10 @@ class elGarrobo(object):
             respuesta = self.ejecutarAcción(comando)
 
             self.respuestaMacro(comando, respuesta, cajon)
+
+            if comando.get("accion") == accionConfirmar.comando and not respuesta:
+                logger.info(f"Macro[Detenida] No se confirmó el paso {numero+1}")
+                break
 
         # TODO: Hacer Macros en diferentes Hilos
 

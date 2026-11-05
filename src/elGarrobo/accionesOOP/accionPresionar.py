@@ -12,6 +12,7 @@ class accionPresionar(accion):
 
     nombre = "Presiona"
     comando = "presionar"
+    enHilo = False
     categoria = "Teclado y ratón"
     descripcion = "Ejecuta una acción al presionar la tecla y otra al soltarla"
 

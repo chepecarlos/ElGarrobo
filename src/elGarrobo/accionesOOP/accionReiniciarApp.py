@@ -12,6 +12,7 @@ class accionReiniciarApp(accion):
 
     nombre = "Reiniciar App"
     comando = "reiniciar_app"
+    enHilo = False
     categoria = "ElGarrobo"
     descripcion = "Cierra y vuelve a abrir ElGarrobo"
 

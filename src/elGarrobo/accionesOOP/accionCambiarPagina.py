@@ -12,6 +12,7 @@ class accionSiguientePagina(accion):
 
     nombre = "Siguiente página"
     comando = "siguiente_pagina"
+    enHilo = False
     categoria = "Folders y páginas"
     descripcion = "Pasa a la siguiente página de teclas del StreamDeck, pedal u otro dispositivo con páginas"
 
@@ -33,6 +34,7 @@ class accionAnteriorPagina(accion):
 
     nombre = "Página anterior"
     comando = "anterior_pagina"
+    enHilo = False
     categoria = "Folders y páginas"
     descripcion = "Regresa a la página de teclas anterior del StreamDeck, pedal u otro dispositivo con páginas"
 
@@ -54,6 +56,7 @@ class accionActualizarPagina(accion):
 
     nombre = "Actualizar página"
     comando = "actualizar_pagina"
+    enHilo = False
     categoria = "Folders y páginas"
     descripcion = "Vuelve a dibujar los íconos de las teclas del StreamDeck"
 

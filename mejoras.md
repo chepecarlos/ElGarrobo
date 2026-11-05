@@ -18,7 +18,7 @@
 
 ## GUI
 
-- [ ] **Editor de pasos de macros**: ya hay un diálogo de bloques (agregar, editar, borrar, subir/bajar). Falta: arrastrar para ordenar, `macro_opciones` (cajón) sin YAML (hoy se conserva pero solo se edita en el YAML de la macro) y macros anidadas (un paso macro se edita en YAML).
+- [ ] **Editor de pasos de macros**: ya hay un diálogo de bloques (agregar, editar, borrar, subir/bajar) y desde 2026-11-04 el YAML de la macro está escondido (botón "Editar pasos (N)"). Falta: **`macro_opciones` (cajón) en el editor de pasos** (se conserva al guardar pero ya no se puede editar en la GUI), arrastrar para ordenar y macros anidadas (un paso macro se edita en YAML).
 - [ ] **Selector de acciones agrupado**: más de 37 acciones en una lista plana; agrupar por categoría (OBS, teclado, sonido, MQTT, folders...).
 - [ ] **Deshacer más allá de borrar**: borrar ya tiene Deshacer en el aviso; editar, intercambiar y duplicar todavía no.
 - [ ] **Atajos de teclado y edición en lote**: no hay atajos (guardar, limpiar, cambiar modo) ni forma de mover o borrar varias acciones a la vez.
@@ -105,6 +105,8 @@ Pendiente:
 - [x] **Voz** (2026-11-03): `textovoz` migrada a OOP (`accionTextoVoz`) con Piper en vez de `pyttsx3`; voz por defecto `es_ES-davefx-medium`, se baja a `~/.local/share/elgarrobo/voces/`. Demo de voces en `demo/demoTextoVoz/`.
 
 ## Código
+
+- [ ] **Hilo por tecla** (2026-11-04, `elGarrobo.ejecutarTecla`): las acciones con `enHilo` corren en su propio hilo. Sin límite (marcado con `ponytail:`), y presionar dos veces rápido la misma tecla la corre dos veces en paralelo (en `escribir`/`teclas` se puede mezclar el texto). Si molesta: un candado por tecla o ignorar la tecla mientras su acción corre.
 
 - [ ] **Interfaz tipo dict de `dataAccion`** (`get`, `[]`, `in`, `items`): quitarla cuando los dispositivos usen los campos directamente (marcada con `ponytail:` en `dataAccion.py`).
 - [ ] **`folderActual` inicial `None`**: `rutaFolder` arma la ruta relativa con `str(self.folderActual)`, así que antes de cargar la raíz un folder relativo se busca en `None/<folder>`; en la app no pasa porque siempre se carga la raíz primero.

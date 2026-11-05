@@ -12,6 +12,7 @@ class accionRegresarFolder(accion):
 
     nombre = "Regresar Folder"
     comando = "regresar_folder"
+    enHilo = False
     categoria = "Folders y páginas"
     descripcion = "Sale del folder actual y vuelve al de arriba con sus teclas"
 

@@ -44,6 +44,9 @@ class accion:
     "Multiplicador de la fuerza de la acción"
     atributoLista: Optional[str] = None
     "Si las opciones en el .md son una lista (ej. pasos de una macro), atributo donde se guardan"
+    enHilo: bool = True
+    """Al presionar una tecla se ejecuta en su propio hilo, así una macro o una consulta lenta no frena las demás teclas.
+    False en las que cambian el estado central (folders, páginas, salir, presionar/soltar) para que sigan en orden"""
 
     def __init__(self, nombre: str, comando: str, descripcion: str) -> None:
         """Inicializa la información de la acción hijo

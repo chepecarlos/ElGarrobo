@@ -12,6 +12,7 @@ class accionRecargarFolder(accion):
 
     nombre = "Recargar Acciones"
     comando = "reiniciar_data"
+    enHilo = False
     categoria = "Folders y páginas"
     descripcion = "Vuelve a leer las teclas del folder actual desde su archivo, para ver cambios sin reiniciar"
 

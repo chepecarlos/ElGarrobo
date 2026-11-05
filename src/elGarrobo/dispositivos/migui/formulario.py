@@ -326,7 +326,7 @@ class formularioAccion:
                             ponerValor(editor, valorAnterior)
                     self.opcionesEditar[nombre] = editor
                     if propiedad.atributo == acciónTmp.atributoLista:
-                        ui.button("Editar pasos", icon="view_list", color=tema.colorOscuro, on_click=lambda e=editor: self.pasos.abrir(e)).classes("w-full").mark("botonEditarPasos")
+                        self.pasos.agregarBoton(editor)
                 enlazarOcultos(self.opcionesEditar)
             return
 

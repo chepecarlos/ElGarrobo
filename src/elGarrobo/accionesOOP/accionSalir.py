@@ -12,6 +12,7 @@ class accionSalir(accion):
 
     nombre = "Salir"
     comando = "salir"
+    enHilo = False
     categoria = "ElGarrobo"
     descripcion = "Cierra ElGarrobo"
 

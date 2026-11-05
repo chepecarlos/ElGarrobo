@@ -190,3 +190,59 @@ class TestAccionMacro:
             assert macro.ejecutar() is True
         assert recibido.call_args.args[0][0].valor == pasos
 
+
+
+@pytest.mark.parametrize("acepta, pasos", [(True, ["confirmar", "cancelar_octoprint", "nada"]), (False, ["confirmar"])])
+def test_macro_se_detiene_si_no_se_confirma(acepta, pasos):
+    from elGarrobo import elGarrobo as moduloElGarrobo
+    from elGarrobo.accionesOOP.herramientas.valoresAccion import valoresAcciones
+
+    app = moduloElGarrobo.elGarrobo.__new__(moduloElGarrobo.elGarrobo)
+    app.ejecutarAcción = MagicMock(side_effect=lambda comando: acepta if comando["accion"] == "confirmar" else True)
+    macro = [{"accion": "confirmar"}, {"accion": "cancelar_octoprint"}, {"accion": "nada"}]
+    app.AccionesMacros([valoresAcciones("acciones", macro)])
+    assert [llamada.args[0]["accion"] for llamada in app.ejecutarAcción.call_args_list] == pasos
+
+
+def test_confirmar_sin_entorno_grafico_es_no(monkeypatch):
+    from elGarrobo.accionesOOP.accionConfirmar import accionConfirmar
+
+    monkeypatch.delenv("DISPLAY", raising=False)
+    monkeypatch.delenv("WAYLAND_DISPLAY", raising=False)
+    confirmar = accionConfirmar()
+    confirmar.configurar({"mensaje": "¿Cancelar?"})
+    assert confirmar.ejecutar() is False, "sin ventana no se hace la acción a ciegas"
+
+
+def test_tecla_ejecuta_en_hilo_salvo_las_de_estado_central():
+    import threading
+
+    from elGarrobo import elGarrobo as moduloElGarrobo
+
+    app = moduloElGarrobo.elGarrobo.__new__(moduloElGarrobo.elGarrobo)
+    app.listaClasesAcciones = cargarClasesAcciones()
+    hilos = {}
+    listo = threading.Event()
+
+    def ejecutar(accionActual, estado=True, fuerza=1, folder=None):
+        hilos[(accionActual["accion"], estado)] = threading.current_thread()
+        if accionActual["accion"] == "macro":
+            listo.set()
+
+    app.ejecutarAcción = ejecutar
+    app.ejecutarTecla({"accion": "macro"}, True, 1, "/")
+    app.ejecutarTecla({"accion": "entrar_folder"}, True, 1, "/")
+    app.ejecutarTecla({"accion": "macro"}, False, 1, "/")
+    assert listo.wait(2)
+    assert hilos[("macro", True)] is not threading.current_thread(), "la macro no frena las demás teclas"
+    assert hilos[("entrar_folder", True)] is threading.current_thread(), "folders y páginas siguen en orden"
+    assert hilos[("macro", False)] is threading.current_thread(), "soltar no lanza hilos"
+
+
+def test_confirmar_busca_el_monitor_del_mouse():
+    from elGarrobo.accionesOOP.accionConfirmar import monitorEn
+
+    xrandr = "Monitors: 2\n 0: +*DP-1 1920/598x1080/336+0+480  DP-1\n 1: +HDMI-0 800/476x480/268+583+0  HDMI-0\n"
+    assert monitorEn(xrandr, 845, 1258) == (1920, 1080, 0, 480)
+    assert monitorEn(xrandr, 700, 100) == (800, 480, 583, 0)
+    assert monitorEn(xrandr, 100, 100) is None, "fuera de todos: se usa el escritorio entero"
