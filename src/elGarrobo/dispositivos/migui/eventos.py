@@ -22,7 +22,7 @@ from elGarrobo.dispositivos.migui.pasos import editorPasos
 from elGarrobo.miLibrerias import SalvarArchivo, leerData
 
 CLAVES_FORMULARIO = ("nombre", "evento", "filtro", "accion", "opciones")
-"Claves de una entrada que arma el formulario; las demás (activo, macro_opciones...) se conservan al guardar"
+"Claves de una entrada que arma el formulario; las demás (activo, secuencia_opciones...) se conservan al guardar"
 
 
 def catalogoEventos() -> dict:

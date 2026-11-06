@@ -204,6 +204,22 @@ def test_secuencia_se_detiene_si_no_se_confirma(acepta, pasos):
     assert [llamada.args[0]["accion"] for llamada in app.ejecutarAcción.call_args_list] == pasos
 
 
+def test_secuencia_pasa_datos_por_el_cajon():
+    from elGarrobo import elGarrobo as moduloElGarrobo
+    from elGarrobo.accionesOOP.herramientas.valoresAccion import valoresAcciones
+
+    app = moduloElGarrobo.elGarrobo.__new__(moduloElGarrobo.elGarrobo)
+    app.ejecutarAcción = MagicMock(side_effect=lambda comando: "hola" if comando["accion"] == "leer" else True)
+    secuencia = [
+        {"accion": "leer", "secuencia_opciones": {"respuesta": "texto"}},
+        {"accion": "escribir", "secuencia_opciones": {"solicita": "texto"}},
+        {"accion": "escribir", "secuencia_opciones": {"solicita": "texto", "solicita_cambiar": "mensaje"}},
+    ]
+    app.ejecutarSecuencia([valoresAcciones("acciones", secuencia)])
+    opciones = [llamada.args[0].get("opciones") for llamada in app.ejecutarAcción.call_args_list]
+    assert opciones == [None, {"texto": "hola"}, {"mensaje": "hola"}]
+
+
 def test_confirmar_sin_entorno_grafico_es_no(monkeypatch):
     from elGarrobo.accionesOOP.accionConfirmar import accionConfirmar
 

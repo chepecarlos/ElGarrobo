@@ -121,11 +121,11 @@ if __name__ == "__main__":
         "accion": "obs_escena",
         "opciones": {"escena": "a"},
         "imagen_opciones": {"fondo": "red"},
-        "macro_opciones": {"x": 1},
+        "secuencia_opciones": {"x": 1},
     }
     acción = dataAccion.desdeDict(original)
     assert acción.imagenOpciones == {"fondo": "red"}
-    assert acción.extra == {"macro_opciones": {"x": 1}}
+    assert acción.extra == {"secuencia_opciones": {"x": 1}}
     assert acción.aDict() == original
     assert acción.get("imagen_opciones") == {"fondo": "red"} and "titulo" not in acción
     acción["titulo_opciones"] = {"mqtt": "t"}

@@ -589,21 +589,21 @@ class elGarrobo(object):
                     self.ejecutarAcción(accion)
 
     def solicitaSecuencia(self, comando, cajon):
-        if "macro_opciones" in comando:
-            macroOpciones = comando["macro_opciones"]
-            if "solisita" in macroOpciones:
-                atributo = macroOpciones["solisita"]
+        if "secuencia_opciones" in comando:
+            opcionesSecuencia = comando["secuencia_opciones"]
+            if "solicita" in opcionesSecuencia:
+                atributo = opcionesSecuencia["solicita"]
                 Tipo = type(atributo)
                 if Tipo is list:
                     recibir = atributo
-                    if "solisita_cambiar" in macroOpciones:
-                        recibir = macroOpciones["solisita_cambiar"]
+                    if "solicita_cambiar" in opcionesSecuencia:
+                        recibir = opcionesSecuencia["solicita_cambiar"]
                     for atributoTMP, recibirTMP in zip(atributo, recibir):
                         self.solicitudSimpleSecuencia(comando, atributoTMP, recibirTMP, cajon)
                 else:
                     recibir = None
-                    if "solisita_cambiar" in macroOpciones:
-                        recibir = macroOpciones["solisita_cambiar"]
+                    if "solicita_cambiar" in opcionesSecuencia:
+                        recibir = opcionesSecuencia["solicita_cambiar"]
                     self.solicitudSimpleSecuencia(comando, atributo, recibir, cajon)
 
     def solicitudSimpleSecuencia(self, comando, atributo, recibir, cajon):
@@ -619,10 +619,10 @@ class elGarrobo(object):
             logger.info(f"Cargar_cajon[{recibir}] {opciones}")
 
     def respuestaSecuencia(self, comando, respuesta, cajon):
-        if "macro_opciones" in comando:
-            macro_opciones = comando["macro_opciones"]
-            if "respuesta" in macro_opciones:
-                atributo = macro_opciones["respuesta"]
+        if "secuencia_opciones" in comando:
+            opcionesSecuencia = comando["secuencia_opciones"]
+            if "respuesta" in opcionesSecuencia:
+                atributo = opcionesSecuencia["respuesta"]
                 cajon[atributo] = respuesta
                 logger.info(f"Salvar_Cajon[{atributo}] {respuesta}")
 

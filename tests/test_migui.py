@@ -1332,7 +1332,7 @@ class TestAccionSecuencia:
     async def test_editar_pasos_en_bloques(self, user: User, gui: miGui, deck: dispositivoFalso):
         pasos = [
             {"accion": "teclas", "opciones": {"teclas": ["s"]}},
-            {"accion": "obs_escena", "opciones": {"escena": "Juego"}, "macro_opciones": {"respuesta": "x"}},
+            {"accion": "obs_escena", "opciones": {"escena": "Juego"}, "secuencia_opciones": {"respuesta": "x"}},
             {"accion": "delay", "opciones": {"tiempo": 1}},
         ]
         datos = {"nombre": "Secuencia", "key": 9, "accion": "secuencia", "opciones": pasos}
@@ -1344,7 +1344,7 @@ class TestAccionSecuencia:
 
         user.find(marker="bajarPaso-0").click()
         user.find(marker="borrarPaso-2").click()
-        # Paso sin clase OOP: opciones en YAML y conserva macro_opciones
+        # Paso sin clase OOP: opciones en YAML y conserva secuencia_opciones
         user.find(marker="editarPaso-0").click()
         user.find(marker="opción-paso-Opciones").clear().type("escena: Charla")
         user.find(marker="botonGuardarPaso").click()
@@ -1358,7 +1358,7 @@ class TestAccionSecuencia:
         user.find(marker="botonAgregar").click()
         await user.should_see("Secuencia guardada en deck, tecla 9")
         assert deck.listaAcciones[-1].opciones == [
-            {"accion": "obs_escena", "opciones": {"escena": "Charla"}, "macro_opciones": {"respuesta": "x"}},
+            {"accion": "obs_escena", "opciones": {"escena": "Charla"}, "secuencia_opciones": {"respuesta": "x"}},
             {"accion": "teclas", "opciones": {"teclas": ["s"]}},
             {"accion": "delay", "opciones": {"tiempo": "2"}},
         ]

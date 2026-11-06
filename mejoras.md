@@ -18,7 +18,7 @@
 
 ## GUI
 
-- [ ] **Editor de pasos de secuencias**: ya hay un diálogo de bloques (agregar, editar, borrar, subir/bajar) y desde 2026-11-04 el YAML de la secuencia está escondido (botón "Editar pasos (N)"). Falta: **`macro_opciones` (cajón) en el editor de pasos** (se conserva al guardar pero ya no se puede editar en la GUI), arrastrar para ordenar y secuencias anidadas (un paso secuencia se edita en YAML).
+- [ ] **Editor de pasos de secuencias**: ya hay un diálogo de bloques (agregar, editar, borrar, subir/bajar) y desde 2026-11-04 el YAML de la secuencia está escondido (botón "Editar pasos (N)"). Falta: **`secuencia_opciones` (cajón) en el editor de pasos** (se conserva al guardar pero ya no se puede editar en la GUI), arrastrar para ordenar y secuencias anidadas (un paso secuencia se edita en YAML).
 - [ ] **Selector de acciones agrupado**: más de 37 acciones en una lista plana; agrupar por categoría (OBS, teclado, sonido, MQTT, folders...).
 - [ ] **Deshacer más allá de borrar**: borrar ya tiene Deshacer en el aviso; editar, intercambiar y duplicar todavía no.
 - [ ] **Atajos de teclado y edición en lote**: no hay atajos (guardar, limpiar, cambiar modo) ni forma de mover o borrar varias acciones a la vez.
@@ -92,7 +92,7 @@ Notas de FDM Monster (2.0.10):
 
 Pendiente:
 - [ ] **Ventana de 20 trabajos**: si entre dos consultas aparecen más de 20 trabajos nuevos, los más viejos de esos no avisan (marcado con `ponytail:`).
-- [ ] **Cajón inicial en secuencias**: acordado que el cajón empiece con los datos del evento; no se hizo porque `{dato}` ya se reemplaza en los pasos. Hacerlo si alguna acción necesita el dato como valor completo vía `solisita`.
+- [ ] **Cajón inicial en secuencias**: acordado que el cajón empiece con los datos del evento; no se hizo porque `{dato}` ya se reemplaza en los pasos. Hacerlo si alguna acción necesita el dato como valor completo vía `solicita`.
 - [x] **Condiciones en el filtro** (2026-10-29): `> 80`, `>= 80`, `< 20`, `<= 20`, `!= 0`, `= x` (`cumpleFiltro` en `modulo.py`); sin operador es igualdad. Comparan como número; con texto solo `=`/`!=`. A mano en eventos.md van entre comillas (`ram: "> 80"`, YAML lee `>` como bloque).
   - Eventos con `periodico=True` (`eventoModulo`): la acción se ejecuta solo cuando el filtro **empieza** a cumplirse, no en cada lectura (`filtrosCumplidos`). Para avisar al bajar se crea otra entrada (ej. `ram: "< 75"`).
   - [ ] Si el valor ronda el límite (80.1 / 79.9) avisa en cada cruce; agregar espera mínima si molesta.
@@ -129,7 +129,6 @@ Ordenado de mayor a menor recorte.
 
 ## Ortografía (requiere actualizar configs del usuario)
 
-- [ ] Claves de `macro_opciones` `solisita` / `solisita_cambiar` → `solicita` / `solicita_cambiar` (ver CLAUDE.md).
 - [ ] Métodos internos de `elGarrobo.py` (no requieren tocar configs): `SolisitarDibujar` → `SolicitarDibujar`, `SolisitarNotifiacacion` → `SolicitarNotificacion`.
 
 ## Configs del usuario (`~/dotfile/.config/elgarrobo/default/`)

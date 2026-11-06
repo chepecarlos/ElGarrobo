@@ -185,7 +185,7 @@ class editorPasos:
         if claseAcción is None and isinstance(opciones, dict):
             # Sin clase OOP: el único editor es el YAML de mostrarOpciones
             opciones = opciones.get("opciones")
-        # Se copian las claves extra del paso (ej. macro_opciones)
+        # Se copian las claves extra del paso (ej. secuencia_opciones)
         paso = dict(self.pasos[self.editando]) if self.editando is not None else {}
         paso["accion"] = comando
         paso.pop("opciones", None)

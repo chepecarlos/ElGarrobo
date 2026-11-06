@@ -85,7 +85,7 @@ Cada dispositivo tiene su propio archivo de acciones. Cada entrada de acción ti
 
 ### Secuencias
 
-Las secuencias (`accion: secuencia`, clase `accionSecuencia`; antes se llamaban macros) encadenan acciones en orden. La clave `macro_opciones` de cada paso conserva el nombre viejo. El "cajón" (`cajon: dict`) pasa datos entre pasos: `macro_opciones.solisita` extrae un valor del cajón y `macro_opciones.respuesta` guarda el resultado de una acción para el siguiente paso.
+Las secuencias (`accion: secuencia`, clase `accionSecuencia`; antes se llamaban macros) encadenan acciones en orden. El "cajón" (`cajon: dict`) pasa datos entre pasos: `secuencia_opciones.solicita` extrae un valor del cajón (`solicita_cambiar` le da otro nombre al pasarlo a `opciones`) y `secuencia_opciones.respuesta` guarda el resultado de una acción para el siguiente paso.
 
 En la GUI los pasos se editan en bloques (`dispositivos/migui/pasos.py`, botón "Editar pasos (N)"); el YAML de la secuencia queda escondido. Un paso `confirmar` (`accionConfirmar`) muestra una ventana Sí / No con tkinter; si se responde No (o se acaba el `tiempo`) `ejecutarSecuencia` no ejecuta los pasos siguientes.
 
@@ -98,13 +98,13 @@ En la GUI los pasos se editan en bloques (`dispositivos/migui/pasos.py`, botón 
 El código tiene bastantes errores de ortografía en español (nombres de clases, docstrings, descripciones, y algunas claves `comando`/opciones de config). Cuando Claude detecte uno, debe avisarlo para corregirlo poco a poco.
 
 - **Seguro de corregir de inmediato**: docstrings, comentarios, `descripcion`, nombres de variables/métodos internos que no se serializan a los `.md`/`.json` del usuario.
-- **Requiere confirmación antes de tocar**: cualquier string usado como clave persistida en configs de usuario — el `comando` de una acción (clave del dict en `cargarClasesAcciones()`), o claves dentro de `opciones`/`macro_opciones` (ver `solicitaSecuencia` en `elGarrobo.py`). Cambiarlas rompe secuencias ya guardadas por el usuario.
+- **Requiere confirmación antes de tocar**: cualquier string usado como clave persistida en configs de usuario — el `comando` de una acción (clave del dict en `cargarClasesAcciones()`), o claves dentro de `opciones`/`secuencia_opciones` (ver `solicitaSecuencia` en `elGarrobo.py`). Cambiarlas rompe secuencias ya guardadas por el usuario.
 
 Pendientes detectados (no corregidos, requieren decidir si romper compatibilidad):
-- `elGarrobo.py` (`solicitaSecuencia`): claves de `macro_opciones` `"solisita"` / `"solisita_cambiar"` → deberían ser `"solicita"` / `"solicita_cambiar"`.
-- `src/elGarrobo/acciones/` (paquete legacy no-OOP, se importa en `elGarrobo.py` con `CargarAcciones()`): mismos typos; pendiente migrar a OOP lo que se usa (ver `mejoras.md`).
+- `src/elGarrobo/acciones/` (paquete legacy no-OOP, se importa en `elGarrobo.py` con `CargarAcciones()`): pendiente migrar a OOP lo que se usa (ver `mejoras.md`).
 
 Corregidos (código + configs de usuario en `~/dotfile/.config/elgarrobo/default/*.md` actualizados en el mismo cambio):
 - `accionCambiarPagina.py`: `accionSiquientePagina` / `comando = "siquiente_pagina"` → `accionSiguientePagina` / `"siguiente_pagina"` (también `imagen_base.siguiente_pagina` y `base/siguiente.png`).
 - `desface*` → `desfase*` en dispositivos (solo atributos internos; el `desface` de `drevo.md` es del plugin de Blender y no se tocó).
 - `accionSonidos.py`: `comando = "reproducion"` / `"detener_reproducion"` → `"reproduccion"` / `"detener_reproduccion"`.
+- Macros → secuencias: `accion: macro` → `accion: secuencia`, `macro_opciones` → `secuencia_opciones`, `solisita` / `solisita_cambiar` → `solicita` / `solicita_cambiar` (sin alias para lo viejo).
