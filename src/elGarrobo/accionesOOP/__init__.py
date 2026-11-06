@@ -23,8 +23,8 @@
 - Escribir archivo[accionEscribirArchivo](./accionesOOP/accionArchivo)
 - Lee un valor de un archivo[accionLeerValor](./accionesOOP/accionArchivo)
 - Muestra una lista de tareas emergente: [accionListaCheckBox](./accionesOOP/accionListaCheckBox)
-- Ejecuta una lista de acciones una tras otra: [accionMacro](./accionesOOP/accionMacro)
-- Pregunta Sí / No y detiene la macro si es No: [accionConfirmar](./accionesOOP/accionConfirmar)
+- Ejecuta una lista de acciones una tras otra: [accionSecuencia](./accionesOOP/accionSecuencia)
+- Pregunta Sí / No y detiene la secuencia si es No: [accionConfirmar](./accionesOOP/accionConfirmar)
 
 ### Acciones de ElGarrobo
 - Abri interface web: [accionAbrirGUI](./accionesOOP/accionAbrirGUI)
@@ -62,7 +62,7 @@ from .accionEscribirTexto import accionEscribirTexto
 from .accionFolder import accionFolder
 from .accionConfirmar import accionConfirmar
 from .accionListaCheckBox import accionListaCheckBox
-from .accionMacro import accionMacro
+from .accionSecuencia import accionSecuencia
 from .accionMQTT import accionMQTT
 from .accionNavegador import accionNavegador
 from .accionNotificacion import accionNotificacion
@@ -117,7 +117,7 @@ def cargarClasesAcciones() -> dict[str, type["accion"]]:
         "reproduccion": accionReproducir,
         "detener_reproduccion": accionPararReproducciones,
         "presionar": accionPresionar,
-        "macro": accionMacro,
+        "secuencia": accionSecuencia,
         "confirmar": accionConfirmar,
         "escribir_archivo": accionEscribirArchivo,
         "leer_valor": accionLeerValor,

@@ -13,7 +13,7 @@ from .accionesOOP import (
     accionAnteriorPagina,
     accionConfirmar,
     accionEntrarFolder,
-    accionMacro,
+    accionSecuencia,
     accionPresionar,
     accionRecargarFolder,
     accionRegresarFolder,
@@ -191,7 +191,6 @@ class elGarrobo(object):
         self.ModuloDeck = False
         self.ModuloCombinado = False
         self.ModuloMQTT = False
-        self.ModuloMQTTEstado = False
         self.ModuloMonitorESP = False
         self.ModuloAlias = False
         self.ModuloGui = False
@@ -207,7 +206,6 @@ class elGarrobo(object):
             self.ModuloCombinado = self.dispositivos.get("deck_combinado", False)
             self.ModuloDeck = self.modulos.get("deck", False)
             self.ModuloMQTT = self.dispositivos.get("mqtt", False)
-            self.ModuloMQTTEstado = self.modulos.get("mqtt_estado", False)
             self.ModuloAlias = self.modulos.get("alias", False)
             self.ModuloGui = self.dispositivos.get("gui", False)
         self.cargarClasesModulos()
@@ -284,7 +282,7 @@ class elGarrobo(object):
         accionRegresarFolder.funcionExterna = self.regresar_Folder
         accionRecargarFolder.funcionExterna = self.Reiniciar
         accionPresionar.funcionExterna = self.accionesPresionar
-        accionMacro.funcionExterna = self.AccionesMacros
+        accionSecuencia.funcionExterna = self.ejecutarSecuencia
         accionSalvarPulse.funcionExterna = self.SolisitarDibujar
 
         ListaAcciones = CargarAcciones()
@@ -352,48 +350,8 @@ class elGarrobo(object):
 
         for dispositivoActual in self.listaDispositivos:
             if hasattr(dispositivoActual, "actualizarIconos"):
-                logger.info(f"Se puede limpiar los iconos {dispositivoActual.nombre}")
+                logger.info(f"Actualizando iconos de {dispositivoActual.nombre}")
                 dispositivoActual.actualizarIconos()
-
-    def LimpiarDeck(self):
-
-        for dispositivoActual in self.listaDispositivos:
-            if hasattr(dispositivoActual, "limpiarIconos"):
-                logger.info(f"Se puede limpiar los iconos {dispositivoActual.nombre}")
-                dispositivoActual.limpiarIconos()
-
-    def CargarAcciones(self, Dispositivo, Data):
-        # TODO: quitar Data y self.Data
-        Estado = False
-        dispositivoActual = self.Data.get(Dispositivo)
-        if dispositivoActual is not None:
-            for dispositivoActual in dispositivoActual:
-                nombreDispositivo = dispositivoActual.get("nombre")
-                accionesDispositivo = Data.get(nombreDispositivo)
-                if accionesDispositivo:
-                    logger.info(f"Folder[Configurado] {nombreDispositivo}")
-                    self.acciones[nombreDispositivo] = accionesDispositivo
-                    if self.ModuloGui:
-                        self.miGui.actualizarAcciones(nombreDispositivo, accionesDispositivo, self.PathActual)
-                    Estado = True
-        return Estado
-
-    def BuscarDentroFolder(self, Folderes, Data):
-        nombreFolder = Data.get("nombre")
-
-        if nombreFolder is not None:
-            if nombreFolder == Folderes[0]:
-                Folderes.remove(nombreFolder)
-                if Folderes:
-                    dataFolder = Data.get("folder")
-                    if dataFolder is not None:
-                        for BuscarFolder in dataFolder:
-                            Data = self.BuscarDentroFolder(Folderes, BuscarFolder)
-                            if Data is not None:
-                                return Data
-                else:
-                    return Data
-        return None
 
     def Evento(self, Evento: dict):
         NombreEvento = Evento.get("nombre")
@@ -428,7 +386,7 @@ class elGarrobo(object):
             logger.info(f"Evento[No asignado] {NombreEvento}[{Evento['key']}]")
 
     def dispararEvento(self, nombre: str, datos: dict, periodico: bool = False) -> None:
-        """Ejecuta las acciones de eventos.md del evento, cada una en su hilo: una macro lenta no frena al módulo"""
+        """Ejecuta las acciones de eventos.md del evento, en hilos aparte: una secuencia lenta no frena al módulo"""
         # Se lee en cada evento: lo editado en /eventos aplica sin reiniciar
         acciones = accionesEvento(leerData(ARCHIVO_EVENTOS) or [], nombre, datos, periodico)
         if acciones or not periodico:
@@ -447,7 +405,7 @@ class elGarrobo(object):
         #     if estado:
         #         if "accion" in evento:
         #             evento["__estado"] = estado
-        #             # TODO: Ver como pasar estado entre macros
+        #             # TODO: Ver como pasar estado entre secuencias
         #         else:
         #             logger.info("Evento[no accion]")
         # elif isinstance(estado, str):
@@ -554,7 +512,7 @@ class elGarrobo(object):
                 opcionesAccion = accionActual["opciones"]
 
             # TODO solo recibir opciones como lista o dicionario
-            # if NombreAccion == "macro":
+            # if NombreAccion == "secuencia":
             #     print(type(opcionesAccion))
             if isinstance(opcionesAccion, dict):
                 opcionesAccion.update({"__estado": presionado})
@@ -581,7 +539,7 @@ class elGarrobo(object):
 
         return None
 
-    def AccionesMacros(self, opciones: list[valoresAcciones]):
+    def ejecutarSecuencia(self, opciones: list[valoresAcciones]):
         """
         Ejecuta acciones una por una de una lista y si existe data la pasa a la siguiente acción
         """
@@ -589,20 +547,20 @@ class elGarrobo(object):
         cajon = {}
         for numero, comando in enumerate(ListaComando):
 
-            logger.info(f"Macro[{numero+1}/{len(ListaComando)}]")
+            logger.info(f"Secuencia[{numero+1}/{len(ListaComando)}]")
             # print("Comando", comando)
 
-            self.solisitaMacro(comando, cajon)
+            self.solicitaSecuencia(comando, cajon)
 
             respuesta = self.ejecutarAcción(comando)
 
-            self.respuestaMacro(comando, respuesta, cajon)
+            self.respuestaSecuencia(comando, respuesta, cajon)
 
             if comando.get("accion") == accionConfirmar.comando and not respuesta:
-                logger.info(f"Macro[Detenida] No se confirmó el paso {numero+1}")
+                logger.info(f"Secuencia[Detenida] No se confirmó el paso {numero+1}")
                 break
 
-        # TODO: Hacer Macros en diferentes Hilos
+        # TODO: Hacer secuencias en diferentes Hilos
 
     def accionesPresionar(self, opciones: list[valoresAcciones]):
 
@@ -630,7 +588,7 @@ class elGarrobo(object):
                 if nombre == accion.get("nombre"):
                     self.ejecutarAcción(accion)
 
-    def solisitaMacro(self, comando, cajon):
+    def solicitaSecuencia(self, comando, cajon):
         if "macro_opciones" in comando:
             macroOpciones = comando["macro_opciones"]
             if "solisita" in macroOpciones:
@@ -641,14 +599,14 @@ class elGarrobo(object):
                     if "solisita_cambiar" in macroOpciones:
                         recibir = macroOpciones["solisita_cambiar"]
                     for atributoTMP, recibirTMP in zip(atributo, recibir):
-                        self.solisitudSimpleMacro(comando, atributoTMP, recibirTMP, cajon)
+                        self.solicitudSimpleSecuencia(comando, atributoTMP, recibirTMP, cajon)
                 else:
                     recibir = None
                     if "solisita_cambiar" in macroOpciones:
                         recibir = macroOpciones["solisita_cambiar"]
-                    self.solisitudSimpleMacro(comando, atributo, recibir, cajon)
+                    self.solicitudSimpleSecuencia(comando, atributo, recibir, cajon)
 
-    def solisitudSimpleMacro(self, comando, atributo, recibir, cajon):
+    def solicitudSimpleSecuencia(self, comando, atributo, recibir, cajon):
         if atributo in cajon:
             if not "opciones" in comando:
                 comando["opciones"] = {}
@@ -660,7 +618,7 @@ class elGarrobo(object):
             opciones[recibir] = cajon[atributo]
             logger.info(f"Cargar_cajon[{recibir}] {opciones}")
 
-    def respuestaMacro(self, comando, respuesta, cajon):
+    def respuestaSecuencia(self, comando, respuesta, cajon):
         if "macro_opciones" in comando:
             macro_opciones = comando["macro_opciones"]
             if "respuesta" in macro_opciones:

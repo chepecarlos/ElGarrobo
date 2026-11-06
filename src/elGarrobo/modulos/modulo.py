@@ -155,7 +155,7 @@ class accionImpresora(accion):
 
 
 def reemplazarDatos(valor: Any, datos: dict[str, Any]) -> Any:
-    """Copia de valor con {dato} cambiado por su valor en los textos, también en dicts y listas (ej. pasos de macro)
+    """Copia de valor con {dato} cambiado por su valor en los textos, también en dicts y listas (ej. pasos)
 
     Solo los datos del evento: otras llaves como el {print $1} de awk quedan igual
     """

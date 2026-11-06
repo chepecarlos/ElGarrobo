@@ -1,6 +1,6 @@
 """Editores de propiedades: crea el campo según el tipo, pone y lee su valor y marca errores
 
-Los usan el formulario de acciones, los pasos de macro y la configuración de módulos y dispositivos
+Los usan el formulario de acciones, los pasos de secuencia y la configuración de módulos y dispositivos
 """
 
 import logging
@@ -184,7 +184,7 @@ def leerOpciones(editores: dict[str, ui.element], claseAcción: type[accion] | N
             raise
         if valor is not None:
             opciones[propiedad.atributo] = valor
-    # Acciones como macro guardan sus opciones en el .md como lista
+    # Acciones como secuencia guardan sus opciones en el .md como lista
     atributoLista = getattr(claseAcción, "atributoLista", None)
     if atributoLista:
         return opciones.get(atributoLista, [])

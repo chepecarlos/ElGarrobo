@@ -17,7 +17,7 @@ class accionEscribirArchivo(accion):
 
     nombre = "Escribir Archivo"
     comando = "escribir_archivo"
-    categoria = "Macros y datos"
+    categoria = "Secuencias y datos"
     descripcion = "Guarda un valor en un archivo (json, md o txt), completo o solo un atributo"
 
     def __init__(self) -> None:
@@ -80,8 +80,8 @@ class accionLeerValor(accion):
 
     nombre = "Leer Valor"
     comando = "leer_valor"
-    categoria = "Macros y datos"
-    descripcion = "Lee un archivo o uno de sus atributos y pasa el valor a la siguiente acción de la macro"
+    categoria = "Secuencias y datos"
+    descripcion = "Lee un archivo o uno de sus atributos y pasa el valor a la siguiente acción de la secuencia"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)

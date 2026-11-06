@@ -16,7 +16,7 @@ class accionDelay(accion):
 
     nombre = "Delay"
     comando = "delay"
-    categoria = "Macros y datos"
+    categoria = "Secuencias y datos"
     descripcion = "Espera unos segundos antes de seguir, útil entre los pasos de una macro"
 
     esperarSegundos: int | str = 0

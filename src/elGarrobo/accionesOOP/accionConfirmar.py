@@ -1,4 +1,4 @@
-"""Ventana pequeña de Sí / No; en una macro, si se responde No se detienen los pasos siguientes"""
+"""Ventana pequeña de Sí / No; en una secuencia, si se responde No se detienen los pasos siguientes"""
 
 import os
 import re
@@ -77,12 +77,12 @@ def _construirVentana(titulo: str, mensaje: str, tiempo: int, responder) -> None
 
 
 class accionConfirmar(accion):
-    """Pregunta Sí / No; en una macro, No detiene los pasos siguientes"""
+    """Pregunta Sí / No; en una secuencia, No detiene los pasos siguientes"""
 
     nombre = "Confirmar"
     comando = "confirmar"
-    categoria = "Macros y datos"
-    descripcion = "Pregunta Sí / No en una ventana pequeña; en una macro, si se responde No no sigue con los demás pasos"
+    categoria = "Secuencias y datos"
+    descripcion = "Pregunta Sí / No en una ventana pequeña; en una secuencia, si se responde No no sigue con los pasos"
 
     def __init__(self) -> None:
         super().__init__(self.nombre, self.comando, self.descripcion)
@@ -122,7 +122,7 @@ class accionConfirmar(accion):
         return self.sePuedeEjecutar() and self.preguntar()
 
     def preguntar(self) -> bool:
-        """Muestra la ventana y espera la respuesta (bloquea el hilo que ejecuta la macro)"""
+        """Muestra la ventana y espera la respuesta (bloquea el hilo que ejecuta la secuencia)"""
         if not os.environ.get("DISPLAY") and not os.environ.get("WAYLAND_DISPLAY"):
             Logger.warning("Confirmar[Error] No hay entorno gráfico, se toma como No")
             return False

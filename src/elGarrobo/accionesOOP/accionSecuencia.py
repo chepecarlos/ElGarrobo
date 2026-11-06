@@ -7,12 +7,12 @@ from .accion import accion, propiedadAccion
 Logger = ConfigurarLogging(__name__)
 
 
-class accionMacro(accion):
+class accionSecuencia(accion):
     """Ejecuta una lista de acciones una tras otra, pasando datos entre pasos con el cajón"""
 
-    nombre = "Macro"
-    comando = "macro"
-    categoria = "Macros y datos"
+    nombre = "Secuencia"
+    comando = "secuencia"
+    categoria = "Secuencias y datos"
     descripcion = "Ejecuta varias acciones una tras otra; un paso puede usar el resultado del anterior"
     atributoLista = "acciones"
 

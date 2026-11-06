@@ -1,4 +1,4 @@
-"""Diálogo para editar los pasos de una macro como bloques en vez de YAML"""
+"""Diálogo para editar los pasos de una secuencia como bloques en vez de YAML"""
 
 import copy
 
@@ -42,7 +42,7 @@ class editorPasos:
         self.editando: int | None = None
         "Índice del paso en el formulario, None si es uno nuevo"
         self.editorYAML: ui.element = None
-        "Editor YAML de la macro que se llena al terminar"
+        "Editor YAML de la secuencia que se llena al terminar"
         self.editorAcción: ui.select = None
         self.propiedades: ui.column = None
         self.opciones: dict[str, ui.element] = {}
@@ -50,7 +50,7 @@ class editorPasos:
         "Panel para buscar acciones, lo reusan el formulario y /eventos"
 
         with ui.dialog() as self.dialogo, ui.card().classes("w-full max-w-2xl"):
-            encabezado(ui.label("Pasos de la macro").classes("text-lg"), 2)
+            encabezado(ui.label("Pasos de la secuencia").classes("text-lg"), 2)
             self.lista = ui.column().classes("w-full gap-1")
             self.formulario = ui.column().classes("w-full")
             with ui.row():
@@ -59,7 +59,7 @@ class editorPasos:
                 ui.button("Listo", icon="check", color=tema.colorOscuro, on_click=self.terminar).mark("botonListoPasos")
 
     def agregarBoton(self, editor: ui.element, marca: str = "botonEditarPasos") -> ui.button:
-        """Botón "Editar pasos (N)" en lugar del YAML de la macro, que queda escondido y es lo que guarda el formulario"""
+        """Botón "Editar pasos (N)" en lugar del YAML de la secuencia, que queda escondido y es lo que se guarda"""
         editor.classes("hidden")
         boton = ui.button(icon="view_list", color=tema.colorOscuro, on_click=lambda: self.abrir(editor)).classes("w-full").mark(marca)
 
@@ -75,7 +75,7 @@ class editorPasos:
         return boton
 
     def abrir(self, editor: ui.element) -> None:
-        """Abre los pasos del editor YAML de la macro como bloques"""
+        """Abre los pasos del editor YAML de la secuencia como bloques"""
         try:
             pasos = leerValor(editor) or []
         except ValueError as error:

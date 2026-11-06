@@ -12,7 +12,7 @@ from .herramientas.valoresAccion import valoresAcciones
 logger = ConfigurarLogging(__name__)
 
 folderEjecución: ContextVar[str] = ContextVar("folderEjecución", default="/")
-"Folder del dispositivo que ejecuta la acción; las acciones anidadas (macros) lo heredan en el mismo hilo"
+"Folder del dispositivo que ejecuta la acción; las acciones anidadas (secuencias) lo heredan en el mismo hilo"
 
 
 class accion:
@@ -43,9 +43,9 @@ class accion:
     fuerza: int = 1
     "Multiplicador de la fuerza de la acción"
     atributoLista: Optional[str] = None
-    "Si las opciones en el .md son una lista (ej. pasos de una macro), atributo donde se guardan"
+    "Si las opciones en el .md son una lista (ej. pasos de una secuencia), atributo donde se guardan"
     enHilo: bool = True
-    """Al presionar una tecla se ejecuta en su propio hilo, así una macro o una consulta lenta no frena las demás teclas.
+    """Al presionar una tecla se ejecuta en su propio hilo, así algo lento no frena las demás teclas.
     False en las que cambian el estado central (folders, páginas, salir, presionar/soltar) para que sigan en orden"""
 
     def __init__(self, nombre: str, comando: str, descripcion: str) -> None:

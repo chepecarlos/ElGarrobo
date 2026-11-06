@@ -179,7 +179,7 @@ class accionListaCheckBox(accion):
 
     nombre = "ListaCheckBox"
     comando = "lista_checkbox"
-    categoria = "Macros y datos"
+    categoria = "Secuencias y datos"
     descripcion = "Abre una ventana con una lista de tareas para ir marcando"
 
     clientesRegistrados: dict = {}

@@ -652,7 +652,7 @@ class pestañasDispositivos:
                 if claseAcción is not None:
                     ui.label(claseAcción().nombre).classes("solo-ancho")
                 else:
-                    # Acción sin clase OOP (ej. macro): se muestra su comando tal cual
+                    # Acción sin clase OOP (ej. secuencia): se muestra su comando tal cual
                     ui.label(acciónAcción).classes("solo-ancho")
 
                 marca = f"{dispositivo.nombre}-{teclaAcción}"

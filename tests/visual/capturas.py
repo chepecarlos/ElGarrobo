@@ -92,7 +92,7 @@ def recorrer(navegador, url: str, tema: str) -> None:
     página.keyboard.press("Escape")
     esperar(página)
 
-    botón(página, "Macro").first.click()
+    botón(página, "Secuencia").first.click()
     esperar(página)
     botón(página, "Editar pasos").click()
     esperar(página)

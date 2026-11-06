@@ -53,7 +53,7 @@ El formateador de código es **Black** con `line-length = 119`.
 Heredan de `accion` (clase base en `accion.py`). Cada acción define:
 - `nombre`, `comando` (string clave), `descripcion`
 - `categoria`: grupo en el panel de acciones de la GUI (botón 📖 junto a cada selector de acción, `dispositivos/migui/catalogo.py`). Las acciones de un módulo usan el nombre del módulo, y si está apagado salen en ese panel con aviso para activarlo
-- `listaPropiedades`: lista de `propiedadAccion` con nombre, tipo y si es obligatoria. Para propiedades `str` de varias líneas (ej. `texto` en `accionEscribirTexto`) usar `multilinea=True` para que la GUI muestre un `textarea` en vez de un `input`. Para archivos o folders que la acción busca con `accion.calcularRuta` usar `ruta=True`: la GUI avisa en ámbar (sin impedir guardar) si no existe. Rutas: `/x` desde la raíz del perfil (o ruta completa del sistema si existe), `./x` o `x` desde el folder del dispositivo que ejecuta la acción (`folderEjecución`, que pasa `ejecutarAcción(..., folder)` y heredan las macros). Con `sugerencias=[...]` la GUI muestra un selector que deja escribir otro valor, y `ocultar=[atributos]` esconde (y no guarda) esos campos mientras se elija una sugerencia
+- `listaPropiedades`: lista de `propiedadAccion` con nombre, tipo y si es obligatoria. Para propiedades `str` de varias líneas (ej. `texto` en `accionEscribirTexto`) usar `multilinea=True` para que la GUI muestre un `textarea` en vez de un `input`. Para archivos o folders que la acción busca con `accion.calcularRuta` usar `ruta=True`: la GUI avisa en ámbar (sin impedir guardar) si no existe. Rutas: `/x` desde la raíz del perfil (o ruta completa del sistema si existe), `./x` o `x` desde el folder del dispositivo que ejecuta la acción (`folderEjecución`, que pasa `ejecutarAcción(..., folder)` y heredan las secuencias). Con `sugerencias=[...]` la GUI muestra un selector que deja escribir otro valor, y `ocultar=[atributos]` esconde (y no guarda) esos campos mientras se elija una sugerencia
 - `configurar(dict)` → valida y llena `listaValores`
 - `ejecutar()` → verifica propiedades y llama a `funcion` o `funcionExterna`
 
@@ -83,11 +83,11 @@ Los archivos de configuración son `.md` con frontmatter YAML o `.json`. Viven e
 
 Cada dispositivo tiene su propio archivo de acciones. Cada entrada de acción tiene al menos `key` y `accion`, más un dict opcional `opciones` con los parámetros de la acción.
 
-### Macros
+### Secuencias
 
-Las macros encadenan acciones secuencialmente. El "cajón" (`cajon: dict`) pasa datos entre pasos: `macro_opciones.solisita` extrae un valor del cajón y `macro_opciones.respuesta` guarda el resultado de una acción para el siguiente paso.
+Las secuencias (`accion: secuencia`, clase `accionSecuencia`; antes se llamaban macros) encadenan acciones en orden. La clave `macro_opciones` de cada paso conserva el nombre viejo. El "cajón" (`cajon: dict`) pasa datos entre pasos: `macro_opciones.solisita` extrae un valor del cajón y `macro_opciones.respuesta` guarda el resultado de una acción para el siguiente paso.
 
-En la GUI los pasos se editan en bloques (`dispositivos/migui/pasos.py`, botón "Editar pasos (N)"); el YAML de la macro queda escondido. Un paso `confirmar` (`accionConfirmar`) muestra una ventana Sí / No con tkinter; si se responde No (o se acaba el `tiempo`) `AccionesMacros` no ejecuta los pasos siguientes.
+En la GUI los pasos se editan en bloques (`dispositivos/migui/pasos.py`, botón "Editar pasos (N)"); el YAML de la secuencia queda escondido. Un paso `confirmar` (`accionConfirmar`) muestra una ventana Sí / No con tkinter; si se responde No (o se acaba el `tiempo`) `ejecutarSecuencia` no ejecuta los pasos siguientes.
 
 ### Submodulo miLibrerias
 
@@ -98,10 +98,10 @@ En la GUI los pasos se editan en bloques (`dispositivos/migui/pasos.py`, botón 
 El código tiene bastantes errores de ortografía en español (nombres de clases, docstrings, descripciones, y algunas claves `comando`/opciones de config). Cuando Claude detecte uno, debe avisarlo para corregirlo poco a poco.
 
 - **Seguro de corregir de inmediato**: docstrings, comentarios, `descripcion`, nombres de variables/métodos internos que no se serializan a los `.md`/`.json` del usuario.
-- **Requiere confirmación antes de tocar**: cualquier string usado como clave persistida en configs de usuario — el `comando` de una acción (clave del dict en `cargarClasesAcciones()`), o claves dentro de `opciones`/`macro_opciones` (ver `solisitaMacro` en `elGarrobo.py`). Cambiarlas rompe macros ya guardadas por el usuario.
+- **Requiere confirmación antes de tocar**: cualquier string usado como clave persistida en configs de usuario — el `comando` de una acción (clave del dict en `cargarClasesAcciones()`), o claves dentro de `opciones`/`macro_opciones` (ver `solicitaSecuencia` en `elGarrobo.py`). Cambiarlas rompe secuencias ya guardadas por el usuario.
 
 Pendientes detectados (no corregidos, requieren decidir si romper compatibilidad):
-- `elGarrobo.py` (`solisitaMacro`): claves de macro `"solisita"` / `"solisita_cambiar"` → deberían ser `"solicita"` / `"solicita_cambiar"`.
+- `elGarrobo.py` (`solicitaSecuencia`): claves de `macro_opciones` `"solisita"` / `"solisita_cambiar"` → deberían ser `"solicita"` / `"solicita_cambiar"`.
 - `src/elGarrobo/acciones/` (paquete legacy no-OOP, se importa en `elGarrobo.py` con `CargarAcciones()`): mismos typos; pendiente migrar a OOP lo que se usa (ver `mejoras.md`).
 
 Corregidos (código + configs de usuario en `~/dotfile/.config/elgarrobo/default/*.md` actualizados en el mismo cambio):

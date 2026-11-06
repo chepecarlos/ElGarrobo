@@ -4,9 +4,9 @@ Herramienta de macros para Linux: convierte cualquier tecla de un **StreamDeck**
 
 ![Botones de un StreamDeck+ en la interfaz web](imagenes/acciones.png)
 
-| Teclado USB con su forma real | Macro: varias acciones en orden |
+| Teclado USB con su forma real | Secuencia: varias acciones en orden |
 |---|---|
-| ![Teclado](imagenes/teclado.png) | ![Pasos de una macro](imagenes/macro.png) |
+| ![Teclado](imagenes/teclado.png) | ![Pasos de una secuencia](imagenes/secuencia.png) |
 
 ## Compatible con
 
@@ -86,7 +86,7 @@ Cada archivo de acciones es una lista en YAML. Cada entrada necesita `key` y `ac
     texto: Hola mundo
 - nombre: Escena cámara
   key: KEY_C
-  accion: macro        # varias acciones en orden
+  accion: secuencia    # varias acciones en orden
   opciones:
   - accion: obs_escena
     opciones:
@@ -109,7 +109,7 @@ Algunas de las más usadas (`accion:` en el archivo):
 | `escribir` / `presionar` | Escribe texto / presiona una combinación de teclas |
 | `copiar` / `pegar` | Portapapeles |
 | `mostrar_ventana` / `cerrar_ventana` | Busca o cierra una ventana por título |
-| `macro` / `delay` | Encadena acciones / espera un tiempo |
+| `secuencia` / `delay` | Encadena acciones / espera un tiempo |
 | `folder` / `regresar_folder` | Navega entre carpetas de botones |
 | `reproduccion` / `detener_reproduccion` | Sonidos |
 | `volumen` / `mute` | Audio (PulseAudio) |

@@ -65,7 +65,7 @@ plus._listaAcciones = plus.convertirAcciones(
     [
         {"nombre": "Escena", "key": 1, "accion": "escribir", "titulo": "Escena", "fondo": "#7c3aed", "opciones": {"texto": "hola"}},
         {"nombre": "Mute", "key": 2, "accion": "escribir", "titulo": "Mute", "opciones": {"texto": "m"}},
-        {"nombre": "Macro", "key": 3, "accion": "macro", "opciones": [{"accion": "escribir", "opciones": {"texto": "a"}}, {"accion": "delay", "opciones": {"tiempo": 1}}]},
+        {"nombre": "Secuencia", "key": 3, "accion": "secuencia", "opciones": [{"accion": "escribir", "opciones": {"texto": "a"}}, {"accion": "delay", "opciones": {"tiempo": 1}}]},
         {"nombre": "Volumen", "key": "dial_1", "accion": "escribir", "opciones": {"texto": "v"}},
         {"nombre": "Pantalla", "key": "touchscreen_1", "accion": "escribir", "titulo": "Hola", "opciones": {"texto": "t"}},
     ]

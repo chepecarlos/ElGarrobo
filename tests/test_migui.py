@@ -1309,24 +1309,25 @@ class TestImpresoraDelModulo:
         assert deck.listaAcciones[-1].opciones == {"impresora": "MK4s"}
 
 
-class TestAccionMacro:
-    async def test_editar_macro_conserva_pasos_como_lista(self, user: User, gui: miGui, deck: dispositivoFalso):
+class TestAccionSecuencia:
+    async def test_editar_secuencia_conserva_pasos_como_lista(self, user: User, gui: miGui, deck: dispositivoFalso):
         pasos = [{"accion": "teclas", "opciones": {"teclas": ["s"]}}]
-        deck.listaAcciones.append(dataAccion.desdeDict({"nombre": "Macro", "key": 9, "accion": "macro", "opciones": pasos}))
+        datos = {"nombre": "Secuencia", "key": 9, "accion": "secuencia", "opciones": pasos}
+        deck.listaAcciones.append(dataAccion.desdeDict(datos))
         await user.open("/")
         user.find(marker="editar-deck-9").click()
 
-        assert gui.formulario.editorAcción.value == "Macro"
+        assert gui.formulario.editorAcción.value == "Secuencia"
         assert "teclas" in gui.formulario.opcionesEditar["Acciones"].value
         assert "hidden" in gui.formulario.opcionesEditar["Acciones"].classes, "los pasos se editan en bloques, no en YAML"
         await user.should_see("Editar pasos (1)")
 
-        user.find(marker="editor-nombre").clear().type("Macro 2")
+        user.find(marker="editor-nombre").clear().type("Secuencia 2")
         user.find(marker="botonAgregar").click()
-        await user.should_see("Macro 2 guardada en deck, tecla 9")
+        await user.should_see("Secuencia 2 guardada en deck, tecla 9")
 
-        macro = deck.listaAcciones[-1]
-        assert (macro.nombre, macro.accion, macro.opciones) == ("Macro 2", "macro", pasos)
+        secuencia = deck.listaAcciones[-1]
+        assert (secuencia.nombre, secuencia.accion, secuencia.opciones) == ("Secuencia 2", "secuencia", pasos)
 
     async def test_editar_pasos_en_bloques(self, user: User, gui: miGui, deck: dispositivoFalso):
         pasos = [
@@ -1334,7 +1335,8 @@ class TestAccionMacro:
             {"accion": "obs_escena", "opciones": {"escena": "Juego"}, "macro_opciones": {"respuesta": "x"}},
             {"accion": "delay", "opciones": {"tiempo": 1}},
         ]
-        deck.listaAcciones.append(dataAccion.desdeDict({"nombre": "Macro", "key": 9, "accion": "macro", "opciones": pasos}))
+        datos = {"nombre": "Secuencia", "key": 9, "accion": "secuencia", "opciones": pasos}
+        deck.listaAcciones.append(dataAccion.desdeDict(datos))
         await user.open("/")
         user.find(marker="editar-deck-9").click()
         user.find(marker="botonEditarPasos").click()
@@ -1354,7 +1356,7 @@ class TestAccionMacro:
         user.find(marker="botonListoPasos").click()
 
         user.find(marker="botonAgregar").click()
-        await user.should_see("Macro guardada en deck, tecla 9")
+        await user.should_see("Secuencia guardada en deck, tecla 9")
         assert deck.listaAcciones[-1].opciones == [
             {"accion": "obs_escena", "opciones": {"escena": "Charla"}, "macro_opciones": {"respuesta": "x"}},
             {"accion": "teclas", "opciones": {"teclas": ["s"]}},

@@ -625,7 +625,7 @@ class formularioAccion:
         self.opcionesEditar = None
         claseAcción = self.listaClasesAcciones.get(accion.get("accion"))
         if claseAcción is None:
-            # Acción sin clase OOP (ej. macro): se agrega al selector para no perderla al guardar
+            # Acción sin clase OOP (ej. secuencia): se agrega al selector para no perderla al guardar
             comando = accion.get("accion")
             self.editorAcción.set_options(self.listaNombreAcciones + [comando], value=comando)
         else:
@@ -640,7 +640,7 @@ class formularioAccion:
             if claseAcción is not None:
                 cargarOpciones(self.opcionesEditar, claseAcción, opcionesActuales)
             else:
-                # Sin editor para estas opciones (ej. pasos de una macro): se muestran y se guardan sin cambios
+                # Sin editor para estas opciones (ej. pasos de una secuencia): se muestran y se guardan sin cambios
                 self.editorOpción.visible = True
                 self.editorOpción.value = yaml.safe_dump(opcionesActuales, allow_unicode=True, sort_keys=False)
         self.recordarFormulario()

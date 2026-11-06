@@ -6,7 +6,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from elGarrobo.accionesOOP import accion, accionDelay, accionMacro, cargarClasesAcciones
+from elGarrobo.accionesOOP import accion, accionDelay, accionSecuencia, cargarClasesAcciones
 from elGarrobo.accionesOOP.accion import folderEjecución
 from elGarrobo.modulos import cargarModulos
 from elGarrobo.accionesOOP.herramientas.propiedadAccion import propiedadAccion
@@ -180,27 +180,27 @@ class TestAccionDelay:
         assert delay.ejecutar() is False
 
 
-class TestAccionMacro:
+class TestAccionSecuencia:
     def test_opciones_en_lista_van_a_acciones(self):
         pasos = [{"accion": "delay", "opciones": {"tiempo": 1}}]
-        macro = accionMacro()
-        macro.configurar(pasos)
+        secuencia = accionSecuencia()
+        secuencia.configurar(pasos)
         recibido = MagicMock()
-        with patch.object(accionMacro, "funcionExterna", recibido):
-            assert macro.ejecutar() is True
+        with patch.object(accionSecuencia, "funcionExterna", recibido):
+            assert secuencia.ejecutar() is True
         assert recibido.call_args.args[0][0].valor == pasos
 
 
 
 @pytest.mark.parametrize("acepta, pasos", [(True, ["confirmar", "cancelar_octoprint", "nada"]), (False, ["confirmar"])])
-def test_macro_se_detiene_si_no_se_confirma(acepta, pasos):
+def test_secuencia_se_detiene_si_no_se_confirma(acepta, pasos):
     from elGarrobo import elGarrobo as moduloElGarrobo
     from elGarrobo.accionesOOP.herramientas.valoresAccion import valoresAcciones
 
     app = moduloElGarrobo.elGarrobo.__new__(moduloElGarrobo.elGarrobo)
     app.ejecutarAcción = MagicMock(side_effect=lambda comando: acepta if comando["accion"] == "confirmar" else True)
-    macro = [{"accion": "confirmar"}, {"accion": "cancelar_octoprint"}, {"accion": "nada"}]
-    app.AccionesMacros([valoresAcciones("acciones", macro)])
+    secuencia = [{"accion": "confirmar"}, {"accion": "cancelar_octoprint"}, {"accion": "nada"}]
+    app.ejecutarSecuencia([valoresAcciones("acciones", secuencia)])
     assert [llamada.args[0]["accion"] for llamada in app.ejecutarAcción.call_args_list] == pasos
 
 
@@ -226,17 +226,17 @@ def test_tecla_ejecuta_en_hilo_salvo_las_de_estado_central():
 
     def ejecutar(accionActual, estado=True, fuerza=1, folder=None):
         hilos[(accionActual["accion"], estado)] = threading.current_thread()
-        if accionActual["accion"] == "macro":
+        if accionActual["accion"] == "secuencia":
             listo.set()
 
     app.ejecutarAcción = ejecutar
-    app.ejecutarTecla({"accion": "macro"}, True, 1, "/")
+    app.ejecutarTecla({"accion": "secuencia"}, True, 1, "/")
     app.ejecutarTecla({"accion": "entrar_folder"}, True, 1, "/")
-    app.ejecutarTecla({"accion": "macro"}, False, 1, "/")
+    app.ejecutarTecla({"accion": "secuencia"}, False, 1, "/")
     assert listo.wait(2)
-    assert hilos[("macro", True)] is not threading.current_thread(), "la macro no frena las demás teclas"
+    assert hilos[("secuencia", True)] is not threading.current_thread(), "la secuencia no frena las demás teclas"
     assert hilos[("entrar_folder", True)] is threading.current_thread(), "folders y páginas siguen en orden"
-    assert hilos[("macro", False)] is threading.current_thread(), "soltar no lanza hilos"
+    assert hilos[("secuencia", False)] is threading.current_thread(), "soltar no lanza hilos"
 
 
 def test_confirmar_busca_el_monitor_del_mouse():

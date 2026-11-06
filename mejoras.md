@@ -18,7 +18,7 @@
 
 ## GUI
 
-- [ ] **Editor de pasos de macros**: ya hay un diálogo de bloques (agregar, editar, borrar, subir/bajar) y desde 2026-11-04 el YAML de la macro está escondido (botón "Editar pasos (N)"). Falta: **`macro_opciones` (cajón) en el editor de pasos** (se conserva al guardar pero ya no se puede editar en la GUI), arrastrar para ordenar y macros anidadas (un paso macro se edita en YAML).
+- [ ] **Editor de pasos de secuencias**: ya hay un diálogo de bloques (agregar, editar, borrar, subir/bajar) y desde 2026-11-04 el YAML de la secuencia está escondido (botón "Editar pasos (N)"). Falta: **`macro_opciones` (cajón) en el editor de pasos** (se conserva al guardar pero ya no se puede editar en la GUI), arrastrar para ordenar y secuencias anidadas (un paso secuencia se edita en YAML).
 - [ ] **Selector de acciones agrupado**: más de 37 acciones en una lista plana; agrupar por categoría (OBS, teclado, sonido, MQTT, folders...).
 - [ ] **Deshacer más allá de borrar**: borrar ya tiene Deshacer en el aviso; editar, intercambiar y duplicar todavía no.
 - [ ] **Atajos de teclado y edición en lote**: no hay atajos (guardar, limpiar, cambiar modo) ni forma de mover o borrar varias acciones a la vez.
@@ -83,7 +83,7 @@ Disparar acciones cuando pasa algo en un módulo (ej. una impresora termina). Se
     texto: "{impresora} terminó {archivo} en {tiempo_transcurrido_humano}"
 ```
 
-Hecho: `modulo.emitirEvento` + catálogo `eventos = [eventoModulo(...)]` (`modulo.py`), `elGarrobo.dispararEvento` (un hilo por acción), `{dato}` reemplazado solo con los datos del evento (también en pasos de macro), eventos de FDM Monster (iniciada, terminada, cancelada, error, pausada) también publicados en `estado_fdm_monster/<impresora>/eventos`, página /eventos (activar, probar con datos de ejemplo, editar, borrar).
+Hecho: `modulo.emitirEvento` + catálogo `eventos = [eventoModulo(...)]` (`modulo.py`), `elGarrobo.dispararEvento` (un hilo por acción), `{dato}` reemplazado solo con los datos del evento (también en pasos de secuencia), eventos de FDM Monster (iniciada, terminada, cancelada, error, pausada) también publicados en `estado_fdm_monster/<impresora>/eventos`, página /eventos (activar, probar con datos de ejemplo, editar, borrar).
 
 Notas de FDM Monster (2.0.10):
 - Fuente: `print-jobs/search-paged?page=1&pageSize=20`. **No usar** `print-jobs/search` (todo el historial, ~75 MB). La página trae primero los que imprimen y luego los más nuevos; un trabajo que termina sale de la página y se consulta solo con `print-jobs/<id>` (su respuesta incluye el `apiKey` de la impresora: no loguearla).
@@ -92,7 +92,7 @@ Notas de FDM Monster (2.0.10):
 
 Pendiente:
 - [ ] **Ventana de 20 trabajos**: si entre dos consultas aparecen más de 20 trabajos nuevos, los más viejos de esos no avisan (marcado con `ponytail:`).
-- [ ] **Cajón inicial en macros**: acordado que el cajón empiece con los datos del evento; no se hizo porque `{dato}` ya se reemplaza en los pasos. Hacerlo si alguna acción necesita el dato como valor completo vía `solisita`.
+- [ ] **Cajón inicial en secuencias**: acordado que el cajón empiece con los datos del evento; no se hizo porque `{dato}` ya se reemplaza en los pasos. Hacerlo si alguna acción necesita el dato como valor completo vía `solisita`.
 - [x] **Condiciones en el filtro** (2026-10-29): `> 80`, `>= 80`, `< 20`, `<= 20`, `!= 0`, `= x` (`cumpleFiltro` en `modulo.py`); sin operador es igualdad. Comparan como número; con texto solo `=`/`!=`. A mano en eventos.md van entre comillas (`ram: "> 80"`, YAML lee `>` como bloque).
   - Eventos con `periodico=True` (`eventoModulo`): la acción se ejecuta solo cuando el filtro **empieza** a cumplirse, no en cada lectura (`filtrosCumplidos`). Para avisar al bajar se crea otra entrada (ej. `ram: "< 75"`).
   - [ ] Si el valor ronda el límite (80.1 / 79.9) avisa en cada cruce; agregar espera mínima si molesta.
@@ -117,8 +117,8 @@ Ordenado de mayor a menor recorte.
 
 - [x] **`src/configurar/` + flag `-c/--configurar`** (2026-11-05): lee `modulos/configurar.json` y `modulos.json`, pero la config actual es `modulos.md` / `dispositivos.md`. Borrar el paquete y la opción en `main.py` si ya no se usa (incluye la clase `color` con códigos ANSI).
 - [ ] **Paquete legacy `acciones/`** (~396 líneas, ~20 comentadas en `CargarAcciones()`): sí se importa en `elGarrobo.py:8` y aporta `pegar`, `portapapeles`, `contrain`, `concatenar`, `asignar`, `escribir_valor(es)`, `ventana_texto`. Migrar a OOP solo los que se usan y borrar el resto (se va `pyperclip`). Corregir la nota del CLAUDE.md que dice que no se importa.
-- [ ] **Métodos sin llamadas en `elGarrobo.py`**: `CargarAcciones(self, Dispositivo, Data)`, `LimpiarDeck` y `BuscarDentroFolder` (solo se llama a sí mismo).
-- [ ] **`ModuloMQTTEstado` + `modulos/mqtt_estado.py`**: el flag nunca se lee y el módulo es un stub (`EnviarAccionMQTT(): pass`). Borrar.
+- [x] (2026-11-05) **Métodos sin llamadas en `elGarrobo.py`**: `CargarAcciones(self, Dispositivo, Data)`, `LimpiarDeck` y `BuscarDentroFolder` (solo se llama a sí mismo).
+- [x] (2026-11-05) **`ModuloMQTTEstado` + `modulos/mqtt_estado.py`**: el flag nunca se lee y el módulo es un stub (`EnviarAccionMQTT(): pass`). Borrar.
 - [ ] **Código comentado**: bloque `ModuloGui`/`agregarAcciones` y `cargarFolder` en `IniciarAcciones`; ~65 líneas comentadas en `migui.py` y ~49 en `elGarrobo.py`. Git guarda la historia.
 - [ ] **`cargarClasesModulos`**: la rama `else` para instancias y el `moduloInstancia = moduloClase` después de `continue` no se ejecutan nunca; `cargarModulos()` solo devuelve clases.
 - [ ] **Dependencias sin usar en `requirements.txt`**: `pydub`, `importlib-resources`. Además `pyperclip` se importa en `acciones/emular_teclado.py` pero falta en `requirements.txt`.
@@ -129,7 +129,7 @@ Ordenado de mayor a menor recorte.
 
 ## Ortografía (requiere actualizar configs del usuario)
 
-- [ ] Claves de macro `solisita` / `solisita_cambiar` → `solicita` / `solicita_cambiar` (ver CLAUDE.md).
+- [ ] Claves de `macro_opciones` `solisita` / `solisita_cambiar` → `solicita` / `solicita_cambiar` (ver CLAUDE.md).
 - [ ] Métodos internos de `elGarrobo.py` (no requieren tocar configs): `SolisitarDibujar` → `SolicitarDibujar`, `SolisitarNotifiacacion` → `SolicitarNotificacion`.
 
 ## Configs del usuario (`~/dotfile/.config/elgarrobo/default/`)
