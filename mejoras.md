@@ -135,3 +135,10 @@ Ordenado de mayor a menor recorte.
 
 - [ ] Imágenes que no existen: `freecad/geometria/linea.png`, `freecad/restricciones/distancia.png`, `inkscape/duplicar.png`.
 - [x] `plus.md`: nombres "Uso Ran" → "Uso RAM" y "humedad Estudio" → "Humedad Estudio".
+
+
+- [ ] depuracion nivel mas alto para encontrar errer
+- [x] mejorar distribuccion de guio que se refresqeu cuando se cambie  x y
+- [ ] agregar dipositivo jointic
+- [x] actualizar pyproject.toml
+- [x] agregar paginas a gui: `miGui` pagina de columnas × filas de la cuadrícula del folder (`siguiente_pagina` con `dispositivo: Gui`)

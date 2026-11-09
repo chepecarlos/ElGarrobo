@@ -616,7 +616,7 @@ class TestActivables:
         monkeypatch.setattr(configuracion, "leerData", lambda _: {"gui": True})
         await user.open("/dispositivos")
         await user.should_see("Pedal StreamDeck")
-        await user.should_not_see("Interfaz Gráfica")
+        await user.should_not_see("Página web de ElGarrobo")
 
     def test_gui_forzada_con_g(self, monkeypatch):
         from elGarrobo import elGarrobo as moduloElGarrobo
@@ -1525,6 +1525,27 @@ class TestCuadriculaFolder:
         user.find(marker="botonGuardarFolder").click()
         assert (tmp_path / "default" / "gui.md").exists()
         await user.should_see(marker="tecla-Gui-6")
+
+    async def test_paginas_en_la_gui(self, user: User):
+        gui = miGui({"nombre": "Gui"})
+        gui.listaClasesAcciones = cargarClasesAcciones()
+        gui.listaDispositivos = [gui]
+        gui._listaAcciones = gui.convertirAcciones(
+            [
+                {"key": "propiedad_folder", "cuadricula": {"columnas": 2, "filas": 1}},
+                {"nombre": "Uno", "key": 1, "accion": "delay"},
+                {"nombre": "Tres", "key": 3, "accion": "delay"},
+            ]
+        )
+        await user.open("/")
+        await user.should_see(marker="tecla-Gui-1")
+        await user.should_not_see("Otras teclas")
+        user.find(marker="paginaSiguiente-Gui").click()
+        await user.should_see(marker="tecla-Gui-3")
+        await user.should_see("Página 2")
+        assert not gui.puedeSiguientePagina()
+        user.find(marker="paginaAnterior-Gui").click()
+        await user.should_see(marker="tecla-Gui-1")
 
     async def test_aparatos_fisicos_no_muestran_columnas(self, user: User, guiPedal: miGui):
         await user.open("/")

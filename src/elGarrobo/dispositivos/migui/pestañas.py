@@ -359,7 +359,11 @@ class pestañasDispositivos:
         if usaCuadriculaFolder(dispositivo):
             # Teclas de texto (MQTT) o fuera de la cuadrícula del folder
             celdas = sum(grupo.filas * grupo.columnas for grupo in grupos)
-            self.dibujarOtrasTeclas(accionesPorTecla, {str(tecla) for tecla in range(1, celdas + 1)}, alClick, marcar)
+            dibujadas = {str(tecla) for tecla in range(1, celdas + 1)}
+            if hasattr(dispositivo, "siguientePagina"):
+                # Con páginas (GUI) las teclas numéricas están en alguna página, no son "otras"
+                dibujadas = {tecla for tecla in accionesPorTecla if tecla.isdigit() and int(tecla) > 0}
+            self.dibujarOtrasTeclas(accionesPorTecla, dibujadas, alClick, marcar)
 
     def dibujarOtrasTeclas(self, accionesPorTecla: dict, dibujadas: set[str], alClick, marcar) -> None:
         """Fila con las acciones cuyas teclas no se dibujaron, para que no queden escondidas"""

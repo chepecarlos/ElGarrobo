@@ -85,7 +85,7 @@ class bandeja(Gtk.Application):
             menu.append(item)
             return item
 
-        self.opcionGUI = opcion("Abrir GUI", self.abrirGUI)
+        self.opcionGUI = opcion("Abrir Web", self.abrirGUI)
         self.opcionIniciar = opcion("Iniciar", self.iniciar)
         self.opcionReiniciar = opcion("Reiniciar", self.reiniciar)
         self.opcionDetener = opcion("Detener", self.detener)

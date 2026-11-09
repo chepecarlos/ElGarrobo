@@ -2,26 +2,25 @@
 line-length = 119
 
 [build-system]
-requires = ["setuptools>=61", "wheel"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "elgarrobo"
-description = "Herramienta Macros de chepecarlos"
+description = "Macros para Linux con StreamDeck, teclados USB, MQTT y OBS"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "ChepeCarlos", email = "chepecarlos@chepecarlos.com" }]
-# license = { file = "LICENSE" }
 dynamic = ["version", "dependencies"]
-# license = "MIT"
-# o, si no quieres cambiar, añade también:
-license-files = ["LICENSE*"]
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+keywords = ["macros", "streamdeck", "mqtt", "obs", "linux"]
 
 [project.urls]
-Homepage = "https://github.com/chepecarlos/ElGatoALSW/print-tool"
-Documentation = "https://github.com/chepecarlos/ElGatoALSW"
-Source = "https://github.com/chepecarlos/ElGatoALSW"
-Tracker = "https://github.com/chepecarlos/ElGatoALSW/issues"
+Homepage = "https://github.com/chepecarlos/ElGarrobo"
+Documentation = "https://github.com/chepecarlos/ElGarrobo/blob/master/Guia_Instalacion.md"
+Source = "https://github.com/chepecarlos/ElGarrobo"
+Tracker = "https://github.com/chepecarlos/ElGarrobo/issues"
 
 [project.scripts]
 elgarrobo = "elGarrobo.main:main"

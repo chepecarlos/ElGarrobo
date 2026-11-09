@@ -51,10 +51,10 @@ class miGui(dispositivo):
     Interfaz web de ElGarrobo
     """
 
-    nombre = "Interfaz Gráfica"
+    nombre = "Web"
     modulo = "gui"
     tipo = "gui"
-    descripcion = "Interfaz web/gráfica (GUI) de ElGarrobo"
+    descripcion = "Página web de ElGarrobo para configurar y usar los dispositivos desde el navegador"
     archivoConfiguracion = "gui.md"
     icono = "web"
 
@@ -69,10 +69,13 @@ class miGui(dispositivo):
     ultimaLabel: ui.label = None
     "Etiqueta con la última acción ejecutada en modo Usar"
 
+    paginaGlobal: bool = False
+    "Como el pedal: solo cambia de página con acciones que indiquen este dispositivo"
+
     def __init__(self, dataConfiguracion: dict) -> None:
 
         super().__init__(dataConfiguracion)
-        self.nombre = dataConfiguracion.get("nombre", "miGui")
+        self.nombre = dataConfiguracion.get("nombre", "Web")
 
         self.puerto = dataConfiguracion.get("puerto")
 
@@ -484,6 +487,37 @@ class miGui(dispositivo):
         dispositivo.listaAcciones.remove(accion)
         dispositivo.salvarAcciones()
         self.actualizarPestaña(dispositivo)
+
+    def accionesCargadas(self) -> None:
+        self.desfaseTeclas = 0
+        super().accionesCargadas()
+
+    def _celdas(self) -> int:
+        """Teclas por página: columnas × filas de la cuadrícula del folder, 0 si no tiene"""
+        columnas, filas = self.cuadriculaFolder() or (0, 0)
+        return columnas * filas
+
+    def paginaActual(self) -> int:
+        return self.desfaseTeclas // self._celdas() + 1 if self._celdas() else 1
+
+    def puedeSiguientePagina(self, editando: bool = False) -> bool:
+        """Hay acciones después de la página actual; editando permite una página vacía extra para agregar acciones"""
+        celdas = self._celdas()
+        extra = celdas if editando else 0
+        return celdas > 0 and self.desfaseTeclas + celdas < self.ultimaTecla() + extra
+
+    def puedeAnteriorPagina(self) -> bool:
+        return self._celdas() > 0 and self.desfaseTeclas >= self._celdas()
+
+    def siguientePagina(self, editando: bool = False) -> None:
+        if self.puedeSiguientePagina(editando):
+            self.desfaseTeclas += self._celdas()
+            self.avisarGui()
+
+    def anteriorPagina(self) -> None:
+        if self.puedeAnteriorPagina():
+            self.desfaseTeclas -= self._celdas()
+            self.avisarGui()
 
     def actualizar(self):
 

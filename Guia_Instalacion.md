@@ -18,8 +18,8 @@ Puede clonar el repositorio donde más te convenga
 ```bash
 git clone https://github.com/chepecarlos/ElGarrobo
 ```
-# Entrara al folder del repositorio 
-Debes entrar a la carpeta ElGatoALSW 
+# Entrar al folder del repositorio 
+Debes entrar a la carpeta ElGarrobo 
 
 ```bash
 cd ElGarrobo

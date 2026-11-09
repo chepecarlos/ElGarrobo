@@ -25,7 +25,7 @@ def obtenerPuertoGUI() -> int:
 class accionAbrirGUI(accion):
     """Abre la interface web del ElGarrobo"""
 
-    nombre = "Abrir GUI"
+    nombre = "Abrir Editor Web"
     comando = "abrir_gui"
     categoria = "ElGarrobo"
     descripcion = "Abre esta página de configuración de ElGarrobo en el navegador"

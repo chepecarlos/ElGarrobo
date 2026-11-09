@@ -13,13 +13,13 @@ from .accionesOOP import (
     accionAnteriorPagina,
     accionConfirmar,
     accionEntrarFolder,
-    accionSecuencia,
     accionPresionar,
     accionRecargarFolder,
     accionRegresarFolder,
     accionReiniciarApp,
     accionSalir,
     accionSalvarPulse,
+    accionSecuencia,
     accionSiguientePagina,
     cargarClasesAcciones,
 )
@@ -130,8 +130,7 @@ class elGarrobo(object):
 
         if not self.listaDispositivos:
             logger.warning(
-                "No hay dispositivos activos, activa alguno con 'elgarrobo dispositivos activar <nombre>' "
-                "(lista en 'elgarrobo dispositivos info') o abre la GUI con 'elgarrobo -g'"
+                "No hay dispositivos activos, activa alguno con 'elgarrobo dispositivos activar <nombre>' " "(lista en 'elgarrobo dispositivos info') o abre la Editor Web con 'elgarrobo -g'"
             )
 
     def iniciarDispositivo(self, dispositivoActual: dispositivo) -> None:
@@ -182,7 +181,7 @@ class elGarrobo(object):
             # elgarrobo -g: la GUI arranca aunque esté apagada en dispositivos.md (no se guarda)
             self.dispositivos["gui"] = True
         if self.dispositivos.get("gui") and leerData("gui") is None:
-            SalvarArchivo("gui", [{"nombre": "Gui", "archivo": "gui", "activado": True}])
+            SalvarArchivo("gui", [{"nombre": "Web", "archivo": "gui", "activado": True}])
 
         # TODO: Modulos en un dict
 
@@ -393,9 +392,7 @@ class elGarrobo(object):
             # Los periódicos llegan cada pocos segundos: solo se registran si ejecutan algo
             logger.info(f"Evento[{nombre}] {len(acciones)} acción(es) - {datos}")
         for accionEvento in acciones:
-            hilo = threading.Thread(
-                target=self.ejecutarAcción, args=(accionEvento,), daemon=True, name=f"evento-{nombre}"
-            )
+            hilo = threading.Thread(target=self.ejecutarAcción, args=(accionEvento,), daemon=True, name=f"evento-{nombre}")
             hilo.start()
 
     def EjecutandoEvento(self, evento, estado):
@@ -430,9 +427,7 @@ class elGarrobo(object):
             name=f"accion-{accionActual.get('accion')}",
         ).start()
 
-    def ejecutarAcción(
-        self, accionActual: dict, estado: bool = True, fuerza: int = 1, folder: str | None = None
-    ) -> Any:
+    def ejecutarAcción(self, accionActual: dict, estado: bool = True, fuerza: int = 1, folder: str | None = None) -> Any:
         """Ejecuta una acción según el comando y las opciones proporcionadas.
 
         Args:
@@ -713,12 +708,7 @@ class elGarrobo(object):
         return [
             dispositivoActual
             for dispositivoActual in self.listaDispositivos
-            if hasattr(dispositivoActual, "siguientePagina")
-            and (
-                dispositivoActual.nombre.lower() == str(nombre).lower()
-                if nombre
-                else getattr(dispositivoActual, "paginaGlobal", True)
-            )
+            if hasattr(dispositivoActual, "siguientePagina") and (dispositivoActual.nombre.lower() == str(nombre).lower() if nombre else getattr(dispositivoActual, "paginaGlobal", True))
         ]
 
     def siguiente_Pagina(self, opciones: list[valoresAcciones]):

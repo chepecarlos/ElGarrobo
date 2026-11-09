@@ -10,7 +10,7 @@ Herramienta de macros para Linux: convierte cualquier tecla de un **StreamDeck**
 
 ## Compatible con
 
-- Linux con Python 3.8 o superior
+- Linux con Python 3.10 o superior
 - Teclados USB (cualquiera, incluso varios a la vez)
 - Elgato StreamDeck (incluye Pedal y StreamDeck+)
 - MQTT (como dispositivo de entrada y como acción)
@@ -39,7 +39,7 @@ Para StreamDeck, audio, voz y otros extras ver la [Guía de instalación](./Guia
 ## Primer uso
 
 ```bash
-elgarrobo -g          # inicia con la interfaz gráfica
+elgarrobo -g          # inicia con la Web
 elgarrobo abrir-gui   # abre http://localhost:8080 en el navegador
 ```
 

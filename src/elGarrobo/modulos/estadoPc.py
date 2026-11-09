@@ -66,7 +66,7 @@ class estadoPc(modulo):
             logger.warning(
                 f"Estado[{self.nombrePC}] - No se especificó nombre del PC, "
                 f"usando valor por defecto: {self.nombrePC}, "
-                "cámbialo en la GUI en /modulos"
+                "cámbialo en la Web en /modulos"
             )
 
         logger.info(f"Estado[{self.nombrePC}] - Publicando estado de PC[{self.nombrePC}] por MQTT")

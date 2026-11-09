@@ -63,7 +63,7 @@ class accionNotificacion(accion):
         noti = Notify()
         noti.message = texto
         noti.title = titulo
-        noti.application_name = "ElGatoALSW"
+        noti.application_name = "ElGarrobo"
 
         if icono is not None:
             # TODO: agregar icono relativo

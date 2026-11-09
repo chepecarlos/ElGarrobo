@@ -56,6 +56,8 @@ class dispositivo:
     listaAcciones: list | None = None
     "Lista de Acciones cargadas"
     _listaAcciones: list | None = None
+    desfaseTeclas: int = 0
+    "Página actual: la primera tecla dibujada es desfaseTeclas + 1 (solo cambia en dispositivos con páginas)"
     tipo: str = ""
     "Tipo de dispositivo"
     clase: str
@@ -243,7 +245,7 @@ class dispositivo:
         if cuadricula is None:
             return None
         columnas, filas = cuadricula
-        return [grupoBotones(self.nombre, filas, columnas, 1, self)]
+        return [grupoBotones(self.nombre, filas, columnas, self.desfaseTeclas + 1, self)]
 
     def cuadriculaFolder(self) -> tuple[int, int] | None:
         """(columnas, filas) de 'cuadricula' en la propiedad_folder del folder actual; None si no hay o no es válida"""
