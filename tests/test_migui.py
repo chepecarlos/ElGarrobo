@@ -1364,6 +1364,24 @@ class TestAccionSecuencia:
             {"accion": "delay", "opciones": {"tiempo": "2"}},
         ]
 
+    async def test_resumen_legible_de_pasos(self, user: User, gui: miGui, deck: dispositivoFalso):
+        pasos = [
+            {"accion": "confirmar", "opciones": {"mensaje": "Re-imprimir\nen la mk4s", "tiempo": 30}},
+            {"accion": "teclas", "opciones": {"teclas": ["ctrl", "s"]}},
+            {"accion": "obs_escena", "opciones": {"escena": "Juego"}},
+        ]
+        deck.listaAcciones.append(dataAccion.desdeDict({"nombre": "Secuencia", "key": 9, "accion": "secuencia", "opciones": pasos}))
+        await user.open("/")
+        user.find(marker="editar-deck-9").click()
+        user.find(marker="botonEditarPasos").click()
+        await user.should_see("Mensaje: Re-imprimir … · Tiempo: 30")
+        await user.should_see("Teclas: ctrl, s")
+        # Sin clase OOP no se conoce el nombre de la propiedad: queda la clave
+        await user.should_see("escena: Juego")
+        resumen = gui.formulario.pasos.resumenPaso
+        assert resumen({"accion": "delay"}) == ""
+        assert resumen({"accion": "confirmar", "opciones": {"mensaje": "x", "extra": True}}) == "Mensaje: x · extra: Sí"
+
     async def test_pasos_no_se_pierden_sin_avisar(self, user: User, gui: miGui, deck: dispositivoFalso):
         pasos = [{"accion": "delay", "opciones": {"tiempo": 1}}, {"accion": "teclas", "opciones": {"teclas": ["s"]}}]
         deck.listaAcciones.append(dataAccion.desdeDict({"nombre": "Secuencia", "key": 9, "accion": "secuencia", "opciones": pasos}))
@@ -1381,8 +1399,15 @@ class TestAccionSecuencia:
         await user.should_see("Editar pasos (2)")
         assert leerValor(gui.formulario.opcionesEditar["Acciones"])[1] == {"accion": "delay", "opciones": {"tiempo": "5"}}
 
-        # Cancelar con cambios pregunta antes de descartarlos
+        # Borrar se puede deshacer y el paso vuelve a su lugar
         user.find(marker="botonEditarPasos").click()
+        user.find(marker="borrarPaso-0").click()
+        await user.should_see("Borraste «Teclas»")
+        user.find(marker="botonDeshacerPaso").click()
+        await user.should_not_see(marker="pasoBorrado")
+        assert [p["accion"] for p in gui.formulario.pasos.pasos] == ["teclas", "delay"]
+
+        # Cancelar con cambios pregunta antes de descartarlos
         user.find(marker="borrarPaso-0").click()
         user.find(marker="botonCancelarPasos").click()
         assert gui.formulario.pasos.dialogo.value, "no se cierra sin preguntar"

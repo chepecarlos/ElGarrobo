@@ -41,6 +41,8 @@ class editorPasos:
             self.comandos.setdefault(objetoClase.nombre, objetoClase.comando)
         self.pasos: list[dict] = []
         self.pasosIniciales: list[dict] = []
+        self.borrado: tuple[int, dict] | None = None
+        "Último paso borrado y su lugar, para deshacer"
         "Pasos al abrir el diálogo, para avisar antes de descartar cambios"
         self.editando: int | None = None
         "Índice del paso en el formulario, None si es uno nuevo"
@@ -93,6 +95,7 @@ class editorPasos:
         self.editorYAML = editor
         self.pasos = copy.deepcopy(pasos)
         self.pasosIniciales = copy.deepcopy(pasos)
+        self.borrado = None
         self.cerrarPaso()
         self.dibujar()
         self.dialogo.open()
@@ -121,41 +124,90 @@ class editorPasos:
         """Un bloque por paso con su acción, un resumen de sus opciones y botones para ordenar, editar y borrar"""
         self.lista.clear()
         with self.lista:
-            if not self.pasos:
+            if not self.pasos and self.borrado is None:
                 ui.label("Sin pasos, agrega uno").classes("text-xs")
             if self.tituloPaso is not None and self.editando is not None:
                 self.tituloPaso.text = f"Paso {self.editando + 1}"
             for i, paso in enumerate(self.pasos):
-                comando = paso.get("accion")
-                claseAcción = self.listaClasesAcciones.get(comando)
-                opciones = paso.get("opciones")
-                resumen = yaml.safe_dump(opciones, allow_unicode=True, default_flow_style=True, width=1000).strip() if opciones else ""
+                if self.borrado and self.borrado[0] == i:
+                    self.filaBorrado()
+                resumen = self.resumenPaso(paso)
                 with ui.card().classes("w-full p-2").mark(f"paso-{i}"):
                     with ui.row().classes("w-full items-center no-wrap gap-2"):
                         ui.label(f"{i + 1}.").classes("font-bold")
                         with ui.column().classes("gap-0 grow min-w-0"):
-                            ui.label(claseAcción().nombre if claseAcción else comando)
+                            ui.label(self.nombrePaso(paso))
                             ui.label(resumen).classes("text-xs truncate w-full").tooltip(resumen)
                         with ui.button_group().props("flat"):
                             nombrar(ui.button(icon="arrow_upward", on_click=lambda i=i: self.mover(i, -1)).props(f"flat {'disable' if i == 0 else ''}").mark(f"subirPaso-{i}"), "Subir paso")
                             nombrar(ui.button(icon="arrow_downward", on_click=lambda i=i: self.mover(i, 1)).props(f"flat {'disable' if i == len(self.pasos) - 1 else ''}").mark(f"bajarPaso-{i}"), "Bajar paso")
                             nombrar(ui.button(icon="edit", on_click=lambda i=i: self.editar(i)).props("flat").mark(f"editarPaso-{i}"), "Editar paso")
                             nombrar(ui.button(icon="delete", color=tema.colorPeligro, on_click=lambda i=i: self.borrar(i)).props("flat").mark(f"borrarPaso-{i}"), "Borrar paso")
+            if self.borrado and self.borrado[0] == len(self.pasos):
+                self.filaBorrado()
+
+    def nombrePaso(self, paso: dict) -> str:
+        claseAcción = self.listaClasesAcciones.get(paso.get("accion"))
+        return claseAcción().nombre if claseAcción else paso.get("accion")
+
+    def resumenPaso(self, paso: dict) -> str:
+        """Opciones del paso con el nombre de cada propiedad: "Mensaje: Re-imprimir · Tiempo: 30" """
+        opciones = paso.get("opciones")
+        claseAcción = self.listaClasesAcciones.get(paso.get("accion"))
+        objetoClase: accion | None = claseAcción() if claseAcción else None
+        if isinstance(opciones, list) and objetoClase and objetoClase.atributoLista:
+            opciones = {objetoClase.atributoLista: opciones}
+        if not isinstance(opciones, dict):
+            # ponytail: sin clase o en un formato raro se muestra el YAML tal cual
+            return yaml.safe_dump(opciones, allow_unicode=True, default_flow_style=True, width=1000).strip() if opciones else ""
+        nombres = {propiedad.atributo: propiedad.nombre for propiedad in objetoClase.listaPropiedades} if objetoClase else {}
+        return " · ".join(f"{nombres.get(atributo, atributo)}: {self.textoValor(valor)}" for atributo, valor in opciones.items())
+
+    @staticmethod
+    def textoValor(valor) -> str:
+        if isinstance(valor, bool):
+            return "Sí" if valor else "No"
+        if isinstance(valor, list) and all(isinstance(v, (str, int, float)) for v in valor):
+            return ", ".join(str(v) for v in valor)
+        if isinstance(valor, list):
+            return f"{len(valor)} elementos"
+        if isinstance(valor, dict):
+            return yaml.safe_dump(valor, allow_unicode=True, default_flow_style=True, width=1000).strip()
+        texto = str(valor)
+        # Textos de varias líneas (ej. escribir texto): solo la primera
+        return texto.split("\n")[0] + (" …" if "\n" in texto else "")
+
+    def filaBorrado(self) -> None:
+        """Fila en el lugar del paso borrado para deshacerlo; role=status para que el lector de pantalla lo anuncie"""
+        with ui.row().classes("w-full items-center no-wrap gap-2 px-2").props("role=status").mark("pasoBorrado"):
+            ui.label(f"Borraste «{self.nombrePaso(self.borrado[1])}»").classes("grow text-sm opacity-70")
+            ui.button("Deshacer", icon="undo", on_click=self.deshacer).props("flat").mark("botonDeshacerPaso")
 
     def mover(self, i: int, cambio: int) -> None:
         """Cambia el paso de lugar; el paso abierto sigue abierto con su nuevo número"""
         self.pasos[i], self.pasos[i + cambio] = self.pasos[i + cambio], self.pasos[i]
+        # Con el orden cambiado ya no queda claro dónde iba el paso borrado
+        self.borrado = None
         if self.editando in (i, i + cambio):
             self.editando = i + cambio if self.editando == i else i
         self.dibujar()
 
     def borrar(self, i: int) -> None:
-        """Borra el paso; el paso abierto solo se cierra si es el borrado"""
-        self.pasos.pop(i)
+        """Borra el paso y deja deshacerlo; el paso abierto solo se cierra si es el borrado"""
+        self.borrado = (i, self.pasos.pop(i))
         if self.editando == i:
             self.cerrarPaso()
         elif self.editando is not None and self.editando > i:
             self.editando -= 1
+        self.dibujar()
+
+    def deshacer(self) -> None:
+        """Devuelve el último paso borrado a su lugar"""
+        i, paso = self.borrado
+        self.borrado = None
+        self.pasos.insert(i, paso)
+        if self.editando is not None and self.editando >= i:
+            self.editando += 1
         self.dibujar()
 
     def cerrarPaso(self) -> None:
