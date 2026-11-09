@@ -27,6 +27,7 @@ from elGarrobo.dispositivos.miteclado.mi_teclado_macro import MiTecladoMacro, fo
 from elGarrobo.dispositivos.migui import migui as moduloMiGui
 from elGarrobo.dispositivos.migui import configuracion, eventos, tema, vistas
 from elGarrobo.dispositivos.migui import teclas as moduloTeclas
+from elGarrobo.dispositivos.migui.editores import leerValor
 from elGarrobo.dispositivos.migui.formulario import valorVacío
 from elGarrobo.dispositivos.migui.migui import miGui
 
@@ -1362,6 +1363,33 @@ class TestAccionSecuencia:
             {"accion": "teclas", "opciones": {"teclas": ["s"]}},
             {"accion": "delay", "opciones": {"tiempo": "2"}},
         ]
+
+    async def test_pasos_no_se_pierden_sin_avisar(self, user: User, gui: miGui, deck: dispositivoFalso):
+        pasos = [{"accion": "delay", "opciones": {"tiempo": 1}}, {"accion": "teclas", "opciones": {"teclas": ["s"]}}]
+        deck.listaAcciones.append(dataAccion.desdeDict({"nombre": "Secuencia", "key": 9, "accion": "secuencia", "opciones": pasos}))
+        await user.open("/")
+        user.find(marker="editar-deck-9").click()
+        user.find(marker="botonEditarPasos").click()
+        assert "persistent" in gui.formulario.pasos.dialogo.props
+
+        # Mover no cierra el paso abierto y "Listo" lo guarda sin pulsar "Guardar paso"
+        user.find(marker="editarPaso-0").click()
+        user.find(marker="opción-paso-Tiempo").clear().type("5")
+        user.find(marker="bajarPaso-0").click()
+        await user.should_see("Paso 2")
+        user.find(marker="botonListoPasos").click()
+        await user.should_see("Editar pasos (2)")
+        assert leerValor(gui.formulario.opcionesEditar["Acciones"])[1] == {"accion": "delay", "opciones": {"tiempo": "5"}}
+
+        # Cancelar con cambios pregunta antes de descartarlos
+        user.find(marker="botonEditarPasos").click()
+        user.find(marker="borrarPaso-0").click()
+        user.find(marker="botonCancelarPasos").click()
+        assert gui.formulario.pasos.dialogo.value, "no se cierra sin preguntar"
+        # El formulario tiene otro diálogo de pregunta con la misma marca
+        UserInteraction(user, {gui.formulario.pasos.pregunta.boton}, None).click()
+        assert not gui.formulario.pasos.dialogo.value
+        assert len(leerValor(gui.formulario.opcionesEditar["Acciones"])) == 2
 
 
 

@@ -38,6 +38,11 @@ def cargarFuente(archivo: str | None, tamaño: int) -> ImageFont.FreeTypeFont:
     return ImageFont.load_default(size=tamaño)
 
 
+def grosorBorde(grosor: int, tamañoFuente: int) -> int:
+    """El borde no pasa de 1/8 de la fuente, más grueso tapa los huecos de letras como 8, B o 0"""
+    return min(grosor, max(1, tamañoFuente // 8))
+
+
 @lru_cache(maxsize=256)
 def iconoEscalado(ruta: str, fecha: float, tamaño: tuple[int, int]) -> ImageImage:
     """Imagen del disco en RGBA y reducida a tamaño; la fecha del archivo va en la clave para releerla si cambia.
@@ -358,6 +363,7 @@ class dibujoBoton:
         )
 
         fuente = self.fuente(tamañoFuente)
+        Borde_Grosor = grosorBorde(Borde_Grosor, tamañoFuente)
 
         textoX = (Imagen.width - anchoTitulo) / 2 + Borde_Grosor
 
@@ -381,13 +387,13 @@ class dibujoBoton:
             spacing=espacioLinea,
         )
 
-    def calcularTamañoFuente(self, imagen: ImageImage, texto: str, grosorBorde: int, espacioLinea: int, minimo: int | None, maximo: int | None = None) -> tuple[int, int, int]:
+    def calcularTamañoFuente(self, imagen: ImageImage, texto: str, grosor: int, espacioLinea: int, minimo: int | None, maximo: int | None = None) -> tuple[int, int, int]:
         """Calcula tamaño de fuente para texto en botón de StreamDeck.
 
         Args:
             imagen (ImageImage): Imagen del botón
             texto (str): Texto a colocar en el botón
-            grosorBorde (int): Grosor del borde del texto
+            grosor (int): Grosor máximo del borde del texto
             espacioLinea (int): Espacio entre líneas del texto
             minimo (int | None): Tamaño mínimo de fuente
             maximo (int | None): Tamaño máximo de fuente
@@ -400,7 +406,7 @@ class dibujoBoton:
         dibujo = ImageDraw.Draw(imagen)
 
         def medir(tamaño: int) -> tuple[int, int]:
-            caja = dibujo.multiline_textbbox(xy=[0, 0], text=texto, font=self.fuente(tamaño), align="center", spacing=espacioLinea, stroke_width=grosorBorde)
+            caja = dibujo.multiline_textbbox(xy=[0, 0], text=texto, font=self.fuente(tamaño), align="center", spacing=espacioLinea, stroke_width=grosorBorde(grosor, tamaño))
             return caja[2] - caja[0], caja[3] - caja[1]
 
         anchoTitulo, altoTitulo = medir(100)
