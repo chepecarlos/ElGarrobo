@@ -78,7 +78,6 @@ class miGui(dispositivo):
 
         self.folder: str = "?"
         self.listaClasesAcciones: dict = dict()
-        self.salvarAcciones: callable = None
         self.agregarDispositivo: callable = None
         "elGarrobo.agregarDispositivo: crea y conecta un aparato sin reiniciar"
         self.quitarDispositivo: callable = None

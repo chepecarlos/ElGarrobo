@@ -1511,6 +1511,21 @@ class TestCuadriculaFolder:
         user.find(marker="botonGuardarFolder").click()
         assert deck.propiedadFolder is None, "sin columnas o filas se quita la cuadrícula"
 
+    async def test_guardar_en_la_propia_gui(self, user: User, monkeypatch, tmp_path):
+        # miGui tenía un atributo salvarAcciones = None que pisaba el método heredado
+        monkeypatch.setattr(sys.modules[dispositivo.__module__], "ObtenerFolderConfig", lambda: tmp_path)
+        gui = miGui({"nombre": "Gui", "archivo": "gui"})
+        gui.listaClasesAcciones = cargarClasesAcciones()
+        gui.asignarPerfil("default")
+        gui.listaDispositivos = [gui]
+        await user.open("/")
+        user.find(marker="propiedadesFolder-Gui").click()
+        gui.pestañas.propiedadesFolder.columnas.value = 3
+        gui.pestañas.propiedadesFolder.filas.value = 2
+        user.find(marker="botonGuardarFolder").click()
+        assert (tmp_path / "default" / "gui.md").exists()
+        await user.should_see(marker="tecla-Gui-6")
+
     async def test_aparatos_fisicos_no_muestran_columnas(self, user: User, guiPedal: miGui):
         await user.open("/")
         user.find(marker="propiedadesFolder-pedal").click()
