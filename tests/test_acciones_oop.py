@@ -262,3 +262,24 @@ def test_confirmar_busca_el_monitor_del_mouse():
     assert monitorEn(xrandr, 845, 1258) == (1920, 1080, 0, 480)
     assert monitorEn(xrandr, 700, 100) == (800, 480, 583, 0)
     assert monitorEn(xrandr, 100, 100) is None, "fuera de todos: se usa el escritorio entero"
+
+
+@pytest.mark.parametrize("escrito, esperado", [("42", 42), (None, None)])
+def test_ventana_texto_entero_y_cancelar(escrito, esperado):
+    from elGarrobo.accionesOOP import accionVentanaTexto
+
+    ventana = accionVentanaTexto()
+    ventana.configurar({"mensaje": "¿Cuánto?", "tipo": "entero"})
+    with patch("elGarrobo.accionesOOP.accionVentanaTexto.pyautogui.prompt", return_value=escrito) as prompt:
+        assert ventana.ejecutar() == esperado
+    prompt.assert_called_once_with("¿Cuánto?", "", "")
+
+
+def test_leer_valor_devuelve_el_dato(tmp_path):
+    from elGarrobo.accionesOOP import accionLeerValor
+
+    archivo = tmp_path / "data.json"
+    archivo.write_text('{"nombre": "garrobo"}')
+    leer = accionLeerValor()
+    leer.configurar({"archivo": str(archivo), "atributo": "nombre"})
+    assert leer.ejecutar() == "garrobo"

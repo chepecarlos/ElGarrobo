@@ -25,6 +25,7 @@
 - Muestra una lista de tareas emergente: [accionListaCheckBox](./accionesOOP/accionListaCheckBox)
 - Ejecuta una lista de acciones una tras otra: [accionSecuencia](./accionesOOP/accionSecuencia)
 - Pregunta Sí / No y detiene la secuencia si es No: [accionConfirmar](./accionesOOP/accionConfirmar)
+- Pide un texto en una ventana: [accionVentanaTexto](./accionesOOP/accionVentanaTexto)
 
 ### Acciones de ElGarrobo
 - Abri interface web: [accionAbrirGUI](./accionesOOP/accionAbrirGUI)
@@ -78,6 +79,7 @@ from .accionSonidos import accionPararReproducciones, accionReproducir
 from .accionTeclas import accionTeclas
 from .accionTelegram import accionTelegram
 from .accionTextoVoz import accionTextoVoz
+from .accionVentanaTexto import accionVentanaTexto
 
 
 def cargarClasesAcciones() -> dict[str, type["accion"]]:
@@ -126,4 +128,5 @@ def cargarClasesAcciones() -> dict[str, type["accion"]]:
         "salvar_audio": accionSalvarPulse,
         "mute": accionMute,
         "textovoz": accionTextoVoz,
+        "ventana_texto": accionVentanaTexto,
     }

@@ -3,7 +3,6 @@
 from .archivos import escribirValor, escribirValores
 from .emular_teclado import comandoPegar, comandoPortapapeles
 from .operaciones import OperacionConstrain, operacionAsignar, operacionConcatenar
-from .textbox import VentanaTexto
 
 
 def CargarAcciones():
@@ -36,8 +35,6 @@ def CargarAcciones():
         # Manejo de Ventanas
         # "cerrar_ventana": cerrarVentana,
         # "mostrar_ventana": mostarVentana,
-        # Input
-        "ventana_texto": VentanaTexto,
         # Operacion
         "concatenar": operacionConcatenar,
         "asignar": operacionAsignar,

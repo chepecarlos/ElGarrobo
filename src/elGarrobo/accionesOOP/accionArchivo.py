@@ -76,7 +76,7 @@ class accionEscribirArchivo(accion):
 
 
 class accionLeerValor(accion):
-    """Escribe en un archivo la información"""
+    """Lee un archivo o uno de sus atributos"""
 
     nombre = "Leer Valor"
     comando = "leer_valor"
@@ -107,7 +107,9 @@ class accionLeerValor(accion):
         self.agregarPropiedad(propiedadArchivo)
         self.agregarPropiedad(propiedadAtributo)
 
-        self.funcion = self.leerValor
+    def ejecutar(self) -> Any:
+        """Devuelve el valor leído (no True como el ejecutar base) para que la secuencia lo guarde en el cajón"""
+        return self.leerValor() if self.sePuedeEjecutar() else None
 
     def leerValor(self) -> Any:
         """Lee un atributo de un archivo y lo devuelve"""
